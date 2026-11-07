@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { createHash } from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -33,6 +34,23 @@ const records = lines.slice(1).map((line) => JSON.parse(line))
 const exclusionByPath = new Map(exclusions.removedUpstreamFiles.map((item) => [item.path, item]))
 const recordsByPath = new Map(records.map((record) => [record.ashPath, record]))
 
+// A working tree can contain ignored source that `git push` will never publish.
+// Check the index as well as local file bytes so CI gets the same source set.
+// Source archives without Git metadata can still verify their hashes and removals.
+let trackedPaths = null
+if (existsSync(path.join(repoRoot, '.git'))) {
+  try {
+    const indexPaths = execFileSync('git', ['ls-files', '-z'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      maxBuffer: 16 * 1024 * 1024
+    })
+    trackedPaths = new Set(indexPaths.split('\0').filter(Boolean))
+  } catch (error) {
+    fail(`cannot read the Git index to verify source tracking: ${String(error)}`)
+  }
+}
+
 if (
   Object.entries(expectedSource).some(([key, value]) => header[key] !== value) ||
   header.records !== records.length
@@ -58,6 +76,9 @@ for (const record of records) {
       fail(`unrecorded removal or source hash mismatch: ${record.ashPath}`)
     }
     continue
+  }
+  if (trackedPaths && !trackedPaths.has(record.ashPath)) {
+    fail(`upstream source exists locally but is not staged/tracked by Git: ${record.ashPath}`)
   }
   const currentHash = sha256(readFileSync(currentPath))
   if (currentHash !== record.ashSha256) {
