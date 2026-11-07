@@ -1,0 +1,23 @@
+import type { Store } from '../persistence/loading-store/store'
+import { CodexRuntimeHomeAuthSync } from './runtime-home-service-auth-sync'
+
+export type {
+  CodexMirroredHomeStatus,
+  CodexRateLimitHomeResolution
+} from './runtime-home-service-types'
+
+export class CodexRuntimeHomeService extends CodexRuntimeHomeAuthSync {
+  constructor(store: Store, options: { startupPolicy?: 'sync' | 'read-only' } = {}) {
+    super(store)
+    if (options.startupPolicy === 'read-only') {
+      this.initializeLastSyncedState()
+      return
+    }
+    this.safeRecoverInterruptedRuntimeAuthOperation()
+    this.safeMigrateLegacySharedAuth()
+    this.safeMigrateLegacyManagedState()
+    this.safeMigrateLegacyActiveHomePointer()
+    this.initializeLastSyncedState()
+    this.safeSyncForCurrentSelection()
+  }
+}

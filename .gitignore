@@ -1,0 +1,22 @@
+node_modules/
+.cache/
+.tmp/
+out/
+# Node-gyp and Cargo create local build products inside native package roots.
+# Do not publish host-generated Makefiles, absolute-path config.gypi, or binaries.
+/native/**/build/
+/native/**/target/
+dist/
+release/
+.turbo/
+coverage/
+playwright-report/
+test-results/
+.DS_Store
+.env
+.env.*
+!.env.example
+.agents/
+.aws/
+.codex/
+.audit/

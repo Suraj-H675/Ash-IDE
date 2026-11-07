@@ -1,0 +1,53 @@
+name: Ash IDE foundation
+
+on:
+  push:
+    branches: [main, 'feat/**', 'fix/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    name: Source, types, CLI, and desktop bundle
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    env:
+      CI: '1'
+      NODE_OPTIONS: --max-old-space-size=4096
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '12.14.0'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.1'
+          cache: pnpm
+      - name: Verify the pinned package manager
+        run: test "$(pnpm --version)" = '12.14.0'
+      - name: Install exactly the reviewed lockfile
+        run: pnpm install --frozen-lockfile
+      - name: Verify source attribution and adapted file hashes
+        run: node config/scripts/provenance/verify-source-ledger.mjs
+      - name: Build retained workspace packages
+        run: node config/scripts/workspace-package-build/build-workspace-packages.mjs
+      - name: Check TypeScript projects
+        run: node config/scripts/typecheck/project-execution/run-typecheck-projects-in-parallel.mjs
+      - name: Test the persistent local runtime contracts
+        run: |
+          node config/scripts/test-runtime/execution-policy/run-vitest.mjs run \
+            --config config/vitest.config.ts --pool=threads --maxWorkers=1 \
+            --no-file-parallelism \
+            src/main/ipc/runtime-environments/ash-local-environment-queries.test.ts \
+            src/main/runtime/rpc/methods/terminal-daemon-stop.test.ts \
+            src/cli/handlers/terminal-daemon-stop.test.ts \
+            src/cli/handlers/runtime.test.ts \
+            src/shared/rpc-contract/terminal-daemon-params.test.ts \
+            src/shared/ash-runtime-capabilities.test.ts \
+            src/main/startup/window-all-closed-quit-policy.test.ts
+      - name: Build the Ash CLI
+        run: ORCA_CLI_BUILD_COMPILER=tsrs node config/scripts/cli-build/build-cli.mjs
+      - name: Build the Electron desktop bundle
+        run: node config/scripts/desktop-build/execution/run-electron-vite-build.mjs

@@ -1,0 +1,112 @@
+import { createHash } from 'node:crypto'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs'
+import { DatabaseSync } from 'node:sqlite'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import { afterEach, describe, expect, it } from 'vitest'
+import { createDefaultLocalOrcaProfile } from '../../../../src/shared/orca-profiles'
+import { seedDevProfile } from './dev-profile-seed.mjs'
+
+const roots = []
+afterEach(() => {
+  for (const root of roots.splice(0)) {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+function hashTree(dir) {
+  const hash = createHash('sha256')
+  for (const entry of readdirSync(dir, { recursive: true, withFileTypes: true })) {
+    if (entry.isFile()) {
+      const file = path.join(entry.parentPath, entry.name)
+      hash.update(path.relative(dir, file)).update(readFileSync(file))
+    }
+  }
+  return hash.digest('hex')
+}
+
+function createSourceProfile() {
+  const root = mkdtempSync(path.join(tmpdir(), 'orca-seed-source-'))
+  roots.push(root)
+  const profile = createDefaultLocalOrcaProfile(0)
+  const profileDir = path.join(root, 'profiles', profile.id)
+  mkdirSync(profileDir, { recursive: true })
+  writeFileSync(
+    path.join(root, 'orca-profile-index.json'),
+    JSON.stringify({
+      schemaVersion: 1,
+      activeProfileId: profile.id,
+      profiles: [profile]
+    })
+  )
+  writeFileSync(path.join(profileDir, 'account-session.json.enc'), '{"ciphertext":"x"}')
+  writeFileSync(path.join(root, 'Local State'), '{"os_crypt":{"encrypted_key":"x"}}')
+  writeFileSync(path.join(root, 'SingletonLock'), 'locked')
+  mkdirSync(path.join(root, 'Code Cache'))
+  writeFileSync(path.join(root, 'Code Cache', 'blob'), 'cache')
+  const db = new DatabaseSync(path.join(profileDir, 'profile-state.db'))
+  db.exec(
+    'CREATE TABLE profile_state_documents (domain TEXT PRIMARY KEY, payload TEXT NOT NULL, domain_version INTEGER, revision INTEGER, updated_at INTEGER, content_hash TEXT)'
+  )
+  const insert = db.prepare("INSERT INTO profile_state_documents VALUES (?, ?, 1, 1, 0, 'hash')")
+  insert.run('repos', JSON.stringify([{ id: 'repo-1', path: '/src/app' }]))
+  insert.run('settings', JSON.stringify({ theme: 'dark' }))
+  insert.run('sshTargets', JSON.stringify([{ id: 'ssh-1' }]))
+  insert.run('workspaceSession', JSON.stringify({ tabsByWorktree: { a: [] } }))
+  insert.run('sshRemotePtyLeases', JSON.stringify([{ ptyId: 'p' }]))
+  insert.run('automations', JSON.stringify([{ id: 'nightly' }]))
+  db.close()
+  return root
+}
+
+describe('seedDevProfile', () => {
+  it('copies local workspace state without credentials or remote-host data', async () => {
+    const source = createSourceProfile()
+    const before = hashTree(source)
+    const target = path.join(mkdtempSync(path.join(tmpdir(), 'orca-seed-target-')), 'profile')
+    roots.push(path.dirname(target))
+
+    await seedDevProfile({ sourceDir: source, targetDir: target, report: () => {} })
+
+    expect(hashTree(source)).toBe(before)
+    expect(existsSync(path.join(target, 'Local State'))).toBe(false)
+    const seeded = JSON.parse(
+      readFileSync(path.join(target, 'profiles', 'local-default', 'orca-data.json'), 'utf8')
+    )
+    expect(seeded).toEqual({
+      repos: [{ id: 'repo-1', path: '/src/app' }],
+      settings: { theme: 'dark' }
+    })
+    expect(
+      existsSync(path.join(target, 'profiles', 'local-default', 'account-session.json.enc'))
+    ).toBe(false)
+    expect(existsSync(path.join(target, 'Local State'))).toBe(false)
+    expect(readdirSync(target).sort()).toEqual([
+      'ash-dev-seed.json',
+      'orca-profile-index.json',
+      'profiles'
+    ])
+  })
+
+  it('refuses to overwrite a profile that already has state', async () => {
+    const source = createSourceProfile()
+    const target = mkdtempSync(path.join(tmpdir(), 'orca-seed-target-'))
+    roots.push(target)
+    writeFileSync(path.join(target, 'orca-profile-index.json'), '{"existing":true}')
+
+    await expect(
+      seedDevProfile({ sourceDir: source, targetDir: target, report: () => {} })
+    ).rejects.toThrow('already has state')
+    expect(readFileSync(path.join(target, 'orca-profile-index.json'), 'utf8')).toBe(
+      '{"existing":true}'
+    )
+  })
+})

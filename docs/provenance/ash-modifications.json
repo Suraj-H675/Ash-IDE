@@ -1,0 +1,970 @@
+{
+  "sourceCommit": "55697aec91390357540103f49991458f756b41cc",
+  "modifications": [
+    {
+      "path": "src/cli/agent-context.ts",
+      "sha256": "c22bb65dbf5af6eb6368b74101b68b200569e1f0b218adfbc9b0b8d2b7a435c0",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/args.ts",
+      "sha256": "ea4cdbaf03839c2731e7f0d229ab349ddea1cec2b154c02bbf171b400dd88349",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/cli-error.ts",
+      "sha256": "821449abd85f128e8c92383dfdda3dfac93450b84d549ce758c448db0f5a351c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/command-scoped-flag-help.ts",
+      "sha256": "930c8d65d2066ae33135573f4f7983b77425dd58bfeab816ecbe675234eb8f91",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/flag-help-text.ts",
+      "sha256": "4e912947ccfcd0e7082b6df4dec60d966642d490125ad91324d634ec799eb794",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/format-recovery.test.ts",
+      "sha256": "cde5925c9218978c2055827d59d1072807697721621a0e0ad71c3c8393a439f8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handler-group-manifest.ts",
+      "sha256": "8b12fc1ac976acaa818e22a4321ee9ccd97b391c1dd03120f0953ae9c7c5010d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handlers/account-list-format.ts",
+      "sha256": "10ad3db7ad534d7b82affec92663b93187d3c1e4a3bc7d9c0848f15a9dd35a3d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handlers/bundled-skill-install-command.ts",
+      "sha256": "50d3997dfc0d6537718aec1e28e40b61ffed768a6b130a9d1ed90f59d9bcec3f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handlers/core.ts",
+      "sha256": "6175f7391209ee2bea64279acd46ebeccb860db8673a2cd9dfec1f8f18cc98b2",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handlers/profile-state.test.ts",
+      "sha256": "1d73d3cd78c70ae1b3569249d97be99fa2f79b0c01b183f74fc9acbe92f4c9c1",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handlers/serve-restore.test.ts",
+      "sha256": "996db6a373b8d8f02d20c3a7277431c5a2f0a88b8cb938af19978da3e9cafd6c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handlers/serve-restore.ts",
+      "sha256": "83f954b0a3cd7b49d18bb554bcbff2b12b18439c1e6f35326edf217b37113b1e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handlers/serve-service.test.ts",
+      "sha256": "9e58d394e5742ca2bf3b7d164f7f68edaf142bfd2ed48c8261a6f224bbbb0f3e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handlers/serve-service.ts",
+      "sha256": "c8e80895c939b474e9a9124a16914f2a7cae3f66668bebe7a128d3fe5aa3a78b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handlers/terminal-daemon.ts",
+      "sha256": "72342aaad66be0588010c54817ac5ebd625cbffe374986b68f1cf3b61b875d2c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/help.ts",
+      "sha256": "d259ded168b01f609b8456760a253fe2fc0fb1b9d8bf9416c3c446d290665521",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/index.test.ts",
+      "sha256": "1d507853ddc3403006ed02e22840305249ff53412a55818e3abff760158ef9c5",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/root-help-text-primary.ts",
+      "sha256": "5d50336fd552459511b4677103b88a98a64d5d1b8935a3a44b5675a5f006808b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/root-help-text-secondary.ts",
+      "sha256": "a7c669ceb70fd674270732a7b5fdcce27ee8e2a0dad21551fe180d47082b031c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/launch-serve-preflight.test.ts",
+      "sha256": "d18a9eb79d338ad260370e807ee7336fa5820530068381e3b987e446bedc4d2e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/launch-serve-replaced-app-restart.test.ts",
+      "sha256": "270c91b3bc1b98cc869aa27997bee4af1aaa1ea7bd5145ffde14c14928f8e0b7",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/launch-serve-runtime.test.ts",
+      "sha256": "8e1b72f29a6519886971ffea5873f4a880e65888b4be7b91fa91fd2a04e8d20f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/launch-serve-supervise.test.ts",
+      "sha256": "952487f1053067194bf88f63a97c2a09a051ca6650a67eb0d5844304e3030b92",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/launch-user-data-path.test.ts",
+      "sha256": "433b06614db3e8e0d455207077d08e72889afa97c5f2efe4c708457d6df0d7db",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/launch-user-data-path.ts",
+      "sha256": "7fedd74b452cbd919e5226ce09d3f5ed44ac760dd00b960450023d6ab1f8f1cd",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/launch.test.ts",
+      "sha256": "5122b642d18c1aa8245b75db78833a371889c7f49bb84852378902a9002dbfbf",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/launch.ts",
+      "sha256": "234c921aa61639d16b00235040c6d73a56145be392cf1c28cde289c42fc49f90",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/offline-admission-commands.test.ts",
+      "sha256": "7533b3a0a88bfa399fe3880cf6cfbb2a0a3e7ed2008306710fbfa57fac0940e6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/open-local-orca.ts",
+      "sha256": "9c15f2cd8665313ee30806279df1582822597662c76364dea358018b8fbfd2df",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/orca-app-executable.ts",
+      "sha256": "19789d93cf1b520f3c835011cdb71bcf4247b492983e5e33f60dde5e8edf252f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/profile-state-recovery-launch.test.ts",
+      "sha256": "8f75792ebbedacb29e1c962c9b45740ee3742d6052e429513a101187c6240633",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/profile-state-recovery-launch.ts",
+      "sha256": "572125d0f929204300b2f8e34c130e740d0e6cd05c13d8c0c3332378ee04e27c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/runtime-access-denied.test.ts",
+      "sha256": "5dc2668c8e2983dc2fb67cf01d3b887f9dba6c6be8bb4d63aded431bc9b1ae7f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/runtime-access-denied.ts",
+      "sha256": "0da2431506ef80c7626dd97e4de105f80dd81ff8d03d864b7ef0f93966769a11",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/serve-app-launcher.ts",
+      "sha256": "23fe32e107eb65dd8bef180902c758009ce39acb9ecf0144800c0bdbc5af92d7",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/serve-bundle-park.test.ts",
+      "sha256": "7cd30c55f9ef83d648e50bed203fa57ead0b1941c1ed9b180274f573bab4c2c9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/serve-electron-preflight.test.ts",
+      "sha256": "b5544c811e46591475bc7b785236107b3bf64e9cb2fd1c89daba16e8b36d87cc",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/serve-electron-preflight.ts",
+      "sha256": "eb1c6e6db7f7ebc105fe02b2b60cd0ddbf0e6d06f44f89eff0bd56813d4b52c8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/serve-pairing-redaction.test.ts",
+      "sha256": "a8a46e8c4d20f82babd381d32a72cb2ee9468e8713a89957b3e34f38f1ea532e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/serve-pairing-redaction.ts",
+      "sha256": "6d8b0948440db2e5c260d2c6b4899e39a422b575846592d6fa532e98531fdd89",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/serve-service-unit.test.ts",
+      "sha256": "dde645c9ace287a46ebbcf1b0ad784ce5b3adbc25db2581b26b7005582306d7b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/serve-service-unit.ts",
+      "sha256": "a1c7d3c0c1457683d0fee058c084e614b25af6a402ac8143975c48322778736d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/serve-supervisor-relocation.test.ts",
+      "sha256": "b4edbfd2c37d07c5d9b8570513f17aa1559ac98370ff6e99568eb1cc353d8a62",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/serve-supervisor-relocation.ts",
+      "sha256": "2b96744a40fad23ff5d35ba547c751670b95db87f7b1ec7b4c50a1754880e112",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/transport.test.ts",
+      "sha256": "364ee68392f099f099386c3a063072b658213cae4180e57e9a1c1fd53dea8aa4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/runtime/transport.ts",
+      "sha256": "bf9bb661380fa55e65be53017b54abe7dc99af5b4ebf12ce354adea6ec43ea0a",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/specs/core.ts",
+      "sha256": "25de859aca265876ca460fdefdb95ad7fa5740f74c059d41edebc79148b2b8b9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/specs/index.ts",
+      "sha256": "000bd59c64b105e969aec4322a78361bd251b53357f9446f789aea549acc58db",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/specs/introspection.ts",
+      "sha256": "1a396ff40735faeac2089e2434c14e43ea90cdebfba1c4a4547dd44b20418da5",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/specs/serve.ts",
+      "sha256": "77253e8d42d821314006770c6cd9b4b0e68eb94312daf244ba403166145b0214",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/specs/terminal-daemon.ts",
+      "sha256": "16b7014edd23cf5512525a351d3ab9e75786f305c6db468db3b8bee27fb0fbe1",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/browser/cdp/screencast/browser-screencast-live-frame-allocation.test.ts",
+      "sha256": "9af3f383ea707086e925570e60d567fed735ecfb8e791e107abbfe24cd3470f1",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/cli/appimage-extracted-root.ts",
+      "sha256": "e08efa2f56a1a4382799a483072c40542c7e84dc52bc529c986eaccb0f30b8a6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/cli/bundled-cli-launcher-path.ts",
+      "sha256": "3f2aeeb60ef9e70bf877955beecff404fa1677fe44f437d8707777f8ca17699d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/cli/cli-command-inspection.ts",
+      "sha256": "996dd6b588221731824ca722c1890c1716c30c14c345853470b4e380b543caef",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/cli/cli-command-installation.ts",
+      "sha256": "3b10287a89592ac31fb2e5fef9dd3d3d589a7048a4f008cc370c4beef3eef7e7",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/cli/cli-dev-launcher.ts",
+      "sha256": "a523b2d7e462af7637d729a71de5b08607f92efd3280279bcc4319830cb68346",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/cli/cli-install-constants.ts",
+      "sha256": "4e703cfeaac4e0997f9fd7b7f917101d191d4dedd890e2e04b74b2876202b7d9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/cli/cli-install-location.ts",
+      "sha256": "24e5ce2a5dfb40db64bc17439bc87f4476403eef072a3d32c7c13d45d664f5a3",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/cli/cli-installer.ts",
+      "sha256": "3a16356f728f85798ed553fe8dd20599545c8ce9ec62a73c729b623e0ba196eb",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/cli/linux-terminal-orca-cli-shim.ts",
+      "sha256": "c549015f8ff1b37cb7cfae05bd10392fab13e4bb84b7aac0a53d14aee915ea35",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/cli/orca-cli-child-path.ts",
+      "sha256": "8e289a56cbed6ea575e63843865d4fbad63d0e81f1ee81cc19a0a419fcfb2a90",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/computer/macos-computer-use-permissions.ts",
+      "sha256": "998559e90478f7fdbd2adbacdc2d140e05ed80dd9feebd6a9cfa42d6b879d239",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/daemon/executable-host/macos/macos-daemon-bundle.ts",
+      "sha256": "9a2d239be1c35ddf864a91edf2c98ea09173673b8d2eea0ce9d7e12e9a4a789e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/daemon/executable-host/macos/macos-daemon-job-label.ts",
+      "sha256": "80f9c74614707a24944575124d44cf055be2de983bc6de0fc77a727bdd238a29",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/daemon/launch/daemon-out-of-process-launcher.ts",
+      "sha256": "2b03533a68f0094fbecd904c7944dd0b47e5fa9a36df38c0b2d6d5023ab425c6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/daemon/launch/daemon-protocol-cleanup.ts",
+      "sha256": "331f14d7a6221b164c2a41c76dc4da775cb2c95bffffdac5b199b189f298a234",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/daemon/launch/daemon-spawner.ts",
+      "sha256": "348973e4230cc1794fcbf4c4bb4c80f7a00e77a1d427b5903ccc5cc899e21faf",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/daemon/protocol/daemon-rpc-contract.ts",
+      "sha256": "89e17fdd3b88abfc41f0c8ff57c63b5a40621a44f62d9bdfc4d28d7a1ddf7212",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/daemon/providers/lifecycle/daemon-provider-state.ts",
+      "sha256": "3635d81f97e923a2fdc8e99a58fc4ad57718b3eb9d817d3c88752f4a4e007465",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/daemon/server/daemon-request-router.ts",
+      "sha256": "84d40b1c03cb7faa8d8d8f0a676ce8b8c716da083dc7ad90e344927daeaad03b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/index.ts",
+      "sha256": "119b2966c6be49e052d424e7ac28defb764e1f76b776f2e10727709dd0739510",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/notification-system-settings-link.ts",
+      "sha256": "835f151637b2269125ea7c6d459cf1f1406f5aa3d24195618fd5c0177528cd13",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/register-core-handlers/register-core-handlers.ts",
+      "sha256": "27eca47d09229b1dc9a7c17828b7ad0cb4571920bf1c6ff9d714a06a063d3f65",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/runtime.test.ts",
+      "sha256": "f2249c42dc46d12ceef28650c125585a6852c4302d39874342140506a05531c8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/runtime.ts",
+      "sha256": "1a54bb6f509c2f7e4c504717539980582dfe36128fdfec1e6913a181b02bfdac",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/local-builds/local-build-candidate.test.ts",
+      "sha256": "041354df0e1fb8795049c7d6d50afb3a2c3288328422562675abb877dca1f01d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/local-builds/local-build-candidate.ts",
+      "sha256": "7b5d8b7a60f4aed5f0bf28bfc987edfab627757b987eb8aab200b132636b088c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/macos-permissions/macos-tcc-prompt-watch.test.ts",
+      "sha256": "ccc3d14d7328e90d5c7e64a8aad1e85742f29596957fc6f000175cdbb63cd575",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/macos-permissions/macos-tcc-prompt-watch.ts",
+      "sha256": "1afbab219892083454ec100ef6a7417465a9bc6d597203beb48ce2c1d8c8e218",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/menu/app-menu-quit-item.ts",
+      "sha256": "00dd3a4974b223679c8fd93f4ab22f106bd32660a0a32461d83123e40741c975",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/menu/register-app-menu.ts",
+      "sha256": "e474ef007e98f6962ef6e91a9960d8b06d88508bde5b8b8a30fff9faed3a6520",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/persistence/loading-store/user-data-path.ts",
+      "sha256": "4b5c4e1270a6e0bffdcfc6535446c0d797f294d6a6ab4369e23f2e20085d5702",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/orca-runtime-get-status.ts",
+      "sha256": "26a4d61c86386b9d0846c948fe7874491a7e9d97bf67d009345f6dffa66ff9a8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/orca-runtime-tests/orca-runtime-terminal-persistence-status.test.ts",
+      "sha256": "4cad101ea9baf1433a66868fa6610c9eb69f38084f211c84edc134cec3fc3a81",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/dispatcher.ts",
+      "sha256": "cbdb288f0117f138a146a38743f186758b6e55abdf5e0ea6033ddc97089717f1",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/index.ts",
+      "sha256": "365962d732f8b569ded4d56ee57926b291eb84cf466e520259dc711f5a9d2665",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/terminal-daemon.ts",
+      "sha256": "18951e034ef696163e6df0f457c1768b3eee61ecf182eae308d181b25ca0aa9b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/rpc-caller-scope.test.ts",
+      "sha256": "d5be16afd4866cb66b31468d14394e9c24ff7fc41744b1751c40c0f81ad4b4b4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-state.ts",
+      "sha256": "741064e4db68437919b37a58ba91607d08b6bb5c6c05df0127b5b5bd44902069",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/unused-default-rpc-methods.test-fixture.ts",
+      "sha256": "83cf4e6f2a29320903d5b8df6f22c9741191c9f81430f1b7ede4b765f50ea70e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/server/serve-readiness.test.ts",
+      "sha256": "30ac14f16cfb6edc377e0ef47333a2e3ac38a97be6ad6b4c1558bf3c65b13dd4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/server/serve-readiness.ts",
+      "sha256": "8e39bb456a3bdd227223587d784b6aff5db71d4a32047217091043743667db90",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/configure-process.ts",
+      "sha256": "1180311b8308779e0927f15149df2f0d1036318a0300c9783993f86f2d9ea242",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/dev-education-suppression.ts",
+      "sha256": "dbc13dab4f1ac3f071a4648638f0222769ceaa180c87b7a6e72089a1edb24290",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-i18n-menu.ts",
+      "sha256": "8205e3b30c8f12843d402a0a68166e795f145ff33814e4d993fa950aba421885",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-observers.ts",
+      "sha256": "85bbc5c2c956786867696c9e13384e2834b5201e91156bc5d3ffeb4453f2e0a5",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-preflight.ts",
+      "sha256": "8b571800d7aceb7ccf82c4f62517c9e8987491515c9d5deee136fc28d827c57c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-quit.ts",
+      "sha256": "fc060e9f6ff03c2f97c8dc72073bed1f7e78507df44f0d5055551cd36d7cda2f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-ready-duplicate-pty-repair.test.ts",
+      "sha256": "7bee04edad836f63b6410f8949610924fa07b353c578988cb93d247163f3f2ad",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-ready-foundation.ts",
+      "sha256": "710a95f8b930a40c55a7c04f8c699103d7520f185b42a0223ebd9e1a926b1148",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-ready-runtime.ts",
+      "sha256": "66ec49d06fa0e64b6eebc459ef83b6ac6f63d94d23e7e726ad700d7dd8b0f24f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-runtime-launch-activation.test.ts",
+      "sha256": "f570de8049bee87708413dd91105491727d1c48e1045bd5e40e49fb898c008a2",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-runtime-launch.ts",
+      "sha256": "389ef3cf20414f02b8d8baabae8d8bf35f3e6dd70a9ec8cee135c649848db88b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-runtime-service.ts",
+      "sha256": "a6d00a73cc04fdc85a03c2b14e0a794c8e6aaa4a35494caab2474676d5f6981e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-serve.ts",
+      "sha256": "b08fd880567a199e346a870ab5d5592f0c39b202ec96d120d1d3f2af24601c37",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-state.ts",
+      "sha256": "c7dfb57dd23929bfae06f2ebd3a3babcf657b105bc7df7cd993685ea9bad8a09",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-window-actions.ts",
+      "sha256": "f3103a8717ee0bfb6bc23c1269d1c824347914b4dc7de426c25490f3b76b7013",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-window-controller.ts",
+      "sha256": "ec67dff4464f8c233e70d0da9c7a46b61d6bfec536248145f570699526e57417",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-window-core-services.ts",
+      "sha256": "564e93886738851e3a24c72141d10565b1d98946aaa8be9d0a368963344257ac",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-window-service-readiness.ts",
+      "sha256": "c209c64720004ff83ed5b78f63cc3443b4e9e6f7b687087cbd0de5b1298e04e9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/plugin-install-link-state.test.ts",
+      "sha256": "72b73e5954917ab5fad7de5b4a94382e5831186ee95909fff54a0740cd9444aa",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/privileged-custom-schemes.ts",
+      "sha256": "e41922359425c81b018435990322692c88429542ef8506b3c4f7e9da80ca854b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/serve-cli-registration.ts",
+      "sha256": "f2190fc9763b3d31025056170e7b782e80b122b3a373326c4c8c5049db8e2e03",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/serve-options.ts",
+      "sha256": "b693c3aad9d03a4eda6b585b5066a1585b312c4d62e4a0a3897282a8a5ad7113",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/single-instance-lock.ts",
+      "sha256": "e559351cf98c7f48c3c59b294ca38ceb87c53a82594d323a45a366c4b5e52883",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/window-all-closed-quit-policy.ts",
+      "sha256": "d74ac468fea57a37185843ce1fa350ab9ec97b458df678516c933e341c2d396f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/tray/system-tray.test.ts",
+      "sha256": "bfa3cfcc400202342dd6b5dc503d1464fb867bf63f28ef9d3dad16412bb12ee8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/tray/system-tray.ts",
+      "sha256": "6005baa36eb58eb87c449f52c1bb48886315475f6146b0b80a5025c7385b2448",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/electron-updater-mac-staging-contract.test.ts",
+      "sha256": "891e1e56252c93c78f57624b1e6f2a99b20eab5292466c726c6d9c9c54816a05",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/lifecycle/serve-supervisor-install-park.test.ts",
+      "sha256": "605f0776f32aa1e2c29e045c481296be5005915a0466adb5f94d460801c94920",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/lifecycle/updater-setup.ts",
+      "sha256": "49de65f4099c0e2e507fdfecc6bbad7230feb66da62329695f73b9438ff9eb89",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/lifecycle/windows-update-install-directory.test.ts",
+      "sha256": "3cc7dd3e59d923c0b6fffaa86ee8c575dfc2140efb715de25db1c889f33e62d0",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/linux-package/linux-package-install-diagnostic.test.ts",
+      "sha256": "0fe803c73a0f7140238a1f1f3cfe6b0ee0a572d378cf14dd1c6a5229cb8b509c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/mac-install/updater.mac-install.test.ts",
+      "sha256": "f67b4488bf55730620e71c336c8fb6d877e169b443960c7ac56c5c4cc0f720de",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/releases/updater-prerelease-feed-readiness.test.ts",
+      "sha256": "64074407b6907de72cb9c09077a59f7b3d9d3a578914533bc13873b36d8d8b9e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/releases/updater-prerelease-feed.test.ts",
+      "sha256": "db3af80546987992b739f4d7a2516dd77a2be9975cb7d7cb11ddd5d244754b1d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/releases/updater-prerelease-feed.ts",
+      "sha256": "eec4a3c42b53162a68e9c1835a922bce25f9713520e5dc74da60f79e53135c3d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/releases/updater-release-build-cache.test.ts",
+      "sha256": "b096eb5559af1601e98679f94614d5b3541ffb3df18d88a45fc898db3474cae6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/releases/updater-release-builds.test.ts",
+      "sha256": "54a6072a19b757bb403e6457130d61790a36fabadc101d20ed287fe15ba62b31",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/releases/updater-release-readiness.ts",
+      "sha256": "5264679c7cadd443b3e00456dd39f22a36fd8dd4ad69c8d1dc1b297b18d11228",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/testing/updater-test-harness.ts",
+      "sha256": "054ebc131de19ed4d05c05dcee3ed60aacdcc084b036275624e8c61d3eaa4859",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/updater-events.test.ts",
+      "sha256": "cf77e20916332d18abc72a7f71193963b1344d5320f1f37f13d6f0ab466f221d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/updater.build-channel-selection.test.ts",
+      "sha256": "1d9f828814c8d43910020fbc2ee96f1928c7027c0bc45cb1b2f5f586dd41103d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/updater.check-failure.test.ts",
+      "sha256": "4328974e90caa081ca33b9ec93356fc841c087e4dbed087f6122fa1e1e4ae449",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/updater.check-preflight.test.ts",
+      "sha256": "bdc80fd77f5e853bada20c315a76d2d9a457964b434431082bc7f2f68ea0d3a8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/updater.feed-attempt-lifetime.test.ts",
+      "sha256": "68aa3b6601279665213855fae2c773d382b8b81b47862ad00c33fec88e57e21c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/updater.install-failure-cause.test.ts",
+      "sha256": "f6c543b0cbc75c505a5e3861c4858bb5e7483977ccbb483d48bba651817565eb",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/updater.linux-root-package-install.test.ts",
+      "sha256": "22ab6fff02b0ccd8910f4b52fd20b409aacf118d21a257ca6ae3c003ad938480",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/updater.prerelease-fallback.test.ts",
+      "sha256": "e05693accbb1b462b257455cdebe807886f5fc7fec2440dcdce0a05c8a9423bf",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/updater.publishing-window-feed.test.ts",
+      "sha256": "678177af8676df9f3e60ad887d271fec42e79ed0a0ec32e6c2124e36c65c8acb",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/updater.update-delay.test.ts",
+      "sha256": "bc7b44972964232d28a4dc699689185c8691a58483ee933311ae7e5ceb48dcfc",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/updater.wsl-move-install-hold-driver.test.ts",
+      "sha256": "0cbad45e83e2ef9a1af03a21ed546a0b9c63cd29519a5f3b9c9375415bebe3f7",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/window/attach-main-window-services.test.ts",
+      "sha256": "7870fd64ea5fe4e69c87923aa0d5b8bbd192ad38df6dd233325e6fa1915c77ce",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/window/attach-main-window-services.ts",
+      "sha256": "44730c86d3d51791346bacda8fdc4c0ed8552bd31ba4901110ec1f0c2bcf0aa6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/window/desktop-integration/app-icon.test.ts",
+      "sha256": "cb3c426ed9cd6fe04d3d3563b7fc2d007bd372921a5ea5bc5a95af75f28b9907",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/window/desktop-integration/app-icon.ts",
+      "sha256": "91b3a21c76e936ee9c221abf27e5cabfd62837186abd0e5b41b116a4858092ba",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/window/desktop-integration/macos-press-and-hold-default.test.ts",
+      "sha256": "6e6fb77a96852f54c9aa58fd7b718dcc9ac8c8785f371a29ad3b610e75e9cbe9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/window/desktop-integration/macos-press-and-hold-default.ts",
+      "sha256": "f5a1c5491d6c53110ac66ecb0da45a73d2465a1b2b20094bf8114adb8f9ba06f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/settings/appearance/AppearancePane.tsx",
+      "sha256": "39a2f468b3f625cd4e9a9885fe7b4b35711d9d9045753d7569317a2ff091008c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/settings/appearance/appearance-search.ts",
+      "sha256": "ec844236564c5f1affabbff86a9822723ddb6da450def51a2fcb674cbf315ed8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/app-icon.ts",
+      "sha256": "c281e4b97d06626102d9fe90467354174ccf9b3a8b4cc3ade7f02c5158578fb6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/local-build-compatibility-contract.json",
+      "sha256": "c06fa8dbb58d41d1f507a2f6af8579c0e6a5596165ef8c00e5e09fd822c270ca",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/local-build-compatibility-contract.ts",
+      "sha256": "0d17240f1e68caf127e03bc90bdc68d1c7a782f08836ec165ba61814bce34275",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/local-build-compatibility.test.ts",
+      "sha256": "f395c591f2b53624dc03fe1429d5313970723430c4e7ad91a8db418150650fa8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/local-build-compatibility.ts",
+      "sha256": "fd4872f925c5024208577af04d814a42ebfa6183310a58e0cbababa016076812",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/release-channel.test.ts",
+      "sha256": "26da2450416da7e6f7566c3d71dd7460261e32a19a0585d4d6dcbce52126e8a5",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/release-channel.ts",
+      "sha256": "72864bf208e6d16dc80a313642b4a572a26ebb1862caa8c3db1a819ae78f197f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/rpc-contract/terminal-daemon-params.ts",
+      "sha256": "2dbaed47c1d60e241170d4d75863635280cf38f0002051594f0b9834323fae38",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/serve-bundle-coordination.ts",
+      "sha256": "21f6f8be48aed3155dff8fdf740a358b7443e7c2da37328141f345cea9efc1c9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/electron-builder.config.cjs",
+      "sha256": "ac2abe41c56321cdd92cba3f289e798808d6f25cec54b877d2d9c9d2fe096d01",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/ci/sharding/ci-shard-timings.json",
+      "sha256": "dbfdf73d04f34a52c0c844f8b14eb4d76cf3459a0b7a9df2de3d9552f95b376c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/cli-build/verify-cli-bin.mjs",
+      "sha256": "1a568bdad3bbb522ad0b6d9570de740be792f2e99279dc7795e8a1a63c3291c6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/cli-build/verify-cli-bin.test.mjs",
+      "sha256": "95f3edff728fb46f861c477cc210c849ee6789ea03e9c49e50ad951af98423aa",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/desktop-distribution/linux/package-linux-formats.test.mjs",
+      "sha256": "8fea7f6a1a298df8f6ba3fcf32ca04a34d0057626532487eed0d8b7f6c7ad89f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/desktop-distribution/runtime-verification/electron-builder-config.test.mjs",
+      "sha256": "abeaa2ec40e33ffad357d6969d58e048de928d750484f5d6201c48c64ce25560",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/desktop-distribution/runtime-verification/run-linux-packaged-node-pty-floor-smoke.mjs",
+      "sha256": "1a34e3d21359bd1b2997900b5e36d7a92f1cf04dfde615f0a3c156071470c6c1",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/desktop-distribution/runtime-verification/smoke-packaged-cli.mjs",
+      "sha256": "7add8a95c927563174335f0018991ed060e7f8900f34f695484be841faa00d9d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/desktop-distribution/runtime-verification/smoke-packaged-hang-watchdog-worker.mjs",
+      "sha256": "4891049460cae136be7b15429cd09325ce63123e92b24888bb2001197a961843",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/development/electron-bundle-cache/dev-electron-bundle-identity.mjs",
+      "sha256": "657df1e3e98501e344960b935fd57061b9dd36a6ebfc4f76526e0c7f9db5da48",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/development/instance-isolation/dev-instance-isolation.mjs",
+      "sha256": "a0d85875460ace3d56341caae34134dd59e7bbc0df9397fd2038336697791522",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/development/launch/dev-cli-terminal-wrapper.mjs",
+      "sha256": "05ffa5c9b16484cb09c089fe52e98f38ff1d33d8e098496dbce2c5a3122a7603",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/development/launch/run-electron-vite-dev.mjs",
+      "sha256": "f13d518d7d081767f069d1d542edf1547e5c92b4c368e852466b8618dd857321",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/development/profile-seeding/dev-fresh-profile.mjs",
+      "sha256": "8224225c4788446d433bdf9783f2e89349c983c01000012e5b09a78063f28eb4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/development/profile-seeding/dev-profile-seed.mjs",
+      "sha256": "4b35570700fcfd8d428196ce0f1782c04c546b0d8c6ed600494499de3efa0055",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/development/profile-seeding/dev-profile-seed.test.mjs",
+      "sha256": "a8bf46ca4d6643cf2078aef58187a28a1501cd6629cac8b0cbce5ba765743c32",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/development/setup/install-dev-cli.mjs",
+      "sha256": "b06a96b0e05a50f8e3dffa2f85cc8113b14c4da85e1dcef7350b15b14f324003",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/macos/terminal-host-bundle/macos-terminal-host-bundle.cjs",
+      "sha256": "4c290b43f3ee5c094a99ebd8c100d0330f884d3d3d8a02f991021e88db8e5744",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/native-build/macos/build-computer-macos.mjs",
+      "sha256": "9f9bd0a85f4d3844d68c95bea0df6e10a21fa6e94c4c0d7f0c566b7507c5dc8e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/native-build/macos/build-notification-status-macos.mjs",
+      "sha256": "cd3a579e6e5e926e0d846594cd083aab874f2144bc0a7caeb46dd0a8ec51bcd1",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/native-build/windows/build-windows-cli-launcher.mjs",
+      "sha256": "eaa1d55055d1e2220221e3319d1e4ec303cbd727dbc8fc39292a66a83931b341",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/native-build/windows/build-windows-cli-launcher.test.mjs",
+      "sha256": "f95adc662eb250354c3ee49b7b4ecb54b3a60e94316598ce851b2c3c0b3704b6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/orcad-distribution/qualification/orcad-terminal-smoke-change-scope.mjs",
+      "sha256": "acc81e26ac80157fb11a1585f3ef4467fa61eaac85aefb8289561fd4ff03196a",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/runtime-verification/daemon-lifecycle/run-headless-serve-shutdown-docker.mjs",
+      "sha256": "ecb21e1ce51dd39336563f4d059bcd547bead5d32dcca9c7093d66ac41b13bfa",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/runtime-verification/desktop-transport/run-linux-cli-launch-contract-docker.mjs",
+      "sha256": "1ebea9d5caf278801445c010b2c0287fb79cc6670f28362589913431a23fc3fd",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "resources/linux/packaging/after-install.sh",
+      "sha256": "bf8910096f2f8aa611c6a6276d4dabc0df2cc9f0408b561366c605e18c9f13fb",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "resources/linux/packaging/after-remove.sh",
+      "sha256": "baa67973419494f22a96985e1a12f7b5bbb9f10dbad071c6d6f1791a8fc065fb",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "native/windows-cli-launcher/Cargo.lock",
+      "sha256": "4a48b2a88c056b706bcd770ca22d8445c12fde61ecd363806555dff20f2c2a5c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "native/windows-cli-launcher/Cargo.toml",
+      "sha256": "1de631b384c354bd0b7de037b3a0118aa4c53d0df2e335f603772b3494d61ba4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "native/windows-cli-launcher/build.rs",
+      "sha256": "02db8e3b1bd21477b28419dd0a4120ab14907aa021c4f0510dbb02c9f87539b9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "native/windows-cli-launcher/src/main.rs",
+      "sha256": "f88ea5085db449609abf8625f96f147282f9fb66d155bb942b309887e3236973",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "package.json",
+      "sha256": "ce97f442a5761e6d3e97f52ce33e024a16a6cfc267016ef2ce7adb6cda990293",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    }
+  ]
+}
