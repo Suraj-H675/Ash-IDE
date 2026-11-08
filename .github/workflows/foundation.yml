@@ -54,6 +54,8 @@ jobs:
             src/main/codex-accounts/ash-codex-account-selection-recovery.test.ts \
             src/main/agent-hooks/ash-shared-hook-disable.test.ts \
             src/main/agent-hooks/ash-provider-hook-callsite-gates.test.ts \
+            src/main/agent-hooks/ownership/ash-hook-ownership-plan.test.ts \
+            src/main/agent-hooks/ownership/ash-hook-ownership-store.test.ts \
             src/main/orcad/ash-managed-provider-hook-startup.test.ts \
             src/main/providers/accounts/agent-auth-restart-preservation.test.ts \
             src/main/startup/ash-windows-installer-ownership.test.ts \
