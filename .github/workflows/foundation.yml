@@ -58,6 +58,7 @@ jobs:
             src/main/agent-hooks/ownership/ash-hook-ownership-store.test.ts \
             src/main/agent-hooks/ownership/ash-provider-json-guard.test.ts \
             src/main/agent-hooks/ownership/ash-provider-hook-transaction.test.ts \
+            src/main/agent-hooks/ownership/ash-provider-hook-removal.test.ts \
             src/main/orcad/ash-managed-provider-hook-startup.test.ts \
             src/main/providers/accounts/agent-auth-restart-preservation.test.ts \
             src/main/startup/ash-windows-installer-ownership.test.ts \
