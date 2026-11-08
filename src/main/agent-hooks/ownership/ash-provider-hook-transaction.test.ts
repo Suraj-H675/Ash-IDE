@@ -80,7 +80,10 @@ function publishFixtureReceipt(plan: AshHookPlan, baseline: string | null = oldR
     schemaVersion: 1,
     owner: 'ash-ide',
     provider: 'claude',
+    action: 'install',
     id: plan.claim.id,
+    operationId: plan.claim.id,
+    definitionSha256: plan.claim.definitionSha256,
     configPath: providerConfig,
     beforeSha256: ashProviderFileSha256(baseline),
     afterSha256: ashProviderFileSha256(nextRaw)
