@@ -141,13 +141,14 @@ export async function resolveAgentTerminalCreateOptions(
   return runtime ? { ...qoderLaunch, launchRuntime: runtime } : qoderLaunch
 }
 
-/** Desktop-selected account env overrides the launch plan; explicit caller env/accountEnv still wins. */
+/** Desktop-selected account env overrides the launch plan; explicit caller env/accountEnv still wins.
+ * Never silently discard a caller-pinned home when the host has no selected account. */
 export function withHostAccountLaunchEnv(
   requested: Pick<TerminalCreateOptions, 'env' | 'accountEnv'>,
   launch: TerminalCreateOptions,
   accountEnv: Readonly<Record<string, string>>
 ): TerminalCreateOptions {
-  if (Object.keys(accountEnv).length === 0) {
+  if (Object.keys(accountEnv).length === 0 && !requested.accountEnv) {
     return launch
   }
   return {

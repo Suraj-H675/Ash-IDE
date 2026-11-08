@@ -472,6 +472,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/terminal/launch/runtime-agent-terminal-startup.ts",
+      "sha256": "381c94536672e8fb134d0ca02de193ed0e28855800fe93a4df3654acf99e8637",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/server/serve-readiness.test.ts",
       "sha256": "30ac14f16cfb6edc377e0ef47333a2e3ac38a97be6ad6b4c1558bf3c65b13dd4",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."

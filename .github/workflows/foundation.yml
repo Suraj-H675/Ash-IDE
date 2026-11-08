@@ -49,6 +49,8 @@ jobs:
             src/shared/agent-launch/catalog/ash-provider-isolation.test.ts \
             src/renderer/src/lib/quick-workspace-agent-selection.ash.test.ts \
             src/main/runtime/terminal/launch/ash-agent-teams-launch-disabled.test.ts \
+            src/main/runtime/terminal/launch/ash-agent-account-env-snapshot.test.ts \
+            src/main/codex/configuration/homes/codex-pane-launch-account.test.ts \
             src/main/runtime/rpc/methods/terminal/ash-agent-teams-rpc-disabled.test.ts
       - name: Build the Ash CLI
         run: ORCA_CLI_BUILD_COMPILER=tsrs node config/scripts/cli-build/build-cli.mjs
