@@ -94,6 +94,52 @@ describe.skipIf(process.platform === 'win32')(
       expect(readFileSync(actual, 'utf8')).toBe(original)
     })
 
+    it('rejects a symlink in an ancestor directory before reading or publishing settings', async () => {
+      const foreignHome = join(root, 'foreign-home')
+      const nested = join(foreignHome, 'nested')
+      mkdirSync(foreignHome, { mode: 0o700 })
+      mkdirSync(nested, { mode: 0o700 })
+      const foreignSettings = join(nested, 'settings.json')
+      writeFileSync(foreignSettings, original, { mode: 0o600 })
+      symlinkSync(foreignHome, join(root, 'provider-alias'), 'dir')
+      const aliasedSettings = join(root, 'provider-alias', 'nested', 'settings.json')
+
+      await expect(readAshClaudeSettingsSnapshot(aliasedSettings)).rejects.toThrow(
+        'symlinked ancestor'
+      )
+      await expect(
+        swapAshClaudeSettingsIfUnchanged({
+          configPath: aliasedSettings,
+          operationId: id,
+          expectedRaw: original,
+          nextRaw: next
+        })
+      ).rejects.toThrow('symlinked ancestor')
+      expect(readFileSync(foreignSettings, 'utf8')).toBe(original)
+      expect(existsSync(`${foreignSettings}.ash-ide-write.lock`)).toBe(false)
+    })
+
+    it('rejects ancestor symlinks before interrupted-swap recovery', async () => {
+      const foreignHome = join(root, 'foreign-home')
+      const nested = join(foreignHome, 'nested')
+      mkdirSync(foreignHome, { mode: 0o700 })
+      mkdirSync(nested, { mode: 0o700 })
+      const foreignSettings = join(nested, 'settings.json')
+      writeFileSync(foreignSettings, original, { mode: 0o600 })
+      symlinkSync(foreignHome, join(root, 'provider-alias'), 'dir')
+      const aliasedSettings = join(root, 'provider-alias', 'nested', 'settings.json')
+
+      await expect(
+        recoverAshClaudeSettingsSwap({
+          configPath: aliasedSettings,
+          operationId: id,
+          beforeSha256: ashProviderFileSha256(original),
+          afterSha256: ashProviderFileSha256(next)!
+        })
+      ).rejects.toThrow('symlinked ancestor')
+      expect(readFileSync(foreignSettings, 'utf8')).toBe(original)
+    })
+
     it('rejects malformed provider JSON and an unsupported target outside settings.json', async () => {
       writeFileSync(configPath, '{ invalid')
       await expect(swap('{ invalid')).rejects.toThrow('not valid JSON configuration')

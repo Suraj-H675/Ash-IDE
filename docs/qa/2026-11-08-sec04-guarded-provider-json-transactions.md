@@ -19,9 +19,12 @@ Recovery requires an existing, validated private receipt and the matching Ash cl
 
 The new tests create **only disposable** provider profiles beneath `/tmp` and simulate interrupted publication by constructing its exact persisted file/receipt state. They verify preserving unrelated Orca-like hooks, later foreign edits, stale plan snapshots, lock contention, symlink/hardlink refusal, private receipt permissions, initially missing settings, and rollback/confirmation of prepared claims. The prior ownership-ledger tests remain in the CI suite.
 
+Additional SEC-04 alias-path regressions establish that validating only the *immediate* settings parent is insufficient: a symlink in an earlier path component could silently redirect reads, writes, and recovery to another private provider home. The guard now checks every ancestor directory with `lstat` before either operation. Both new tests failed before the correction and passed after it; they never used a real provider profile.
+
 ## Limits and open safety gates
 
 - These tests reproduce crash **filesystem states**; they do **not** demonstrate a real OS process being killed mid-write, automatically reclaim a stale lock after `SIGKILL`, or prove interoperation with an external provider that modifies files independently. The Ash lock is advisory; an uncooperative writer that changes an already-open inode can still race a swap. Node's ordinary `rename` does not provide no-replace semantics for the held-file destination, so a foreign creation in that narrow check-to-rename window also requires additional platform-level protection before live use. Full lossless cross-application concurrency is **not yet accepted**.
+- The ancestor checks are **preflight validation**, not an atomic open-relative-to-a-trusted-directory protocol. Symlink swaps after validation are still possible in an adversarial concurrent filesystem; do not mistake the new regression coverage for protection against that race.
 - The current guarded transaction supports **install/recovery only**, not a fully journaled hook removal transaction or a user-approval UI. The existing pure removal planner is not a provider-file removal implementation.
 - No existing account files were accessed. The global `canAshWriteProviderGlobalHooks()` policy still returns `false`. Real Claude/Codex provider acceptance, recovery after actual process termination, Windows packaging, and a complete reversible owned-hook uninstall remain future milestones.
 

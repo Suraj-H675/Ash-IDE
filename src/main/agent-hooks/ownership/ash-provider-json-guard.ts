@@ -48,12 +48,27 @@ function validateTarget(configPath: string): void {
 
 async function validateParent(configPath: string): Promise<void> {
   validateTarget(configPath)
-  const parent = await lstat(dirname(configPath))
+  const parentPath = dirname(configPath)
+  const parent = await lstat(parentPath)
   if (!parent.isDirectory() || parent.isSymbolicLink()) {
     throw new AshHookOwnershipConflict('provider settings parent is not a real directory')
   }
   if ((parent.mode & 0o002) !== 0 || (process.getuid && parent.uid !== process.getuid())) {
     throw new AshHookOwnershipConflict('provider settings parent is not user-owned and protected')
+  }
+  // lstat on the immediate parent alone misses aliases in intermediate paths.
+  // Never follow a symlink through an ancestor to write another provider home.
+  let ancestor = dirname(parentPath)
+  while (ancestor !== parentPath) {
+    const entry = await lstat(ancestor)
+    if (!entry.isDirectory() || entry.isSymbolicLink()) {
+      throw new AshHookOwnershipConflict('provider settings path contains a symlinked ancestor')
+    }
+    const next = dirname(ancestor)
+    if (next === ancestor) {
+      break
+    }
+    ancestor = next
   }
 }
 
