@@ -61,6 +61,7 @@ jobs:
             src/main/agent-hooks/ownership/ash-provider-hook-removal.test.ts \
             src/main/agent-hooks/ownership/ash-provider-hook-removal-negative.test.ts \
             src/main/agent-hooks/ownership/ash-provider-real-crash-recovery.test.ts \
+            src/main/agent-hooks/session/ash-claude-session-settings.test.ts \
             src/main/orcad/ash-managed-provider-hook-startup.test.ts \
             src/main/providers/accounts/agent-auth-restart-preservation.test.ts \
             src/main/startup/ash-windows-installer-ownership.test.ts \
