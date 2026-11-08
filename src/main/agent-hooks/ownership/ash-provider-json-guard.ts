@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { constants } from 'node:fs'
 import { dirname } from 'node:path'
-import { lstat, link, open, rename, rm, unlink } from 'node:fs/promises'
+import { lstat, link, open, rm, unlink } from 'node:fs/promises'
 import { isPlainObject, parseHooksJsonText } from '../hooks-json-read'
 import { AshHookOwnershipConflict } from './ash-hook-ownership-plan'
 import { validateAshProviderParent, validateAshProviderTarget } from './ash-provider-path-policy'
@@ -158,7 +158,12 @@ export async function swapAshClaudeSettingsIfUnchanged(args: {
   nextRaw: string
   /** Test-only phase handshake for terminating the real guarded writer process. */
   testBoundary?: (
-    phase: 'stage-synced' | 'original-held' | 'replacement-linked' | 'held-cleaned'
+    phase:
+      | 'stage-synced'
+      | 'backup-linked'
+      | 'original-held'
+      | 'replacement-linked'
+      | 'held-cleaned'
   ) => Promise<void>
 }): Promise<void> {
   const { configPath, operationId } = args
@@ -186,6 +191,7 @@ export async function swapAshClaudeSettingsIfUnchanged(args: {
     // Unlike an untracked random temp name, its orphan can be verified safely.
     const tempPath = stagedPathForAshProviderSwap(configPath, operationId)
     let ownStage: { dev: bigint; ino: bigint } | null = null
+    let backupLinked = false
     let moved = false
     let published = false
     try {
@@ -200,17 +206,34 @@ export async function swapAshClaudeSettingsIfUnchanged(args: {
       }
       await args.testBoundary?.('stage-synced')
       if (before) {
-        await rename(configPath, heldPath)
-        moved = true
-        const held = await readAshProviderExisting(heldPath)
+        // link() fails with EEXIST; rename() could overwrite a recovery file
+        // another process created after our initial existence check.
+        await link(configPath, heldPath)
+        backupLinked = true
+        // Make the no-overwrite recovery name durable BEFORE removing the
+        // original provider pathname; fsyncing only afterward is insufficient.
+        await syncAshProviderParent(configPath)
+        await args.testBoundary?.('backup-linked')
+        const held = await readAshProviderExisting(heldPath, true)
+        const current = await readAshProviderExisting(configPath, true)
         if (
           !held ||
+          !current ||
           held.raw !== before.raw ||
           held.ino !== before.ino ||
-          held.dev !== before.dev
+          held.dev !== before.dev ||
+          held.nlink !== 2n ||
+          current.ino !== before.ino ||
+          current.dev !== before.dev ||
+          current.raw !== before.raw ||
+          current.nlink !== 2n
         ) {
-          throw new AshHookOwnershipConflict('provider settings were changed during guarded swap')
+          throw new AshHookOwnershipConflict('provider settings changed during no-overwrite backup')
         }
+        // This unlink still has an external-writer race: the two checks above
+        // are not an atomic compare/unlink. Full SEC-04 remains gated.
+        await unlink(configPath)
+        moved = true
         await syncAshProviderParent(configPath)
         await args.testBoundary?.('original-held')
       }
@@ -227,6 +250,29 @@ export async function swapAshClaudeSettingsIfUnchanged(args: {
     } catch (error) {
       if (moved && !published) {
         await restoreAshHeldProviderFile(configPath, heldPath)
+      } else if (backupLinked && !moved) {
+        // The original may still share the backup inode. Only remove Ash's
+        // own backup when both paths still match the exact expected content.
+        const held = await readAshProviderExisting(heldPath, true)
+        const current = await readAshProviderExisting(configPath, true)
+        if (
+          held &&
+          current &&
+          before &&
+          held.nlink === 2n &&
+          current.nlink === 2n &&
+          held.ino === before.ino &&
+          held.dev === before.dev &&
+          current.ino === before.ino &&
+          current.dev === before.dev &&
+          held.raw === before.raw &&
+          current.raw === before.raw
+        ) {
+          await unlink(heldPath)
+          await syncAshProviderParent(configPath)
+        } else {
+          throw new AshHookOwnershipConflict('provider backup changed before cleanup')
+        }
       }
       throw error
     } finally {

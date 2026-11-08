@@ -19,7 +19,12 @@ import {
 } from './ash-provider-hook-transaction'
 import { recoverOwnedAshClaudeHookRemoval } from './ash-provider-hook-removal'
 
-type CrashPhase = 'stage-synced' | 'original-held' | 'replacement-linked' | 'held-cleaned'
+type CrashPhase =
+  | 'stage-synced'
+  | 'backup-linked'
+  | 'original-held'
+  | 'replacement-linked'
+  | 'held-cleaned'
 type ChildCrashArgs = {
   action: 'install' | 'remove'
   ashUserData: string
@@ -170,7 +175,13 @@ async function assertNoGuardResidue(operationId: string, claimId: string): Promi
 describe.skipIf(process.platform === 'win32')(
   'real SIGKILL of actual guarded Claude JSON transaction in a disposable profile',
   () => {
-    it.each<CrashPhase>(['stage-synced', 'original-held', 'replacement-linked', 'held-cleaned'])(
+    it.each<CrashPhase>([
+      'stage-synced',
+      'backup-linked',
+      'original-held',
+      'replacement-linked',
+      'held-cleaned'
+    ])(
       'recovers actual install after SIGKILL at %s',
       async (phase) => {
         const plan = await preparedPlan()
@@ -200,7 +211,13 @@ describe.skipIf(process.platform === 'win32')(
       20000
     )
 
-    it.each<CrashPhase>(['stage-synced', 'original-held', 'replacement-linked', 'held-cleaned'])(
+    it.each<CrashPhase>([
+      'stage-synced',
+      'backup-linked',
+      'original-held',
+      'replacement-linked',
+      'held-cleaned'
+    ])(
       'recovers actual removal after SIGKILL at %s',
       async (phase) => {
         const plan = await installedHook()

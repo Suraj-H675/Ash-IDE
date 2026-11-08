@@ -45,7 +45,12 @@ export async function installStagedAshClaudeHookInFile(args: {
   expectedRaw: string | null
   /** Test-only handshake for a real SIGKILL while the guarded writer is active. */
   testBoundary?: (
-    phase: 'stage-synced' | 'original-held' | 'replacement-linked' | 'held-cleaned'
+    phase:
+      | 'stage-synced'
+      | 'backup-linked'
+      | 'original-held'
+      | 'replacement-linked'
+      | 'held-cleaned'
   ) => Promise<void>
 }): Promise<{ id: string; ledgerRevision: string | null }> {
   const snapshot = await readAshHookOwnershipLedger(args.ashUserData)

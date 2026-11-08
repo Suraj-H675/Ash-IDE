@@ -47,10 +47,30 @@ export async function recoverAshClaudeSettingsSwap(args: {
       await unlink(stagePath)
       await syncAshProviderParent(configPath)
     }
-    const held = await readAshProviderExisting(heldPath)
-    const current = await readAshProviderExisting(configPath)
+    const held = await readAshProviderExisting(heldPath, true)
+    const current = await readAshProviderExisting(configPath, true)
     if (held && ashProviderFileSha256(held.raw) !== args.beforeSha256) {
       throw new AshHookOwnershipConflict('held provider configuration has changed')
+    }
+    if (held?.nlink === 2n) {
+      // A crash after link(original, held) but before unlink(original)
+      // leaves two names for the same untouched inode. Verify BOTH links
+      // before discarding only Ash's recoverable backup, never the original.
+      if (
+        !current ||
+        current.nlink !== 2n ||
+        current.ino !== held.ino ||
+        current.dev !== held.dev ||
+        current.raw !== held.raw
+      ) {
+        throw new AshHookOwnershipConflict('held backup has an unexpected linked peer')
+      }
+      await unlink(heldPath)
+      await syncAshProviderParent(configPath)
+      return 'not-published'
+    }
+    if (current?.nlink === 2n) {
+      throw new AshHookOwnershipConflict('provider settings linked to an unknown inode')
     }
     if (held && !current) {
       await restoreAshHeldProviderFile(configPath, heldPath)

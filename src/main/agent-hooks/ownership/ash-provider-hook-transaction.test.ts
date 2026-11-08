@@ -173,6 +173,37 @@ describe.skipIf(process.platform === 'win32')(
       expect((await readAshHookOwnershipLedger(userData)).ledger.claims).toEqual([])
     })
 
+    it('preserves a foreign backup-file collision and keeps its own recovery receipt', async () => {
+      const plan = await stagedPlan()
+      const held = heldPathForAshProviderSwap(providerConfig, plan.claim.id)
+      const foreignHeld = '{"other-app":"independent recovery data"}\n'
+      await expect(
+        installStagedAshClaudeHookInFile({
+          ashUserData: userData,
+          plan,
+          expectedRaw: oldRaw,
+          testBoundary: async (phase) => {
+            if (phase === 'stage-synced') {
+              writeFileSync(held, foreignHeld, { flag: 'wx', mode: 0o600 })
+            }
+          }
+        })
+      ).rejects.toThrow()
+      expect(readFileSync(providerConfig, 'utf8')).toBe(oldRaw)
+      expect(readFileSync(held, 'utf8')).toBe(foreignHeld)
+      expect(existsSync(receiptPath(plan.claim.id))).toBe(true)
+      expect((await readAshHookOwnershipLedger(userData)).ledger.claims).toEqual([
+        expect.objectContaining({ id: plan.claim.id, state: 'prepared' })
+      ])
+      await expect(
+        recoverStagedAshClaudeHookInstall({
+          ashUserData: userData,
+          id: plan.claim.id
+        })
+      ).rejects.toThrow('held provider configuration has changed')
+      expect(readFileSync(held, 'utf8')).toBe(foreignHeld)
+    })
+
     it('recovers a crash after moving the old provider file but before publishing the new one', async () => {
       const plan = await stagedPlan()
       publishFixtureReceipt(plan)

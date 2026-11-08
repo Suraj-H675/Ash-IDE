@@ -74,6 +74,47 @@ describe.skipIf(process.platform === 'win32')(
       expect(existsSync(`${configPath}.ash-ide-write.lock`)).toBe(false)
     })
 
+    it('must not overwrite a foreign recovery file created after the initial held-path check', async () => {
+      const held = heldPathForAshProviderSwap(configPath, id)
+      const foreignHeld = '{"foreign-owner":"preserve this recovery file"}\n'
+      await expect(
+        swapAshClaudeSettingsIfUnchanged({
+          configPath,
+          operationId: id,
+          expectedRaw: original,
+          nextRaw: next,
+          testBoundary: async (phase) => {
+            if (phase === 'stage-synced') {
+              writeFileSync(held, foreignHeld, { flag: 'wx', mode: 0o600 })
+            }
+          }
+        })
+      ).rejects.toThrow()
+      expect(readFileSync(held, 'utf8')).toBe(foreignHeld)
+      expect(readFileSync(configPath, 'utf8')).toBe(original)
+    })
+
+    it('preserves a noncooperative in-place provider edit during the linked-backup interval', async () => {
+      const held = heldPathForAshProviderSwap(configPath, id)
+      const external = original.replace('orca-hook.sh', 'foreign-updated-hook.sh')
+      await expect(
+        swapAshClaudeSettingsIfUnchanged({
+          configPath,
+          operationId: id,
+          expectedRaw: original,
+          nextRaw: next,
+          testBoundary: async (phase) => {
+            if (phase === 'backup-linked') {
+              writeFileSync(configPath, external)
+            }
+          }
+        })
+      ).rejects.toThrow('provider backup changed before cleanup')
+      expect(readFileSync(configPath, 'utf8')).toBe(external)
+      expect(readFileSync(held, 'utf8')).toBe(external)
+      expect(existsSync(`${configPath}.ash-ide-write.lock`)).toBe(false)
+    })
+
     it('refuses an existing Ash writer lock and preserves its contents', async () => {
       const lock = `${configPath}.ash-ide-write.lock`
       writeFileSync(lock, 'other Ash writer', { flag: 'wx', mode: 0o600 })
