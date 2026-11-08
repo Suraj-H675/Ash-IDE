@@ -10,6 +10,7 @@ import {
   verifyAshClaudeSessionSettings,
   type AshClaudeSessionSettings
 } from './ash-claude-session-settings'
+import { assertClaudeNativeFixtureHasNoManagedLinuxPolicy } from './ash-claude-native-test-host-guard'
 
 /**
  * Explicitly opt-in with ASH_CLAUDE_NATIVE_HOOK_TEST_BINARY=/absolute/path/to/claude.
@@ -36,7 +37,7 @@ let mockServer: Server | undefined
 let messages = 0
 
 function writeHook(label: string): string {
-  const path = join(root, `${label}.js`)
+  const path = join(root, `native hook '${label}'.js`)
   writeFileSync(
     path,
     [
@@ -53,7 +54,8 @@ function writeHook(label: string): string {
 }
 
 function hookForFile(scriptPath: string): object[] {
-  return [{ hooks: [{ type: 'command', command: `'${scriptPath}'`, timeout: 3 }] }]
+  const quoted = `'${scriptPath.replaceAll("'", "'\\''")}'`
+  return [{ hooks: [{ type: 'command', command: quoted, timeout: 3 }] }]
 }
 
 function hookEvents(): HookEvent[] {
@@ -228,6 +230,7 @@ function isolatedEnv(): NodeJS.ProcessEnv {
 }
 
 async function runNativeTurn(args: string[]): Promise<{ stdout: string; hooks: HookEvent[] }> {
+  assertClaudeNativeFixtureHasNoManagedLinuxPolicy()
   if (!nativeBinary || !isAbsolute(nativeBinary)) {
     throw new Error('ASH_CLAUDE_NATIVE_HOOK_TEST_BINARY must be an absolute executable path')
   }
@@ -319,7 +322,7 @@ const BOTH_EVENTS = [
 ]
 
 // Opt-in: CI runners are not provisioned with a native Claude Code executable.
-describe.skipIf(process.platform === 'win32' || !nativeBinary)(
+describe.skipIf(process.platform !== 'linux' || !nativeBinary)(
   'native Claude completed Stop hooks and session resume with private overlay',
   () => {
     it('runs foreign and Ash hooks at both ends of a completed synthetic turn', async () => {
@@ -347,11 +350,15 @@ describe.skipIf(process.platform === 'win32' || !nativeBinary)(
       ])
       expect(eventLabels(first.hooks)).toEqual(BOTH_EVENTS)
       const resumed = await runNativeTurn([...overlay.settingsArgs, '--resume', overlay.sessionId])
-      expect(eventLabels(resumed.hooks)).toEqual([...BOTH_EVENTS, ...BOTH_EVENTS].sort())
+      expect(eventLabels(resumed.hooks.slice(first.hooks.length))).toEqual(BOTH_EVENTS)
+      expect(resumed.hooks.length).toBe(first.hooks.length + BOTH_EVENTS.length)
       expect(resumed.hooks.every((entry) => entry.sessionId === overlay.sessionId)).toBe(true)
       expect(
-        resumed.hooks.filter((entry) => entry.event === 'SessionStart').map((entry) => entry.source)
-      ).toEqual(['startup', 'startup', 'resume', 'resume'])
+        resumed.hooks
+          .slice(first.hooks.length)
+          .filter((entry) => entry.event === 'SessionStart')
+          .map((entry) => entry.source)
+      ).toEqual(['resume', 'resume'])
       expect(messages).toBe(2)
       expect(readFileSync(settingsFile, 'utf8')).toBe(foreignBefore)
       await verifyAshClaudeSessionSettings(ashUserData, overlay)
@@ -360,11 +367,17 @@ describe.skipIf(process.platform === 'win32' || !nativeBinary)(
     it('does not assume Ash overlay survives resume when --settings is omitted', async () => {
       const foreignBefore = readFileSync(settingsFile, 'utf8')
       const overlay = await overlayFor(randomUUID())
-      await runNativeTurn([...overlay.settingsArgs, '--session-id', overlay.sessionId])
+      const first = await runNativeTurn([
+        ...overlay.settingsArgs,
+        '--session-id',
+        overlay.sessionId
+      ])
+      expect(eventLabels(first.hooks)).toEqual(BOTH_EVENTS)
       const resumed = await runNativeTurn(['--resume', overlay.sessionId])
-      expect(eventLabels(resumed.hooks)).toEqual(
-        [...BOTH_EVENTS, 'FOREIGN:SessionStart', 'FOREIGN_STOP:Stop'].sort()
-      )
+      const resumeEvents = resumed.hooks.slice(first.hooks.length)
+      expect(eventLabels(resumeEvents)).toEqual(['FOREIGN:SessionStart', 'FOREIGN_STOP:Stop'])
+      expect(resumed.hooks.length).toBe(first.hooks.length + 2)
+      expect(resumeEvents.every((entry) => entry.sessionId === overlay.sessionId)).toBe(true)
       expect(messages).toBe(2)
       expect(readFileSync(settingsFile, 'utf8')).toBe(foreignBefore)
       await verifyAshClaudeSessionSettings(ashUserData, overlay)

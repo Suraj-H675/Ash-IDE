@@ -19,6 +19,7 @@ import {
   createAshClaudeSessionSettings,
   verifyAshClaudeSessionSettings
 } from './ash-claude-session-settings'
+import { assertClaudeNativeFixtureHasNoManagedLinuxPolicy } from './ash-claude-native-test-host-guard'
 
 /**
  * Opt-in NATIVE test, not a fixture masquerading as provider evidence.
@@ -102,6 +103,7 @@ async function runNativeUntilHooks(
   markers: string[]
   requests: number
 }> {
+  assertClaudeNativeFixtureHasNoManagedLinuxPolicy()
   if (!nativeBinary || !isAbsolute(nativeBinary)) {
     throw new Error(
       'Set an absolute ASH_CLAUDE_NATIVE_HOOK_TEST_BINARY to the installed Claude CLI'
@@ -265,7 +267,7 @@ async function runNativeUntilHooks(
   }
 }
 
-describe.skipIf(process.platform === 'win32' || !nativeBinary)(
+describe.skipIf(process.platform !== 'linux' || !nativeBinary)(
   'native Claude SessionStart hook coexistence using disposable settings',
   () => {
     it('executes both foreign user-profile hooks and Ash session overlay hooks', async () => {

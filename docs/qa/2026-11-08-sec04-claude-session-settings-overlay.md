@@ -21,6 +21,8 @@ The Ash profile and overlay directory require private ownership and directory pe
 
 On **Linux 7.2.11-arch1-1 x86_64**, with **Node 24.22.1** and the existing local **Claude Code 2.1.286**, the real native CLI executed a `SessionStart` command hook from an isolated `CLAUDE_CONFIG_DIR/settings.json` and a separate `SessionStart` command hook from Ash's private `--settings` overlay in the *same process*. Two independent commands appended `FOREIGN_SESSION_START` and `ASH_SESSION_START` to a disposable hook-event log. The on-disk foreign settings bytes were unchanged before and after the test, and Ash's overlay SHA-256 verification remained valid. A no-overlay control executed `FOREIGN_SESSION_START` alone.
 
+Both native suites now require Linux with no system-managed Claude settings root (`/etc/claude-code`), and fail closed when that root exists or cannot be inspected. Managed policy can override test-supplied provider routing; this restriction avoids using the isolated test on an unsuitable host. See `docs/qa/2026-11-08-sec04-claude-native-stop-resume.md` for the separate completed-turn and explicit-resume tests.
+
 This is covered by `src/main/agent-hooks/session/ash-claude-native-overlay.e2e.test.ts`. It is explicitly **opt-in** because ordinary GitHub Actions runners do not have the real Claude CLI. Run against an already installed Claude executable; **do not install, upgrade or use a real account just for the test**:
 
 ```bash
