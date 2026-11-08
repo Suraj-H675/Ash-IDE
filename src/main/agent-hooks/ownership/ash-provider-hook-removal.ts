@@ -46,6 +46,10 @@ function assertOwnedMarkerAbsent(config: Record<string, unknown> | undefined, id
 export async function removeOwnedAshClaudeHookFromFile(args: {
   ashUserData: string
   id: string
+  /** Test-only handshake for a real SIGKILL while the guarded writer is active. */
+  testBoundary?: (
+    phase: 'stage-synced' | 'original-held' | 'replacement-linked' | 'held-cleaned'
+  ) => Promise<void>
 }): Promise<{ id: string; ledgerRevision: string | null }> {
   const snapshot = await readAshHookOwnershipLedger(args.ashUserData)
   const claim = requireInstalledClaim(snapshot.ledger.claims, args.id)
@@ -77,7 +81,8 @@ export async function removeOwnedAshClaudeHookFromFile(args: {
     configPath: receipt.configPath,
     operationId: receipt.operationId,
     expectedRaw: before.raw,
-    nextRaw
+    nextRaw,
+    testBoundary: args.testBoundary
   })
   const after = await readAshClaudeSettingsSnapshot(claim.configPath)
   if (ashProviderFileSha256(after?.raw ?? null) !== receipt.afterSha256) {
@@ -123,18 +128,22 @@ export async function recoverOwnedAshClaudeHookRemoval(args: {
   ) {
     throw new AshHookOwnershipConflict('removal receipt does not match the Ash ownership claim')
   }
-  const beforeRecovery = await readAshClaudeSettingsSnapshot(receipt.configPath)
-  const alreadyPublished =
-    ashProviderFileSha256(beforeRecovery?.raw ?? null) === receipt.afterSha256
-  if (!claim && !alreadyPublished) {
-    // This cannot occur after a valid committed removal: Ash persists the
-    // ledger deletion only after the target file was published and verified.
-    // In particular, do NOT restore a held provider file with no owner claim.
-    throw new AshHookOwnershipConflict('unpublished removal has no installed Ash claim')
-  }
-  if (alreadyPublished) {
+  if (!claim) {
+    // An already-committed removal may leave the receipt, but the writer has
+    // already completed guarded publication (including stage unlink). Its
+    // published file must therefore be readable without a hardlink exception.
+    // Never restore a held file when the only ownership claim is missing.
+    const beforeRecovery = await readAshClaudeSettingsSnapshot(receipt.configPath)
+    if (ashProviderFileSha256(beforeRecovery?.raw ?? null) !== receipt.afterSha256) {
+      throw new AshHookOwnershipConflict('unpublished removal has no installed Ash claim')
+    }
     assertOwnedMarkerAbsent(beforeRecovery?.config, receipt.id)
   }
+  // If the claim is still installed, the guarded writer may have died with
+  // its stage and published target hardlinked (nlink=2). The low-level
+  // recovery verifies the exact stage/target inode before unlinking the
+  // stage. An ordinary snapshot read here would incorrectly reject that
+  // legitimate intermediate state.
   const swap = await recoverAshClaudeSettingsSwap({
     configPath: receipt.configPath,
     operationId: receipt.operationId,

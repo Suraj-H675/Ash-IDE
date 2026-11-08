@@ -43,6 +43,10 @@ export async function installStagedAshClaudeHookInFile(args: {
   ashUserData: string
   plan: AshHookPlan
   expectedRaw: string | null
+  /** Test-only handshake for a real SIGKILL while the guarded writer is active. */
+  testBoundary?: (
+    phase: 'stage-synced' | 'original-held' | 'replacement-linked' | 'held-cleaned'
+  ) => Promise<void>
 }): Promise<{ id: string; ledgerRevision: string | null }> {
   const snapshot = await readAshHookOwnershipLedger(args.ashUserData)
   if (!matchesPreparedClaim(args.plan, snapshot.ledger)) {
@@ -78,7 +82,8 @@ export async function installStagedAshClaudeHookInFile(args: {
     configPath,
     operationId: id,
     expectedRaw: args.expectedRaw,
-    nextRaw
+    nextRaw,
+    testBoundary: args.testBoundary
   })
   const after = await readAshClaudeSettingsSnapshot(configPath)
   if (ashProviderFileSha256(after?.raw ?? null) !== receipt.afterSha256) {

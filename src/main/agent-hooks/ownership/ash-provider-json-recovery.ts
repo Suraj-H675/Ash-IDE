@@ -4,11 +4,11 @@ import {
   ashProviderFileSha256,
   heldPathForAshProviderSwap,
   stagedPathForAshProviderSwap,
-  withAshProviderLock,
   readAshProviderExisting,
   syncAshProviderParent,
   restoreAshHeldProviderFile
 } from './ash-provider-json-guard'
+import { reclaimDeadAshProviderWriterLock, withAshProviderLock } from './ash-provider-file-lock'
 
 /**
  * Recover ONLY when the calling Ash transaction has a verified durable receipt
@@ -22,7 +22,10 @@ export async function recoverAshClaudeSettingsSwap(args: {
   afterSha256: string
 }): Promise<'restored' | 'not-published' | 'published'> {
   const { configPath, operationId } = args
-  return withAshProviderLock(configPath, async () => {
+  // Higher-level callers verify their private receipt and ownership claim
+  // before recovery; only that same transaction may reclaim its dead lock.
+  await reclaimDeadAshProviderWriterLock(configPath, operationId)
+  return withAshProviderLock(configPath, operationId, async () => {
     const heldPath = heldPathForAshProviderSwap(configPath, operationId)
     const stagePath = stagedPathForAshProviderSwap(configPath, operationId)
     const staged = await readAshProviderExisting(stagePath, true)

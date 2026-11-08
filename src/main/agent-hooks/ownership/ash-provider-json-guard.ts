@@ -1,9 +1,11 @@
 import { createHash } from 'node:crypto'
 import { constants } from 'node:fs'
-import { basename, dirname, isAbsolute, normalize } from 'node:path'
+import { dirname } from 'node:path'
 import { lstat, link, open, rename, rm, unlink } from 'node:fs/promises'
 import { isPlainObject, parseHooksJsonText } from '../hooks-json-read'
 import { AshHookOwnershipConflict } from './ash-hook-ownership-plan'
+import { validateAshProviderParent, validateAshProviderTarget } from './ash-provider-path-policy'
+import { withAshProviderLock } from './ash-provider-file-lock'
 
 const MAX_CONFIG_BYTES = 1024 * 1024
 const UUID_V4 = /^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i
@@ -31,45 +33,6 @@ function validOperationId(id: string): void {
 
 export function ashProviderFileSha256(raw: string | null): string | null {
   return raw === null ? null : createHash('sha256').update(raw).digest('hex')
-}
-
-function validateTarget(configPath: string): void {
-  if (
-    process.platform === 'win32' ||
-    !isAbsolute(configPath) ||
-    normalize(configPath) !== configPath ||
-    configPath.includes('\0') ||
-    configPath.length > 4096 ||
-    basename(configPath) !== 'settings.json'
-  ) {
-    throw new AshHookOwnershipConflict('unsupported or unsafe POSIX Claude settings target')
-  }
-}
-
-async function validateParent(configPath: string): Promise<void> {
-  validateTarget(configPath)
-  const parentPath = dirname(configPath)
-  const parent = await lstat(parentPath)
-  if (!parent.isDirectory() || parent.isSymbolicLink()) {
-    throw new AshHookOwnershipConflict('provider settings parent is not a real directory')
-  }
-  if ((parent.mode & 0o002) !== 0 || (process.getuid && parent.uid !== process.getuid())) {
-    throw new AshHookOwnershipConflict('provider settings parent is not user-owned and protected')
-  }
-  // lstat on the immediate parent alone misses aliases in intermediate paths.
-  // Never follow a symlink through an ancestor to write another provider home.
-  let ancestor = dirname(parentPath)
-  while (ancestor !== parentPath) {
-    const entry = await lstat(ancestor)
-    if (!entry.isDirectory() || entry.isSymbolicLink()) {
-      throw new AshHookOwnershipConflict('provider settings path contains a symlinked ancestor')
-    }
-    const next = dirname(ancestor)
-    if (next === ancestor) {
-      break
-    }
-    ancestor = next
-  }
 }
 
 export async function readAshProviderExisting(
@@ -135,22 +98,18 @@ export async function readAshProviderExisting(
 export async function readAshClaudeSettingsSnapshot(
   configPath: string
 ): Promise<AshProviderJsonSnapshot> {
-  await validateParent(configPath)
+  await validateAshProviderParent(configPath)
   return readAshProviderExisting(configPath)
 }
 
-function lockPathFor(configPath: string): string {
-  return `${configPath}.ash-ide-write.lock`
-}
-
 export function heldPathForAshProviderSwap(configPath: string, operationId: string): string {
-  validateTarget(configPath)
+  validateAshProviderTarget(configPath)
   validOperationId(operationId)
   return `${configPath}.ash-ide-held-${operationId}`
 }
 
 export function stagedPathForAshProviderSwap(configPath: string, operationId: string): string {
-  validateTarget(configPath)
+  validateAshProviderTarget(configPath)
   validOperationId(operationId)
   return `${configPath}.ash-ide-stage-${operationId}.tmp`
 }
@@ -161,40 +120,6 @@ export async function syncAshProviderParent(configPath: string): Promise<void> {
     await dir.sync()
   } finally {
     await dir.close()
-  }
-}
-
-export async function withAshProviderLock<T>(
-  configPath: string,
-  run: () => Promise<T>
-): Promise<T> {
-  await validateParent(configPath)
-  const lockPath = lockPathFor(configPath)
-  let fd
-  try {
-    fd = await open(lockPath, 'wx', 0o600)
-  } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'EEXIST') {
-      throw new AshHookOwnershipConflict('provider file is locked by another Ash writer')
-    }
-    throw error
-  }
-  const lockInfo = await fd.stat({ bigint: true })
-  try {
-    await fd.sync()
-    return await run()
-  } finally {
-    await fd.close()
-    const current = await lstat(lockPath, { bigint: true }).catch((error: unknown) => {
-      if (isMissing(error)) {
-        return null
-      }
-      throw error
-    })
-    // Never remove an unexpected lock created while this operation was running.
-    if (current && current.ino === lockInfo.ino && current.dev === lockInfo.dev) {
-      await unlink(lockPath)
-    }
   }
 }
 
@@ -231,6 +156,10 @@ export async function swapAshClaudeSettingsIfUnchanged(args: {
   operationId: string
   expectedRaw: string | null
   nextRaw: string
+  /** Test-only phase handshake for terminating the real guarded writer process. */
+  testBoundary?: (
+    phase: 'stage-synced' | 'original-held' | 'replacement-linked' | 'held-cleaned'
+  ) => Promise<void>
 }): Promise<void> {
   const { configPath, operationId } = args
   validOperationId(operationId)
@@ -238,7 +167,7 @@ export async function swapAshClaudeSettingsIfUnchanged(args: {
   if (!nextConfig || Buffer.byteLength(args.nextRaw) > MAX_CONFIG_BYTES) {
     throw new AshHookOwnershipConflict('replacement provider JSON is invalid or oversized')
   }
-  await withAshProviderLock(configPath, async () => {
+  await withAshProviderLock(configPath, operationId, async () => {
     const heldPath = heldPathForAshProviderSwap(configPath, operationId)
     const existingHeld = await lstat(heldPath).catch((error: unknown) => {
       if (isMissing(error)) {
@@ -269,6 +198,7 @@ export async function swapAshClaudeSettingsIfUnchanged(args: {
       } finally {
         await fd.close()
       }
+      await args.testBoundary?.('stage-synced')
       if (before) {
         await rename(configPath, heldPath)
         moved = true
@@ -282,14 +212,17 @@ export async function swapAshClaudeSettingsIfUnchanged(args: {
           throw new AshHookOwnershipConflict('provider settings were changed during guarded swap')
         }
         await syncAshProviderParent(configPath)
+        await args.testBoundary?.('original-held')
       }
       // link is a no-replace publication, unlike rename(temp, providerFile).
       await link(tempPath, configPath)
       published = true
       await syncAshProviderParent(configPath)
+      await args.testBoundary?.('replacement-linked')
       if (moved) {
         await unlink(heldPath)
         await syncAshProviderParent(configPath)
+        await args.testBoundary?.('held-cleaned')
       }
     } catch (error) {
       if (moved && !published) {
