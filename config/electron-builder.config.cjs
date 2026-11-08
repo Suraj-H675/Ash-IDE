@@ -574,9 +574,10 @@ module.exports = {
     shortcutName: '${productName}',
     uninstallDisplayName: '${productName}',
     createDesktopShortcut: 'always',
-    // One NSIS include hosts update-guarded daemon cleanup and additive markdown Open With registration.
-    // Avoid fileAssociations: it would steal default .md ownership; see the include’s header.
-    include: resolve(__dirname, 'nsis', 'orca-installer-hooks.nsh')
+    // Ash-only NSIS integration: never reuse the Orca installer, daemon cleanup,
+    // global provider-hook uninstall or document association ownership.
+    // Additive Open With registration never steals the user's default .md handler.
+    include: resolve(__dirname, 'nsis', 'ash-installer-hooks.nsh')
   },
   mac: {
     // Alternate rank preserves Finder’s default; one entry per extension because app-builder globs the value as a string.

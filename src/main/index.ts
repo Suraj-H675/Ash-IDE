@@ -9,8 +9,6 @@ import {
 import { openMainWindow as openMainWindowController } from './startup/main-window-controller'
 import { mainProcessState as state } from './startup/main-process-state'
 import { runMainProcessPreflight } from './startup/main-process-preflight'
-import { runWslHolderUninstallPreflight } from './startup/wsl-holder-uninstall-preflight'
-import { runAgentHooksUninstallPreflight } from './startup/agent-hooks-uninstall-preflight'
 import { enableLinearRegexpFallback } from './startup/linear-regexp-fallback'
 import { ensureWindowsRendererRuntimeFiles } from './startup/windows-renderer-runtime-files'
 import { registerMainProcessIpcHandlers } from './startup/main-process-ipc-bootstrap'
@@ -113,10 +111,9 @@ clearWindowsStdHandleInheritance()
 installWindowsIsolatedSpawner()
 // A relaunch or installer inherits the parent's published WSL gate state; this process recomputes.
 ignoreInheritedWslHostsGateState()
-// The uninstaller's holder release and hook removal run instead of the app, never alongside it.
+// Ash never runs Orca's inherited WSL/agent-hook uninstall preflights: their
+// global cleanup belongs to Orca and must not affect a co-installed copy.
 const preflightReady =
-  !runWslHolderUninstallPreflight() &&
-  !runAgentHooksUninstallPreflight() &&
   runMainProcessPreflight({
     focusExistingWindow,
     requestDesktopActivation

@@ -12,7 +12,6 @@ import {
 import { beginSshShutdown } from '../ipc/ssh/ssh-shutdown-drain'
 import { agentHookServer } from '../agent-hooks/server'
 import { wslHookRelayManager } from '../agent-hooks/wsl-hook-relay-manager'
-import { removeManagedAgentHooksAsync } from '../agent-hooks/managed-agent-hook-controls'
 import { stopStructuredAgentSessionRuntime } from '../runtime/agent-session/structured-agent-session-runtime'
 import { setStructuredAgentSessionTeardownTrigger } from '../runtime/agent-session/structured-agent-session-runtime-teardown'
 import { awaitRuntimeFileWatcherUnsubscribes } from '../runtime/files/watch/file-watcher-leases'
@@ -44,8 +43,6 @@ import { flushUnsavedCloudSessions } from '../orca-profiles/profile-cloud-sessio
 // First will-quit pass awaits teardown; the re-fired pass must exit without starting writes again.
 let daemonDisconnectDone = false
 let watcherShutdownPromise: Promise<void> | null = null
-// Config deletion is best effort, not durable state.
-const GROK_HOOK_CLEANUP_DEADLINE_MS = 2_000
 // Allow pack-refs time to terminate and unlink its lock.
 const REF_MAINTENANCE_QUIT_DEADLINE_MS = 2_000
 
@@ -163,27 +160,8 @@ function installWillQuitHandler(): void {
     stopBackgroundWorktreeRemovals()
     // Chat teardown reads background work afterward; clearing status loses subagent/command-only resume offers.
     agentHookServer.stop({ keepStatus: true })
-    // Windows bare hook paths lack POSIX ORCA_PANE_KEY guards, so remove Grok hooks on quit; bound cleanup because GROK_HOME can be a stalled network mount.
-    const grokHookCleanup =
-      process.platform === 'win32'
-        ? settleWithinMs(
-            removeManagedAgentHooksAsync({ agents: ['grok'] }),
-            GROK_HOOK_CLEANUP_DEADLINE_MS
-          ).then((settled) => {
-            if (settled.outcome === 'timed-out') {
-              console.warn('[agent-hooks] Grok hook cleanup on quit timed out')
-              return
-            }
-            if (settled.outcome === 'failed') {
-              console.warn('[agent-hooks] Grok hook cleanup on quit failed:', settled.error)
-              return
-            }
-            // Removal failures can be fulfilled status results; inspect their detail too.
-            for (const status of settled.value.filter((entry) => entry.detail)) {
-              console.warn(`[agent-hooks] ${status.agent} hook cleanup on quit: ${status.detail}`)
-            }
-          })
-        : Promise.resolve()
+    // Provider-global hook configuration is not owned by Ash. Closing Ash
+    // must leave Grok and every other provider's hooks unchanged on Windows.
     // Dispose relay timers and wsl.exe children explicitly rather than rely on pipe teardown.
     wslHookRelayManager.disposeAll()
     // A closed WSL-host channel still in its EOF grace must not outlive the app.
@@ -275,7 +253,6 @@ function installWillQuitHandler(): void {
       { name: 'ssh', promise: sshShutdown },
       { name: 'plugin-hosts', promise: pluginHostShutdown },
       { name: 'skill-uploads', promise: skillUploadShutdown },
-      { name: 'grok-hooks', promise: grokHookCleanup },
       { name: 'ref-maintenance', promise: refMaintenanceShutdown },
       { name: 'codex-backfill-recovery', promise: codexBackfillRecoveryShutdown },
       { name: 'structured-agent-session', promise: structuredAgentSessionShutdown },
