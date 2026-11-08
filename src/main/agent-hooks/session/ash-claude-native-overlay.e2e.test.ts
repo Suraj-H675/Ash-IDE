@@ -7,6 +7,8 @@ import {
   readFileSync,
   rmSync,
   watch,
+  watchFile,
+  unwatchFile,
   writeFileSync
 } from 'node:fs'
 import { createServer } from 'node:http'
@@ -125,7 +127,10 @@ async function runNativeUntilHooks(
   }
 
   let child: ReturnType<typeof spawn> | null = null
-  const resources: { watcher: ReturnType<typeof watch> | null } = { watcher: null }
+  const resources: {
+    watcher: ReturnType<typeof watch> | null
+    statListener: (() => void) | null
+  } = { watcher: null, statListener: null }
   let deadline: ReturnType<typeof setTimeout> | null = null
   let stopDeadline: ReturnType<typeof setTimeout> | null = null
   let capturedStderr = ''
@@ -194,22 +199,29 @@ async function runNativeUntilHooks(
         }
       }
       resources.watcher = watch(eventLog, check)
+      // Vitest's Bun worker can lose/coalesce file append notifications.
+      // Bounded file-stat events provide an independent observation path.
+      resources.statListener = check
+      watchFile(eventLog, { interval: 250 }, check)
       check()
     })
     await Promise.race([
       seen,
       exited,
-      new Promise<never>((_, reject) => {
-        deadline = setTimeout(
-          () =>
+      new Promise<void>((resolve, reject) => {
+        deadline = setTimeout(() => {
+          const observed = markers()
+          if (expectedMarkers.every((marker) => observed.includes(marker))) {
+            resolve()
+          } else {
             reject(
               new Error(
-                `Claude hooks timeout: markers=${JSON.stringify(markers())}, ` +
+                `Claude hooks timeout: markers=${JSON.stringify(observed)}, ` +
                   `loopbackRequests=${requests}, stderr=${capturedStderr}, stdout=${capturedStdout}`
               )
-            ),
-          maxStartupMs
-        )
+            )
+          }
+        }, maxStartupMs)
       })
     ])
 
@@ -219,6 +231,9 @@ async function runNativeUntilHooks(
       clearTimeout(deadline)
     }
     resources.watcher?.close()
+    if (resources.statListener) {
+      unwatchFile(eventLog, resources.statListener)
+    }
     if (child) {
       const stopped = new Promise<void>((resolve) => {
         if (child?.exitCode !== null || child?.signalCode !== null) {
