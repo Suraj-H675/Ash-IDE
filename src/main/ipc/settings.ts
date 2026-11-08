@@ -230,6 +230,8 @@ export function registerSettingsHandlers(
     if (hookSettingChanged) {
       try {
         await applyAgentStatusHooksEnabled(result.agentStatusHooksEnabled, result, {
+          // Hook configuration belongs to the user/provider, not solely to Ash.
+          keepSharedEntries: true,
           userInitiated: true,
           shouldHydrateShellPath: app.isPackaged,
           onInstallError: recordManagedHookInstallFailure,

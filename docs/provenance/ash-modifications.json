@@ -262,6 +262,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/agent-hooks/managed-agent-hook-controls.ts",
+      "sha256": "697c2c7deb92e155bc10aa27866cb2abe435376e05eff4a971300a502d8c1fd8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/browser/cdp/screencast/browser-screencast-live-frame-allocation.test.ts",
       "sha256": "9af3f383ea707086e925570e60d567fed735ecfb8e791e107abbfe24cd3470f1",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -392,6 +397,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/ipc/settings.ts",
+      "sha256": "08d4b917999136084a600b890baaa49cd6bafc7037ac834e771c1a9538d604d2",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/local-builds/local-build-candidate.test.ts",
       "sha256": "041354df0e1fb8795049c7d6d50afb3a2c3288328422562675abb877dca1f01d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -424,6 +434,11 @@
     {
       "path": "src/main/persistence/loading-store/user-data-path.ts",
       "sha256": "4b5c4e1270a6e0bffdcfc6535446c0d797f294d6a6ab4369e23f2e20085d5702",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/client/settings/runtime-client-settings.ts",
+      "sha256": "b8fce900cd27677d82af834d6a93627b7da965f68fa7dd5db7452ca3b9c7cb7a",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

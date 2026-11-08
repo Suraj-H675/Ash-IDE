@@ -249,9 +249,15 @@ export async function applyAgentStatusHooksEnabled(
   options: ApplyOptions = {}
 ): Promise<AgentHookInstallStatus[]> {
   if (!enabled) {
-    return options.keepSharedEntries
-      ? getManagedAgentHookStatuses()
-      : await removeManagedAgentHooks()
+    // Provider hook entries are user-global and may belong to Orca or another
+    // agent session. Disabling Ash monitoring must not uninstall shared hooks.
+    // Preserve the observed on-disk presence, but never report monitoring as active.
+    return getManagedAgentHookStatuses().map((status) => ({
+      ...status,
+      state: 'skipped' as const,
+      skipReason: 'hooks_disabled' as const,
+      detail: 'Ash status monitoring disabled; provider-global hook entries left unchanged.'
+    }))
   }
   const disabled = normalizeDisabledTuiAgents(settings?.disabledTuiAgents).filter(
     isManagedAgentHookTarget
@@ -260,7 +266,9 @@ export async function applyAgentStatusHooksEnabled(
   const disabledToRemove = options.shouldContinue
     ? disabled.filter((agent) => !options.shouldContinue?.(agent))
     : disabled
-  if (disabledToRemove.length === 0 || options.keepSharedEntries) {
+  // Ash's default is non-destructive for disabled agents too. An explicit
+  // removal is a separate user action, not an effect of an IDE preference.
+  if (disabledToRemove.length === 0 || options.keepSharedEntries !== false) {
     return installed
   }
   const removed = new Map(

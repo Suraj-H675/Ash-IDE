@@ -21,7 +21,6 @@ import { nativeChatQueueFollowUps } from '../../../../shared/native-chat/input/n
 import type { TerminalQuickCommand } from '../../../../shared/terminal/quick-commands/terminal-quick-command-types'
 import { recordManagedHookInstallFailure } from '../../../agent-hooks/install-telemetry'
 import { applyAgentStatusHooksEnabled } from '../../../agent-hooks/managed-agent-hook-controls'
-import { isWslHostOrcadProcess } from '../../../ipc/wsl-guest-windows-drive-path'
 import { isAgentStatusHooksEnabledForAgent } from '../../../../shared/agent-hook-listener/configuration/agent-status-hooks-setting'
 import type { RuntimeStore } from '../../runtime-store-contract'
 import {
@@ -267,8 +266,9 @@ export class RuntimeClientSettingsController {
         return
       }
       await applyAgentStatusHooksEnabled(settings.agentStatusHooksEnabled !== false, settings, {
-        // R42, COMPAT(wsl-bridge): the bridge's panes in this distro share these entries; drop at D4.
-        keepSharedEntries: isWslHostOrcadProcess(),
+        // Provider-global hook entries are shared even on local hosts; never
+        // uninstall another application's hooks on Ash setting changes.
+        keepSharedEntries: true,
         shouldHydrateShellPath: getAppEnvironment().isPackaged(),
         onInstallError: recordManagedHookInstallFailure,
         shouldContinue: (agent) => {
