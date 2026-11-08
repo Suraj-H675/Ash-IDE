@@ -52,12 +52,24 @@ async function ledgerDirectory(ashUserData: string): Promise<string> {
     throw new AshHookOwnershipConflict('Ash userData root is accessible by other users')
   }
   const path = join(ashUserData, LEDGER_DIR)
-  await mkdir(path, { mode: 0o700 }).catch((error: unknown) => {
+  let created = false
+  try {
+    await mkdir(path, { mode: 0o700 })
+    created = true
+  } catch (error) {
     if (!(error instanceof Error && 'code' in error && error.code === 'EEXIST')) {
       throw error
     }
-  })
+  }
   await requirePrivateDirectory(path)
+  if (created && process.platform !== 'win32') {
+    const parent = await open(ashUserData, constants.O_RDONLY | (constants.O_DIRECTORY ?? 0))
+    try {
+      await parent.sync()
+    } finally {
+      await parent.close()
+    }
+  }
   return path
 }
 
@@ -152,6 +164,16 @@ export async function saveAshHookOwnershipLedger(
       await temp.close()
     }
     await rename(tmpPath, join(dir, LEDGER_NAME))
+    // A prepared claim must survive a power loss before provider publication.
+    // fsync on the file alone does not make its directory rename durable.
+    if (process.platform !== 'win32') {
+      const parent = await open(dir, constants.O_RDONLY | (constants.O_DIRECTORY ?? 0))
+      try {
+        await parent.sync()
+      } finally {
+        await parent.close()
+      }
+    }
     return { ledger, revision: revision(raw) }
   } finally {
     await rm(tmpPath, { force: true })
