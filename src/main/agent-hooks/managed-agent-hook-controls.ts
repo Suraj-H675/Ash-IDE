@@ -7,6 +7,7 @@ import {
   isManagedAgentHookTarget
 } from '../../shared/managed-agent-hook-targets'
 import { normalizeDisabledTuiAgents } from '../../shared/agent-launch/catalog/tui-agent-selection'
+import { canAshWriteProviderGlobalHooks } from './ash-hook-ownership-policy'
 import type { GlobalSettings } from '../../shared/global-settings-types'
 import {
   isAgentStatusHooksEnabled,
@@ -134,6 +135,9 @@ export async function installManagedAgentHooks(
   settings: ManagedHookSettings = null,
   options: InstallOptions = {}
 ): Promise<AgentHookInstallStatus[]> {
+  if (!canAshWriteProviderGlobalHooks()) {
+    return ashReadOnlyHookStatuses(isAgentStatusHooksEnabled(settings))
+  }
   await refreshExistingManagedScripts(options)
   const installers = selectedInstallers(options)
   const disabled = new Set(normalizeDisabledTuiAgents(settings?.disabledTuiAgents))
@@ -243,11 +247,25 @@ export function getManagedAgentHookStatuses(): AgentHookInstallStatus[] {
   })
 }
 
+function ashReadOnlyHookStatuses(enabled: boolean): AgentHookInstallStatus[] {
+  return getManagedAgentHookStatuses().map((status) => ({
+    ...status,
+    state: 'skipped' as const,
+    skipReason: enabled ? ('ash_ownership_unavailable' as const) : ('hooks_disabled' as const),
+    detail: enabled
+      ? 'Ash provider hook installation unavailable until ownership is tracked; provider-global hook entries left unchanged.'
+      : 'Ash status monitoring disabled; provider-global hook entries left unchanged.'
+  }))
+}
+
 export async function applyAgentStatusHooksEnabled(
   enabled: boolean,
   settings: ManagedHookSettings = null,
   options: ApplyOptions = {}
 ): Promise<AgentHookInstallStatus[]> {
+  if (!canAshWriteProviderGlobalHooks()) {
+    return ashReadOnlyHookStatuses(enabled)
+  }
   if (!enabled) {
     // Provider hook entries are user-global and may belong to Orca or another
     // agent session. Disabling Ash monitoring must not uninstall shared hooks.

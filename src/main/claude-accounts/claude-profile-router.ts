@@ -1,11 +1,9 @@
 import { claudeAccountUsagePreparation } from './claude-account-usage-preparation'
 import { claudeProfileSelectionHomes } from './claude-profile-selection-homes'
 import { prepareClaudeProfileForLaunch } from './claude-profile-launch-preparation'
-import { getClaudeAgentViewService } from '../claude/agent-view/agent-view-service'
 import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { isAgentStatusHooksEnabledForAgent } from '../../shared/agent-hook-listener/configuration/agent-status-hooks-setting'
 import {
   CLAUDE_INJECTED_CONFIG_DIR_ENV,
   CLAUDE_PROFILE_POINTER_ENV,
@@ -15,9 +13,7 @@ import {
 import { claudeProfileMissing } from './claude-profile-launch-errors'
 import type { GlobalSettings } from '../../shared/global-settings-types'
 import type { ClaudeManagedAccount } from '../../shared/managed-account-types'
-import { probeRecentClaudeCliVersion } from '../claude/claude-hook-event-versions'
 import { writeFileAtomically } from '../codex-accounts/fs-utils'
-import { resolveClaudeCommand } from '../codex-cli/command'
 import {
   describeClaudeProfile,
   type ClaudeProfileDescriptor,
@@ -240,19 +236,16 @@ export class ClaudeProfileRouter {
 
   private async runSetup(profile: ClaudeProfileDescriptor): Promise<ClaudeProfileSetupReport> {
     await this.envReady
-    const hooks = isAgentStatusHooksEnabledForAgent(this.args.getSettings(), 'claude')
-    const claudeVersion = hooks ? await probeRecentClaudeCliVersion(resolveClaudeCommand()) : null
     const report = await (this.args.runSetup ?? runClaudeProfileSetupInWorker)({
       dataRoot: this.args.dataRoot,
       profile,
       userHome: this.userHome,
       userConfigDir: this.userConfigDir(),
-      hooks,
-      claudeVersion: claudeVersion ?? undefined
+      // No Ash-owned provider-hook ledger exists yet; account provisioning
+      // must not modify a provider's native configuration.
+      hooks: false,
+      claudeVersion: undefined
     })
-    if (report.outcome === 'prepared') {
-      await getClaudeAgentViewService(this.args.dataRoot).prepareProfile(profile.home)
-    }
     if (report.outcome === 'refused' || report.warnings.length > 0) {
       console.warn('[claude-profile] Account setup was incomplete:', report)
     }

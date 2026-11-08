@@ -34,6 +34,7 @@ export type AgentHookInstallSkipReason =
   | 'cli_not_found'
   | 'cli_presence_unknown'
   | 'hooks_disabled'
+  | 'ash_ownership_unavailable'
 
 export type AgentHookInstallStatus = {
   agent: AgentHookTarget

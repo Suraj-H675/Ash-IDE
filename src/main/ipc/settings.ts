@@ -1,6 +1,5 @@
 import { sanitizeRendererSettingsUpdate } from './renderer-settings-update'
 import { confirmBrowserPasswordOwner } from '../browser-passwords/browser-password-reauth'
-import { getClaudeAgentViewService } from '../claude/agent-view/agent-view-service'
 import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
 import type { Store } from '../persistence/loading-store/store'
 import type { GlobalSettings } from '../../shared/global-settings-types'
@@ -221,7 +220,6 @@ export function registerSettingsHandlers(
         normalizeComputerAwakeMode(result.computerAwakeMode, result.keepComputerAwakeWhileAgentsRun)
       )
     }
-    await getClaudeAgentViewService().reconcile(result)
     const hookSettingChanged =
       ('agentStatusHooksEnabled' in sanitizedArgs &&
         before.agentStatusHooksEnabled !== result.agentStatusHooksEnabled) ||

@@ -32,7 +32,7 @@ vi.mock('./managed-agent-hook-registry', () => ({
 }))
 
 import { beforeEach } from 'vitest'
-import { applyAgentStatusHooksEnabled } from './managed-agent-hook-controls'
+import { applyAgentStatusHooksEnabled, installManagedAgentHooks } from './managed-agent-hook-controls'
 
 beforeEach(() => {
   vi.resetAllMocks()
@@ -87,18 +87,44 @@ describe('Ash disabled status hooks preserve other applications and report degra
     expect(hooks.removeClaude).not.toHaveBeenCalled()
   })
 
-  it('does not remove a disabled agent hook while another provider remains enabled', async () => {
+  it('does not install or remove hooks when one agent is disabled and another remains enabled', async () => {
     const statuses = await applyAgentStatusHooksEnabled(true, {
       agentStatusHooksEnabled: true,
       disabledTuiAgents: ['codex']
     })
-    expect(hooks.installClaude).toHaveBeenCalledTimes(1)
+    expect(hooks.installClaude).not.toHaveBeenCalled()
     expect(hooks.installCodex).not.toHaveBeenCalled()
     expect(hooks.removeClaude).not.toHaveBeenCalled()
     expect(hooks.removeCodex).not.toHaveBeenCalled()
     expect(statuses).toEqual([
-      expect.objectContaining({ agent: 'claude', state: 'installed' }),
-      expect.objectContaining({ agent: 'codex', state: 'skipped', skipReason: 'agent_disabled' })
+      expect.objectContaining({ agent: 'claude', state: 'skipped',
+        skipReason: 'ash_ownership_unavailable' }),
+      expect.objectContaining({ agent: 'codex', state: 'skipped',
+        skipReason: 'ash_ownership_unavailable' })
     ])
+  })
+
+  it('does not install provider-global entries on Ash enable without an ownership ledger', async () => {
+    const result = await applyAgentStatusHooksEnabled(true, {
+      agentStatusHooksEnabled: true
+    }, { userInitiated: true })
+    expect(hooks.installClaude).not.toHaveBeenCalled()
+    expect(hooks.installCodex).not.toHaveBeenCalled()
+    expect(hooks.removeClaude).not.toHaveBeenCalled()
+    expect(hooks.removeCodex).not.toHaveBeenCalled()
+    expect(result).toEqual([
+      expect.objectContaining({ agent: 'claude', state: 'skipped',
+        skipReason: 'ash_ownership_unavailable', managedHooksPresent: true }),
+      expect.objectContaining({ agent: 'codex', state: 'skipped',
+        skipReason: 'ash_ownership_unavailable', managedHooksPresent: true })
+    ])
+  })
+
+  it('fails closed for a direct startup installer call, without even probing or refreshing CLIs', async () => {
+    const statuses = await installManagedAgentHooks({ agentStatusHooksEnabled: true })
+    expect(hooks.detectPresence).not.toHaveBeenCalled()
+    expect(hooks.installClaude).not.toHaveBeenCalled()
+    expect(hooks.installCodex).not.toHaveBeenCalled()
+    expect(statuses.every((s) => s.skipReason === 'ash_ownership_unavailable')).toBe(true)
   })
 })
