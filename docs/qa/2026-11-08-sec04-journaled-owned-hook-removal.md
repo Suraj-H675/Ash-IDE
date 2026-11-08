@@ -19,6 +19,8 @@
 
 An actual short-lived **Node child process was terminated with `SIGKILL`** after moving a disposable settings file to an Ash-held location; the pending removal receipt and provider file were then recovered, with the original file and installed ownership claim preserved. This is real process termination at a **fixture-controlled filesystem boundary**; it does not demonstrate killing the production transaction function at arbitrary instructions or complete power-loss durability.
 
+Independent adversarial review reproduced two additional unsafe recovery states on the initial removal implementation: a receipt with **no matching installed claim** restored a held provider settings file before refusing recovery, and a receipt falsely claiming that an unchanged file was a published removal caused Ash to **forget an installed hook while its ownership marker remained**. The new `ash-provider-hook-removal-negative.test.ts` cases failed against the initial implementation and now pass. Recovery checks owner claim/published state *before* any held-file recovery, and verifies the absence of the exact Ash owner marker before clearing its claim. Both cases use only disposable files.
+
 ## Remaining acceptance gates
 
 - Provider native hook compatibility and real authenticated status/turn recovery are **not** verified.

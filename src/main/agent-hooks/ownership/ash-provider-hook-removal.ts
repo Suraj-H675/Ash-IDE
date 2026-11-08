@@ -26,6 +26,15 @@ function requireInstalledClaim(claims: AshHookOwnershipClaim[], id: string): Ash
   return claim
 }
 
+function assertOwnedMarkerAbsent(config: Record<string, unknown> | undefined, id: string): void {
+  // Hash equality alone is insufficient: a private receipt might claim the
+  // unchanged provider file is the result of an already-published removal.
+  // Never discard the only ownership record while its hook marker still exists.
+  if (!config || JSON.stringify(config).includes(`ASH_IDE_HOOK_OWNER=${id}`)) {
+    throw new AshHookOwnershipConflict('owned hook marker remains after claimed removal')
+  }
+}
+
 /**
  * Experimental *disposable-file-only* selective removal transaction.
  * No production application callsite may invoke this until Ash can prove
@@ -74,6 +83,7 @@ export async function removeOwnedAshClaudeHookFromFile(args: {
   if (ashProviderFileSha256(after?.raw ?? null) !== receipt.afterSha256) {
     throw new AshHookOwnershipConflict('provider configuration changed after Ash-owned removal')
   }
+  assertOwnedMarkerAbsent(after?.config, claim.id)
   const persisted = await saveAshHookOwnershipLedger(
     args.ashUserData,
     removal.ledger,
@@ -97,7 +107,8 @@ export async function recoverOwnedAshClaudeHookRemoval(args: {
   if (
     receipt.action !== 'remove' ||
     receipt.operationId === receipt.id ||
-    receipt.beforeSha256 === null
+    receipt.beforeSha256 === null ||
+    receipt.beforeSha256 === receipt.afterSha256
   ) {
     throw new AshHookOwnershipConflict('recovery receipt is not an Ash-owned removal')
   }
@@ -112,6 +123,18 @@ export async function recoverOwnedAshClaudeHookRemoval(args: {
   ) {
     throw new AshHookOwnershipConflict('removal receipt does not match the Ash ownership claim')
   }
+  const beforeRecovery = await readAshClaudeSettingsSnapshot(receipt.configPath)
+  const alreadyPublished =
+    ashProviderFileSha256(beforeRecovery?.raw ?? null) === receipt.afterSha256
+  if (!claim && !alreadyPublished) {
+    // This cannot occur after a valid committed removal: Ash persists the
+    // ledger deletion only after the target file was published and verified.
+    // In particular, do NOT restore a held provider file with no owner claim.
+    throw new AshHookOwnershipConflict('unpublished removal has no installed Ash claim')
+  }
+  if (alreadyPublished) {
+    assertOwnedMarkerAbsent(beforeRecovery?.config, receipt.id)
+  }
   const swap = await recoverAshClaudeSettingsSwap({
     configPath: receipt.configPath,
     operationId: receipt.operationId,
@@ -123,6 +146,7 @@ export async function recoverOwnedAshClaudeHookRemoval(args: {
     if (ashProviderFileSha256(current?.raw ?? null) !== receipt.afterSha256) {
       throw new AshHookOwnershipConflict('published provider removal changed during recovery')
     }
+    assertOwnedMarkerAbsent(current?.config, receipt.id)
     if (claim) {
       await saveAshHookOwnershipLedger(
         args.ashUserData,
