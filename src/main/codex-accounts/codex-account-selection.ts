@@ -140,8 +140,28 @@ export class CodexAccountSelection {
         effectiveTarget?.runtime === 'wsl' ? nextSelection.host : accountId,
       activeCodexManagedAccountIdsByRuntime: nextSelection
     })
-    await this.dependencies.configMirror.safeSyncToManagedHomes()
-    this.dependencies.runtimeHome.syncForCurrentSelection(effectiveTarget)
+    try {
+      await this.dependencies.configMirror.safeSyncToManagedHomes()
+      this.dependencies.runtimeHome.syncForCurrentSelection(effectiveTarget)
+    } catch (error) {
+      // The selected account is already visible in settings, but the runtime
+      // may still use the old home. Restore both selection fields before
+      // attempting to rebind the previous runtime home.
+      this.dependencies.store.updateSettings({
+        activeCodexManagedAccountId: previousSettings.activeCodexManagedAccountId,
+        activeCodexManagedAccountIdsByRuntime:
+          previousSettings.activeCodexManagedAccountIdsByRuntime
+      })
+      try {
+        this.dependencies.runtimeHome.syncForCurrentSelection(effectiveTarget)
+      } catch (restoreError) {
+        console.warn(
+          '[codex-accounts] Failed to restore previous runtime home after selection failure:',
+          restoreError
+        )
+      }
+      throw error
+    }
     if (
       accountId === null &&
       normalizeCodexAccountSelectionTarget(effectiveTarget).runtime === 'host'

@@ -317,6 +317,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/codex-accounts/codex-account-selection.ts",
+      "sha256": "072c251e61d8cc3c2023ab05a12925b172af15ca3bc4f35d2fa4c015ccc7ebfa",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/computer/macos-computer-use-permissions.ts",
       "sha256": "998559e90478f7fdbd2adbacdc2d140e05ed80dd9feebd6a9cfa42d6b879d239",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
