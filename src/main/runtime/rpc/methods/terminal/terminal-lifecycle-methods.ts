@@ -2,6 +2,7 @@ import { terminalCreateFeatureRequirement } from '../../agent-launch-feature-req
 import { terminalImageViewerSupported } from '../../../terminal/launch/terminal-image-viewer-env'
 import { TERMINAL_WORKSPACE_STOP_METHODS } from './terminal-workspace-stop-methods'
 import { ORCA_SIDEBAR_INPUTS_IS_MAIN } from '../../../../../shared/sidebar-inputs-switch'
+import { ASH_NATIVE_AGENT_TEAMS_UNAVAILABLE_REASON } from '../../../../../shared/agent-launch/catalog/tui-agent-config'
 import { defineMethod } from '../../core'
 import {
   navigationTargetsHost,
@@ -261,20 +262,16 @@ export const TERMINAL_LIFECYCLE_METHODS = [
     name: 'agentTeams.tmuxCompat',
     permission: 'workspace',
     params: AgentTeamsTmuxCompat,
-    handler: async (params, { runtime }) => ({
-      tmux: await runtime.handleAgentTeamsTmuxCompat(params)
-    })
+    handler: async () => {
+      throw new Error(ASH_NATIVE_AGENT_TEAMS_UNAVAILABLE_REASON)
+    }
   }),
   defineMethod({
     name: 'agentTeams.prepareLaunch',
     permission: 'workspace',
     params: AgentTeamsPrepareLaunch,
-    handler: async (params, { runtime }) => ({
-      launch: await runtime.prepareClaudeAgentTeamsLeader({
-        paneKey: params.paneKey,
-        baseEnv: params.env,
-        prepareAuth: params.prepareAuth
-      })
-    })
+    handler: async () => {
+      throw new Error(ASH_NATIVE_AGENT_TEAMS_UNAVAILABLE_REASON)
+    }
   })
 ]

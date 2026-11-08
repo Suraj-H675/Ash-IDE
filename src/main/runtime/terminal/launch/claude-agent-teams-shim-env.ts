@@ -8,8 +8,8 @@ import {
   isDirectClaudeCommand,
   type ClaudeAgentTeamsMode
 } from '../../../../shared/claude-agent-teams-tmux-compat'
+import { ASH_NATIVE_AGENT_TEAMS_UNAVAILABLE_REASON } from '../../../../shared/agent-launch/catalog/tui-agent-config'
 import { getAppEnvironment, hasAppEnvironment } from '../../../../shared/app-environment'
-import { getOrcaCliCommandNameForPlatform } from '../../../../shared/orca-cli-command-name'
 import { getBundledLauncherPath } from '../../../cli/bundled-cli-launcher-path'
 import { resolvePathEnvKey } from '../../../pty/environment/windows-path-segment-merge'
 
@@ -37,6 +37,11 @@ export async function buildClaudeAgentTeamsLaunchPlan(args: {
   const mode = args.mode ?? 'off'
   if (!args.command || mode === 'off' || !isDirectClaudeCommand(args.command)) {
     return null
+  }
+  // Upstream native panes would create shims and may route into an installed
+  // Orca CLI. Ash must own its entire shim/IPC lifecycle before enabling this.
+  if (mode === 'native-panes-shim') {
+    throw new Error(ASH_NATIVE_AGENT_TEAMS_UNAVAILABLE_REASON)
   }
   if (mode === 'in-process' || process.platform === 'win32') {
     return {
@@ -94,12 +99,15 @@ export function resolveClaudeAgentTeamsShimBin(
   }
   return (
     findExecutableOnPath(process.platform === 'win32' ? 'ash-ide-dev.cmd' : 'ash-ide-dev', pathValue) ??
-    findExecutableOnPath(getOrcaCliCommandNameForPlatform(process.platform), pathValue)
+    findExecutableOnPath(process.platform === 'win32' ? 'ash-ide.exe' : 'ash-ide', pathValue)
   )
 }
 
 function defaultShimRoot(): string {
-  return join(homedir(), '.orca', 'claude-agent-teams-bin')
+  const ashDataRoot = hasAppEnvironment()
+    ? getAppEnvironment().getPath('userData')
+    : join(homedir(), '.local', 'share', 'ash-ide')
+  return join(ashDataRoot, 'claude-agent-teams-bin')
 }
 
 function findExecutableOnPath(command: string, pathValue: string | undefined): string | null {

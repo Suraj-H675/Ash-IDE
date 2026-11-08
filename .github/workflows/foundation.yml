@@ -33,7 +33,7 @@ jobs:
         run: node config/scripts/workspace-package-build/build-workspace-packages.mjs
       - name: Check TypeScript projects
         run: node config/scripts/typecheck/project-execution/run-typecheck-projects-in-parallel.mjs
-      - name: Test the persistent local runtime contracts
+      - name: Test the persistent runtime and provider boundaries
         run: |
           node config/scripts/test-runtime/execution-policy/run-vitest.mjs run \
             --config config/vitest.config.ts --pool=threads --maxWorkers=1 \
@@ -44,7 +44,12 @@ jobs:
             src/cli/handlers/runtime.test.ts \
             src/shared/rpc-contract/terminal-daemon-params.test.ts \
             src/shared/ash-runtime-capabilities.test.ts \
-            src/main/startup/window-all-closed-quit-policy.test.ts
+            src/main/startup/window-all-closed-quit-policy.test.ts \
+            src/main/cli/ash-cli-isolation.test.ts \
+            src/shared/agent-launch/catalog/ash-provider-isolation.test.ts \
+            src/renderer/src/lib/quick-workspace-agent-selection.ash.test.ts \
+            src/main/runtime/terminal/launch/ash-agent-teams-launch-disabled.test.ts \
+            src/main/runtime/rpc/methods/terminal/ash-agent-teams-rpc-disabled.test.ts
       - name: Build the Ash CLI
         run: ORCA_CLI_BUILD_COMPILER=tsrs node config/scripts/cli-build/build-cli.mjs
       - name: Build the Electron desktop bundle

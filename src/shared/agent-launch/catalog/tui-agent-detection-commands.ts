@@ -1,5 +1,9 @@
 import type { TuiAgent } from './tui-agent'
-import { getTuiAgentDetectCommands, TUI_AGENT_CONFIG } from './tui-agent-config'
+import {
+  ashTuiAgentUnavailableReason,
+  getTuiAgentDetectCommands,
+  TUI_AGENT_CONFIG
+} from './tui-agent-config'
 import type { TuiAgentConfig, TuiAgentDetectionRuntime } from './tui-agent-config-types'
 
 export type TuiAgentDetectionCommand = {
@@ -15,9 +19,11 @@ export const KNOWN_TUI_AGENT_DETECTION_COMMANDS = buildTuiAgentDetectionCommands
 
 function buildTuiAgentDetectionCommands(): TuiAgentDetectionCommand[] {
   return Object.entries(TUI_AGENT_CONFIG).flatMap(([id, config]) =>
-    getTuiAgentDetectCommands(config).map((cmd) =>
-      buildTuiAgentDetectionCommand(id as TuiAgent, cmd, config)
-    )
+    ashTuiAgentUnavailableReason(id as TuiAgent)
+      ? []
+      : getTuiAgentDetectCommands(config).map((cmd) =>
+          buildTuiAgentDetectionCommand(id as TuiAgent, cmd, config)
+        )
   )
 }
 

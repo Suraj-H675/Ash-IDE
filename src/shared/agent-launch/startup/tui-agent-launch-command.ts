@@ -14,7 +14,11 @@ import type { AgentLaunchProfileSettings } from '../choices/tui-agent-launch-def
 import { readLaunchPermissionChoice } from '../permissions/tui-agent-permission-choice'
 import type { SessionOptionValue } from '../../native-chat/input/native-chat-session-options'
 import { agentArgTerminatorIndex } from '../../agent-session/options/agent-session-option-agent-args'
-import { getTuiAgentLaunchCommand, TUI_AGENT_CONFIG } from '../catalog/tui-agent-config'
+import {
+  ashTuiAgentUnavailableReason,
+  getTuiAgentLaunchCommand,
+  TUI_AGENT_CONFIG
+} from '../catalog/tui-agent-config'
 import {
   quoteStartupArg,
   tokenizeStartupCommand,
@@ -104,6 +108,10 @@ export function resolveAgentLaunchCommand(args: {
   /** OS that runs the agent when `platform` only picks quoting; null when unreported. */
   agentHostPlatform?: NodeJS.Platform | null
 }): ResolvedAgentLaunchCommand {
+  const unavailableReason = ashTuiAgentUnavailableReason(args.agent)
+  if (unavailableReason) {
+    return { ok: false, error: unavailableReason }
+  }
   const override = args.cmdOverrides[args.agent]
   const command =
     override ||

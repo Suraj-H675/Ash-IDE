@@ -1,9 +1,4 @@
-import { getCatalogPlatform } from './agent-catalog-platform'
 import openClaudeLogoUrl from '../../../../resources/openclaude-logo.png?url'
-import {
-  getTuiAgentLaunchCommand,
-  TUI_AGENT_CONFIG
-} from '../../../shared/agent-launch/catalog/tui-agent-config'
 import { translate } from '@/i18n/i18n'
 import type { AgentCatalogEntry } from './agent-catalog'
 
@@ -15,12 +10,6 @@ export function primaryAgentCatalogEntries(): AgentCatalogEntry[] {
       label: translate('auto.lib.agent.catalog.0708ed89f1', 'Claude'),
       cmd: 'claude',
       homepageUrl: 'https://code.claude.com/docs'
-    },
-    {
-      id: 'claude-agent-teams',
-      label: translate('auto.lib.agent.catalog.bf53f09bf8', 'Claude Agent Teams'),
-      cmd: getTuiAgentLaunchCommand(TUI_AGENT_CONFIG['claude-agent-teams'], getCatalogPlatform()),
-      homepageUrl: 'https://code.claude.com/docs/en/agent-teams'
     },
     {
       id: 'openclaude',

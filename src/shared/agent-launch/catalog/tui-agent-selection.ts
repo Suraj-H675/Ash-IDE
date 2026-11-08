@@ -1,11 +1,10 @@
 import type { TuiAgent } from './tui-agent'
 import type { GlobalSettings } from '../../global-settings-types'
-import { isTuiAgent } from './tui-agent-config'
+import { ashTuiAgentUnavailableReason, isTuiAgent } from './tui-agent-config'
 
 // Match desktop catalog order: this determines fallback priority without a selected default.
-export const TUI_AGENT_AUTO_PICK_ORDER = [
+export const TUI_AGENT_AUTO_PICK_ORDER: readonly TuiAgent[] = [
   'claude',
-  'claude-agent-teams',
   'openclaude',
   'codex',
   'grok',
@@ -49,9 +48,9 @@ export const TUI_AGENT_AUTO_PICK_ORDER = [
   'openclaw',
   'codebuddy',
   'jcode'
-] as const satisfies readonly TuiAgent[]
+]
 
-// Fresh installs show Agent Teams; the migration separately preserves legacy hidden defaults.
+// Ash native-pane Agent Teams is unavailable; ordinary Claude and Codex remain visible.
 export const DEFAULT_DISABLED_TUI_AGENTS = [] as const satisfies readonly TuiAgent[]
 
 export function pickTuiAgent(
@@ -67,6 +66,7 @@ export function pickTuiAgent(
   const detectedSet = detected instanceof Set ? detected : new Set(detected)
   if (
     preferred &&
+    !ashTuiAgentUnavailableReason(preferred) &&
     (detectedSet.has(preferred) || chosenUsable?.(preferred)) &&
     !disabledSet.has(preferred)
   ) {
@@ -100,7 +100,10 @@ export function haveSameDisabledTuiAgents(left: unknown, right: unknown): boolea
 }
 
 export function isTuiAgentEnabled(agent: TuiAgent, disabled?: Iterable<unknown> | null): boolean {
-  return !normalizeDisabledTuiAgents(disabled).includes(agent)
+  return (
+    !ashTuiAgentUnavailableReason(agent) &&
+    !normalizeDisabledTuiAgents(disabled).includes(agent)
+  )
 }
 
 export function buildAgentAvailabilitySettingsUpdate(
@@ -126,5 +129,7 @@ export function filterEnabledTuiAgents<T extends TuiAgent>(
   disabled?: Iterable<unknown> | null
 ): T[] {
   const disabledSet = new Set(normalizeDisabledTuiAgents(disabled))
-  return [...agents].filter((agent) => !disabledSet.has(agent))
+  return [...agents].filter(
+    (agent) => !disabledSet.has(agent) && !ashTuiAgentUnavailableReason(agent)
+  )
 }

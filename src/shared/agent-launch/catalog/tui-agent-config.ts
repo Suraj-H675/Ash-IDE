@@ -1,8 +1,5 @@
 import type { TuiAgent } from './tui-agent'
-import {
-  getOrcaCliCommandNameForPlatform,
-  skipsLinuxOrcaCliRename
-} from '../../orca-cli-command-name'
+import { skipsLinuxOrcaCliRename } from '../../orca-cli-command-name'
 import type { TuiAgentConfig, TuiAgentConfigSource } from './tui-agent-config-types'
 
 function resolveTuiAgentConfig(source: TuiAgentConfigSource): TuiAgentConfig {
@@ -28,18 +25,10 @@ const TUI_AGENT_CONFIG_SOURCE: Record<TuiAgent, TuiAgentConfigSource> = {
     ctrlEnterEncoding: 'csi-u'
   },
   'claude-agent-teams': {
-    // This launch mode uses Orca’s CLI wrapper rather than a separate agent binary.
-    detectCmd: 'orca',
-    detectCmdAliases: ['orca-dev', 'orca-ide'],
-    // Orca’s always-present shim alone must not report installed Agent Teams without Claude.
-    detectRequiredCommands: ['claude'],
-    // Windows/WSL use Claude’s in-process fallback, not this native-pane/tmux wrapper.
-    detectUnsupportedRuntimes: ['win32', 'wsl'],
-    launchCmd: 'orca claude-teams',
-    launchCmdByPlatform: {
-      linux: `${getOrcaCliCommandNameForPlatform('linux')} claude-teams`,
-      win32: `${getOrcaCliCommandNameForPlatform('win32')} claude-teams`
-    },
+    // Ash has no native-pane Agent Teams CLI yet. Retain the persisted agent ID,
+    // but never probe or launch the unrelated Orca installation for this mode.
+    detectCmd: 'claude',
+    launchCmd: 'ash-ide claude-teams',
     expectedProcess: 'claude',
     promptInjectionMode: 'stdin-after-start',
     pasteNeedsTypedRequest: true,
@@ -335,6 +324,13 @@ export const TUI_AGENT_CONFIG: Record<TuiAgent, TuiAgentConfig> = Object.fromEnt
   ])
 ) as Record<TuiAgent, TuiAgentConfig>
 
+export const ASH_NATIVE_AGENT_TEAMS_UNAVAILABLE_REASON =
+  'Claude Agent Teams native panes are not yet supported by Ash IDE. Launch Claude in an Ash terminal instead.'
+
+export function ashTuiAgentUnavailableReason(agent: TuiAgent): string | null {
+  return agent === 'claude-agent-teams' ? ASH_NATIVE_AGENT_TEAMS_UNAVAILABLE_REASON : null
+}
+
 export function isTuiAgent(value: unknown): value is TuiAgent {
   return typeof value === 'string' && Object.hasOwn(TUI_AGENT_CONFIG, value)
 }
@@ -348,6 +344,11 @@ export function getTuiAgentLaunchCommand(
   platform: NodeJS.Platform,
   opts?: { isRemote?: boolean }
 ): string {
+  // This helper is also called outside the normal startup planner (e.g. WSL and
+  // resume paths); reject a stale saved selection instead of executing Orca.
+  if (config === TUI_AGENT_CONFIG['claude-agent-teams']) {
+    throw new Error(ASH_NATIVE_AGENT_TEAMS_UNAVAILABLE_REASON)
+  }
   if (platform === 'linux' && skipsLinuxOrcaCliRename(opts?.isRemote)) {
     return config.launchCmd
   }

@@ -9,6 +9,7 @@ Ash is a local desktop workspace for running coding agents in real project folde
 - New Ash profiles default agent permissions to full access. Codex uses `--dangerously-bypass-approvals-and-sandbox`; this is Yolo behavior, not an operating-system sandbox.
 - Ash stores its packaged profile under `ash-ide`, its development profile under `ash-ide-dev`, and runtime discovery in `ash-runtime.json`. Set `ASH_USER_DATA_PATH` or `ASH_DEV_USER_DATA_PATH` to use a disposable profile.
 - Automatic provider hook reconciliation, the general plugin catalog, and scheduled automation dispatch do not start in this slice. Ash reads Codex account-home services without writing provider configuration. Terminal launches inherit the user's existing provider home and authentication; Ash does not install hooks during startup or launch preparation.
+- Ordinary Claude and Codex terminal agents remain available. Upstream Claude Agent Teams **native-pane** mode is unavailable until Ash has its own launcher and tmux adapter: it cannot detect, invoke, or borrow Orca's CLI or write Orca's shim directory. An unsupported saved mode is rejected with a diagnostic; Claude's provider-native `in-process` teammates remain separate and supported.
 
 Ash's authenticated runtime RPC and CLI omit mobile, remote SSH management, cloud, scheduled automation, general app plugin and skill marketplace, speech, Jira, Linear, and telemetry methods. Main runtime startup disables WebSocket exposure. It does not start the mobile relay, scheduled automation service, general plugin service, or telemetry IPC service.
 
@@ -36,7 +37,7 @@ Before the first Git commit only, `ASH_ALLOW_UNCOMMITTED_BUILD=1` permits a boot
 
 ## Verification status
 
-The CLI and Electron bundles build, with the Electron bootstrap smoke build using `ASH_ALLOW_UNCOMMITTED_BUILD=1` before the initial Git commit. The full project TypeScript check passed after restoring required test-support fixtures. Thirty focused CLI, RPC, capability, CLI-isolation, and lifecycle tests passed. Packaged AppImage/Windows/macOS release validation, complete excluded-feature removal, and independent multi-window behavior are not yet accepted.
+The first public foundation commit has passed GitHub Actions source-provenance, workspace-package, TypeScript, runtime-test, CLI-build and Electron-build checks. Subsequent provider-boundary work is independently tested before integration. Packaged AppImage/Windows/macOS release validation, complete excluded-feature removal, real Claude close/reopen testing, and independent multi-window behavior are not yet accepted.
 
 Independent native runs on Arch Linux/Wayland verified an Ash Electron window, authenticated CLI access, a real PTY, and a live Main-route Codex CLI session in a disposable non-Git fixture. They observed the same host, daemon, PTY, and Codex process IDs after closing every GUI window and reopening Ash, and observed the idle host persist. The runs also checked loopback-only listeners and unchanged global Codex configuration. This is milestone evidence, not packaged release validation.
 

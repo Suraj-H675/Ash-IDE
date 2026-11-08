@@ -442,6 +442,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/rpc/methods/terminal/terminal-lifecycle-methods.ts",
+      "sha256": "6218820f11dc8fec337b25481642323ce052e47a5cbd6ac48cc1069e0bb1a6b6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/rpc/methods/terminal-daemon.ts",
       "sha256": "18951e034ef696163e6df0f457c1768b3eee61ecf182eae308d181b25ca0aa9b",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -459,6 +464,11 @@
     {
       "path": "src/main/runtime/rpc/unused-default-rpc-methods.test-fixture.ts",
       "sha256": "83cf4e6f2a29320903d5b8df6f22c9741191c9f81430f1b7ede4b765f50ea70e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/terminal/launch/claude-agent-teams-shim-env.ts",
+      "sha256": "f153512101a2b254329e678f6cc03fbdb61080d97a8e3619fc07af66b0c9b778",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -759,6 +769,36 @@
     {
       "path": "src/renderer/src/components/settings/appearance/appearance-search.ts",
       "sha256": "ec844236564c5f1affabbff86a9822723ddb6da450def51a2fcb674cbf315ed8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/lib/agent-catalog-entries-primary.ts",
+      "sha256": "d2b63d5579eaf9cf41905610f1c13a2af07668dd2ae26df6f197f38325e16996",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/lib/quick-workspace-agent-selection.ts",
+      "sha256": "fadeff5e5b75300ee62015292f95ec77ef295faa1b27fac1fd8f6a06e31ac8a5",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/agent-launch/catalog/tui-agent-config.ts",
+      "sha256": "3242296a8e5ed440985b1e083529e1f046a3b2ab48aae4c780bc953b4693d781",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/agent-launch/catalog/tui-agent-detection-commands.ts",
+      "sha256": "6faaef6ba11fd5518d0fb0fc7e32c494ccaed7bbc197349c31928f9159790774",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/agent-launch/catalog/tui-agent-selection.ts",
+      "sha256": "e239b8b5ebb1fee4e68756b7d3b0e99d332fb8755ffa348c59f7b98595586fcd",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/agent-launch/startup/tui-agent-launch-command.ts",
+      "sha256": "b1d927cd8507bf35bbed8c098e4da373eb1938d7aff9a0c8473a663732e7d296",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

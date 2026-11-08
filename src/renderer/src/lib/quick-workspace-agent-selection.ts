@@ -61,9 +61,15 @@ export function resolveQuickWorkspaceAgentSelection({
   quickAgent: TuiAgent | null
   quickAgentOverride: TuiAgent | null | undefined
 } {
+  // A saved preference can outlive support for a launch mode. Do not surface
+  // the retired native-pane mode as a usable initial selection.
+  const usablePreferredAgent =
+    preferredQuickAgent && isTuiAgentEnabled(preferredQuickAgent, disabledTuiAgents)
+      ? preferredQuickAgent
+      : null
   if (quickAgentOverride === undefined || quickAgentOverride === null) {
     return {
-      quickAgent: quickAgentOverride === undefined ? preferredQuickAgent : null,
+      quickAgent: quickAgentOverride === undefined ? usablePreferredAgent : null,
       quickAgentOverride
     }
   }
@@ -75,7 +81,7 @@ export function resolveQuickWorkspaceAgentSelection({
   ) {
     return { quickAgent: quickAgentOverride, quickAgentOverride }
   }
-  return { quickAgent: preferredQuickAgent, quickAgentOverride: preferredQuickAgent }
+  return { quickAgent: usablePreferredAgent, quickAgentOverride: usablePreferredAgent }
 }
 
 /** The workspace a composer's create would launch its agent in, before it exists. */
