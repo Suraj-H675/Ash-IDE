@@ -1,7 +1,13 @@
 import { createHash } from 'node:crypto'
-import { constants } from 'node:fs'
-import { lstat, mkdir, open, unlink, link } from 'node:fs/promises'
+import { lstat, mkdir } from 'node:fs/promises'
 import { basename, dirname, isAbsolute, join, normalize } from 'node:path'
+import {
+  AshClaudeSessionSettingsConflict,
+  publishAshClaudeSessionFile,
+  readAshClaudeSessionOwnedFile,
+  MAX_ASH_CLAUDE_SESSION_SETTINGS_BYTES
+} from './ash-claude-session-settings-publication'
+export { AshClaudeSessionSettingsConflict } from './ash-claude-session-settings-publication'
 
 /**
  * Experimental, per-session alternative to modifying Claude's shared settings.
@@ -9,17 +15,11 @@ import { basename, dirname, isAbsolute, join, normalize } from 'node:path'
  * --settings is a documented Claude CLI input; provider acceptance of hook
  * merging and live status is a separate integration/acceptance gate.
  */
-export class AshClaudeSessionSettingsConflict extends Error {
-  constructor(reason: string) {
-    super(`Ash Claude session settings conflict: ${reason}`)
-    this.name = 'AshClaudeSessionSettingsConflict'
-  }
-}
-
 const SESSION_ID = /^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i
 const EVENTS = new Set(['SessionStart', 'Stop'])
-const MAX_BYTES = 16 * 1024
 const DIRECTORY = 'provider-session-settings'
+const RECEIPT_SUFFIX = '.receipt.json'
+const SHA256 = /^[a-f0-9]{64}$/
 
 export type AshClaudeSessionHook = {
   event: 'SessionStart' | 'Stop'
@@ -76,18 +76,6 @@ async function validateAncestors(root: string): Promise<void> {
   }
 }
 
-async function syncDirectory(path: string): Promise<void> {
-  if (process.platform === 'win32') {
-    return
-  }
-  const dir = await open(path, constants.O_RDONLY | (constants.O_DIRECTORY ?? 0))
-  try {
-    await dir.sync()
-  } finally {
-    await dir.close()
-  }
-}
-
 function quotePosixScript(path: string): string {
   if (
     !isAbsolute(path) ||
@@ -119,7 +107,7 @@ export function buildAshClaudeSessionSettings(hooks: readonly AshClaudeSessionHo
     ]
   }
   const raw = `${JSON.stringify({ hooks: eventDefinitions }, null, 2)}\n`
-  if (Buffer.byteLength(raw) > MAX_BYTES) {
+  if (Buffer.byteLength(raw) > MAX_ASH_CLAUDE_SESSION_SETTINGS_BYTES) {
     throw new AshClaudeSessionSettingsConflict('session settings payload is oversized')
   }
   return raw
@@ -131,50 +119,20 @@ function expectedPath(root: string, sessionId: string): string {
   return join(root, DIRECTORY, `claude-${sessionId}.json`)
 }
 
-async function readOwned(path: string): Promise<string> {
-  const stat = await lstat(path)
-  if (
-    !stat.isFile() ||
-    stat.isSymbolicLink() ||
-    stat.nlink !== 1 ||
-    stat.size > MAX_BYTES ||
-    (process.platform !== 'win32' &&
-      ((stat.mode & 0o077) !== 0 || (process.getuid && stat.uid !== process.getuid())))
-  ) {
-    throw new AshClaudeSessionSettingsConflict(
-      'session settings file is not a private regular file'
-    )
-  }
-  const file = await open(path, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0))
-  try {
-    const opened = await file.stat()
-    if (opened.ino !== stat.ino || opened.dev !== stat.dev || opened.nlink !== 1) {
-      throw new AshClaudeSessionSettingsConflict('session settings file changed while opening')
-    }
-    const raw = await file.readFile('utf8')
-    const after = await file.stat()
-    if (
-      Buffer.byteLength(raw) > MAX_BYTES ||
-      opened.size !== after.size ||
-      opened.mtimeMs !== after.mtimeMs ||
-      opened.ctimeMs !== after.ctimeMs
-    ) {
-      throw new AshClaudeSessionSettingsConflict('session settings file changed while reading')
-    }
-    return raw
-  } finally {
-    await file.close()
-  }
-}
-
 function checksum(raw: string): string {
   return createHash('sha256').update(raw).digest('hex')
 }
 
+function receiptPath(settingsPath: string): string {
+  return `${settingsPath}${RECEIPT_SUFFIX}`
+}
+
 /**
- * Creates one immutable-by-contract Ash-owned settings overlay under private
- * userData. No Claude config directory, workspace settings, or provider tokens
- * are read or written. O_EXCL hardlink publication never overwrites a session.
+ * Create one Ash-owned session overlay and a durable, independent digest
+ * receipt. Publish the overlay first: if that name already exists, never
+ * issue a receipt that might adopt another writer's file. A crash between the
+ * two publications leaves an untrusted orphan and recovery fails closed.
+ * Both live outside the provider's config home; neither is auto-deleted.
  */
 export async function createAshClaudeSessionSettings(args: {
   ashUserData: string
@@ -192,54 +150,88 @@ export async function createAshClaudeSessionSettings(args: {
     }
   })
   await validatePrivateDirectory(directory)
-  const stage = `${path}.stage`
-  let file
-  try {
-    file = await open(stage, 'wx', 0o600)
-  } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'EEXIST') {
-      throw new AshClaudeSessionSettingsConflict('session settings stage already exists')
+  const sha256 = checksum(raw)
+  const receipt = `${JSON.stringify({ format: 1, sessionId: args.sessionId, sha256 })}\n`
+  // A previous interrupted create is ambiguous: never complete its receipt or
+  // adopt its settings, even when the bytes happen to match this request.
+  const existingReceipt = await lstat(receiptPath(path)).catch((error: unknown) => {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      return null
     }
     throw error
+  })
+  if (existingReceipt) {
+    throw new AshClaudeSessionSettingsConflict('session settings already exist')
   }
-  const owned = await file.stat()
-  try {
-    try {
-      await file.writeFile(raw, 'utf8')
-      await file.sync()
-    } finally {
-      await file.close()
-    }
-    await syncDirectory(directory)
-    try {
-      await link(stage, path)
-    } catch (error) {
-      if (error instanceof Error && 'code' in error && error.code === 'EEXIST') {
-        throw new AshClaudeSessionSettingsConflict('session settings already exist')
-      }
-      throw error
-    }
-    await syncDirectory(directory)
-  } finally {
-    // A duplicate session or failed publication must not leave a stage that
-    // prevents retry. Never unlink a stage another writer replaced.
-    const stillStage = await lstat(stage).catch((error: unknown) => {
-      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-        return null
-      }
-      throw error
-    })
-    if (stillStage && stillStage.ino === owned.ino && stillStage.dev === owned.dev) {
-      await unlink(stage)
-      await syncDirectory(directory)
-    }
-  }
+  // Two durable publications cannot be one atomic operation. Never delete an
+  // orphan after a crash: a surviving provider process may still need it.
+  await publishAshClaudeSessionFile(path, raw)
+  await publishAshClaudeSessionFile(receiptPath(path), receipt)
   return {
     sessionId: args.sessionId,
     settingsPath: path,
-    sha256: checksum(raw),
+    sha256,
     settingsArgs: ['--settings', path]
   }
+}
+
+/**
+ * Recover only an intact Ash-owned overlay after a host restart. The private
+ * receipt is the retained content expectation; never recalculate a "trusted"
+ * hash from a changed provider settings file or silently generate a receipt.
+ * An incomplete publication must be inspected rather than garbage-collected.
+ */
+export async function recoverAshClaudeSessionSettings(
+  ashUserData: string,
+  sessionId: string
+): Promise<AshClaudeSessionSettings> {
+  const path = expectedPath(ashUserData, sessionId)
+  await validateAncestors(ashUserData)
+  await validatePrivateDirectory(ashUserData)
+  await validatePrivateDirectory(dirname(path))
+  const receipt = await readAshClaudeSessionOwnedFile(receiptPath(path), true)
+  if (Buffer.byteLength(receipt) > 512) {
+    throw new AshClaudeSessionSettingsConflict('session settings receipt is oversized')
+  }
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(receipt)
+  } catch {
+    throw new AshClaudeSessionSettingsConflict('session settings receipt is malformed')
+  }
+  if (
+    !parsed ||
+    typeof parsed !== 'object' ||
+    Array.isArray(parsed) ||
+    Object.keys(parsed).length !== 3 ||
+    !('format' in parsed) ||
+    parsed.format !== 1 ||
+    !('sessionId' in parsed) ||
+    parsed.sessionId !== sessionId ||
+    !('sha256' in parsed) ||
+    typeof parsed.sha256 !== 'string' ||
+    !SHA256.test(parsed.sha256)
+  ) {
+    throw new AshClaudeSessionSettingsConflict('session settings receipt is invalid')
+  }
+  const record: AshClaudeSessionSettings = {
+    sessionId,
+    settingsPath: path,
+    sha256: parsed.sha256,
+    settingsArgs: ['--settings', path]
+  }
+  await verifyAshClaudeSessionSettings(ashUserData, record)
+  return record
+}
+
+/** Recheck the persisted receipt and overlay on every new process, including resume. */
+export async function claudeVerifiedArgsWithAshSessionSettings(
+  ashUserData: string,
+  sessionId: string,
+  callerArgs: readonly string[]
+): Promise<string[]> {
+  const record = await recoverAshClaudeSessionSettings(ashUserData, sessionId)
+  return claudeArgsWithAshSessionSettings(callerArgs, record)
 }
 
 /** Verify an unchanged overlay before launching; never fall back to user settings silently. */
@@ -253,7 +245,7 @@ export async function verifyAshClaudeSessionSettings(
   await validateAncestors(ashUserData)
   await validatePrivateDirectory(ashUserData)
   await validatePrivateDirectory(dirname(record.settingsPath))
-  const raw = await readOwned(record.settingsPath)
+  const raw = await readAshClaudeSessionOwnedFile(record.settingsPath)
   if (checksum(raw) !== record.sha256) {
     throw new AshClaudeSessionSettingsConflict('session settings changed after preparation')
   }

@@ -3,11 +3,13 @@ import {
   chmodSync,
   existsSync,
   lstatSync,
+  linkSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
   rmSync,
   symlinkSync,
+  unlinkSync,
   writeFileSync
 } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -17,7 +19,9 @@ import {
   AshClaudeSessionSettingsConflict,
   buildAshClaudeSessionSettings,
   claudeArgsWithAshSessionSettings,
+  claudeVerifiedArgsWithAshSessionSettings,
   createAshClaudeSessionSettings,
+  recoverAshClaudeSessionSettings,
   verifyAshClaudeSessionSettings
 } from './ash-claude-session-settings'
 
@@ -85,6 +89,15 @@ describe.skipIf(process.platform === 'win32')(
       expect(existsSync(`${record.settingsPath}.stage`)).toBe(false)
       await expect(verifyAshClaudeSessionSettings(ash, record)).resolves.toBeUndefined()
     })
+    it('publishes only one complete overlay and receipt under concurrent duplicate creation', async () => {
+      const id = randomUUID()
+      const results = await Promise.allSettled([create(id), create(id)])
+      expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+      expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1)
+      const recovered = await recoverAshClaudeSessionSettings(ash, id)
+      expect(existsSync(`${recovered.settingsPath}.stage`)).toBe(false)
+      expect(existsSync(`${recovered.settingsPath}.receipt.json.stage`)).toBe(false)
+    })
     it('isolates different sessions', async () => {
       const a = await create(),
         b = await create()
@@ -106,6 +119,130 @@ describe.skipIf(process.platform === 'win32')(
           'caller already provides'
         )
       }
+    })
+    it('retains a private durable receipt for verified cross-runtime recovery and resume', async () => {
+      const existingProvider = readFileSync(join(external, 'settings.json'), 'utf8')
+      const first = await create()
+      const receiptPath = `${first.settingsPath}.receipt.json`
+      const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'))
+      expect(receipt).toEqual({ format: 1, sessionId: first.sessionId, sha256: first.sha256 })
+      expect(lstatSync(receiptPath).mode & 0o777).toBe(0o600)
+      expect(lstatSync(receiptPath).nlink).toBe(1)
+      expect(existsSync(`${receiptPath}.stage`)).toBe(false)
+
+      // Crash after hardlink publication but before stage unlink: this is the
+      // one extra link recovery may accept, without deleting the residue.
+      linkSync(receiptPath, `${receiptPath}.stage`)
+      expect((await recoverAshClaudeSessionSettings(ash, first.sessionId)).sha256).toBe(
+        first.sha256
+      )
+      expect(existsSync(`${receiptPath}.stage`)).toBe(true)
+      unlinkSync(`${receiptPath}.stage`)
+      linkSync(receiptPath, join(external, 'unrelated-receipt-hardlink'))
+      await expect(recoverAshClaudeSessionSettings(ash, first.sessionId)).rejects.toThrow(
+        'not a private regular file'
+      )
+      unlinkSync(join(external, 'unrelated-receipt-hardlink'))
+
+      // A new runtime knows only the stable session UUID and private Ash root.
+      const recovered = await recoverAshClaudeSessionSettings(ash, first.sessionId)
+      expect(recovered).toEqual(first)
+      const args = ['--resume', first.sessionId, '--model', 'sonnet']
+      expect(await claudeVerifiedArgsWithAshSessionSettings(ash, first.sessionId, args)).toEqual([
+        ...first.settingsArgs,
+        ...args
+      ])
+      expect(args).toEqual(['--resume', first.sessionId, '--model', 'sonnet'])
+      await expect(
+        claudeVerifiedArgsWithAshSessionSettings(ash, first.sessionId, [
+          '--settings',
+          '/foreign.json'
+        ])
+      ).rejects.toThrow('caller already provides')
+      expect(readFileSync(join(external, 'settings.json'), 'utf8')).toBe(existingProvider)
+    })
+    it('fails closed on a missing, malformed, wrong-session or tampered receipt', async () => {
+      const record = await create()
+      const receiptPath = `${record.settingsPath}.receipt.json`
+      const original = readFileSync(receiptPath, 'utf8')
+      for (const corrupt of [
+        '{}',
+        '{',
+        JSON.stringify({ format: 1, sessionId: randomUUID(), sha256: record.sha256 }),
+        JSON.stringify({ format: 1, sessionId: record.sessionId, sha256: 'a'.repeat(64) }),
+        JSON.stringify({
+          format: 1,
+          sessionId: record.sessionId,
+          sha256: record.sha256,
+          extra: true
+        }),
+        'x'.repeat(1024)
+      ]) {
+        writeFileSync(receiptPath, corrupt)
+        await expect(recoverAshClaudeSessionSettings(ash, record.sessionId)).rejects.toThrow()
+        await expect(
+          claudeVerifiedArgsWithAshSessionSettings(ash, record.sessionId, ['--resume', 'x'])
+        ).rejects.toThrow()
+      }
+      writeFileSync(receiptPath, original)
+      await expect(recoverAshClaudeSessionSettings(ash, record.sessionId)).resolves.toEqual(record)
+      unlinkSync(receiptPath)
+      await expect(recoverAshClaudeSessionSettings(ash, record.sessionId)).rejects.toThrow()
+      expect(existsSync(record.settingsPath)).toBe(true)
+    })
+    it('refuses insecure or symlinked receipts and cross-profile recovery', async () => {
+      const record = await create()
+      const receiptPath = `${record.settingsPath}.receipt.json`
+      await expect(recoverAshClaudeSessionSettings(external, record.sessionId)).rejects.toThrow()
+      chmodSync(receiptPath, 0o644)
+      await expect(recoverAshClaudeSessionSettings(ash, record.sessionId)).rejects.toThrow(
+        'not a private regular file'
+      )
+      chmodSync(receiptPath, 0o600)
+      const raw = readFileSync(receiptPath, 'utf8')
+      unlinkSync(receiptPath)
+      const alternate = join(external, 'foreign-receipt.json')
+      writeFileSync(alternate, raw)
+      symlinkSync(alternate, receiptPath)
+      await expect(recoverAshClaudeSessionSettings(ash, record.sessionId)).rejects.toThrow(
+        'not a private regular file'
+      )
+      expect(readFileSync(alternate, 'utf8')).toBe(raw)
+    })
+    it('does not silently complete or adopt an interrupted creation', async () => {
+      const record = await create()
+      const receiptPath = `${record.settingsPath}.receipt.json`
+      const receipt = readFileSync(receiptPath, 'utf8')
+      const originalSettings = readFileSync(record.settingsPath, 'utf8')
+      unlinkSync(record.settingsPath) // simulated interrupted publication, not app cleanup
+      await expect(recoverAshClaudeSessionSettings(ash, record.sessionId)).rejects.toThrow()
+      await expect(create(record.sessionId)).rejects.toThrow('already exist')
+      expect(readFileSync(receiptPath, 'utf8')).toBe(receipt)
+      expect(existsSync(record.settingsPath)).toBe(false)
+      expect(existsSync(`${receiptPath}.stage`)).toBe(false)
+
+      // A crash after settings publication but before its receipt cannot be
+      // repaired by another create, even if requested hooks are byte-identical.
+      const secondId = randomUUID()
+      const secondPath = join(ash, 'provider-session-settings', `claude-${secondId}.json`)
+      writeFileSync(secondPath, originalSettings, { mode: 0o600 })
+      await expect(recoverAshClaudeSessionSettings(ash, secondId)).rejects.toThrow()
+      await expect(create(secondId)).rejects.toThrow('already exist')
+      expect(existsSync(`${secondPath}.receipt.json`)).toBe(false)
+      expect(existsSync(`${secondPath}.stage`)).toBe(false)
+    })
+    it('preserves an interrupted receipt stage without allowing unsafe recovery', async () => {
+      const id = randomUUID()
+      const directory = join(ash, 'provider-session-settings')
+      mkdirSync(directory, { mode: 0o700 })
+      const path = join(directory, `claude-${id}.json`)
+      const staged = `${path}.receipt.json.stage`
+      writeFileSync(staged, 'interrupted stage', { mode: 0o600 })
+      await expect(create(id)).rejects.toThrow('stage already exists')
+      expect(readFileSync(staged, 'utf8')).toBe('interrupted stage')
+      expect(existsSync(path)).toBe(true)
+      expect(existsSync(`${path}.receipt.json`)).toBe(false)
+      await expect(recoverAshClaudeSessionSettings(ash, id)).rejects.toThrow()
     })
     it('rejects invalid commands/events, duplicate hook events and invalid timeout', () => {
       for (const input of [

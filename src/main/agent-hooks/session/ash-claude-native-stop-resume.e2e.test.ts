@@ -7,6 +7,7 @@ import { isAbsolute, join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   createAshClaudeSessionSettings,
+  claudeVerifiedArgsWithAshSessionSettings,
   verifyAshClaudeSessionSettings,
   type AshClaudeSessionSettings
 } from './ash-claude-session-settings'
@@ -328,11 +329,12 @@ describe.skipIf(process.platform !== 'linux' || !nativeBinary)(
     it('runs foreign and Ash hooks at both ends of a completed synthetic turn', async () => {
       const foreignBefore = readFileSync(settingsFile, 'utf8')
       const overlay = await overlayFor(randomUUID())
-      const result = await runNativeTurn([
-        ...overlay.settingsArgs,
-        '--session-id',
-        overlay.sessionId
-      ])
+      const result = await runNativeTurn(
+        await claudeVerifiedArgsWithAshSessionSettings(ashUserData, overlay.sessionId, [
+          '--session-id',
+          overlay.sessionId
+        ])
+      )
       expect(eventLabels(result.hooks)).toEqual(BOTH_EVENTS)
       expect(result.hooks.every((entry) => entry.sessionId === overlay.sessionId)).toBe(true)
       expect(messages).toBe(1)
@@ -343,13 +345,19 @@ describe.skipIf(process.platform !== 'linux' || !nativeBinary)(
     it('reapplies both hook sources on explicit resume with the same session overlay', async () => {
       const foreignBefore = readFileSync(settingsFile, 'utf8')
       const overlay = await overlayFor(randomUUID())
-      const first = await runNativeTurn([
-        ...overlay.settingsArgs,
-        '--session-id',
-        overlay.sessionId
-      ])
+      const first = await runNativeTurn(
+        await claudeVerifiedArgsWithAshSessionSettings(ashUserData, overlay.sessionId, [
+          '--session-id',
+          overlay.sessionId
+        ])
+      )
       expect(eventLabels(first.hooks)).toEqual(BOTH_EVENTS)
-      const resumed = await runNativeTurn([...overlay.settingsArgs, '--resume', overlay.sessionId])
+      const resumed = await runNativeTurn(
+        await claudeVerifiedArgsWithAshSessionSettings(ashUserData, overlay.sessionId, [
+          '--resume',
+          overlay.sessionId
+        ])
+      )
       expect(eventLabels(resumed.hooks.slice(first.hooks.length))).toEqual(BOTH_EVENTS)
       expect(resumed.hooks.length).toBe(first.hooks.length + BOTH_EVENTS.length)
       expect(resumed.hooks.every((entry) => entry.sessionId === overlay.sessionId)).toBe(true)
@@ -367,11 +375,12 @@ describe.skipIf(process.platform !== 'linux' || !nativeBinary)(
     it('does not assume Ash overlay survives resume when --settings is omitted', async () => {
       const foreignBefore = readFileSync(settingsFile, 'utf8')
       const overlay = await overlayFor(randomUUID())
-      const first = await runNativeTurn([
-        ...overlay.settingsArgs,
-        '--session-id',
-        overlay.sessionId
-      ])
+      const first = await runNativeTurn(
+        await claudeVerifiedArgsWithAshSessionSettings(ashUserData, overlay.sessionId, [
+          '--session-id',
+          overlay.sessionId
+        ])
+      )
       expect(eventLabels(first.hooks)).toEqual(BOTH_EVENTS)
       const resumed = await runNativeTurn(['--resume', overlay.sessionId])
       const resumeEvents = resumed.hooks.slice(first.hooks.length)

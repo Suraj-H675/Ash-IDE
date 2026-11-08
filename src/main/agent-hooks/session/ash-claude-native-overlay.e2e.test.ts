@@ -17,6 +17,7 @@ import { isAbsolute, join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   createAshClaudeSessionSettings,
+  claudeVerifiedArgsWithAshSessionSettings,
   verifyAshClaudeSessionSettings
 } from './ash-claude-session-settings'
 import { assertClaudeNativeFixtureHasNoManagedLinuxPolicy } from './ash-claude-native-test-host-guard'
@@ -283,7 +284,7 @@ describe.skipIf(process.platform !== 'linux' || !nativeBinary)(
 
       const result = await runNativeUntilHooks(
         ['FOREIGN_SESSION_START', 'ASH_SESSION_START'],
-        [...record.settingsArgs]
+        await claudeVerifiedArgsWithAshSessionSettings(ashUserData, record.sessionId, [])
       )
       expect(result.markers).toContain('FOREIGN_SESSION_START')
       expect(result.markers).toContain('ASH_SESSION_START')
