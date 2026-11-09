@@ -209,7 +209,7 @@ describe('host-only Claude session overlay launch adapter', () => {
 
   it.each(unsafeCases)(
     'fails closed for %s without changing provider settings',
-    async (_label, change) => {
+    async (label, change) => {
       const fixture = await createFixture()
       const request = {
         mode: 'resume' as const,
@@ -223,17 +223,48 @@ describe('host-only Claude session overlay launch adapter', () => {
         providerSession: { key: 'session_id' as const, id: fixture.sessionId },
         ...change.context
       } as HostClaudeSessionOverlayContext
-
-      await expect(
-        prepareHostClaudeSessionOverlayLaunch({
-          request,
-          userDataPath: fixture.userDataPath,
-          context
-        })
-      ).rejects.toThrow()
+      // Replace the fixture marker before testing individual guards. Otherwise
+      // a wrong UUID can make an unsupported flag/shell case pass spuriously.
+      context.command = context.command.replaceAll('SESSION', fixture.sessionId)
+      const refusal = prepareHostClaudeSessionOverlayLaunch({
+        request,
+        userDataPath: fixture.userDataPath,
+        context
+      })
+      const refusalReasons: Record<string, string> = {
+        'existing split settings option': 'caller already provides Claude session settings',
+        'existing joined settings option': 'caller already provides Claude session settings',
+        'unsupported extra option': 'Claude command contains unsupported launch arguments',
+        'shell command syntax': 'Claude command uses unsupported shell syntax',
+        'custom command wrapper': 'Claude command uses unsupported shell syntax',
+        'custom Claude executable path': 'Claude command uses unsupported shell syntax',
+        'provider session mismatch': 'provider session does not match the overlay session',
+        'wrong provider session key': 'provider session does not match the overlay session'
+      }
+      await expect(refusal).rejects.toThrow(refusalReasons[label])
       expect(await readFile(fixture.foreignSettingsPath, 'utf8')).toBe(fixture.foreignSettings)
     }
   )
+
+  it('rejects an invalid runtime mode even when the UUID and account context match', async () => {
+    const fixture = await createFixture()
+    // Deliberately malformed JavaScript input simulates a cross-boundary caller
+    // bypassing TypeScript's compile-time union restriction.
+    const request: HostClaudeSessionOverlayLaunchRequest = {
+      mode: 'unexpected' as 'fresh',
+      sessionId: fixture.sessionId,
+      accountId: 'account-selected-by-host',
+      accountConfigDir: fixture.accountConfigDir
+    }
+    await expect(
+      prepareHostClaudeSessionOverlayLaunch({
+        request,
+        userDataPath: fixture.userDataPath,
+        context: fixture.context
+      })
+    ).rejects.toThrow('unsupported Claude session overlay launch mode')
+    expect(await readFile(fixture.foreignSettingsPath, 'utf8')).toBe(fixture.foreignSettings)
+  })
 
   it('keeps the durable overlay when the GUI tab closes and the daemon-owned process exits', async () => {
     const fixture = await createFixture()
