@@ -8,6 +8,12 @@ import { claudeProfileMarkerPath, describeClaudeProfile } from './claude-profile
 const ACCOUNT_ID = /^[a-zA-Z0-9_-]+$/
 const MAX_MARKER_BYTES = 512
 const HOST_PLATFORMS = new Set<NodeJS.Platform>(['darwin', 'linux'])
+const verifiedClaudeManagedAccountProfile: unique symbol = Symbol(
+  'verifiedClaudeManagedAccountProfile'
+)
+// A symbol-valued property can be spread or copied; only results issued here
+// count as verified in this process. Neither the symbol nor the set is serialized.
+const issuedVerifiedProfiles = new WeakSet<object>()
 
 export type ClaudeManagedAccountIdentity = {
   version: 1
@@ -20,6 +26,24 @@ export type ClaudeManagedAccountIdentity = {
   configHomeDevice: string
   configHomeInode: string
   ownershipMarkerSha256: string
+}
+
+/** In-memory read-only verification result; marker stat identity is never persisted. */
+export type VerifiedClaudeManagedAccountProfile = Readonly<{
+  identity: Readonly<ClaudeManagedAccountIdentity>
+  ownershipMarker: Readonly<{ device: string; inode: string }>
+  readonly [verifiedClaudeManagedAccountProfile]: true
+}>
+
+export function isVerifiedClaudeManagedAccountProfile(
+  value: unknown
+): value is VerifiedClaudeManagedAccountProfile {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    issuedVerifiedProfiles.has(value) &&
+    Object.getOwnPropertyDescriptor(value, verifiedClaudeManagedAccountProfile)?.value === true
+  )
 }
 
 export class ClaudeManagedAccountIdentityError extends Error {
@@ -54,15 +78,21 @@ async function verifyPhysicalDirectoryPath(path: string): Promise<void> {
   }
 }
 
-async function readOwnedMarker(path: string, expected: string): Promise<string> {
-  const before = await lstat(path).catch(() => refuse('ownership marker is missing or unreadable'))
+async function readOwnedMarker(
+  path: string,
+  expected: string
+): Promise<{ raw: string; device: string; inode: string }> {
+  const before = await lstat(path, { bigint: true }).catch(() =>
+    refuse('ownership marker is missing or unreadable')
+  )
   if (
     !before.isFile() ||
     before.isSymbolicLink() ||
-    before.nlink !== 1 ||
-    before.size > MAX_MARKER_BYTES ||
+    before.nlink !== 1n ||
+    before.size > BigInt(MAX_MARKER_BYTES) ||
     (process.platform !== 'win32' &&
-      ((before.mode & 0o077) !== 0 || (process.getuid && before.uid !== process.getuid())))
+      ((before.mode & 0o077n) !== 0n ||
+        (process.getuid && before.uid !== BigInt(process.getuid()))))
   ) {
     refuse('ownership marker is not a private regular file')
   }
@@ -74,7 +104,7 @@ async function readOwnedMarker(path: string, expected: string): Promise<string> 
     refuse('ownership marker changed while opening')
   }
   try {
-    const opened = await file.stat()
+    const opened = await file.stat({ bigint: true })
     if (
       opened.dev !== before.dev ||
       opened.ino !== before.ino ||
@@ -84,20 +114,28 @@ async function readOwnedMarker(path: string, expected: string): Promise<string> 
       refuse('ownership marker changed while opening')
     }
     const raw = await file.readFile('utf8')
-    const after = await file.stat()
+    const after = await file.stat({ bigint: true })
+    const pathAfter = await lstat(path, { bigint: true }).catch(() =>
+      refuse('ownership marker changed while reading')
+    )
     if (
       Buffer.byteLength(raw) > MAX_MARKER_BYTES ||
       opened.size !== after.size ||
       opened.mtimeMs !== after.mtimeMs ||
       opened.ctimeMs !== after.ctimeMs ||
-      opened.nlink !== after.nlink
+      opened.nlink !== after.nlink ||
+      opened.dev !== pathAfter.dev ||
+      opened.ino !== pathAfter.ino ||
+      opened.nlink !== pathAfter.nlink ||
+      !pathAfter.isFile() ||
+      pathAfter.isSymbolicLink()
     ) {
       refuse('ownership marker changed while reading')
     }
     if (raw !== expected) {
       refuse('ownership marker does not match this managed account')
     }
-    return raw
+    return { raw, device: opened.dev.toString(), inode: opened.ino.toString() }
   } finally {
     await file.close()
   }
@@ -109,10 +147,10 @@ async function readOwnedMarker(path: string, expected: string): Promise<string> 
  * home, and every path component for symlinks. It never creates or repairs a
  * profile.
  */
-export async function verifyClaudeManagedAccountProfile(
+export async function verifyClaudeManagedAccountProfileWithMarkerIdentity(
   dataRoot: string,
   profile: ClaudeProfileDescriptor
-): Promise<ClaudeManagedAccountIdentity> {
+): Promise<VerifiedClaudeManagedAccountProfile> {
   assertPrivateDirectory(dataRoot, 'Ash data root')
   if (!HOST_PLATFORMS.has(process.platform)) {
     refuse('only local Linux and macOS profiles are supported')
@@ -189,15 +227,31 @@ export async function verifyClaudeManagedAccountProfile(
     refuse('managed config home changed during verification')
   }
 
-  return {
-    version: 1,
+  const identity = Object.freeze({
+    version: 1 as const,
     accountId: profile.accountId,
     home: profile.home,
-    runtime: 'host',
+    runtime: 'host' as const,
     hostPlatform: process.platform as 'darwin' | 'linux',
     configHomeIdentity,
     configHomeDevice: homeStat.dev.toString(),
     configHomeInode: homeStat.ino.toString(),
-    ownershipMarkerSha256: createHash('sha256').update(marker).digest('hex')
-  }
+    ownershipMarkerSha256: createHash('sha256').update(marker.raw).digest('hex')
+  })
+  const verified = Object.freeze({
+    identity,
+    ownershipMarker: Object.freeze({ device: marker.device, inode: marker.inode }),
+    [verifiedClaudeManagedAccountProfile]: true as const
+  })
+  issuedVerifiedProfiles.add(verified)
+  return verified
+}
+
+/** Compatibility adapter for persisted receipts, which intentionally omit marker stat identity. */
+export async function verifyClaudeManagedAccountProfile(
+  dataRoot: string,
+  profile: ClaudeProfileDescriptor
+): Promise<ClaudeManagedAccountIdentity> {
+  const verified = await verifyClaudeManagedAccountProfileWithMarkerIdentity(dataRoot, profile)
+  return { ...verified.identity }
 }
