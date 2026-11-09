@@ -27,6 +27,7 @@ import {
 import { loadLocalPtyRuntimeSpawn } from './local-pty-runtime-spawn'
 import { destroyPtyProcess } from './local-pty-termination'
 import { updateHistoryEnvForFallback } from '../../pty/history/terminal-history'
+import { takeLocalPtyShellEntryObserver } from './local-pty-shell-entry-observer'
 import type { PtySpawnOptions } from '../pty-provider-contract'
 import type { PtySpawnResult } from '../pty-spawn-result'
 
@@ -48,6 +49,7 @@ export async function spawnLocalPty(
   if (args.attachOnly) {
     throw new SessionNotFoundError(args.sessionId ?? '')
   }
+  const shellEntryObserver = takeLocalPtyShellEntryObserver(args)
   const jcodeRuntimeDir = args.env?.[JCODE_RUNTIME_DIR_ENV_KEY]
   if (jcodeRuntimeDir) {
     try {
@@ -128,6 +130,12 @@ export async function spawnLocalPty(
         onBeforeFallbackSpawn: fallbackHistory
           ? (env, fallbackShell) => updateHistoryEnvForFallback(env, fallbackShell, fallbackHistory)
           : undefined,
+        ...(shellEntryObserver
+          ? {
+              onNativeShellSpawnPhase: ({ phase, attempt, env }) =>
+                shellEntryObserver({ ptyId: id, incarnationId, phase, attempt, env })
+            }
+          : {}),
         windowsFallbackAttempts: plan.windowsFallbackAttempts
       })
       const spawnResult = pendingSpawn instanceof Promise ? await pendingSpawn : pendingSpawn

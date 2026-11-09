@@ -387,6 +387,21 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/ipc/pty/runtime/spawn-options.ts",
+      "sha256": "21c0287d9659d7b29de4b2749ca674983e834f8d880ff4e20697caf08bd8aea9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/pty/runtime/spawn-preflight.ts",
+      "sha256": "82abe8e3d12a7a51acc8f8579988404e9d69f327938220527b03f5ba6e1c3584",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/pty/runtime/spawn-state.ts",
+      "sha256": "63d782ff3cd328094a97efb385bef2de8017fd7f06f0aafdc2e00fd710318c0b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/ipc/pty/runtime/spawn.ts",
       "sha256": "c74bcda79b6d05677c027656c67684fa9867398a76efb634e9f5628354000f58",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -459,6 +474,16 @@
     {
       "path": "src/main/providers/accounts/provider-account-services.ts",
       "sha256": "6f4c96a687e6e4601ac91e29eff2112693bdb9454751cb7e150f1c4df7f40fe3",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/providers/local-pty/local-pty-executable-spawn.ts",
+      "sha256": "7079ef660a76e0c763b210c64aa6f463eb49a774ca772510a04beb43800f6c25",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/providers/local-pty/local-pty-spawn.ts",
+      "sha256": "ff76c5c1182ae5abbadb3772009f8defd62236edb2b0aed79c2640ab45e7f3aa",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

@@ -6,11 +6,12 @@ import { LocalPtyProvider } from '../../../providers/local-pty/local-pty-provide
 import type { OrcaRuntimeService } from '../../../runtime/orca-runtime'
 import type { RuntimePtySpawnState } from './spawn-state'
 import type { PtySpawnOutcome } from '../spawn-outcome'
+import type { ClaudeShellEntryEnvironmentWitness } from './claude-shell-entry-environment-witness'
 
 const MAX_COMMITTED_PTY_SPAWN_EVIDENCE = 256
 
 /** Conservative command shape for a *candidate*, never proof of a running Claude child. */
-function isDirectClaudeInvocation(command: unknown): boolean {
+export function isDirectClaudeInvocation(command: unknown): boolean {
   if (typeof command !== 'string' || command.length === 0 || command.length > 4096) {
     return false
   }
@@ -21,6 +22,32 @@ function isDirectClaudeInvocation(command: unknown): boolean {
   }
   return /^(?:claude|\/(?:[A-Za-z0-9._+@-]+\/)*claude)(?:\.cmd|\.exe)?(?:\s+[^\r\n]*)?$/i.test(
     command.trim()
+  )
+}
+
+export function isFreshLocalClaudeShellEntryCandidate(state: RuntimePtySpawnState): boolean {
+  return (
+    state.isClaudeLaunch &&
+    state.args.launchAgent === 'claude' &&
+    state.spawnOptions.launchAgent === 'claude' &&
+    !state.args.shellOverride &&
+    !state.spawnOptions.shellOverride &&
+    state.args.commandDelivery !== 'renderer' &&
+    state.spawnOptions.commandDelivery !== 'renderer' &&
+    isDirectClaudeInvocation(state.args.launchConfig?.agentCommand) &&
+    isDirectClaudeInvocation(state.launchCommand) &&
+    isDirectClaudeInvocation(state.spawnOptions.command) &&
+    state.provider instanceof LocalPtyProvider &&
+    (state.args.connectionId === undefined || state.args.connectionId === null) &&
+    !state.isDaemonHostSpawn &&
+    state.codexSelectionTarget.runtime === 'host' &&
+    !state.expectedWslDistro &&
+    state.args.sessionId === undefined &&
+    !state.preAdoptedStablePane &&
+    !state.args.adoptedStablePane &&
+    !state.stablePaneOwner &&
+    state.shouldPersistHostSessionBinding &&
+    state.hostSessionBinding !== undefined
   )
 }
 
@@ -50,6 +77,7 @@ export type CommittedLocalPtySpawnEvidence = Readonly<{
   leafId: string
   paneKey: string
   launchTokenHash: string
+  shellEntryEnvironment?: ClaudeShellEntryEnvironmentWitness
   accountEvidence: Readonly<{
     status: 'missing'
     reason: 'authenticated-managed-account-not-bound-to-effective-environment'
@@ -281,6 +309,7 @@ export function validateCommittedLocalPtySpawnEvidence(
   if (typeof pane === 'string') {
     return reject(pane)
   }
+  const shellEntryEnvironment = state.claudeShellEntryWitness
   const evidence = Object.freeze({
     version: 1 as const,
     provider: 'local-pty' as const,
@@ -292,6 +321,11 @@ export function validateCommittedLocalPtySpawnEvidence(
     leafId: pane.leafId,
     paneKey: pane.paneKey,
     launchTokenHash: createHash('sha256').update(effectiveLaunchToken).digest('hex'),
+    ...(shellEntryEnvironment &&
+    shellEntryEnvironment.ptyId === state.result.id &&
+    shellEntryEnvironment.incarnationId === state.result.incarnationId
+      ? { shellEntryEnvironment }
+      : {}),
     accountEvidence: Object.freeze({
       status: 'missing' as const,
       reason: 'authenticated-managed-account-not-bound-to-effective-environment' as const

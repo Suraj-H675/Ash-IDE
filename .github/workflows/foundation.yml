@@ -56,6 +56,8 @@ jobs:
             src/main/runtime/terminal/launch/ash-claude-session-overlay-recovery.test.ts \
             src/main/agent-hooks/session/claude-host-launch-correlation-consistency.test.ts \
             src/main/ipc/pty/runtime/committed-local-pty-spawn-evidence.test.ts \
+            src/main/ipc/pty/runtime/claude-shell-entry-environment-witness.test.ts \
+            src/main/providers/local-pty/local-pty-executable-spawn.node-pty.test.ts \
             src/main/codex/configuration/homes/codex-pane-launch-account.test.ts \
             src/main/codex-accounts/ash-codex-account-selection-recovery.test.ts \
             src/main/agent-hooks/ash-shared-hook-disable.test.ts \

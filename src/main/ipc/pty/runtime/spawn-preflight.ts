@@ -24,6 +24,11 @@ import {
   ensureJcodeRuntimeDir,
   JCODE_RUNTIME_DIR_ENV_KEY
 } from '../../../../shared/jcode-runtime-dir'
+import {
+  beginClaudeShellEntryEnvironmentSnapshot,
+  hasCallerClaudeShellEnvironmentOverride,
+  prepareClaudeShellEntryEnvironmentWitness
+} from './claude-shell-entry-environment-witness'
 
 export async function prepareRuntimePtySpawn(
   ctx: RuntimePtySpawnState
@@ -100,11 +105,26 @@ export async function prepareRuntimePtySpawn(
   ctx.expectedWslDistro = target.expectedWslDistro
   ctx.wslHoldReadAnchor = target.wslHoldReadAnchor
   ctx.codexSelectionTarget = target.codexSelectionTarget
+  const shouldObserveClaudeShellEntry = ctx.isClaudeLaunch && args.launchAgent === 'claude'
+  const callerClaudeEnvironmentOverride = shouldObserveClaudeShellEntry
+    ? hasCallerClaudeShellEnvironmentOverride(args)
+    : false
+  const claudeSelectionBeforePreparation = shouldObserveClaudeShellEntry
+    ? beginClaudeShellEntryEnvironmentSnapshot(ctx.deps.getSettings)
+    : null
   args.env = withClaudeProfileTerminalEnv(args.env, ctx.codexSelectionTarget)
   ctx.claudeAuth =
     ctx.isClaudeLaunch && ctx.deps.prepareClaudeAuth
       ? await ctx.deps.prepareClaudeAuth(ctx.codexSelectionTarget)
       : null
+  ctx.claudeShellEntryContext = claudeSelectionBeforePreparation
+    ? prepareClaudeShellEntryEnvironmentWitness({
+        before: claudeSelectionBeforePreparation,
+        after: beginClaudeShellEntryEnvironmentSnapshot(ctx.deps.getSettings),
+        auth: ctx.claudeAuth,
+        callerEnvironmentOverride: callerClaudeEnvironmentOverride
+      })
+    : null
 
   ctx.shouldPersistHostSessionBinding = args.persistHostSessionBinding === true
   if (ctx.shouldPersistHostSessionBinding) {

@@ -19,6 +19,7 @@ import {
   recordCommittedLocalPtySpawnEvidence,
   retireCommittedLocalPtySpawnEvidence,
   validateCommittedLocalPtySpawnEvidence,
+  isFreshLocalClaudeShellEntryCandidate,
   type CommittedLocalPtySpawnEvidenceRuntime
 } from './committed-local-pty-spawn-evidence'
 import {
@@ -112,6 +113,7 @@ function makeState(
     changes.hostSessionBinding === false
       ? undefined
       : { store, worktreeId: WORKTREE_ID, tabId: TAB_ID, leafId: LEAF_ID }
+  state.shouldPersistHostSessionBinding = changes.hostSessionBinding !== false
   state.isDaemonHostSpawn = changes.isDaemonHostSpawn ?? false
   state.expectedWslDistro = changes.expectedWslDistro ?? null
   state.codexSelectionTarget = { runtime: changes.runtimeTarget ?? 'host' }
@@ -343,6 +345,21 @@ describe('committed local PTY spawn evidence', () => {
     expect(runtime.exitListeners.has(PTY_ID)).toBe(true)
   })
 
+  it('limits native shell observation attachment to a fresh local host Claude candidate', () => {
+    expect(isFreshLocalClaudeShellEntryCandidate(makeState())).toBe(true)
+    expect(
+      isFreshLocalClaudeShellEntryCandidate(makeState({ args: { sessionId: 'reattach-id' } }))
+    ).toBe(false)
+    expect(
+      isFreshLocalClaudeShellEntryCandidate(makeState({ args: { connectionId: 'remote' } }))
+    ).toBe(false)
+    expect(isFreshLocalClaudeShellEntryCandidate(makeState({ runtimeTarget: 'wsl' }))).toBe(false)
+    expect(isFreshLocalClaudeShellEntryCandidate(makeState({ isDaemonHostSpawn: true }))).toBe(
+      false
+    )
+    expect(isFreshLocalClaudeShellEntryCandidate(makeState({ isClaudeLaunch: false }))).toBe(false)
+  })
+
   const rejectedCandidates: Array<
     [string, Parameters<typeof makeState>[0] & { outcome?: PtySpawnOutcome }, string]
   > = [
@@ -539,6 +556,22 @@ describe('committed local PTY spawn evidence', () => {
 
   it('keeps evidence across pane close and retires only the matching incarnation on PTY exit', () => {
     const state = makeState()
+    state.claudeShellEntryWitness = {
+      kind: 'consistency-only',
+      ptyId: PTY_ID,
+      incarnationId: INCARNATION_ID,
+      nativeSpawnAttempt: 'primary',
+      configDirStatus: 'set',
+      configDirPathSha256: createHash('sha256').update('/fixture/claude-home').digest('hex'),
+      configDirSource: 'prepared',
+      comparison: 'matched',
+      selector: 'stable',
+      selectedHostPointer: 'stable',
+      accountEvidence: {
+        status: 'missing',
+        reason: 'no-independent-private-marker-verified-profile-binding'
+      }
+    }
     const outcome = committedOutcome(state)
     const runtime = makeEvidenceRuntime()
     expect(recordCommittedLocalPtySpawnEvidence(runtime.runtime, state, outcome)).toBe(true)
@@ -546,7 +579,7 @@ describe('committed local PTY spawn evidence', () => {
     // Closing the GUI surface is not a PTY exit; the host-owned process can survive it.
     expect(
       readCommittedLocalPtySpawnEvidence(runtime.runtime, PTY_ID, INCARNATION_ID)
-    ).not.toBeNull()
+    ).toMatchObject({ shellEntryEnvironment: { comparison: 'matched' } })
     retireCommittedLocalPtySpawnEvidence(runtime.runtime, PTY_ID, 'older-incarnation')
     expect(
       readCommittedLocalPtySpawnEvidence(runtime.runtime, PTY_ID, INCARNATION_ID)
@@ -555,5 +588,60 @@ describe('committed local PTY spawn evidence', () => {
     runtime.exitListeners.get(PTY_ID)?.()
     expect(readCommittedLocalPtySpawnEvidence(runtime.runtime, PTY_ID, INCARNATION_ID)).toBeNull()
     expect(runtime.unsubscribe).toHaveBeenCalled()
+  })
+
+  it('bounds shell-entry observations with the committed PTY evidence store', () => {
+    const exitListeners = new Map<string, () => void>()
+    const runtime: CommittedLocalPtySpawnEvidenceRuntime = {
+      subscribeToPtyExit: (ptyId, listener) => {
+        exitListeners.set(ptyId, listener)
+        return () => exitListeners.delete(ptyId)
+      }
+    }
+    let lastId = ''
+    let lastIncarnation = ''
+    for (let index = 0; index < 257; index++) {
+      const ptyId = `bounded-pty-${index}`
+      const incarnationId = `bounded-incarnation-${index}`
+      const state = makeState({
+        result: { id: ptyId, incarnationId },
+        paneSession: {
+          tabsByWorktree: { [WORKTREE_ID]: [{ id: TAB_ID, worktreeId: WORKTREE_ID }] },
+          terminalLayoutsByTabId: {
+            [TAB_ID]: { ptyIdsByLeafId: { [LEAF_ID]: ptyId } }
+          },
+          terminalPtyIncarnationsByPaneKey: { [PANE_KEY]: incarnationId }
+        }
+      })
+      state.claudeShellEntryWitness = {
+        kind: 'consistency-only',
+        ptyId,
+        incarnationId,
+        nativeSpawnAttempt: 'fallback',
+        configDirStatus: 'set',
+        configDirPathSha256: createHash('sha256').update('/fixture/fallback-home').digest('hex'),
+        configDirSource: 'prepared',
+        comparison: 'matched',
+        selector: 'stable',
+        selectedHostPointer: 'stable',
+        accountEvidence: {
+          status: 'missing',
+          reason: 'no-independent-private-marker-verified-profile-binding'
+        }
+      }
+      expect(recordCommittedLocalPtySpawnEvidence(runtime, state, committedOutcome(state))).toBe(
+        true
+      )
+      lastId = ptyId
+      lastIncarnation = incarnationId
+    }
+
+    expect(
+      readCommittedLocalPtySpawnEvidence(runtime, 'bounded-pty-0', 'bounded-incarnation-0')
+    ).toBeNull()
+    expect(exitListeners.size).toBe(256)
+    expect(readCommittedLocalPtySpawnEvidence(runtime, lastId, lastIncarnation)).toMatchObject({
+      shellEntryEnvironment: { nativeSpawnAttempt: 'fallback' }
+    })
   })
 })

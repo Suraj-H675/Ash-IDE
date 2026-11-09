@@ -1,4 +1,4 @@
-import { basename, isAbsolute, join } from 'node:path'
+import { basename, isAbsolute, join, win32 as pathWin32 } from 'node:path'
 import { existsSync, accessSync, statSync, chmodSync, constants as fsConstants } from 'node:fs'
 import type * as pty from 'node-pty'
 import {
@@ -121,7 +121,16 @@ export type ShellSpawnParams = {
   onBeforeFallbackSpawn?: (env: Record<string, string>, fallbackShell: string) => void
   /** Ordered Windows fallbacks; the first entry must match the primary shell/argv. */
   windowsFallbackAttempts?: WindowsShellSpawnAttempt[]
+  /** Private in-memory observation of the env passed at native shell entry. */
+  onNativeShellSpawnPhase?: NativeShellSpawnPhaseObserver
 }
+
+export type NativeShellSpawnPhaseObserver = (args: {
+  phase: 'before' | 'after'
+  attempt: 'primary' | 'fallback'
+  /** Frozen copy of ONLY the Claude config-home and pointer keys, never live spawn.env. */
+  env: Readonly<Record<string, string>>
+}) => void | Promise<void>
 
 export type ShellSpawnResult = {
   process: pty.IPty
@@ -137,23 +146,54 @@ function windowsConptyDllOptions(): { useConptyDll: true } | Record<string, neve
   return process.platform === 'win32' ? { useConptyDll: true } : {}
 }
 
+function reportNativeShellSpawnPhase(
+  observer: NativeShellSpawnPhaseObserver | undefined,
+  phase: 'before' | 'after',
+  attempt: 'primary' | 'fallback',
+  env: Record<string, string>,
+  file: string
+): void {
+  // WSL owns the guest shell environment; this host-shell witness must not classify it.
+  if (!observer || pathWin32.basename(file).toLowerCase() === 'wsl.exe') {
+    return
+  }
+  // Main-only observation never receives the live native spawn environment. In
+  // addition to containing credentials, that mutable object is the actual
+  // node-pty input and an observer failure must not modify a user's process.
+  try {
+    const allowedKeys = new Set(['CLAUDE_CONFIG_DIR', 'ORCA_CLAUDE_PROFILE_POINTER'])
+    const observedEnv = Object.freeze(
+      Object.fromEntries(Object.entries(env).filter(([key]) => allowedKeys.has(key.toUpperCase())))
+    )
+    // Support a future async observer without unhandled rejections or changing
+    // shell spawn success; the current witness is synchronous and read-only.
+    void Promise.resolve(observer({ phase, attempt, env: observedEnv })).catch(() => {})
+  } catch {
+    // Observation cannot change whether a user shell starts.
+  }
+}
+
 // ConPTY can reject Store aliases with access-denied (5); try pre-resolved real executables instead.
 function spawnWindowsFallbackChain(
   params: ShellSpawnParams,
   primaryError: string
 ): ShellSpawnResult | null {
-  const { termName = 'xterm-256color', cols, rows, env, ptySpawn } = params
+  const { termName = 'xterm-256color', cols, rows, env, ptySpawn, onNativeShellSpawnPhase } = params
   const attempts = params.windowsFallbackAttempts ?? []
   // Skip the first entry: it is the primary that already failed above.
   for (const attempt of attempts.slice(1)) {
     try {
-      const proc = ptySpawn(attempt.shellPath, attempt.shellArgs, {
-        name: termName,
+      const proc = spawnPtyExecutable({
+        file: attempt.shellPath,
+        args: attempt.shellArgs,
+        termName,
         cols,
         rows,
         cwd: attempt.effectiveCwd,
         env,
-        ...windowsConptyDllOptions()
+        ptySpawn,
+        attempt: 'fallback',
+        onNativeShellSpawnPhase
       })
       console.warn(
         `[pty] Primary shell "${params.shellPath}" failed (${primaryError}), fell back to "${attempt.shellPath}"`
@@ -173,19 +213,39 @@ function spawnWindowsFallbackChain(
 export type PtyExecutableSpawnParams = Pick<
   ShellSpawnParams,
   'termName' | 'cols' | 'rows' | 'cwd' | 'env' | 'ptySpawn'
-> & { file: string; args: string[] }
+> & {
+  file: string
+  args: string[]
+  attempt?: 'primary' | 'fallback'
+  onNativeShellSpawnPhase?: NativeShellSpawnPhaseObserver
+}
 
 /** One executable with an argv array, no shell and no fallback; throws when it can't start. */
 export function spawnPtyExecutable(params: PtyExecutableSpawnParams): pty.IPty {
-  const { file, args, termName = 'xterm-256color', cols, rows, cwd, env, ptySpawn } = params
-  return ptySpawn(file, args, {
+  const {
+    file,
+    args,
+    termName = 'xterm-256color',
+    cols,
+    rows,
+    cwd,
+    env,
+    ptySpawn,
+    attempt = 'primary',
+    onNativeShellSpawnPhase
+  } = params
+  const options = {
     name: termName,
     cols,
     rows,
     cwd,
     env,
     ...windowsConptyDllOptions()
-  })
+  }
+  reportNativeShellSpawnPhase(onNativeShellSpawnPhase, 'before', attempt, env, file)
+  const proc = ptySpawn(file, args, options)
+  reportNativeShellSpawnPhase(onNativeShellSpawnPhase, 'after', attempt, env, file)
+  return proc
 }
 
 export function spawnShellWithFallback(params: ShellSpawnParams): ShellSpawnResult {
@@ -199,7 +259,8 @@ export function spawnShellWithFallback(params: ShellSpawnParams): ShellSpawnResu
     env,
     ptySpawn,
     getShellReadyConfig,
-    onBeforeFallbackSpawn
+    onBeforeFallbackSpawn,
+    onNativeShellSpawnPhase
   } = params
   let primaryError: string | null = null
 
@@ -219,7 +280,9 @@ export function spawnShellWithFallback(params: ShellSpawnParams): ShellSpawnResu
           rows,
           cwd,
           env,
-          ptySpawn
+          ptySpawn,
+          attempt: 'primary',
+          onNativeShellSpawnPhase
         }),
         shellPath,
         reportsChildExitStatus: hostReportsChildExitStatus(wrapped.file)
@@ -263,12 +326,17 @@ export function spawnShellWithFallback(params: ShellSpawnParams): ShellSpawnResu
           fallbackReady?.args ?? ['-l'],
           env
         )
-        const proc = ptySpawn(wrapped.file, wrapped.args, {
-          name: termName,
+        const proc = spawnPtyExecutable({
+          file: wrapped.file,
+          args: wrapped.args,
+          termName,
           cols,
           rows,
           cwd,
-          env
+          env,
+          ptySpawn,
+          attempt: 'fallback',
+          onNativeShellSpawnPhase
         })
         console.warn(
           `[pty] Primary shell "${shellPath}" failed (${primaryError ?? 'unknown error'}), fell back to "${fallback}"`

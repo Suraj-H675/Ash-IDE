@@ -14,6 +14,9 @@ import {
 } from '../spawn-options-assembly'
 import { isRuntimeWslBackgroundStart, type RuntimePtySpawnState } from './spawn-state'
 import { prepareAntigravityAccountForLaunch } from '../../../antigravity/native-account-launch'
+import { isFreshLocalClaudeShellEntryCandidate } from './committed-local-pty-spawn-evidence'
+import { attachLocalPtyShellEntryObserver } from '../../../providers/local-pty/local-pty-shell-entry-observer'
+import { createClaudeShellEntryEnvironmentObserver } from './claude-shell-entry-environment-witness'
 
 export async function buildRuntimePtySpawnOptions(
   ctx: RuntimePtySpawnState
@@ -129,6 +132,16 @@ export async function buildRuntimePtySpawnOptions(
   }
   if (ctx.wslHoldReadAnchor !== undefined) {
     ctx.spawnOptions.wslHoldReadAnchor = ctx.wslHoldReadAnchor
+  }
+  if (ctx.claudeShellEntryContext && isFreshLocalClaudeShellEntryCandidate(ctx)) {
+    const capture = createClaudeShellEntryEnvironmentObserver(
+      ctx.claudeShellEntryContext,
+      ctx.deps.getSettings
+    )
+    attachLocalPtyShellEntryObserver(ctx.spawnOptions, (observation) => {
+      capture.observer(observation)
+      ctx.claudeShellEntryWitness = capture.read()
+    })
   }
   if (
     args.onPtySpawnCommitted &&

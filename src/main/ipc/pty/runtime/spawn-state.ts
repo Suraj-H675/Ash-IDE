@@ -34,6 +34,10 @@ import { localProvider } from '../provider/registry'
 import type { PaneResumeOutcome } from '../../../../shared/workspace-layout/workspace-layout-published'
 import type { StartupCwdFallback } from '../../../../shared/startup-cwd-fallback'
 import type { TerminalWorkspaceLaunchScope } from '../../../runtime/orchestration/terminal-authority/structured-sessions/runtime-legacy-worker-terminal-recovery-types'
+import type {
+  ClaudeShellEntryEnvironmentWitness,
+  ClaudeShellEntryLaunchContext
+} from './claude-shell-entry-environment-witness'
 
 export type RuntimePtySpawnState = {
   deps: PtyRuntimeControllerDeps
@@ -65,6 +69,8 @@ export type RuntimePtySpawnState = {
   codexSelectionTarget: CodexAccountSelectionTarget
   launchCommand: string | undefined
   claudeAuth: ClaudeRuntimeAuthPreparation | null
+  claudeShellEntryContext: ClaudeShellEntryLaunchContext | null
+  claudeShellEntryWitness: ClaudeShellEntryEnvironmentWitness | null
   shouldPersistHostSessionBinding: boolean
   hostSessionBinding:
     | {
@@ -214,6 +220,8 @@ export function createRuntimePtySpawnState(
     codexSelectionTarget: { runtime: 'host' },
     launchCommand: undefined,
     claudeAuth: null,
+    claudeShellEntryContext: null,
+    claudeShellEntryWitness: null,
     shouldPersistHostSessionBinding: false,
     hostSessionBinding: undefined,
     env: undefined,
