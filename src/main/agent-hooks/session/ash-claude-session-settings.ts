@@ -9,8 +9,6 @@ import {
   buildAshClaudeSessionSettings,
   checksum,
   expectedPath,
-  issueVerifiedSettings,
-  isIssuedUnboundSettings,
   receiptPath,
   receiptV1Schema,
   receiptV2Schema,
@@ -41,6 +39,26 @@ export type {
  * --settings is a documented Claude CLI input; provider acceptance of hook
  * merging and live status is a separate integration/acceptance gate.
  */
+// The synchronous legacy argv helper must not trust a caller-controlled field:
+// a v2 record can be shallow-copied with managedAccountIdentity removed.
+// Only objects issued by this module's verified v1 create/recovery paths qualify.
+const issuedUnboundSettings = new WeakSet<AshClaudeSessionSettings>()
+
+function issueVerifiedSettings(record: AshClaudeSessionSettings): AshClaudeSessionSettings {
+  if (!record.managedAccountIdentity) {
+    issuedUnboundSettings.add(record)
+  } else {
+    Object.freeze(record.managedAccountIdentity)
+  }
+  Object.freeze(record.settingsArgs)
+  return Object.freeze(record)
+}
+
+/** Only records issued by verified version-1 paths may use the legacy argv helper. */
+function isIssuedUnboundSettings(record: AshClaudeSessionSettings): boolean {
+  return issuedUnboundSettings.has(record)
+}
+
 /**
  * Create one Ash-owned session overlay and a durable, independent digest
  * receipt. Publish the overlay first: if that name already exists, never

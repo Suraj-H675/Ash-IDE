@@ -64,26 +64,6 @@ export type AshClaudeSessionSettings =
   | AshClaudeUnboundSessionSettings
   | AshClaudeManagedSessionSettings
 
-// The synchronous legacy argv helper must not trust a caller-controlled field:
-// a v2 record can be shallow-copied with managedAccountIdentity removed.
-// Only objects issued by this module's verified v1 create/recovery paths qualify.
-const issuedUnboundSettings = new WeakSet<AshClaudeSessionSettings>()
-
-export function issueVerifiedSettings(record: AshClaudeSessionSettings): AshClaudeSessionSettings {
-  if (!record.managedAccountIdentity) {
-    issuedUnboundSettings.add(record)
-  } else {
-    Object.freeze(record.managedAccountIdentity)
-  }
-  Object.freeze(record.settingsArgs)
-  return Object.freeze(record)
-}
-
-/** Only records issued by verified version-1 paths may use the legacy argv helper. */
-export function isIssuedUnboundSettings(record: AshClaudeSessionSettings): boolean {
-  return issuedUnboundSettings.has(record)
-}
-
 function validateSession(sessionId: string): void {
   if (!SESSION_ID.test(sessionId)) {
     throw new AshClaudeSessionSettingsConflict('session id is not a UUIDv4')
