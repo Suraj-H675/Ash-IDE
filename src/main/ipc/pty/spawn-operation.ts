@@ -33,7 +33,7 @@ type SpawnAdapter<State extends PtySpawnOperationState> = {
   facts: () => PtySpawnExecutionFacts
   admission?: Promise<void>
   drainsExitedStart?: true
-  onCommitted?: () => void
+  onCommitted?: (outcome: PtySpawnOutcome) => void
   onOutcome?: (outcome: PtySpawnOutcome) => void
   onError?: (error: unknown) => unknown
   releasePreparation?: () => void
@@ -166,7 +166,7 @@ export async function runPtySpawn<State extends PtySpawnOperationState>(
     finish(outcome)
     // Runtime hidden P2 follows the awaited prompt-intent wrapper and never an exited result.
     if (outcome.kind !== 'registration-exited') {
-      adapter.onCommitted?.()
+      adapter.onCommitted?.(outcome)
     }
     return outcome
   }

@@ -387,6 +387,16 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/ipc/pty/runtime/spawn.ts",
+      "sha256": "c74bcda79b6d05677c027656c67684fa9867398a76efb634e9f5628354000f58",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/pty/spawn-operation.ts",
+      "sha256": "f423f94f883fb499c09548d146112d21d189b1dde420e817ee0f93db20b4b6e2",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/ipc/register-core-handlers/register-core-handlers.ts",
       "sha256": "27eca47d09229b1dc9a7c17828b7ad0cb4571920bf1c6ff9d714a06a063d3f65",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."

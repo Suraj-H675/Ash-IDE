@@ -6,6 +6,7 @@ import { applyAgentLaunchPluginHook } from '../spawn-agent-launch-plugin-hook'
 import { buildRuntimePtySpawnOptions } from './spawn-options'
 import { commitRuntimePtySpawn } from './spawn-commit'
 import { createRuntimePtySpawnState, type RuntimePtySpawnArgs } from './spawn-state'
+import { recordCommittedLocalPtySpawnEvidence } from './committed-local-pty-spawn-evidence'
 import {
   commitRuntimeSpawnHiddenDelivery,
   markRuntimeSpawnHiddenBeforeSpawn,
@@ -53,7 +54,10 @@ export async function spawnPtyFromRuntimeController(
       }
       return commitRuntimePtySpawn(ctx)
     },
-    onCommitted: () => commitRuntimeSpawnHiddenDelivery(ctx),
+    onCommitted: (committedOutcome) => {
+      commitRuntimeSpawnHiddenDelivery(ctx)
+      recordCommittedLocalPtySpawnEvidence(deps.runtime, ctx, committedOutcome)
+    },
     releaseHiddenMark: () => releaseRuntimeSpawnPreSpawnHiddenMark(ctx),
     adoption: () => ({ completed: args.adoptedStablePane })
   })
