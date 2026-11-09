@@ -12,6 +12,9 @@ import {
   type AshClaudeSessionSettings
 } from './ash-claude-session-settings'
 import { assertClaudeNativeFixtureHasNoManagedLinuxPolicy } from './ash-claude-native-test-host-guard'
+import { prepareHostClaudeSessionOverlayLaunch } from '../../runtime/terminal/launch/ash-claude-session-overlay-launch'
+import { CLAUDE_INJECTED_CONFIG_DIR_ENV } from '../../../shared/claude-profile-routing'
+import { tokenizeStartupCommand } from '../../../shared/agent-launch/startup/tui-agent-startup-shell'
 
 /**
  * Explicitly opt-in with ASH_CLAUDE_NATIVE_HOOK_TEST_BINARY=/absolute/path/to/claude.
@@ -315,6 +318,48 @@ async function overlayFor(sessionId: string): Promise<AshClaudeSessionSettings> 
   })
 }
 
+/** Synthetic selected account: tests CLI argument transport, not real account binding. */
+async function nativeHostPreparedArgs(
+  mode: 'fresh' | 'resume',
+  sessionId: string
+): Promise<string[]> {
+  const selector = mode === 'fresh' ? '--session-id' : '--resume'
+  const prepared = await prepareHostClaudeSessionOverlayLaunch({
+    request: { mode, sessionId, accountId: 'synthetic-local-fixture', accountConfigDir: profile },
+    userDataPath: ashUserData,
+    context: {
+      launchAgent: 'claude',
+      command: `claude ${selector} ${sessionId}`,
+      executionPlatform: process.platform,
+      hostPlatform: process.platform,
+      isRemote: false,
+      isWsl: false,
+      isLiveReattach: false,
+      shell: 'posix',
+      selectedAccount: { id: 'synthetic-local-fixture', configDir: profile },
+      effectiveEnv: {
+        CLAUDE_CONFIG_DIR: profile,
+        [CLAUDE_INJECTED_CONFIG_DIR_ENV]: profile
+      },
+      ambientEnv: {},
+      ...(mode === 'resume' ? { providerSession: { key: 'session_id', id: sessionId } } : {})
+    }
+  })
+  expect(prepared.kind).toBe('prepared')
+  if (prepared.kind !== 'prepared') {
+    throw new Error('native adapter bridge unexpectedly declined an explicit synthetic launch')
+  }
+  const roundTrip = tokenizeStartupCommand(prepared.command, 'posix')
+  expect(roundTrip.ok).toBe(true)
+  if (!roundTrip.ok) {
+    throw new Error('native adapter produced an unparseable POSIX command')
+  }
+  expect(roundTrip.tokens).toEqual(prepared.argv)
+  expect(prepared.argv[0]).toBe('claude')
+  expect(prepared.argv.filter((arg) => arg === '--settings')).toHaveLength(1)
+  return prepared.argv.slice(1)
+}
+
 const BOTH_EVENTS = [
   'ASH:SessionStart',
   'ASH_STOP:Stop',
@@ -367,6 +412,21 @@ describe.skipIf(process.platform !== 'linux' || !nativeBinary)(
           .filter((entry) => entry.event === 'SessionStart')
           .map((entry) => entry.source)
       ).toEqual(['resume', 'resume'])
+      expect(messages).toBe(2)
+      expect(readFileSync(settingsFile, 'utf8')).toBe(foreignBefore)
+      await verifyAshClaudeSessionSettings(ashUserData, overlay)
+    }, 45_000)
+
+    it('executes fresh and resumed native turns with host-adapter verified argv and foreign hooks', async () => {
+      const foreignBefore = readFileSync(settingsFile, 'utf8')
+      const overlay = await overlayFor(randomUUID())
+      const first = await runNativeTurn(await nativeHostPreparedArgs('fresh', overlay.sessionId))
+      expect(eventLabels(first.hooks)).toEqual(BOTH_EVENTS)
+      expect(first.hooks.every((event) => event.sessionId === overlay.sessionId)).toBe(true)
+      const second = await runNativeTurn(await nativeHostPreparedArgs('resume', overlay.sessionId))
+      expect(eventLabels(second.hooks.slice(first.hooks.length))).toEqual(BOTH_EVENTS)
+      expect(second.hooks.length).toBe(first.hooks.length + BOTH_EVENTS.length)
+      expect(second.hooks.every((event) => event.sessionId === overlay.sessionId)).toBe(true)
       expect(messages).toBe(2)
       expect(readFileSync(settingsFile, 'utf8')).toBe(foreignBefore)
       await verifyAshClaudeSessionSettings(ashUserData, overlay)
