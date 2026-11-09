@@ -51,6 +51,7 @@ jobs:
             src/main/runtime/terminal/launch/ash-agent-teams-launch-disabled.test.ts \
             src/main/runtime/terminal/launch/ash-agent-account-env-snapshot.test.ts \
             src/main/runtime/terminal/launch/ash-claude-live-pane-adoption.test.ts \
+            src/main/runtime/terminal/launch/ash-claude-degraded-status-launch.test.ts \
             src/main/codex/configuration/homes/codex-pane-launch-account.test.ts \
             src/main/codex-accounts/ash-codex-account-selection-recovery.test.ts \
             src/main/agent-hooks/ash-shared-hook-disable.test.ts \
