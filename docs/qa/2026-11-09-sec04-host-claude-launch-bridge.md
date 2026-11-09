@@ -24,6 +24,8 @@ For explicit intent it recovers and verifies the existing Ash receipt for each p
 
 The adapter remains dormant because the host has no trusted source for both a pre-launch provider UUID on fresh launch and a selected-account binding for the durable receipt. Wiring it now would turn uncertainty into a guess and could attach one account's overlay to another account's provider session.
 
+The separate `recoverOriginalManagedClaudeAccountForSavedSession` helper can derive a managed profile from an existing v2 receipt for a saved Claude record. It is consistency validation only: the record's provider UUID is hook/renderer supplied, is not authenticated host acquisition evidence, and has no durable correlation to PTY spawn. The helper returns no command or `--settings` argv, is not called by this launch adapter, and does not authorize a process command.
+
 ## Regression evidence
 
 The adapter tests cover disabled-by-default behavior, explicit fresh and resume argv, one verified `--settings` pair per prepared process, and fail-closed checks for provider UUID mismatch, duplicate settings flags, live reattach, remote/WSL/Windows/shell boundaries, account mismatch, environment overrides, unsafe command syntax, custom executables, and an invalid runtime mode. Targeted refusal tests substitute the actual fixture UUID and assert the specific refusal reason, so unrelated UUID failures cannot mask missing checks. A separate host runtime test creates a durable overlay, dispatches a saved-style Claude resume through the fake PTY controller, and proves the current process command receives no unverified `--settings`. It also checks that closing the GUI tab does not kill the daemon-owned PTY and that tab close or PTY exit leaves the Ash overlay and foreign provider settings bytes intact.
@@ -48,6 +50,7 @@ In addition, an opt-in native Linux E2E used the installed Claude Code 2.1.286 b
   ```
 
   Earlier six-suite baseline (before invalid-mode test): **53/53 passed** on top of `0b9f5e92`.
+
 - `ASH_CLAUDE_NATIVE_HOOK_TEST_BINARY=/home/suraj/.local/bin/claude CI=1 node config/scripts/test-runtime/execution-policy/run-vitest.mjs run --config config/vitest.config.ts --pool=threads --maxWorkers=1 --no-file-parallelism src/main/agent-hooks/session/ash-claude-native-stop-resume.e2e.test.ts src/main/agent-hooks/session/ash-claude-native-overlay.e2e.test.ts` — **6/6 native CLI tests passed**; explicit opt-in, Linux-only, with the managed-policy fixture guard and isolated loopback fake provider.
 - `pnpm exec oxlint --config config/oxlint-code-quality-native-plugins.json src/main/runtime/terminal/launch/ash-claude-session-overlay-launch.ts src/main/runtime/terminal/launch/ash-claude-session-overlay-launch.test.ts --deny-warnings` — passed.
 - `pnpm exec oxlint --type-aware --config config/oxlint-code-quality-type-aware.json src/main/runtime/terminal/launch/ash-claude-session-overlay-launch.ts src/main/runtime/terminal/launch/ash-claude-session-overlay-launch.test.ts --deny-warnings` — passed.
@@ -71,4 +74,4 @@ The independent GPT-6 Luna/xhigh read-only review raised four issues. The author
 
 After these corrections, the combined eight-file test invocation (six non-native suites plus two opt-in native suites) passed **60/60**, and TypeScript, target lint/format, source provenance, CLI build and Electron bundle had passed. This does **not** constitute authenticated provider-account verification or a live GUI/runtime attachment acceptance.
 
-**Open:** attach a production caller only after fresh provider session identity and selected-account identity can be durably associated, and only on newly spawned local POSIX processes. Full SEC-04/AG-07 acceptance and provider-side lifecycle evidence are still required.
+**Open:** attach a production caller only after provider session identity, original account selection, and PTY spawn can be durably correlated by trusted host evidence, and only on newly spawned local POSIX processes. The receipt still does not authenticate the provider login; device/inode can eventually be reused, and same-user tampering remains outside its integrity boundary. Full SEC-04/AG-07 acceptance and provider-side lifecycle evidence are still required.
