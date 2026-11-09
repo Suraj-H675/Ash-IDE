@@ -1,10 +1,14 @@
 import { createHash } from 'node:crypto'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { canAshWriteProviderGlobalHooks } from '../../../agent-hooks/ash-hook-ownership-policy'
 import { makePaneKey } from '../../../../shared/workspace-layout/stable-pane-id'
 import { AGENT_SESSION_CLAIM_DIGEST_VERSION } from '../../../../shared/agent-session/agent-session-host-authority'
 import { LocalPtyProvider } from '../../../providers/local-pty/local-pty-provider'
 import { getLocalPtyProvider, setLocalPtyProvider } from '../provider/registry'
+import { isClaudeLaunchCommand } from '../host-env/fresh-spawn-routing'
 import type { Store } from '../../../persistence/loading-store/store'
 import type { OrcaRuntimeService } from '../../../runtime/orca-runtime'
 import { makeRuntimePtySpawnTestDeps } from './spawn-preflight-test-deps-fixture'
@@ -80,6 +84,8 @@ function makeState(
   const args: RuntimePtySpawnArgs = {
     cols: 120,
     rows: 40,
+    command: 'claude',
+    launchAgent: 'claude',
     worktreeId: WORKTREE_ID,
     tabId: TAB_ID,
     leafId: LEAF_ID,
@@ -91,10 +97,13 @@ function makeState(
   }
   const state = createRuntimePtySpawnState(deps, args)
   state.provider = changes.provider ?? new LocalPtyProvider()
-  state.isClaudeLaunch = changes.isClaudeLaunch ?? true
+  state.isClaudeLaunch = changes.isClaudeLaunch ?? isClaudeLaunchCommand(args.command)
+  state.launchCommand = args.command
   state.spawnOptions = {
     cols: 120,
     rows: 40,
+    command: args.command,
+    launchAgent: args.launchAgent,
     env: {
       ORCA_AGENT_LAUNCH_TOKEN: changes.effectiveLaunchToken ?? LAUNCH_TOKEN
     }
@@ -146,94 +155,153 @@ function makeEvidenceRuntime(): {
 }
 
 describe('committed local PTY spawn evidence', () => {
-  it('records after the runtime commit returns the fake local provider identity', async () => {
-    const originalProvider = getLocalPtyProvider()
-    const provider = new LocalPtyProvider()
-    const spawn = vi
-      .spyOn(provider, 'spawn')
-      .mockResolvedValue({ id: PTY_ID, incarnationId: INCARNATION_ID })
-
-    const paneSession = {
-      tabsByWorktree: {
-        [WORKTREE_ID]: [{ id: TAB_ID, worktreeId: WORKTREE_ID }]
-      },
-      terminalLayoutsByTabId: {
-        [TAB_ID]: {
-          root: { type: 'leaf', leafId: LEAF_ID },
-          ptyIdsByLeafId: {}
-        }
-      },
-      terminalPtyIncarnationsByPaneKey: {}
-    } as unknown as PaneSession
-    let evidenceVisibleBeforePaneCommit = false
-    const store = {
-      getWorkspaceSession: () => paneSession,
-      persistPtyBinding: vi.fn(async () => {
-        evidenceVisibleBeforePaneCommit =
-          readCommittedLocalPtySpawnEvidence(runtime, PTY_ID, INCARNATION_ID) !== null
-        paneSession.terminalLayoutsByTabId[TAB_ID]!.ptyIdsByLeafId[LEAF_ID] = PTY_ID
-        paneSession.terminalPtyIncarnationsByPaneKey[PANE_KEY] = INCARNATION_ID
-        return true
-      })
-    } as unknown as Store
-    const exitListeners = new Map<string, () => void>()
-    const runtime = {
-      registerPty: vi.fn(),
-      subscribeToPtyExit: vi.fn((ptyId: string, listener: () => void) => {
-        exitListeners.set(ptyId, listener)
-        return () => {
-          exitListeners.delete(ptyId)
-        }
-      })
+  const committedSpawnCases = [
+    {
+      name: 'direct planned Claude launch',
+      command: 'claude',
+      agentCommand: 'claude',
+      accepted: true
+    },
+    {
+      name: 'echo claude in a shell',
+      command: 'echo claude',
+      agentCommand: 'claude',
+      accepted: false
+    },
+    {
+      name: 'shell wrapper invoking Claude',
+      command: 'sh -c "claude"',
+      agentCommand: 'claude',
+      accepted: false
+    },
+    {
+      name: 'compound command after Claude',
+      command: 'claude; echo unsafe',
+      agentCommand: 'claude',
+      accepted: false
+    },
+    {
+      name: 'conflicting saved launch config',
+      command: 'claude',
+      agentCommand: 'codex',
+      accepted: false
     }
-    const deps = {
-      ...makeRuntimePtySpawnTestDeps(),
-      adoptStablePane: async (
-        adoptArgs: Parameters<PtyRuntimeControllerDeps['adoptStablePane']>[0]
-      ) => {
-        if (!adoptArgs.spawnFresh) {
-          throw new Error('fixture requires a fresh-spawn callback')
+  ] as const
+
+  it.each(committedSpawnCases)(
+    'records real commit facts only for $name',
+    async ({ command, agentCommand, accepted }) => {
+      // A planned Claude launch also performs normal trust setup. Keep all of
+      // that behavior inside disposable files, never the user's real home.
+      const disposableHome = mkdtempSync(join(tmpdir(), 'ash-pty-commit-evidence-'))
+      const disposableClaudeDir = join(disposableHome, '.claude')
+      mkdirSync(disposableClaudeDir)
+      writeFileSync(join(disposableClaudeDir, '.claude.json'), '{}\n', { mode: 0o600 })
+      vi.stubEnv('HOME', disposableHome)
+      vi.stubEnv('USERPROFILE', disposableHome)
+      vi.stubEnv('CLAUDE_CONFIG_DIR', disposableClaudeDir)
+      const originalProvider = getLocalPtyProvider()
+      const provider = new LocalPtyProvider()
+      const spawn = vi
+        .spyOn(provider, 'spawn')
+        .mockResolvedValue({ id: PTY_ID, incarnationId: INCARNATION_ID })
+
+      const paneSession = {
+        tabsByWorktree: {
+          [WORKTREE_ID]: [{ id: TAB_ID, worktreeId: WORKTREE_ID }]
+        },
+        terminalLayoutsByTabId: {
+          [TAB_ID]: {
+            root: { type: 'leaf', leafId: LEAF_ID },
+            ptyIdsByLeafId: {}
+          }
+        },
+        terminalPtyIncarnationsByPaneKey: {}
+      } as unknown as PaneSession
+      let evidenceVisibleBeforePaneCommit = false
+      const store = {
+        getWorkspaceSession: () => paneSession,
+        persistPtyBinding: vi.fn(async () => {
+          evidenceVisibleBeforePaneCommit =
+            readCommittedLocalPtySpawnEvidence(runtime, PTY_ID, INCARNATION_ID) !== null
+          paneSession.terminalLayoutsByTabId[TAB_ID]!.ptyIdsByLeafId[LEAF_ID] = PTY_ID
+          paneSession.terminalPtyIncarnationsByPaneKey[PANE_KEY] = INCARNATION_ID
+          return true
+        })
+      } as unknown as Store
+      const exitListeners = new Map<string, () => void>()
+      const runtime = {
+        registerPty: vi.fn(),
+        subscribeToPtyExit: vi.fn((ptyId: string, listener: () => void) => {
+          exitListeners.set(ptyId, listener)
+          return () => {
+            exitListeners.delete(ptyId)
+          }
+        })
+      }
+      const deps = {
+        ...makeRuntimePtySpawnTestDeps(),
+        adoptStablePane: async (
+          adoptArgs: Parameters<PtyRuntimeControllerDeps['adoptStablePane']>[0]
+        ) => {
+          if (!adoptArgs.spawnFresh) {
+            throw new Error('fixture requires a fresh-spawn callback')
+          }
+          await adoptArgs.spawnFresh({ mustExist: false })
+          return null
+        },
+        store,
+        // The fixture exercises only registerPty and subscribeToPtyExit.
+        runtime: runtime as unknown as OrcaRuntimeService
+      }
+
+      try {
+        setLocalPtyProvider(provider)
+        const response = await spawnPtyFromRuntimeController(deps, {
+          cols: 120,
+          rows: 40,
+          cwd: process.cwd(),
+          command,
+          launchAgent: 'claude',
+          worktreeId: WORKTREE_ID,
+          tabId: TAB_ID,
+          leafId: LEAF_ID,
+          persistHostSessionBinding: true,
+          launchConfig: { agentCommand, agentArgs: '', agentEnv: {} },
+          launchToken: LAUNCH_TOKEN,
+          env: {
+            ORCA_AGENT_LAUNCH_TOKEN: LAUNCH_TOKEN,
+            HOME: disposableHome,
+            CLAUDE_CONFIG_DIR: disposableClaudeDir
+          }
+        })
+
+        expect(spawn).toHaveBeenCalledOnce()
+        expect(store.persistPtyBinding).toHaveBeenCalledOnce()
+        expect(evidenceVisibleBeforePaneCommit).toBe(false)
+        expect(response).toMatchObject({ id: PTY_ID, incarnationId: INCARNATION_ID })
+        const recorded = readCommittedLocalPtySpawnEvidence(runtime, PTY_ID, INCARNATION_ID)
+        if (accepted) {
+          expect(recorded).toMatchObject({
+            ptyId: response.id,
+            incarnationId: response.incarnationId,
+            paneKey: PANE_KEY,
+            worktreeId: WORKTREE_ID,
+            launchTokenHash: createHash('sha256').update(LAUNCH_TOKEN).digest('hex')
+          })
+        } else {
+          // The actual runtime preflight sees these command strings. A lexical
+          // match or saved agent label must not promote shell instructions.
+          expect(recorded).toBeNull()
         }
-        await adoptArgs.spawnFresh({ mustExist: false })
-        return null
-      },
-      store,
-      // The fixture exercises only registerPty and subscribeToPtyExit.
-      runtime: runtime as unknown as OrcaRuntimeService
+      } finally {
+        setLocalPtyProvider(originalProvider)
+        retireCommittedLocalPtySpawnEvidence(runtime, PTY_ID, INCARNATION_ID)
+        vi.unstubAllEnvs()
+        rmSync(disposableHome, { recursive: true, force: true })
+      }
     }
-
-    try {
-      setLocalPtyProvider(provider)
-      const response = await spawnPtyFromRuntimeController(deps, {
-        cols: 120,
-        rows: 40,
-        cwd: process.cwd(),
-        command: 'claude',
-        worktreeId: WORKTREE_ID,
-        tabId: TAB_ID,
-        leafId: LEAF_ID,
-        persistHostSessionBinding: true,
-        launchConfig: { agentCommand: 'claude', agentArgs: '', agentEnv: {} },
-        launchToken: LAUNCH_TOKEN,
-        env: { ORCA_AGENT_LAUNCH_TOKEN: LAUNCH_TOKEN }
-      })
-
-      expect(spawn).toHaveBeenCalledOnce()
-      expect(store.persistPtyBinding).toHaveBeenCalledOnce()
-      expect(evidenceVisibleBeforePaneCommit).toBe(false)
-      expect(response).toMatchObject({ id: PTY_ID, incarnationId: INCARNATION_ID })
-      expect(readCommittedLocalPtySpawnEvidence(runtime, PTY_ID, INCARNATION_ID)).toMatchObject({
-        ptyId: response.id,
-        incarnationId: response.incarnationId,
-        paneKey: PANE_KEY,
-        worktreeId: WORKTREE_ID,
-        launchTokenHash: createHash('sha256').update(LAUNCH_TOKEN).digest('hex')
-      })
-    } finally {
-      setLocalPtyProvider(originalProvider)
-      retireCommittedLocalPtySpawnEvidence(runtime, PTY_ID, INCARNATION_ID)
-    }
-  })
+  )
 
   it('records only the committed local provider identity, persisted pane binding, and token hash', () => {
     const state = makeState()
@@ -276,9 +344,13 @@ describe('committed local PTY spawn evidence', () => {
   })
 
   const rejectedCandidates: Array<
-    [string, Parameters<typeof makeState>[0] & { outcome?: PtySpawnOutcome }]
+    [string, Parameters<typeof makeState>[0] & { outcome?: PtySpawnOutcome }, string]
   > = [
-    ['adopted result', { outcome: { kind: 'adopted', result: { id: PTY_ID } } }],
+    [
+      'adopted result',
+      { outcome: { kind: 'adopted', result: { id: PTY_ID } } },
+      'spawn-not-committed'
+    ],
     [
       'stable pane owner',
       {
@@ -288,9 +360,10 @@ describe('committed local PTY spawn evidence', () => {
           leafId: LEAF_ID,
           ptyId: PTY_ID
         }
-      }
+      },
+      'stable-pane-adopted'
     ],
-    ['provider reattach', { result: { isReattach: true } }],
+    ['provider reattach', { result: { isReattach: true } }, 'provider-reattached'],
     [
       'adopted agent session',
       {
@@ -317,17 +390,18 @@ describe('committed local PTY spawn evidence', () => {
             }
           }
         }
-      }
+      },
+      'stable-pane-adopted'
     ],
-    ['remote connection', { args: { connectionId: 'ssh-connection' } }],
-    ['daemon routed process', { isDaemonHostSpawn: true }],
-    ['WSL runtime', { runtimeTarget: 'wsl' }],
-    ['WSL distro', { expectedWslDistro: 'Ubuntu' }],
-    ['missing incarnation', { result: { incarnationId: undefined } }],
-    ['missing launch token', { args: { launchToken: undefined } }],
-    ['effective launch token mismatch', { effectiveLaunchToken: 'other' }],
-    ['missing persisted pane binding', { hostSessionBinding: false }],
-    ['synthetic early exit', { result: { exitedBeforeSpawnReply: true } }],
+    ['remote connection', { args: { connectionId: 'ssh-connection' } }, 'remote-runtime'],
+    ['daemon routed process', { isDaemonHostSpawn: true }, 'daemon-runtime'],
+    ['WSL runtime', { runtimeTarget: 'wsl' }, 'wsl-runtime'],
+    ['WSL distro', { expectedWslDistro: 'Ubuntu' }, 'wsl-runtime'],
+    ['missing incarnation', { result: { incarnationId: undefined } }, 'missing-pty-identity'],
+    ['missing launch token', { args: { launchToken: undefined } }, 'missing-launch-token'],
+    ['effective launch token mismatch', { effectiveLaunchToken: 'other' }, 'launch-token-mismatch'],
+    ['missing persisted pane binding', { hostSessionBinding: false }, 'missing-host-pane-binding'],
+    ['synthetic early exit', { result: { exitedBeforeSpawnReply: true } }, 'missing-pty-identity'],
     [
       'stale persisted pane binding',
       {
@@ -338,18 +412,30 @@ describe('committed local PTY spawn evidence', () => {
           },
           terminalPtyIncarnationsByPaneKey: { [PANE_KEY]: 'replacement-incarnation' }
         }
-      }
-    ]
+      },
+      'host-pane-binding-mismatch'
+    ],
+    ['echo Claude', { args: { command: 'echo claude' } }, 'not-claude-launch'],
+    ['shell wrapper', { args: { command: 'sh -c "claude"' } }, 'not-claude-launch'],
+    ['compound command', { args: { command: 'claude; echo unsafe' } }, 'not-claude-launch'],
+    ['mismatched launch agent', { args: { launchAgent: 'codex' } }, 'not-claude-launch'],
+    [
+      'mismatched launch configuration',
+      { args: { launchConfig: { agentCommand: 'codex', agentArgs: '', agentEnv: {} } } },
+      'not-claude-launch'
+    ],
+    ['renderer startup delivery', { args: { commandDelivery: 'renderer' } }, 'not-claude-launch'],
+    ['custom shell override', { args: { shellOverride: '/bin/bash' } }, 'not-claude-launch']
   ]
-  it.each(rejectedCandidates)('rejects %s without issuing account evidence', (_name, changes) => {
-    const state = makeState(changes)
-    const outcome = changes.outcome ?? committedOutcome(state)
-    const validation = validateCommittedLocalPtySpawnEvidence(state, outcome)
-    expect(validation.accepted).toBe(false)
-    if (validation.accepted) {
-      throw new Error('invalid candidate was accepted')
+  it.each(rejectedCandidates)(
+    'rejects %s without issuing account evidence',
+    (_name, changes, expectedReason) => {
+      const state = makeState(changes)
+      const outcome = changes.outcome ?? committedOutcome(state)
+      const validation = validateCommittedLocalPtySpawnEvidence(state, outcome)
+      expect(validation).toEqual({ accepted: false, reason: expectedReason })
     }
-  })
+  )
 
   it('does not record another agent or an ordinary shell as a Claude launch', () => {
     const state = makeState({ isClaudeLaunch: false })
@@ -377,6 +463,37 @@ describe('committed local PTY spawn evidence', () => {
     )
     expect(readCommittedLocalPtySpawnEvidence(runtime, PTY_ID, INCARNATION_ID)).toBeNull()
     expect(unsubscribe).toHaveBeenCalledOnce()
+  })
+
+  it('rolls back the receipt if the exit observer throws, including repeated registrations', () => {
+    const subscribeToPtyExit = vi.fn((): (() => void) => {
+      throw new Error('exit observer unavailable')
+    })
+    const runtime: CommittedLocalPtySpawnEvidenceRuntime = { subscribeToPtyExit }
+    for (let i = 0; i < 260; i++) {
+      const ptyId = `unobserved-pty-${i}`
+      const incarnationId = `unobserved-incarnation-${i}`
+      const state = makeState({
+        result: { id: ptyId, incarnationId },
+        paneSession: {
+          tabsByWorktree: { [WORKTREE_ID]: [{ id: TAB_ID, worktreeId: WORKTREE_ID }] },
+          terminalLayoutsByTabId: {
+            [TAB_ID]: { ptyIdsByLeafId: { [LEAF_ID]: ptyId } }
+          },
+          terminalPtyIncarnationsByPaneKey: { [PANE_KEY]: incarnationId }
+        }
+      })
+      expect(recordCommittedLocalPtySpawnEvidence(runtime, state, committedOutcome(state))).toBe(
+        false
+      )
+      expect(readCommittedLocalPtySpawnEvidence(runtime, ptyId, incarnationId)).toBeNull()
+    }
+    expect(subscribeToPtyExit).toHaveBeenCalledTimes(260)
+    const validState = makeState()
+    expect(
+      recordCommittedLocalPtySpawnEvidence(runtime, validState, committedOutcome(validState))
+    ).toBe(false)
+    expect(readCommittedLocalPtySpawnEvidence(runtime, PTY_ID, INCARNATION_ID)).toBeNull()
   })
 
   it('rejects a non-local provider, a refused commit, and provider-response identity changes', () => {

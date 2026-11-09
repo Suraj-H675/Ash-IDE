@@ -9,6 +9,36 @@ import type { PtySpawnOutcome } from '../spawn-outcome'
 
 const MAX_COMMITTED_PTY_SPAWN_EVIDENCE = 256
 
+/** Conservative command shape for a *candidate*, never proof of a running Claude child. */
+function isDirectClaudeInvocation(command: unknown): boolean {
+  if (typeof command !== 'string' || command.length === 0 || command.length > 4096) {
+    return false
+  }
+  // Never interpret a shell pipeline, wrapper, substitution, or compound script as
+  // a direct agent launch; false negatives here only omit dormant evidence.
+  if (/[;&|<>`$\r\n\0]/.test(command)) {
+    return false
+  }
+  return /^(?:claude|\/(?:[A-Za-z0-9._+@-]+\/)*claude)(?:\.cmd|\.exe)?(?:\s+[^\r\n]*)?$/i.test(
+    command.trim()
+  )
+}
+
+function hasPlannedDirectClaudeLaunch(state: RuntimePtySpawnState): boolean {
+  return (
+    state.isClaudeLaunch &&
+    state.args.launchAgent === 'claude' &&
+    state.spawnOptions.launchAgent === 'claude' &&
+    !state.args.shellOverride &&
+    !state.spawnOptions.shellOverride &&
+    state.args.commandDelivery !== 'renderer' &&
+    state.spawnOptions.commandDelivery !== 'renderer' &&
+    isDirectClaudeInvocation(state.args.launchConfig?.agentCommand) &&
+    isDirectClaudeInvocation(state.launchCommand) &&
+    isDirectClaudeInvocation(state.spawnOptions.command)
+  )
+}
+
 export type CommittedLocalPtySpawnEvidence = Readonly<{
   version: 1
   provider: 'local-pty'
@@ -33,6 +63,7 @@ export type CommittedLocalPtySpawnEvidenceRejection =
   | 'not-claude-launch'
   | 'provider-mismatch'
   | 'remote-runtime'
+  | 'daemon-runtime'
   | 'wsl-runtime'
   | 'provider-result-mismatch'
   | 'missing-pty-identity'
@@ -75,7 +106,15 @@ class RuntimeEvidenceStore {
     }
     const entry: EvidenceEntry = { evidence, unsubscribe: () => {} }
     this.entries.set(key, entry)
-    const unsubscribe = subscribeToExit(() => this.remove(evidence.ptyId, evidence.incarnationId))
+    let unsubscribe: () => void
+    try {
+      unsubscribe = subscribeToExit(() => this.remove(evidence.ptyId, evidence.incarnationId))
+    } catch {
+      // No exit observer means no defensible live evidence. Roll back before
+      // returning; otherwise a failing registration bypasses the capacity cap.
+      this.removeKey(key)
+      return false
+    }
     if (this.entries.get(key) === entry) {
       entry.unsubscribe = unsubscribe
     } else {
@@ -187,9 +226,10 @@ export function validateCommittedLocalPtySpawnEvidence(
   if (state.result.isReattach) {
     return reject('provider-reattached')
   }
-  // This is an SEC-04 Claude-only fact recorder, not a generic terminal launch
-  // credential. A recognized command remains a hint, never proof of Claude login.
-  if (!state.isClaudeLaunch) {
+  // The preflight 'isClaudeLaunch' regex also matches `echo claude`; require a
+  // consistently planned direct Claude invocation at the effective spawn command.
+  // Even this is classification-only, never proof of authenticated Claude login.
+  if (!hasPlannedDirectClaudeLaunch(state)) {
     return reject('not-claude-launch')
   }
   if (!(state.provider instanceof LocalPtyProvider)) {
@@ -198,8 +238,10 @@ export function validateCommittedLocalPtySpawnEvidence(
   if (state.args.connectionId !== undefined && state.args.connectionId !== null) {
     return reject('remote-runtime')
   }
+  if (state.isDaemonHostSpawn) {
+    return reject('daemon-runtime')
+  }
   if (
-    state.isDaemonHostSpawn ||
     state.codexSelectionTarget.runtime !== 'host' ||
     state.expectedWslDistro ||
     (state.result.wslDistro !== undefined && state.result.wslDistro !== null)
