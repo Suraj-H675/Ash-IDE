@@ -6,7 +6,9 @@ import {
   linkSync,
   mkdtempSync,
   mkdirSync,
+  realpathSync,
   readFileSync,
+  renameSync,
   rmSync,
   symlinkSync,
   unlinkSync,
@@ -16,11 +18,19 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
+  claudeProfileMarkerPath,
+  describeClaudeProfile,
+  prepareClaudeProfileDirectory
+} from '../../claude-accounts/claude-profile-paths'
+import type { ClaudeProfileDescriptor } from '../../claude-accounts/claude-profile-paths'
+import {
   AshClaudeSessionSettingsConflict,
   buildAshClaudeSessionSettings,
   claudeArgsWithAshSessionSettings,
+  claudeVerifiedArgsWithManagedAccountAshSessionSettings,
   claudeVerifiedArgsWithAshSessionSettings,
   createAshClaudeSessionSettings,
+  recoverAshClaudeSessionSettingsForManagedAccount,
   recoverAshClaudeSessionSettings,
   verifyAshClaudeSessionSettings
 } from './ash-claude-session-settings'
@@ -34,7 +44,7 @@ const hooks = [
   { event: 'Stop' as const, scriptPath: "/Ash IDE/hooks/stop's.sh", timeoutSeconds: 3 }
 ]
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), 'ash-session-overlay-'))
+  root = mkdtempSync(join(realpathSync(tmpdir()), 'ash-session-overlay-'))
   ash = join(root, 'ash-private')
   external = join(root, 'claude-external')
   workspace = join(root, 'workspace')
@@ -56,6 +66,16 @@ afterEach(() => {
 
 const create = (sessionId: string = randomUUID()) =>
   createAshClaudeSessionSettings({ ashUserData: ash, sessionId, hooks })
+
+function createManagedProfile(accountId: string): ClaudeProfileDescriptor {
+  const profile = describeClaudeProfile(ash, accountId, {
+    executionHostId: 'local',
+    runtime: 'host'
+  })
+  const writeMarker = prepareClaudeProfileDirectory(ash, profile, join(root, 'synthetic-user-home'))
+  writeMarker()
+  return profile
+}
 describe.skipIf(process.platform === 'win32')(
   'Claude per-session settings overlay never edits shared provider settings',
   () => {
@@ -160,6 +180,210 @@ describe.skipIf(process.platform === 'win32')(
         ])
       ).rejects.toThrow('caller already provides')
       expect(readFileSync(join(external, 'settings.json'), 'utf8')).toBe(existingProvider)
+    })
+    it('recovers an account-bound v2 receipt after restart using the marked managed profile', async () => {
+      const existingProvider = readFileSync(join(external, 'settings.json'), 'utf8')
+      const profile = createManagedProfile('managed_claude_a')
+      const sessionId = randomUUID()
+      const created = await createAshClaudeSessionSettings({
+        ashUserData: ash,
+        sessionId,
+        hooks,
+        managedAccountProfile: profile
+      })
+      const receiptPath = `${created.settingsPath}.receipt.json`
+      const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'))
+      expect(receipt.format).toBe(2)
+      expect(receipt.sessionId).toBe(sessionId)
+      expect(receipt.account).toMatchObject({
+        version: 1,
+        accountId: 'managed_claude_a',
+        home: profile.home,
+        runtime: 'host',
+        hostPlatform: process.platform,
+        configHomeIdentity: realpathSync(profile.home),
+        configHomeDevice: lstatSync(profile.home, { bigint: true }).dev.toString(),
+        configHomeInode: lstatSync(profile.home, { bigint: true }).ino.toString(),
+        ownershipMarkerSha256: expect.stringMatching(/^[a-f0-9]{64}$/)
+      })
+      expect(lstatSync(receiptPath).mode & 0o777).toBe(0o600)
+
+      // A new runtime has only the durable UUID, Ash root and host account descriptor.
+      const recovered = await recoverAshClaudeSessionSettingsForManagedAccount(
+        ash,
+        sessionId,
+        profile
+      )
+      expect(recovered).toEqual(created)
+      expect(() => claudeArgsWithAshSessionSettings([], recovered)).toThrow(
+        'account-bound Claude settings need managed-account verification'
+      )
+      expect(
+        await claudeVerifiedArgsWithManagedAccountAshSessionSettings(ash, sessionId, profile, [
+          '--resume',
+          sessionId
+        ])
+      ).toEqual([...created.settingsArgs, '--resume', sessionId])
+      expect(readFileSync(join(external, 'settings.json'), 'utf8')).toBe(existingProvider)
+    })
+    it('refuses recovery after an account switch and never overwrites the original binding', async () => {
+      const originalProvider = readFileSync(join(external, 'settings.json'), 'utf8')
+      const accountA = createManagedProfile('managed_claude_a')
+      const accountB = createManagedProfile('managed_claude_b')
+      const sessionId = randomUUID()
+      const created = await createAshClaudeSessionSettings({
+        ashUserData: ash,
+        sessionId,
+        hooks,
+        managedAccountProfile: accountA
+      })
+      const receiptPath = `${created.settingsPath}.receipt.json`
+      const receiptBytes = readFileSync(receiptPath, 'utf8')
+      const settingsBytes = readFileSync(created.settingsPath, 'utf8')
+
+      await expect(
+        recoverAshClaudeSessionSettingsForManagedAccount(ash, sessionId, accountB)
+      ).rejects.toThrow('managed Claude account changed for this session')
+      await expect(
+        createAshClaudeSessionSettings({
+          ashUserData: ash,
+          sessionId,
+          hooks,
+          managedAccountProfile: accountB
+        })
+      ).rejects.toThrow('session settings already exist')
+      expect(readFileSync(receiptPath, 'utf8')).toBe(receiptBytes)
+      expect(readFileSync(created.settingsPath, 'utf8')).toBe(settingsBytes)
+      await expect(
+        recoverAshClaudeSessionSettingsForManagedAccount(ash, sessionId, accountA)
+      ).resolves.toEqual(created)
+
+      const otherSessionId = randomUUID()
+      const otherSession = await createAshClaudeSessionSettings({
+        ashUserData: ash,
+        sessionId: otherSessionId,
+        hooks,
+        managedAccountProfile: accountA
+      })
+      writeFileSync(`${otherSession.settingsPath}.receipt.json`, receiptBytes, { mode: 0o600 })
+      await expect(
+        recoverAshClaudeSessionSettingsForManagedAccount(ash, otherSessionId, accountA)
+      ).rejects.toThrow('session settings receipt is not account-bound')
+      expect(readFileSync(join(external, 'settings.json'), 'utf8')).toBe(originalProvider)
+    })
+    it('refuses a replacement physical config home even if its path and sibling marker are unchanged', async () => {
+      const originalProvider = readFileSync(join(external, 'settings.json'), 'utf8')
+      const profile = createManagedProfile('managed_claude_a')
+      const originalIdentity = lstatSync(profile.home, { bigint: true })
+      const sessionId = randomUUID()
+      const created = await createAshClaudeSessionSettings({
+        ashUserData: ash,
+        sessionId,
+        hooks,
+        managedAccountProfile: profile
+      })
+      const receiptPath = `${created.settingsPath}.receipt.json`
+      const receiptBytes = readFileSync(receiptPath, 'utf8')
+      const markerBytes = readFileSync(claudeProfileMarkerPath(profile), 'utf8')
+      const retiredHome = join(root, 'retired-managed-claude-home')
+      renameSync(profile.home, retiredHome)
+      mkdirSync(profile.home, { mode: 0o700 })
+      expect(realpathSync(profile.home)).toBe(profile.home)
+      expect(lstatSync(profile.home, { bigint: true }).ino).not.toBe(originalIdentity.ino)
+      expect(readFileSync(claudeProfileMarkerPath(profile), 'utf8')).toBe(markerBytes)
+      await expect(
+        recoverAshClaudeSessionSettingsForManagedAccount(ash, sessionId, profile)
+      ).rejects.toThrow('managed Claude account changed for this session')
+      expect(readFileSync(receiptPath, 'utf8')).toBe(receiptBytes)
+      expect(readFileSync(join(external, 'settings.json'), 'utf8')).toBe(originalProvider)
+    })
+    it('does not trust a copy that strips managed-account identity before calling the legacy argv helper', async () => {
+      const profile = createManagedProfile('managed_claude_a')
+      const sessionId = randomUUID()
+      const bound = await createAshClaudeSessionSettings({
+        ashUserData: ash,
+        sessionId,
+        hooks,
+        managedAccountProfile: profile
+      })
+      const forgedUnbound = { ...bound, managedAccountIdentity: undefined }
+      expect(() =>
+        claudeArgsWithAshSessionSettings(['--resume', sessionId], forgedUnbound)
+      ).toThrow('account-bound Claude settings need managed-account verification')
+      const unbound = await create()
+      expect(() => claudeArgsWithAshSessionSettings([], { ...unbound })).toThrow(
+        'account-bound Claude settings need managed-account verification'
+      )
+      expect(Object.isFrozen(bound)).toBe(true)
+      expect(Object.isFrozen(bound.settingsArgs)).toBe(true)
+      expect(Object.isFrozen(unbound)).toBe(true)
+      expect(Object.isFrozen(unbound.settingsArgs)).toBe(true)
+      expect(claudeArgsWithAshSessionSettings([], unbound)).toEqual(unbound.settingsArgs)
+    })
+    it('rejects marker tampering, profile symlink retargets and non-local profile descriptors', async () => {
+      const originalProvider = readFileSync(join(external, 'settings.json'), 'utf8')
+      const account = createManagedProfile('managed_claude_a')
+      const sessionId = randomUUID()
+      await createAshClaudeSessionSettings({
+        ashUserData: ash,
+        sessionId,
+        hooks,
+        managedAccountProfile: account
+      })
+      const markerPath = claudeProfileMarkerPath(account)
+      const markerBytes = readFileSync(markerPath, 'utf8')
+      writeFileSync(markerPath, markerBytes.replace('managed_claude_a', 'tampered_account'), {
+        mode: 0o600
+      })
+      await expect(
+        recoverAshClaudeSessionSettingsForManagedAccount(ash, sessionId, account)
+      ).rejects.toThrow('managed Claude account identity is unavailable')
+      writeFileSync(markerPath, markerBytes, { mode: 0o600 })
+
+      const movedHome = join(root, 'retargeted-managed-home')
+      renameSync(account.home, movedHome)
+      symlinkSync(movedHome, account.home)
+      await expect(
+        recoverAshClaudeSessionSettingsForManagedAccount(ash, sessionId, account)
+      ).rejects.toThrow('managed Claude account identity is unavailable')
+      unlinkSync(account.home)
+      renameSync(movedHome, account.home)
+
+      const wsl = {
+        ...account,
+        target: { executionHostId: 'local', runtime: 'wsl', distro: 'Ubuntu' }
+      } as unknown as ClaudeProfileDescriptor
+      const remote = {
+        ...account,
+        target: { executionHostId: 'ssh:example', runtime: 'host' }
+      } as unknown as ClaudeProfileDescriptor
+      const systemDefault = { ...account, home: join(root, 'system-default') }
+      for (const unsupported of [wsl, remote, systemDefault]) {
+        await expect(
+          recoverAshClaudeSessionSettingsForManagedAccount(ash, sessionId, unsupported)
+        ).rejects.toThrow('managed Claude account identity is unavailable')
+      }
+      expect(readFileSync(join(external, 'settings.json'), 'utf8')).toBe(originalProvider)
+    })
+    it('keeps v1 overlays readable but never adopts them as account-bound', async () => {
+      const originalProvider = readFileSync(join(external, 'settings.json'), 'utf8')
+      const profile = createManagedProfile('managed_claude_a')
+      const unbound = await create()
+      await expect(recoverAshClaudeSessionSettings(ash, unbound.sessionId)).resolves.toEqual(
+        unbound
+      )
+      await expect(
+        recoverAshClaudeSessionSettingsForManagedAccount(ash, unbound.sessionId, profile)
+      ).rejects.toThrow('session settings receipt is not account-bound')
+
+      const bound = await createAshClaudeSessionSettings({
+        ashUserData: ash,
+        sessionId: randomUUID(),
+        hooks,
+        managedAccountProfile: profile
+      })
+      await expect(recoverAshClaudeSessionSettings(ash, bound.sessionId)).rejects.toThrow()
+      expect(readFileSync(join(external, 'settings.json'), 'utf8')).toBe(originalProvider)
     })
     it('fails closed on a missing, malformed, wrong-session or tampered receipt', async () => {
       const record = await create()
