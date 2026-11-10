@@ -122,6 +122,9 @@ let retryTimer: ReturnType<typeof setTimeout> | null = null
 
 /** Never throws; a second call while one runs joins it, so no store is applied twice at once. */
 export function runWslMoveRendererStoreRewrites(attempt = 0): Promise<void> {
+  if (window.api.platform.get().platform !== 'win32') {
+    return Promise.resolve()
+  }
   inFlight ??= rewritePendingMoves()
     .then((unrecorded) => {
       const delay = RETRY_DELAYS_MS[attempt]

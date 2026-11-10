@@ -847,6 +847,21 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/App.tsx",
+      "sha256": "80784c2c60f790c2c867d0cb2d19b3aafdd0dd488ca479893ff6c85fc9f2bd01",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/app-shell/AppRootSurfaces.tsx",
+      "sha256": "440a9a49871f893d47e1d1c049aaaa80efe165210a4117a980a9c81f3516c84b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/app-shell/AppWorkspaceShell.tsx",
+      "sha256": "1b213665e5389070cd3438820a83f67770b6d1a3f36e4b84c6d791617d4b5170",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/settings/appearance/AppearancePane.tsx",
       "sha256": "39a2f468b3f625cd4e9a9885fe7b4b35711d9d9045753d7569317a2ff091008c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -857,6 +872,21 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/sidebar/SidebarNav.tsx",
+      "sha256": "b763977328ec8d7fe68d4521378e950ec77385dab47b2cf4c15275e89525a9a2",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/status-bar/StatusBarSurface.tsx",
+      "sha256": "7e64c5b972b1790bd1eb57233c805a9ad7351f23cad119c6d91103d5dc5ad151",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/hooks/useSkillFreshness.ts",
+      "sha256": "96be12f85db8ecaedd3944104eb80fdc07aeba02731d1eadf74aa0d8afb7bf37",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/lib/agent-catalog-entries-primary.ts",
       "sha256": "d2b63d5579eaf9cf41905610f1c13a2af07668dd2ae26df6f197f38325e16996",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -864,6 +894,16 @@
     {
       "path": "src/renderer/src/lib/quick-workspace-agent-selection.ts",
       "sha256": "fadeff5e5b75300ee62015292f95ec77ef295faa1b27fac1fd8f6a06e31ac8a5",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/lib/wsl-move-renderer-store-rewrites.ts",
+      "sha256": "6561d3ae560125dcac71d4b59341b90944ba5222216cf47c372d2a1ec3ec9548",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/store/slices/ui/ui-slice-hydration-sanitizers.ts",
+      "sha256": "73d4b53025538e86810a1e1a9cb55034e466d54e08dcc5bb984fb298b46c7200",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

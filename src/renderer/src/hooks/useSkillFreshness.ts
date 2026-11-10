@@ -230,21 +230,24 @@ function refreshSkillFreshnessAfterReenable(): Promise<void> {
 
 /** Plans `target`'s Orca skills; null (host unknown or not plannable) plans nothing. */
 export function useSkillFreshness(target: BundledSkillTarget | null): SkillFreshnessState {
-  const targetKey = target ? bundledSkillTargetKey(target) : null
+  // Ash excludes app-managed bundled-skill planning on every local desktop platform.
+  // This does not affect provider-native skill discovery or provider-native tooling.
+  const planTargetForRender = target?.kind === 'local' ? null : target
+  const targetKey = planTargetForRender ? bundledSkillTargetKey(planTargetForRender) : null
   const previousKeyRef = useRef(targetKey)
   const reenabled = targetKey !== null && previousKeyRef.current === null
   const current = useSyncExternalStore(
-    target ? subscribe : subscribeDisabled,
-    target ? getSnapshot : getDisabledSnapshot,
-    target ? getSnapshot : getDisabledSnapshot
+    planTargetForRender ? subscribe : subscribeDisabled,
+    planTargetForRender ? getSnapshot : getDisabledSnapshot,
+    planTargetForRender ? getSnapshot : getDisabledSnapshot
   )
 
   // Why an event: `targetKey` is the target's identity, so only a key change re-plans.
   const planTarget = useEffectEvent((previousKey: string | null) => {
-    if (!target) {
+    if (!planTargetForRender) {
       return
     }
-    if (selectSkillFreshnessTarget(target)) {
+    if (selectSkillFreshnessTarget(planTargetForRender)) {
       return
     }
     if (previousKey === null) {
@@ -260,8 +263,12 @@ export function useSkillFreshness(target: BundledSkillTarget | null): SkillFresh
   }, [targetKey])
 
   return {
-    ...(reenabled || (target && current.targetKey !== targetKey) ? REENABLING_SNAPSHOT : current),
-    refresh: target ? refreshSkillFreshness : skipSkillFreshnessRefresh
+    ...(planTargetForRender === null
+      ? DISABLED_SNAPSHOT
+      : reenabled || current.targetKey !== targetKey
+        ? REENABLING_SNAPSHOT
+        : current),
+    refresh: planTargetForRender ? refreshSkillFreshness : skipSkillFreshnessRefresh
   }
 }
 
