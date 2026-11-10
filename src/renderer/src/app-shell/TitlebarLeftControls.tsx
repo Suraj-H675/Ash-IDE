@@ -64,13 +64,8 @@ export function TitlebarLeftControls({ layout }: { layout: AppChromeLayout }): R
         {layout.showSidebar && !hasCustomTitleBar && layout.showTitlebarAppName && (
           <ContextMenu>
             <ContextMenuTrigger asChild>
-              <div
-                className="titlebar-app-name"
-                aria-label={translate('auto.App.5096cbbc86', 'Orca')}
-              >
-                <span className="titlebar-app-name-main">
-                  {translate('auto.App.5096cbbc86', 'Orca')}
-                </span>
+              <div className="titlebar-app-name" aria-label={'Ash IDE'}>
+                <span className="titlebar-app-name-main">{'Ash IDE'}</span>
               </div>
             </ContextMenuTrigger>
             <ContextMenuContent>
