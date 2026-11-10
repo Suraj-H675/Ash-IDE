@@ -873,7 +873,7 @@
     },
     {
       "path": "src/renderer/src/app-shell/startup-actions-selector.ts",
-      "sha256": "e3b41264a5c3221ffbc258979cdeab2f4c518a363da8810cf20068caab353c8b",
+      "sha256": "ce85dfe9f8a6ae5a19898ad89c3f213f054381a8b922f5a3789707c6c9a80409",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -883,7 +883,7 @@
     },
     {
       "path": "src/renderer/src/app-shell/use-app-startup-hydration.ts",
-      "sha256": "b77f1f8f85d83bba8d076059892edc590515dd3d15cb722be46e8a83a2155514",
+      "sha256": "985fe7304261fb48af32f74f197c405d787fec12bac0d468e8f5255c19a30a6d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -938,7 +938,7 @@
     },
     {
       "path": "src/renderer/src/hooks/ipc-events/app-lifetime-ipc-bridge.ts",
-      "sha256": "f550b1ebee1cdc7bfb16cd03d01771edb4495f43683c75454bff1668e6d2731a",
+      "sha256": "3630e90ce82afd39578781f1afe7de45584cf9eb56b7432e074641e21adf42b7",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

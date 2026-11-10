@@ -21,8 +21,6 @@ import {
   timeRendererStartupSyncStep
 } from '../startup/startup-diagnostics'
 import { recoverFromDegradedStartup } from '../startup/startup-degraded-recovery'
-import { restoreSshConnectionsForStartup } from '../startup/startup-ssh-connection-restore'
-import { collectActiveWorkspaceSshTargetIds } from '../startup/active-workspace-ssh-targets'
 import { publishTerminalViewAttributesAtAppStart } from '../components/terminal-pane/terminal-appearance'
 import { getSystemPrefersDark } from '../lib/terminal-theme'
 import {
@@ -31,7 +29,6 @@ import {
 } from '../components/terminal/terminal-provider-snapshot-capability'
 import {
   getRepoExecutionHostId,
-  isOwnedSshTargetId,
   LOCAL_EXECUTION_HOST_ID,
   parseExecutionHostId
 } from '../../../shared/execution-host'
@@ -232,29 +229,9 @@ export function useAppStartupHydration(onOnboardingLoaded: (state: OnboardingSta
             onOnboardingLoadedRef.current(onboardingState)
           }
 
-          // Reconnect SSH before PTY attach; defer passphrase targets to focus. Never dial runtime-owned targets here: ssh.connect would dispose the runtime’s relay.
-          const connectionIds = (sessionRead.session.activeConnectionIdsAtShutdown ?? []).filter(
-            (targetId) => !isOwnedSshTargetId(targetId)
-          )
-          if (connectionIds.length > 0) {
-            try {
-              // Await only targets needed for immediately mounted panes; dead background hosts must not stall local restoration.
-              const blockingConnectionIds = collectActiveWorkspaceSshTargetIds(
-                useAppStore.getState()
-              )
-              await restoreSshConnectionsForStartup({
-                connectionIds,
-                blockingConnectionIds,
-                setDeferredSshReconnectTargets: actions.setDeferredSshReconnectTargets,
-                removeDeferredSshReconnectTarget: actions.removeDeferredSshReconnectTarget,
-                publishSshConnectionState: actions.setSshConnectionState
-              })
-            } catch (err) {
-              console.warn('SSH startup reconnect failed:', err)
-            }
-          } else {
-            logRendererStartupDiagnostic('ssh-reconnect-skipped', { connectionIds: 0 })
-          }
+          // D-005: Ash never reconnects application-managed remote SSH hosts at
+          // startup. Keep saved session data untouched for an explicit migration;
+          // ordinary terminal ssh and Git-over-SSH remain independent.
 
           // prepare-terminal-startup-restoration already fenced first-window services; main also awaits them here.
           await timeRendererStartupStep('recover-legacy-worker-terminals-pre-reconnect', () =>

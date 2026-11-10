@@ -9,6 +9,11 @@ import { jiraStatusForTarget } from '../runtime/runtime-jira-project-client'
 import { linearStatusForTarget } from '../runtime/runtime-linear-client'
 import { sanitizeHydratedActiveView } from '../store/slices/ui/ui-slice-hydration-sanitizers'
 import { getGeneralPaneSearchEntries } from '../components/settings/general/general-search'
+import {
+  resetStartupActionsSelectorCacheForTest,
+  selectStartupActions,
+  type StartupActions
+} from './startup-actions-selector'
 
 describe('Ash excluded desktop startup capabilities', () => {
   let priorApi: PropertyDescriptor | undefined
@@ -29,6 +34,47 @@ describe('Ash excluded desktop startup capabilities', () => {
   })
   const runtimeEnvironmentCall = vi.fn(() => {
     throw new Error('runtime status RPC should be excluded on Ash')
+  })
+
+  it('does not subscribe startup hydration to excluded remote SSH host actions', () => {
+    resetStartupActionsSelectorCacheForTest()
+    const startupKeys = [
+      'fetchReposForAllHosts',
+      'awaitLocalRepoCatalogSettlement',
+      'fetchProjectGroupsForAllHosts',
+      'fetchFolderWorkspacesForAllHosts',
+      'fetchAllWorktrees',
+      'fetchWorktrees',
+      'fetchWorktreeLineage',
+      'fetchSettings',
+      'awaitOwnerWorktreeVisibilityDefaultsHydration',
+      'fetchKeybindings',
+      'initGitHubCache',
+      'hydrateWorkspaceSession',
+      'hydrateTabsSession',
+      'hydrateEditorSession',
+      'hydrateBrowserSession',
+      'fetchBrowserSessionProfiles',
+      'reconnectPersistedTerminals',
+      'setTerminalStartupRestorationReady',
+      'hydratePersistedUI',
+      'setHydrationSucceeded',
+      'pruneLastVisitedTimestamps',
+      'seedActiveWorktreeLastVisitedIfMissing'
+    ] as const
+    const actions = Object.fromEntries(
+      startupKeys.map((key) => [key, vi.fn()])
+    ) as unknown as StartupActions
+    const first = selectStartupActions(actions)
+    expect(Object.keys(first).sort()).toEqual([...startupKeys].sort())
+    const withChangedRemoteSshState = {
+      ...actions,
+      setSshConnectionState: vi.fn(),
+      setDeferredSshReconnectTargets: vi.fn(),
+      removeDeferredSshReconnectTarget: vi.fn()
+    }
+    expect(selectStartupActions(withChangedRemoteSshState)).toBe(first)
+    resetStartupActionsSelectorCacheForTest()
   })
 
   beforeEach(() => {

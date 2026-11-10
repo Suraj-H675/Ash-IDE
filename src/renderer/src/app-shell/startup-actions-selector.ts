@@ -20,9 +20,6 @@ export type StartupActions = Pick<
   | 'fetchBrowserSessionProfiles'
   | 'reconnectPersistedTerminals'
   | 'setTerminalStartupRestorationReady'
-  | 'setDeferredSshReconnectTargets'
-  | 'removeDeferredSshReconnectTarget'
-  | 'setSshConnectionState'
   | 'hydratePersistedUI'
   | 'setHydrationSucceeded'
   | 'pruneLastVisitedTimestamps'
@@ -57,10 +54,6 @@ export function selectStartupActions(state: StartupActions): StartupActions {
     cachedStartupActions.reconnectPersistedTerminals === state.reconnectPersistedTerminals &&
     cachedStartupActions.setTerminalStartupRestorationReady ===
       state.setTerminalStartupRestorationReady &&
-    cachedStartupActions.setDeferredSshReconnectTargets === state.setDeferredSshReconnectTargets &&
-    cachedStartupActions.removeDeferredSshReconnectTarget ===
-      state.removeDeferredSshReconnectTarget &&
-    cachedStartupActions.setSshConnectionState === state.setSshConnectionState &&
     cachedStartupActions.hydratePersistedUI === state.hydratePersistedUI &&
     cachedStartupActions.setHydrationSucceeded === state.setHydrationSucceeded &&
     cachedStartupActions.pruneLastVisitedTimestamps === state.pruneLastVisitedTimestamps &&
@@ -90,9 +83,6 @@ export function selectStartupActions(state: StartupActions): StartupActions {
     fetchBrowserSessionProfiles: state.fetchBrowserSessionProfiles,
     reconnectPersistedTerminals: state.reconnectPersistedTerminals,
     setTerminalStartupRestorationReady: state.setTerminalStartupRestorationReady,
-    setDeferredSshReconnectTargets: state.setDeferredSshReconnectTargets,
-    removeDeferredSshReconnectTarget: state.removeDeferredSshReconnectTarget,
-    setSshConnectionState: state.setSshConnectionState,
     hydratePersistedUI: state.hydratePersistedUI,
     setHydrationSucceeded: state.setHydrationSucceeded,
     pruneLastVisitedTimestamps: state.pruneLastVisitedTimestamps,

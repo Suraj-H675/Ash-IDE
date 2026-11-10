@@ -15,7 +15,6 @@ import {
 import { registerBrowserTabActivateIpcBridge } from './browser-tab-activate-ipc-bridge'
 import { registerBrowserStateIpcBridge } from './browser-state-ipc-bridge'
 import { registerContentCreationIpcBridge } from './content-creation-ipc-bridge'
-import { registerDirectSshStateIpcBridge } from './direct-ssh-state-ipc-bridge'
 import { registerMobileAndTerminalCloseIpcBridge } from './mobile-terminal-close-ipc-bridge'
 import { registerMobileDriverIpcBridge } from './mobile-driver-ipc-bridge'
 import { registerPluginViewIpcBridge } from './plugin-view-ipc-bridge'
@@ -134,7 +133,6 @@ export function installAppLifetimeIpcEvents(): () => void {
   registerRateLimitIpcBridge(unsubs)
   registerPluginViewIpcBridge(unsubs)
   registerClaudeAccountSwitchIpcBridge(unsubs)
-  const stopDirectSshStateBridge = registerDirectSshStateIpcBridge(unsubs)
   registerZoomIpcBridge(unsubs)
   const agentStatusBridge = registerAgentStatusIpcBridge(unsubs)
   const disposeMobileDriverHydration = registerMobileDriverIpcBridge(
@@ -148,7 +146,6 @@ export function installAppLifetimeIpcEvents(): () => void {
     unsubscribeRuntimeEnvironmentStore()
     agentStatusBridge.unsubscribeStore()
     unsubs.forEach((unsubscribe) => unsubscribe())
-    stopDirectSshStateBridge()
     resetAgentHookCompletionNotificationCoordinators()
   }
 }
