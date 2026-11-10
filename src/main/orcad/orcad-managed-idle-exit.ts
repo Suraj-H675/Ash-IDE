@@ -43,8 +43,6 @@ export type OrcadManagedIdleExitPorts = {
   agentStates: () => readonly { state: string }[]
   hasChatProviders: () => boolean
   hasStagedMigration: () => boolean
-  /** Enabled schedules or unsettled runs would be lost on exit. */
-  automationsBusy: () => boolean
   /** Exit would shut down the emulators Orca started for a workspace. */
   emulatorsBusy: () => Promise<boolean>
   activationFenceExists: (root: string) => Promise<boolean>
@@ -83,7 +81,6 @@ export function createOrcadIdleProbes(
     },
     { name: 'chat-providers', read: () => verdict(ports.hasChatProviders()) },
     { name: 'migration', read: () => verdict(ports.hasStagedMigration()) },
-    { name: 'automations', read: () => verdict(ports.automationsBusy()) },
     { name: 'emulators', read: async () => verdict(await ports.emulatorsBusy()) },
     {
       name: 'activation',

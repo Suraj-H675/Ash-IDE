@@ -1,9 +1,6 @@
 import type { Store } from '../persistence/loading-store/store'
 import type { OrcaRuntimeService } from '../runtime/orca-runtime'
 import { createRuntimeAutomationService } from '../automations/runtime-automation-service'
-import { isFinalAutomationRunStatus } from '../../shared/automations-types'
-
-type AutomationStore = Pick<Store, 'listAutomations' | 'listAutomationRuns'>
 
 let stopScheduler: (() => void) | null = null
 
@@ -21,12 +18,4 @@ export function startOrcadAutomations(
 
 export function stopOrcadAutomationScheduler(): void {
   stopScheduler?.()
-}
-
-/** Pending schedules/runs must keep the host alive. */
-export function orcadAutomationsKeepHostBusy(store: AutomationStore): boolean {
-  return (
-    store.listAutomations().some((automation) => automation.enabled) ||
-    store.listAutomationRuns().some((run) => !isFinalAutomationRunStatus(run.status))
-  )
 }

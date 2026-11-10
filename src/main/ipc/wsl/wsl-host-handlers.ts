@@ -15,8 +15,6 @@ import {
 import { hasOrcadTemplate } from '../../orcad/orcad-artifact-materializer'
 import { WslHostService } from '../../wsl/host-lifecycle/wsl-host-service'
 import { WslHostVisibleWorkByWindow } from './wsl-host-visible-work-windows'
-import type { WslHostAutomationWake } from '../../wsl/host-lifecycle/wsl-host-automation-wake'
-import { createWslHostAutomationWake } from './wsl-host-automation-wake-wiring'
 import { wslHostsAcceptNewWork, wslHostsServing } from '../../wsl/host-lifecycle/wsl-host-gate'
 import {
   publishWslHostStatus,
@@ -125,7 +123,6 @@ function createService(args: WslHostHandlerArgs): WslHostService | null {
   } catch (error) {
     console.warn('[wsl-hosts] Could not check WSL host records against their pairings:', error)
   }
-  let automationWake: WslHostAutomationWake | null = null
   const runGate = {
     isEnabled: () => args.store.getSettings().experimentalWslHosts === true,
     hasServerFiles: fake ? () => fake.serverFiles !== 'missing' : hasOrcadTemplate
@@ -143,10 +140,8 @@ function createService(args: WslHostHandlerArgs): WslHostService | null {
       if (distro) {
         pushHostAccounts(args.getUserDataPath, environmentId, distro)
       }
-      void automationWake?.learn(environmentId)
     },
     removed: (environmentId) => {
-      automationWake?.forget(environmentId)
       return retireRemovedRuntimeEnvironment(
         environmentId,
         args.invalidateTransport,
@@ -176,7 +171,6 @@ function createService(args: WslHostHandlerArgs): WslHostService | null {
       ...runGate
     })
   )
-  automationWake = createWslHostAutomationWake(args.getUserDataPath, created)
   return created
 }
 

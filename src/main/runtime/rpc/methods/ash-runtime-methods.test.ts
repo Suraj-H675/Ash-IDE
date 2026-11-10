@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { ASH_RPC_METHODS } from './index'
+import { ALL_RPC_METHODS, ASH_RPC_METHODS } from './index'
 import { ASH_RUNTIME_CONTROL_METHODS } from './ash-runtime-control'
 
 const methodNames = new Set<string>(ASH_RPC_METHODS.map(({ name }) => name))
+const allMethodNames = new Set<string>(ALL_RPC_METHODS.map(({ name }) => name))
 
 describe('Ash authenticated RPC surface', () => {
   it('retains local status, terminal, Git, and agent launch methods', () => {
@@ -51,6 +52,15 @@ describe('Ash authenticated RPC surface', () => {
     }
     expect(methodNames.has('layout.getRemoteSnapshots')).toBe(false)
     expect(methodNames.has('layout.subscribe')).toBe(true)
+    expect(methodNames.has('orchestration.run')).toBe(true)
+  })
+
+  it('omits scheduled automation methods from the registered RPC manifest and keeps orchestration Runs', () => {
+    for (const name of [...allMethodNames, ...methodNames]) {
+      expect(name.startsWith('automation.'), `${name} must not be registered`).toBe(false)
+      expect(name.startsWith('automations.'), `${name} must not be registered`).toBe(false)
+    }
+    expect(allMethodNames.has('orchestration.run')).toBe(true)
     expect(methodNames.has('orchestration.run')).toBe(true)
   })
 
