@@ -40,6 +40,50 @@ export type ClaudeSessionProfileRoutingPin = Readonly<{
   cleanupIfUnspawned(): void
 }>
 
+export type ClaudeConfigRouteOnlyEvidence = Readonly<{
+  status: 'config-route-only'
+  accountId: string
+  configHome: string
+  configHomeIdentity: string
+  configHomeDevice: string
+  configHomeInode: string
+}>
+
+type NativeSpawnReceipt = {
+  attempted: boolean
+  uncertain: boolean
+  returned: Readonly<{ ptyId: string; incarnationId: string }> | null
+  finished: boolean
+}
+
+const committedRouteByPin = new WeakMap<
+  object,
+  { evidence: ClaudeConfigRouteOnlyEvidence; nativeSpawn: NativeSpawnReceipt }
+>()
+
+/** Read route facts only from a verified pin whose native PTY callback returned this generation. */
+export function readCommittedClaudeConfigRouteEvidence(
+  pin: unknown,
+  ptyId: string,
+  incarnationId: string
+): ClaudeConfigRouteOnlyEvidence | null {
+  if (typeof pin !== 'object' || pin === null) {
+    return null
+  }
+  const receipt = committedRouteByPin.get(pin)
+  if (
+    !receipt ||
+    !receipt.nativeSpawn.attempted ||
+    receipt.nativeSpawn.uncertain ||
+    receipt.nativeSpawn.finished ||
+    receipt.nativeSpawn.returned?.ptyId !== ptyId ||
+    receipt.nativeSpawn.returned.incarnationId !== incarnationId
+  ) {
+    return null
+  }
+  return receipt.evidence
+}
+
 function settingsAccountIsHostManaged(
   settings: GlobalSettings | undefined,
   accountId: string
@@ -172,7 +216,70 @@ export async function createClaudeSessionProfileRoutingPin(args: {
     ) {
       return null
     }
-    return await createPrivatePointer(selection.dataRoot, home, currentIdentity)
+    const privatePointer = await createPrivatePointer(selection.dataRoot, home, currentIdentity)
+    if (!privatePointer) {
+      return null
+    }
+    const routeIdentity = currentIdentity.identity
+    const evidence: ClaudeConfigRouteOnlyEvidence = Object.freeze({
+      status: 'config-route-only',
+      accountId: routeIdentity.accountId,
+      configHome: routeIdentity.home,
+      configHomeIdentity: routeIdentity.configHomeIdentity,
+      configHomeDevice: routeIdentity.configHomeDevice,
+      configHomeInode: routeIdentity.configHomeInode
+    })
+    const nativeSpawn: NativeSpawnReceipt = {
+      attempted: false,
+      uncertain: false,
+      returned: null,
+      finished: false
+    }
+    const pin: ClaudeSessionProfileRoutingPin = Object.freeze({
+      path: privatePointer.path,
+      assertNativeSpawnEnvironment: (env) => privatePointer.assertNativeSpawnEnvironment(env),
+      noteNativeSpawnAttempt: () => {
+        if (!nativeSpawn.finished) {
+          nativeSpawn.attempted = true
+          privatePointer.noteNativeSpawnAttempt()
+        }
+      },
+      noteNativeSpawnCallFailed: () => {
+        if (!nativeSpawn.finished) {
+          nativeSpawn.uncertain = true
+          privatePointer.noteNativeSpawnCallFailed()
+        }
+      },
+      noteNativeSpawnReturned: (ptyId, incarnationId) => {
+        if (
+          !nativeSpawn.finished &&
+          !nativeSpawn.returned &&
+          ptyId.length > 0 &&
+          incarnationId.length > 0
+        ) {
+          nativeSpawn.returned = Object.freeze({ ptyId, incarnationId })
+          privatePointer.noteNativeSpawnReturned(ptyId, incarnationId)
+        }
+      },
+      cleanupOnPtyExit: (ptyId, incarnationId) => {
+        if (
+          !nativeSpawn.uncertain &&
+          nativeSpawn.returned?.ptyId === ptyId &&
+          nativeSpawn.returned.incarnationId === incarnationId
+        ) {
+          nativeSpawn.finished = true
+        }
+        privatePointer.cleanupOnPtyExit(ptyId, incarnationId)
+      },
+      cleanupIfUnspawned: () => {
+        if (!nativeSpawn.attempted && !nativeSpawn.returned) {
+          nativeSpawn.finished = true
+        }
+        privatePointer.cleanupIfUnspawned()
+      }
+    })
+    committedRouteByPin.set(pin, { evidence, nativeSpawn })
+    return pin
   } catch {
     return null
   }

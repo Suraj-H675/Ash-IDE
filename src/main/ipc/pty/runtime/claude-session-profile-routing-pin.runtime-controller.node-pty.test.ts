@@ -11,7 +11,7 @@ import {
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, type MockInstance } from 'vitest'
 import {
   getAppEnvironment,
   hasAppEnvironment,
@@ -39,6 +39,7 @@ import { makeRuntimePtySpawnTestDeps } from './spawn-preflight-test-deps-fixture
 import { LocalPtyProvider } from '../../../providers/local-pty/local-pty-provider'
 import { getLocalPtyProvider, setLocalPtyProvider } from '../provider/registry'
 import { canAshWriteProviderGlobalHooks } from '../../../agent-hooks/ash-hook-ownership-policy'
+import { readCommittedLocalPtySpawnEvidence } from './committed-local-pty-spawn-evidence'
 
 const ACCOUNT_A = 'runtime-route-account-a'
 const ACCOUNT_B = 'runtime-route-account-b'
@@ -102,7 +103,7 @@ describe.skipIf(process.platform !== 'linux' && process.platform !== 'darwin')(
     let appEnvironmentBefore: AppEnvironment | null = null
     let provider: LocalPtyProvider | null = null
     let originalProvider: ReturnType<typeof getLocalPtyProvider> | null = null
-    let nativeSpawnSpy: ReturnType<typeof vi.spyOn> | null = null
+    let nativeSpawnSpy: MockInstance<typeof nodePty.spawn> | null = null
     let unsubscribeData: (() => void) | null = null
     let unsubscribeExit: (() => void) | null = null
     let replaceMarkerOnNextAuth = false
@@ -412,6 +413,22 @@ describe.skipIf(process.platform !== 'linux' && process.platform !== 'darwin')(
       const fakePidA = Number(readFileSync(pidFileA, 'utf8').trim())
       expect(Number.isInteger(fakePidA)).toBe(true)
       expect(process.kill(fakePidA, 0)).toBe(true)
+      const evidenceA = responseA.incarnationId
+        ? readCommittedLocalPtySpawnEvidence(runtime, responseA.id, responseA.incarnationId)
+        : null
+      expect(evidenceA).toMatchObject({
+        ptyId: responseA.id,
+        incarnationId: responseA.incarnationId,
+        tabId: PANE_A.tabId,
+        leafId: PANE_A.leafId,
+        configRouteEvidence: {
+          status: 'config-route-only',
+          accountId: ACCOUNT_A,
+          configHome: profileA.home
+        },
+        accountEvidence: { status: 'missing' }
+      })
+      expect(Object.isFrozen(evidenceA?.configRouteEvidence)).toBe(true)
 
       selectedAccountId = ACCOUNT_B
       writeFileSync(selectedPointer, `${profileB.home}\n`, { mode: 0o600 })
@@ -448,6 +465,22 @@ describe.skipIf(process.platform !== 'linux' && process.platform !== 'darwin')(
       expect(process.kill(fakePidB, 0)).toBe(true)
       expect(process.kill(nativeA.process.pid, 0)).toBe(true)
       expect(process.kill(fakePidA, 0)).toBe(true)
+      const evidenceB = responseB.incarnationId
+        ? readCommittedLocalPtySpawnEvidence(runtime, responseB.id, responseB.incarnationId)
+        : null
+      expect(evidenceB).toMatchObject({
+        ptyId: responseB.id,
+        incarnationId: responseB.incarnationId,
+        tabId: PANE_B.tabId,
+        leafId: PANE_B.leafId,
+        configRouteEvidence: {
+          status: 'config-route-only',
+          accountId: ACCOUNT_B,
+          configHome: profileB.home
+        },
+        accountEvidence: { status: 'missing' }
+      })
+      expect(Object.isFrozen(evidenceB?.configRouteEvidence)).toBe(true)
 
       // The host captures A before auth preparation. Replacing A's verified marker
       // during that async boundary must refuse before LocalPtyProvider/node-pty dispatch.
@@ -455,11 +488,13 @@ describe.skipIf(process.platform !== 'linux' && process.platform !== 'darwin')(
       writeFileSync(selectedPointer, `${profileA.home}\n`, { mode: 0o600 })
       replaceMarkerOnNextAuth = true
       const nativeSpawnCountBeforeRefusal = nativeSpawns.length
+      const exitSubscriptionCountBeforeRefusal = runtime.subscribeToPtyExit.mock.calls.length
       const pinPathsBeforeRefusal = readFileSync(pinA, 'utf8') + readFileSync(pinB, 'utf8')
       await expect(launch(PANE_REFUSED, pidFileRefused)).rejects.toThrow(
         'claude_session_profile_routing_pin_unavailable'
       )
       expect(nativeSpawns).toHaveLength(nativeSpawnCountBeforeRefusal)
+      expect(runtime.subscribeToPtyExit).toHaveBeenCalledTimes(exitSubscriptionCountBeforeRefusal)
       expect(existsSync(pidFileRefused)).toBe(false)
       expect(existsSync(pinA)).toBe(true)
       expect(existsSync(pinB)).toBe(true)
@@ -469,10 +504,20 @@ describe.skipIf(process.platform !== 'linux' && process.platform !== 'darwin')(
 
       await provider.shutdown(responseA.id, { immediate: true })
       expect(exitedPtyIds.has(responseA.id)).toBe(true)
+      if (responseA.incarnationId) {
+        expect(
+          readCommittedLocalPtySpawnEvidence(runtime, responseA.id, responseA.incarnationId)
+        ).toBeNull()
+      }
       expect(existsSync(pinA)).toBe(false)
       expect(existsSync(pinB)).toBe(true)
       await provider.shutdown(responseB.id, { immediate: true })
       expect(exitedPtyIds.has(responseB.id)).toBe(true)
+      if (responseB.incarnationId) {
+        expect(
+          readCommittedLocalPtySpawnEvidence(runtime, responseB.id, responseB.incarnationId)
+        ).toBeNull()
+      }
       expect(existsSync(pinB)).toBe(false)
       expect(readFileSync(foreignSettings, 'utf8')).toBe(foreignSettingsBytes)
     }, 30_000)

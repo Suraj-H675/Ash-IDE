@@ -7,6 +7,10 @@ import type { OrcaRuntimeService } from '../../../runtime/orca-runtime'
 import type { RuntimePtySpawnState } from './spawn-state'
 import type { PtySpawnOutcome } from '../spawn-outcome'
 import type { ClaudeShellEntryEnvironmentWitness } from './claude-shell-entry-environment-witness'
+import {
+  readCommittedClaudeConfigRouteEvidence,
+  type ClaudeConfigRouteOnlyEvidence
+} from './claude-session-profile-routing-pin'
 
 const MAX_COMMITTED_PTY_SPAWN_EVIDENCE = 256
 
@@ -78,6 +82,7 @@ export type CommittedLocalPtySpawnEvidence = Readonly<{
   paneKey: string
   launchTokenHash: string
   shellEntryEnvironment?: ClaudeShellEntryEnvironmentWitness
+  configRouteEvidence?: ClaudeConfigRouteOnlyEvidence
   accountEvidence: Readonly<{
     status: 'missing'
     reason: 'authenticated-managed-account-not-bound-to-effective-environment'
@@ -310,6 +315,14 @@ export function validateCommittedLocalPtySpawnEvidence(
     return reject(pane)
   }
   const shellEntryEnvironment = state.claudeShellEntryWitness
+  const configRouteEvidence =
+    isFreshLocalClaudeShellEntryCandidate(state) && state.claudeSessionProfileRoutingPin
+      ? readCommittedClaudeConfigRouteEvidence(
+          state.claudeSessionProfileRoutingPin,
+          state.result.id,
+          state.result.incarnationId
+        )
+      : null
   const evidence = Object.freeze({
     version: 1 as const,
     provider: 'local-pty' as const,
@@ -326,6 +339,7 @@ export function validateCommittedLocalPtySpawnEvidence(
     shellEntryEnvironment.incarnationId === state.result.incarnationId
       ? { shellEntryEnvironment }
       : {}),
+    ...(configRouteEvidence ? { configRouteEvidence } : {}),
     accountEvidence: Object.freeze({
       status: 'missing' as const,
       reason: 'authenticated-managed-account-not-bound-to-effective-environment' as const

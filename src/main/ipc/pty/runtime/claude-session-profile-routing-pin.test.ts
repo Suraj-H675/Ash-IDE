@@ -32,7 +32,8 @@ import {
 } from '../../../claude-accounts/claude-profile-paths'
 import {
   captureClaudeManagedProfileRouteSelection,
-  createClaudeSessionProfileRoutingPin
+  createClaudeSessionProfileRoutingPin,
+  readCommittedClaudeConfigRouteEvidence
 } from './claude-session-profile-routing-pin'
 
 const ACCOUNT_A = 'route-account-a'
@@ -345,6 +346,56 @@ describe.skipIf(process.platform === 'win32')('Claude managed profile session ro
 
     expect(readFileSync(pin!.path, 'utf8')).toBe(`${profileA.home}\n`)
     expect(readFileSync(foreignSettingsPath, 'utf8')).toBe(foreignSettingsBytes)
+  })
+
+  it('releases config-route facts only for its exact returned native generation', async () => {
+    const selection = await captureClaudeManagedProfileRouteSelection(settings(ACCOUNT_A))
+    const pin = await issuePin(selection, profileA)
+    expect(pin).not.toBeNull()
+
+    expect(readCommittedClaudeConfigRouteEvidence(pin, PTY_ID, INCARNATION_A)).toBeNull()
+    pin!.noteNativeSpawnAttempt()
+    expect(readCommittedClaudeConfigRouteEvidence(pin, PTY_ID, INCARNATION_A)).toBeNull()
+    pin!.noteNativeSpawnReturned(PTY_ID, INCARNATION_A)
+
+    expect(readCommittedClaudeConfigRouteEvidence(pin, 'replacement-pty', INCARNATION_A)).toBeNull()
+    expect(readCommittedClaudeConfigRouteEvidence(pin, PTY_ID, INCARNATION_B)).toBeNull()
+    const route = readCommittedClaudeConfigRouteEvidence(pin, PTY_ID, INCARNATION_A)
+    expect(route).toMatchObject({
+      status: 'config-route-only',
+      accountId: ACCOUNT_A,
+      configHome: profileA.home
+    })
+    expect(Object.isFrozen(route)).toBe(true)
+
+    pin!.cleanupOnPtyExit(PTY_ID, INCARNATION_A)
+    expect(readCommittedClaudeConfigRouteEvidence(pin, PTY_ID, INCARNATION_A)).toBeNull()
+  })
+
+  it('rejects missing, forged, and ambiguous routing pins for config-route evidence', async () => {
+    expect(readCommittedClaudeConfigRouteEvidence(undefined, PTY_ID, INCARNATION_A)).toBeNull()
+    expect(
+      readCommittedClaudeConfigRouteEvidence(
+        {
+          path: '/forged/session-pins/fake.route',
+          noteNativeSpawnAttempt: () => {},
+          noteNativeSpawnReturned: () => {}
+        },
+        PTY_ID,
+        INCARNATION_A
+      )
+    ).toBeNull()
+
+    const selection = await captureClaudeManagedProfileRouteSelection(settings(ACCOUNT_A))
+    const pin = await issuePin(selection, profileA)
+    expect(pin).not.toBeNull()
+    pin!.noteNativeSpawnAttempt()
+    pin!.noteNativeSpawnCallFailed()
+    // A later fallback PTY cannot account for the ambiguous first native call.
+    pin!.noteNativeSpawnReturned(PTY_ID, INCARNATION_A)
+    expect(readCommittedClaudeConfigRouteEvidence(pin, PTY_ID, INCARNATION_A)).toBeNull()
+    pin!.cleanupOnPtyExit(PTY_ID, INCARNATION_A)
+    expect(readFileSync(pin!.path, 'utf8')).toBe(`${profileA.home}\n`)
   })
 
   it.each([

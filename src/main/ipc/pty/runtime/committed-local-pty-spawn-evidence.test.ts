@@ -345,6 +345,39 @@ describe('committed local PTY spawn evidence', () => {
     expect(runtime.exitListeners.has(PTY_ID)).toBe(true)
   })
 
+  it('keeps account evidence missing when a route pin is missing or caller-shaped', () => {
+    const state = makeState()
+    const outcome = committedOutcome(state)
+    const ordinary = validateCommittedLocalPtySpawnEvidence(state, outcome)
+    expect(ordinary).toMatchObject({
+      accepted: true,
+      evidence: { accountEvidence: { status: 'missing' } }
+    })
+    if (!ordinary.accepted) {
+      throw new Error('expected committed PTY evidence')
+    }
+    expect(ordinary.evidence.configRouteEvidence).toBeUndefined()
+
+    state.claudeSessionProfileRoutingPin = {
+      path: '/caller/claimed/session-pins/route.route',
+      assertNativeSpawnEnvironment: () => {},
+      noteNativeSpawnAttempt: () => {},
+      noteNativeSpawnCallFailed: () => {},
+      noteNativeSpawnReturned: () => {},
+      cleanupOnPtyExit: () => {},
+      cleanupIfUnspawned: () => {}
+    }
+    const forged = validateCommittedLocalPtySpawnEvidence(state, outcome)
+    expect(forged).toMatchObject({
+      accepted: true,
+      evidence: { accountEvidence: { status: 'missing' } }
+    })
+    if (!forged.accepted) {
+      throw new Error('expected committed PTY evidence')
+    }
+    expect(forged.evidence.configRouteEvidence).toBeUndefined()
+  })
+
   it('limits native shell observation attachment to a fresh local host Claude candidate', () => {
     expect(isFreshLocalClaudeShellEntryCandidate(makeState())).toBe(true)
     expect(
