@@ -89,7 +89,7 @@ describe('requests on a key-authenticated socket', () => {
 
 describe('excluded pairing.registerDeviceKey over the Ash dispatcher', () => {
   it.each(['runtime', 'mobile'] as const)(
-    'forks a %s token row bound to the calling socket',
+    'does not fork a %s token row from the excluded registration method',
     async (scope) => {
       const userDataPath = mkdtempSync(join(tmpdir(), 'orca-device-key-register-'))
       // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: registration never touches the runtime service.
@@ -137,7 +137,7 @@ describe('excluded pairing.registerDeviceKey over the Ash dispatcher', () => {
       expect(reply).toMatchObject({
         id: 'register',
         ok: false,
-        error: { code: 'method_not_found' }
+        error: { code: scope === 'mobile' ? 'unauthorized' : 'method_not_found' }
       })
       expect(
         registry.listDevices().filter((row) => row.forkedFrom === legacy.deviceId)

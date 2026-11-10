@@ -108,6 +108,9 @@ jobs:
           node node_modules/vitest/vitest.mjs run \
             --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
             --no-file-parallelism \
+            src/main/runtime/rpc/server/runtime-rpc-mobile-method-allowlist.test.ts \
+            src/main/runtime/rpc/server/runtime-rpc-mobile-unknown-method-scope-refusal.test.ts \
+            src/main/runtime/rpc/server/runtime-rpc-mobile-legacy-socket-relay-refusal.test.ts \
             src/main/runtime/rpc/server/ash-mobile-websocket-auth-exclusion.test.ts \
             src/main/runtime/rpc/mobile-socket-wiring.test.ts \
             src/main/runtime/rpc/device-key-auth.test.ts \

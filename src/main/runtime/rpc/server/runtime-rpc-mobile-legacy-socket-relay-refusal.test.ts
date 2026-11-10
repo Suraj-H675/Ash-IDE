@@ -7,7 +7,7 @@ import { DeviceRegistry } from './pairing/device-registry'
 import { createMobileRpcSurfaceRuntime } from './runtime-rpc-mobile-method-allowlist-fixtures'
 
 describe('a server-targeted phone call on a legacy (non-E2EE) socket', () => {
-  it('is refused, never run on this desktop', async () => {
+  it('is refused at Ash mobile admission and never run on this desktop or a relay', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-legacy-relay-'))
     const { runtime, mocks } = createMobileRpcSurfaceRuntime()
     const server = new OrcaRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
@@ -33,8 +33,8 @@ describe('a server-targeted phone call on a legacy (non-E2EE) socket', () => {
       {
         ok: false,
         error: {
-          code: 'remote_runtime_unavailable',
-          message: 'Servers are reachable only over an encrypted pairing'
+          code: 'unauthorized',
+          message: 'Mobile RPC is disabled'
         }
       }
     ])

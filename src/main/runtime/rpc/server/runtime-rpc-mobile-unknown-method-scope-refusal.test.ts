@@ -5,11 +5,9 @@ import { describe, expect, it } from 'vitest'
 import { OrcaRuntimeRpcServer } from './runtime-rpc'
 import { DeviceRegistry } from './pairing/device-registry'
 import { createMobileRpcSurfaceRuntime } from './runtime-rpc-mobile-method-allowlist-fixtures'
-import { MOBILE_RPC_METHOD_ALLOWLIST } from './runtime-rpc-mobile-method-allowlist'
 import { AGENT_SESSION_AGENTS_METHOD } from '../../../../shared/agent-session/agent-session-registered-agents'
 
-/** Older hosts lack both registration and mobile allowlist entry, so unknown mobile probes return forbidden; method_not_found requires an allowlisted method.
- * Phone skew fallback must handle scope refusal too (pairing.provisionRelay/getEndpoints; docs/reference/remote-wire-compatibility.md). */
+/** Ash refuses saved mobile-scoped credentials before method routing and dispatch. */
 function errorCode(reply: Record<string, unknown>): string | undefined {
   const error = reply.error
   if (typeof error !== 'object' || error === null || !('code' in error)) {
@@ -18,7 +16,7 @@ function errorCode(reply: Record<string, unknown>): string | undefined {
   return typeof error.code === 'string' ? error.code : undefined
 }
 
-describe('an unknown method reaching a mobile-scoped device', () => {
+describe('excluded mobile-scoped RPC admission', () => {
   const dispatchAs = async (
     scope: 'mobile' | 'runtime',
     method: string
@@ -40,16 +38,15 @@ describe('an unknown method reaching a mobile-scoped device', () => {
     return replies[0] ?? {}
   }
 
-  it('answers forbidden, not method_not_found, for a method this build does not register', async () => {
+  it('answers unauthorized, not a method-existence oracle, for an unknown mobile request', async () => {
     const reply = await dispatchAs('mobile', 'pairing.methodThisBuildHasNeverHeardOf')
     expect(reply.ok).toBe(false)
-    expect(errorCode(reply)).toBe('forbidden')
+    expect(errorCode(reply)).toBe('unauthorized')
     expect(errorCode(reply)).not.toBe('method_not_found')
   })
 
-  it("lets a phone read the host's agents, which its fork action waits on", async () => {
-    expect(MOBILE_RPC_METHOD_ALLOWLIST.has(AGENT_SESSION_AGENTS_METHOD)).toBe(true)
-    expect(errorCode(await dispatchAs('mobile', AGENT_SESSION_AGENTS_METHOD))).not.toBe('forbidden')
+  it('refuses the formerly allowed agent catalog to historical phone credentials', async () => {
+    expect(errorCode(await dispatchAs('mobile', AGENT_SESSION_AGENTS_METHOD))).toBe('unauthorized')
   })
 
   it('answers method_not_found to a non-mobile peer for the same unknown method', async () => {
@@ -58,9 +55,9 @@ describe('an unknown method reaching a mobile-scoped device', () => {
     expect(errorCode(reply)).toBe('method_not_found')
   })
 
-  // Current hosts allowlist supported pairing probes; forbidden identifies a host predating them for skew fallback.
-  it('allowlists both pairing probes, so forbidden on one can only mean an older desktop', () => {
-    expect(MOBILE_RPC_METHOD_ALLOWLIST.has('pairing.getEndpoints')).toBe(true)
-    expect(MOBILE_RPC_METHOD_ALLOWLIST.has('pairing.provisionRelay')).toBe(true)
+  it('refuses the excluded mobile pairing and relay probes', async () => {
+    for (const method of ['pairing.getEndpoints', 'pairing.provisionRelay']) {
+      expect(errorCode(await dispatchAs('mobile', method)), method).toBe('unauthorized')
+    }
   })
 })
