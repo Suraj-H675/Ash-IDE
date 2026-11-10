@@ -32,6 +32,7 @@ import { refreshInstalledOpenCodeStatusPlugins } from '../opencode/opencode-stat
 import { runGatedWslMoveDesktopRewritePass } from '../persistence/moving-wsl-projects/wsl-move-desktop-rewrite'
 import { ORCA_LAYOUT_OWNER_IS_MAIN } from '../../shared/layout-owner-switch'
 import { repairDuplicatePtyPanesOnStart } from '../runtime/moved-pane-owner-rekey'
+import { registerGitHubPRRefreshHandlers } from '../ipc/source-control/github-pr-refresh-handlers'
 
 // Headless serve has no first window; timer fallback must still sweep trash.
 const WORKTREE_TRASH_SWEEP_FALLBACK_MS = 15_000
@@ -46,6 +47,11 @@ export async function initializeReadyRuntimeServices(): Promise<void> {
   // Load interrupted deletion records before listings so first paint shows Deleting.
   await loadWorktreeRemovalRecordsForStore(store)
   initializeMainProcessObservers()
+  const stats = state.stats
+  if (!stats) {
+    throw new Error('Stats collector must be initialized before GitHub PR refresh handlers')
+  }
+  registerGitHubPRRefreshHandlers(store, stats)
   initializeMainProcessAccountServices()
   const runtime = initializeMainProcessRuntime()
   configureRuntimeServices(runtime)

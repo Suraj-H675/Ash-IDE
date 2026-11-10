@@ -91,6 +91,12 @@ vi.mock('../crash-reporting/process-gone-diagnostics', () => ({
 vi.mock('./main-window-lifecycle-flags', () => ({ recordProcessGoneCrash: vi.fn() }))
 vi.mock('./gpu-lifecycle', () => ({ handleGpuChildCrash: vi.fn() }))
 vi.mock('./main-process-observers', () => ({ initializeMainProcessObservers: vi.fn() }))
+// This topology test owns a minimal Electron stub, not a production IPC registry.
+// Verify that ready startup wires the retained GitHub PR boundary without
+// changing the duplicate-terminal repair's durable-write expectations.
+vi.mock('../ipc/source-control/github-pr-refresh-handlers', () => ({
+  registerGitHubPRRefreshHandlers: vi.fn()
+}))
 vi.mock('./branch-rename-hook', () => ({ installFirstWorkRenameHookSubscription: vi.fn() }))
 vi.mock('./main-process-account-services', () => ({
   initializeMainProcessAccountServices: vi.fn()
@@ -110,6 +116,7 @@ vi.mock('../orcad/orcad-artifact-cache-retention', () => ({
 }))
 
 import { initializeReadyRuntimeServices } from './main-process-ready-runtime'
+import { registerGitHubPRRefreshHandlers } from '../ipc/source-control/github-pr-refresh-handlers'
 
 const TAB = 'tab-1'
 const KEPT = '11111111-1111-4111-8111-111111111111'
@@ -191,4 +198,5 @@ it('finishes the duplicate-terminal repair before ready services resolve, even b
   await ready
 
   expect(atReady).toEqual({ memory: [KEPT], disk: [KEPT] })
+  expect(registerGitHubPRRefreshHandlers).toHaveBeenCalledWith(store, fixture.state.stats)
 })
