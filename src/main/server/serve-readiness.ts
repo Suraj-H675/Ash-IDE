@@ -4,7 +4,7 @@ import { describePtyProcessCeiling } from '../../shared/terminal/pty/native-proc
 
 type ServePairingStatus =
   | (Omit<PairingOfferUnavailable, 'reason'> & {
-      reason: PairingOfferUnavailable['reason'] | 'disabled_by_operator'
+      reason: PairingOfferUnavailable['reason'] | 'disabled_by_operator' | 'disabled_by_product'
     })
   | {
       available: true

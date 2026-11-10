@@ -1,6 +1,6 @@
 import type { OrcadOptions } from './orcad-start-contract'
 import { DEFAULT_WS_PORT } from '../runtime/rpc/server/runtime-rpc-pairing-types'
-import { ORCAD_LOOPBACK_BIND_HOST } from './orcad-bind-address'
+import { assertOrcadLocalOnlyOptions, ORCAD_LOOPBACK_BIND_HOST } from './orcad-bind-address'
 import { getServeOptionValidationError } from '../../shared/serve-option-validation'
 import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
@@ -13,15 +13,10 @@ Usage: orcad [options]
 Options:
   --port <n>               WebSocket port, 0-65535; 0 picks a free port.
                            Defaults to ${DEFAULT_WS_PORT}, with a fallback if unavailable.
-  --bind <ip>              Literal IP to bind (default ${ORCAD_LOOPBACK_BIND_HOST}, local only).
-                           Use an SSH port-forward or a network IP for remote access.
-  --pairing-address <addr> Address advertised in pairing offers when different
-                           from the bind address (for example, a public hostname).
+  --bind <loopback-ip>     Loopback-only bind (default ${ORCAD_LOOPBACK_BIND_HOST}).
+                           LAN, wildcard, and public IP addresses are refused.
   --json                   Print the one-line server readiness JSON to stdout.
-  --no-pairing             Do not create a client pairing offer at startup.
-  --mobile-pairing         Create a mobile-scoped pairing offer with a QR code.
-  --grant-desktop-control  Allow desktop control in the default runtime offer;
-                           cannot combine with --no-pairing or --mobile-pairing.
+  --no-pairing             Retained for compatibility; pairing is always disabled in Ash.
   --recipe-json            Print only the VM recipe line; requires --project-root.
   --project-root <dir>     Existing absolute project directory for --recipe-json.
   --web-client-root <dir>  Serve the browser client from this directory (holds web-index.html).
@@ -104,6 +99,7 @@ export function parseArgs(argv: string[]): OrcadCommandArguments {
   if (validationError) {
     throw new Error(validationError)
   }
+  assertOrcadLocalOnlyOptions(options)
   return options
 }
 

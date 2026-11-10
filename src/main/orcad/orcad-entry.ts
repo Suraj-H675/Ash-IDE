@@ -5,7 +5,11 @@ import { resolveUserDataPath } from './orcad-app-paths'
 import { prepareOrcadCliLauncher } from './orcad-cli-launcher'
 import { installOrcadHostAdapters, runOrcadQuitHandlers } from './orcad-host-adapters'
 import { prepareOrcadSecretStoreAndMigrate } from './orcad-secret-store-startup'
-import { describeOrcadBindExposure, resolveOrcadBindHost } from './orcad-bind-address'
+import {
+  assertOrcadLocalOnlyOptions,
+  describeOrcadBindExposure,
+  resolveOrcadBindHost
+} from './orcad-bind-address'
 import {
   flushOrcadProfileStoreForShutdown,
   startOrcadWithHost,
@@ -33,6 +37,8 @@ let closeOrcadObservability = (): Promise<void> => Promise.resolve()
 
 /** Resolve after transport readiness publishes the desktop-compatible serve payload. */
 export async function startOrcad(options: OrcadOptions = {}): Promise<OrcadHandle> {
+  // Reject excluded host exposure and pairing options before touching runtime or user data.
+  assertOrcadLocalOnlyOptions(options)
   installOrcadHostAdapters()
   // Inherited terminal identity must not fence orcad’s CLI children to the launching desktop.
   stampRuntimeSourceEnv(process.env, null)
@@ -119,8 +125,6 @@ async function startOrcadRuntime(
   })
   registerCleanup(stopOrcadStructuredAgentSessions)
   registerCleanup(() => disposeWatcherProcessAndWait())
-  const { DesktopPushService } = await import('../runtime/push/desktop-push-service')
-  const { resolvePushGatewayOrigin } = await import('../runtime/push/push-gateway-origin')
 
   const runtimeUserDataPath = getAppEnvironment().getPath('userData')
   const { startEventLoopDelayProbe } = await import('../diagnostics/event-loop-delay-probe')
@@ -304,13 +308,6 @@ async function startOrcadRuntime(
   // Stop RPC before cleanup can tear down writers and runtime state.
   registerCleanup(() => rpc.stop())
   await timed('rpc', () => rpc.start())
-  const pushService = DesktopPushService.create({
-    runtime,
-    runtimeRpc: rpc,
-    gatewayUrl: resolvePushGatewayOrigin(process.env, getAppEnvironment().isPackaged())
-  })
-  pushService?.start()
-  getAppEnvironment().onWillQuit(() => pushService?.stop())
   console.error(`[orcad] ${describeOrcadBindExposure(bindHost)}`)
 
   const readiness = await buildOrcadServeReadiness({

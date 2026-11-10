@@ -87,7 +87,7 @@ describe('orca serve asking the app which host to run', () => {
       })
     ).toEqual([
       '--bind',
-      '0.0.0.0',
+      '127.0.0.1',
       '--json',
       '--port',
       '6768',
@@ -99,7 +99,7 @@ describe('orca serve asking the app which host to run', () => {
       '--project-root',
       '/work/app'
     ])
-    expect(orcadServeArgs({})).toEqual(['--bind', '0.0.0.0'])
+    expect(orcadServeArgs({})).toEqual(['--bind', '127.0.0.1'])
   })
 
   it("hands orcad the app's browser client directory when the app has one", () => {
@@ -107,7 +107,7 @@ describe('orca serve asking the app which host to run', () => {
       orcadServeArgs({ port: '6768' }, '/opt/Orca/resources/app.asar.unpacked/out/web')
     ).toEqual([
       '--bind',
-      '0.0.0.0',
+      '127.0.0.1',
       '--port',
       '6768',
       '--web-client-root',

@@ -28,11 +28,11 @@ export function serveOptionArgs(args: ServeOrcaAppArgs, prefix: '--' | '--serve-
   ]
 }
 
-/** `bindHost` exists for tests, which must not listen on every interface. */
+/** Ash headless servers are local-only; explicit non-loopback binds fail in Orcad itself. */
 export function orcadServeArgs(
   args: ServeOrcaAppArgs,
   webClientRoot?: string,
-  bindHost = '0.0.0.0'
+  bindHost = '127.0.0.1'
 ): string[] {
   return [
     '--bind',

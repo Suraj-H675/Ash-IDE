@@ -97,8 +97,10 @@ jobs:
             src/main/ipc/ash-updater-status.test.ts \
             src/main/ipc/m8-local-only-report-ipc.test.ts \
             src/main/orcad/orcad-scheduled-automation-exclusion.test.ts \
+            src/main/orcad/orcad-ash-local-only-network.test.ts \
             src/main/runtime/rpc/methods/ash-runtime-methods.test.ts \
             src/main/runtime/rpc/server/runtime-rpc-mobile-automations.test.ts \
+            src/cli/runtime/serve-orcad-launch.test.ts \
             src/cli/excluded-scheduled-automation-registration.test.ts
       - name: Test excluded renderer startup capability gates
         run: |
