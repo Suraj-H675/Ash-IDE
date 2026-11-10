@@ -873,7 +873,7 @@
     },
     {
       "path": "src/preload/index.ts",
-      "sha256": "eb14640637f97fa6c2e96635d8479c75289c4809c491e1ba5ecdb531210c6dff",
+      "sha256": "b2ba2f7d769f1065e7a69caaa72e3ece7aaf3aa2f783264cbe8c38d790bdd67d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
