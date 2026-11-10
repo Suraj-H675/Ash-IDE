@@ -1,3 +1,4 @@
+import { requireLegacySpeechApi } from '@/lib/require-legacy-speech-api'
 import type { StateCreator } from 'zustand'
 import type { AppState } from '../types'
 import type { DictationState, SpeechModelState } from '../../../../shared/speech-types'
@@ -52,7 +53,7 @@ export const createDictationSlice: StateCreator<AppState, [], [], DictationSlice
 
     refreshModelStates: async () => {
       try {
-        setModelStates(await window.api.speech.getModelStates())
+        setModelStates(await requireLegacySpeechApi().getModelStates())
       } catch (err) {
         console.error('Failed to fetch model states:', err)
       }

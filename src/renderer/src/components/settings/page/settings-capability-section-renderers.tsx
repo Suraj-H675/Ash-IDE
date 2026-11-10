@@ -5,7 +5,6 @@ import { AgentDefaultSurfaceSection } from '../agents/surfaces/AgentDefaultSurfa
 import { ComputerUsePane } from '../computer-use/ComputerUsePane'
 import { LinearAgentSkillPane } from '../skills/linear/LinearAgentSkillPane'
 import { OrchestrationPane } from '../orchestration/OrchestrationPane'
-import { VoicePane } from '../voice/VoicePane'
 import { SettingsSection } from '../section-layout/SettingsSection'
 import { SettingsHostScopeUnavailableNotice } from '../host-scope/SettingsHostScopePicker'
 import { LOCAL_SETTINGS_HOST_SCOPE } from '../host-scope/settings-host-scope'
@@ -156,20 +155,6 @@ export function renderDesktopCapabilitySettingsSections(
         searchEntries={navigation.getSectionSearchEntries('computer-use')}
       >
         {view.isSectionMounted('computer-use') ? <ComputerUsePane /> : null}
-      </SettingsSection>
-
-      <SettingsSection
-        id="voice"
-        title={translate('auto.components.settings.Settings.5063bb47a5', 'Voice')}
-        description={translate(
-          'auto.components.settings.Settings.eb1176a14e',
-          'Local speech-to-text dictation with on-device models.'
-        )}
-        searchEntries={navigation.getSectionSearchEntries('voice')}
-      >
-        {view.isSectionMounted('voice') ? (
-          <VoicePane settings={model.settings} updateSettings={model.updateSettings} />
-        ) : null}
       </SettingsSection>
     </>
   ) : null

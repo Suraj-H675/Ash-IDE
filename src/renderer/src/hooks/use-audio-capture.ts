@@ -1,3 +1,4 @@
+import { requireLegacySpeechApi } from '@/lib/require-legacy-speech-api'
 import { useRef, useCallback } from 'react'
 import { openMicrophoneCaptureStream } from '@/components/dictation/microphone-devices'
 import {
@@ -126,6 +127,8 @@ export function useAudioCapture(publishMeter?: DictationMeterPublisher) {
       if (isCapturingRef.current) {
         return
       }
+      // A stale voice toggle must not open the microphone without Ash speech.
+      requireLegacySpeechApi()
       const startRequest = startRequestRef.current + 1
       startRequestRef.current = startRequest
       cleanupCaptureResources()
@@ -217,7 +220,7 @@ export function useAudioCapture(publishMeter?: DictationMeterPublisher) {
             })
             return
           }
-          void window.api.speech
+          void requireLegacySpeechApi()
             .feedAudio(samples, actualRate, sessionIdRef.current)
             .catch(() => undefined)
         }
@@ -296,7 +299,7 @@ export function useAudioCapture(publishMeter?: DictationMeterPublisher) {
           break
         }
         removeOldestBufferedAudioChunk()
-        await window.api.speech.feedAudio(chunk.samples, chunk.sampleRate, chunk.sessionId)
+        await requireLegacySpeechApi().feedAudio(chunk.samples, chunk.sampleRate, chunk.sessionId)
       }
     } finally {
       if (bufferedAudioGenerationRef.current === flushGeneration) {

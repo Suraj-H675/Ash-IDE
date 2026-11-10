@@ -878,12 +878,12 @@
     },
     {
       "path": "src/preload/api-types.ts",
-      "sha256": "ac8bc03daf3b193673e1f852a5d1c85e21b814217e812a90922b22fd80d6ebf8",
+      "sha256": "02d74427bfef745a89164e7d94ed25e8fba61d60abe785957d140b3cd0dcd207",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/preload/index.ts",
-      "sha256": "4da806227222652f90a2e7ced175e9fe0d6c6770dc9cf4f25bdf3b072d75f3cf",
+      "sha256": "0cd089eafd77c7170f085399121aeb8c234f70032fc3c4576214c8b39727f4d9",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -898,7 +898,7 @@
     },
     {
       "path": "src/renderer/src/app-shell/AppRootSurfaces.tsx",
-      "sha256": "992bcdea2bf3f5e32c0020d2c3d179fb2dff1ad30f523261689556b56c8449cb",
+      "sha256": "20b1d3b90418901e9a1067b374ed7fad35ed7f7a9c3c6e7b8f9f1f98ec8bff9d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -939,6 +939,11 @@
     {
       "path": "src/renderer/src/components/crash-report/CrashReportDialogSurface.tsx",
       "sha256": "3334e97cccadea5e484e2becd2bbbdbf4143ca76a4136e568b82b9509663bbdc",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/dictation/DictationController.tsx",
+      "sha256": "22e0d7e80a567ed1d6c92b13202066c19f1aec5f67a57ca34391a01c63cb84f3",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -997,6 +1002,26 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/settings/navigation/use-settings-navigation-model.ts",
+      "sha256": "a3048d1c6faf1b3115a4f7363ffea98010e3e1a9add8cf9b448a8a2b959d8a60",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/settings/page/settings-capability-section-renderers.tsx",
+      "sha256": "3c0df68e04b72fafa0119acd1a513166491207642a6f2f94ac21bfd37c2aed28",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/settings/page/use-settings-page-effects.ts",
+      "sha256": "1ccf9fba4b0a2561fd071887844e0154ebf6f6fa8730fc2623f930f6b3c30025",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/settings/page/use-settings-store-model.ts",
+      "sha256": "30b4b1e2e9ce6de0c0541174b03fd201fe6a2b404ec0fbbce7a15f12484ee805",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/settings/privacy/PrivacyDiagnosticBundleControls.tsx",
       "sha256": "f60083341ef472bde4dbd7a2bfdf8b79e33fa8aac3d7f922b68bc7ca85aea9fd",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1019,6 +1044,16 @@
     {
       "path": "src/renderer/src/components/settings/updates/GeneralUpdateSettingsSection.tsx",
       "sha256": "31b4c174e4b7ed8061cf058980671aeabf1f0603653aa21c8d28317412984dd4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/settings/voice/VoicePane.tsx",
+      "sha256": "bd6ca05188ff00babf5e989b12f49450b896a4e4b6042351a3c223d42a316fff",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/settings/voice/VoiceSpeechModelSection.tsx",
+      "sha256": "f0575aec8c0d6dbf6c6d4d29f3d2ae20ec494339263d9db0ac64908cfe5a908b",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1049,6 +1084,16 @@
     {
       "path": "src/renderer/src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts",
       "sha256": "474cee554815ffba12d56e83f735ef2c69acf26dffdb51d88d2b3e5dc3faaf7a",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/hooks/settings-navigation-capability-sections.ts",
+      "sha256": "c2a4abf74f8650b02c966f9f1832b4d93ddef66fd1ef8de90bff71df35a296d4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/hooks/use-audio-capture.ts",
+      "sha256": "067f7cddb5d2aa478a4d8be40daf507f71bc0a33fc9a14192848972e8123bfcd",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1104,6 +1149,11 @@
     {
       "path": "src/renderer/src/store/plugin-status-bar-items.ts",
       "sha256": "43aa52efb080d9a0c6dfb2bf2dd440e42a5057b183ae6d5a0f81c7d17b0414b4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/store/slices/dictation.ts",
+      "sha256": "8b2785facd75801a90ac94478359a80ebcdd04d4652ba525f6a7a023328a8f96",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
