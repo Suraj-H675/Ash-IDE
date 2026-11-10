@@ -10,7 +10,7 @@ import {
   MobileWebBundleChunkResultSchema,
   MobileWebBundleManifestResultSchema
 } from '../../../../shared/mobile-web-bundle/bundle-rpc-contract'
-import { MOBILE_RPC_METHOD_ALLOWLIST } from '../server/runtime-rpc-mobile-method-allowlist'
+import { denyRpcMethodForCaller } from '../rpc-caller-scope'
 import type { RpcRequest, RpcResponse } from '../core'
 import { ORCAD_MOBILE_WEB_DIR, ORCAD_MOBILE_WEB_MANIFEST } from '../../../../shared/orcad-artifacts'
 import type { RpcDispatcher } from '../dispatcher'
@@ -393,11 +393,15 @@ describe('an install with no mobile web bundle', () => {
   })
 })
 
-// Registry presence does not prove mobile authorization; used-subset checks miss methods before a client uses them.
-describe('mobile authorization', () => {
-  it('lets a paired phone call both bundle methods', () => {
-    expect(MOBILE_RPC_METHOD_ALLOWLIST.has(MOBILE_WEB_BUNDLE_MANIFEST_METHOD)).toBe(true)
-    expect(MOBILE_RPC_METHOD_ALLOWLIST.has(MOBILE_WEB_BUNDLE_CHUNK_METHOD)).toBe(true)
+// The inherited bundle handler is tested in isolation; Ash denies every phone caller.
+describe('excluded mobile authorization', () => {
+  it('denies even the historical mobile bundle methods', () => {
+    expect(
+      denyRpcMethodForCaller({ kind: 'mobile' }, MOBILE_WEB_BUNDLE_MANIFEST_METHOD, 'workspace')
+    ).not.toBeNull()
+    expect(
+      denyRpcMethodForCaller({ kind: 'mobile' }, MOBILE_WEB_BUNDLE_CHUNK_METHOD, 'workspace')
+    ).not.toBeNull()
   })
 })
 

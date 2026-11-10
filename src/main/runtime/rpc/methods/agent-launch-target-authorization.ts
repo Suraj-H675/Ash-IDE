@@ -1,25 +1,19 @@
 import { AGENT_LAUNCH_RUNTIME_CAPABILITY } from '../../../../shared/agent-launch/contracts/agent-launch-runtime-capability'
-/** Authorize workspace creation against its own method allowlist; mobile access to agent.launch must not bypass create restrictions. */
+/** Preserve the direct handler's older folder-create constraint.
+ * Live Ash mobile calls are denied earlier at RPC admission. */
 
 import { AgentLaunchTargetForbiddenError } from '../../../../shared/agent-launch/contracts/agent-launch-target-forbidden'
 import type { AgentLaunchTarget } from '../../../../shared/agent-launch/contracts/agent-launch-intent'
-import { MOBILE_RPC_METHOD_ALLOWLIST } from '../server/runtime-rpc-mobile-method-allowlist'
 import type { RpcContext } from '../core'
-
-const CREATE_METHOD_BY_TARGET_KIND = {
-  'create-worktree': 'worktree.create',
-  'create-folder-workspace': 'folderWorkspace.create'
-} as const satisfies Record<Exclude<AgentLaunchTarget['kind'], 'existing'>, string>
 
 export function assertAgentLaunchTargetAuthorized(
   target: Pick<AgentLaunchTarget, 'kind'>,
   context: Pick<RpcContext, 'clientKind'>
 ): void {
-  // `clientKind` is the paired device's scope, stamped from its validated token.
-  if (target.kind === 'existing' || context.clientKind !== 'mobile') {
-    return
-  }
-  if (!MOBILE_RPC_METHOD_ALLOWLIST.has(CREATE_METHOD_BY_TARGET_KIND[target.kind])) {
+  // The retired phone routing table permitted worktree.create, but not
+  // folderWorkspace.create. Preserve direct-handler compatibility while
+  // denyRpcMethodForCaller rejects every mobile RPC before any handler runs.
+  if (context.clientKind === 'mobile' && target.kind === 'create-folder-workspace') {
     throw new AgentLaunchTargetForbiddenError()
   }
 }

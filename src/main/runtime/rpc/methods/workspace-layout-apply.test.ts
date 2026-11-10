@@ -5,7 +5,7 @@ import type { LayoutApplyOutcome } from '../../../../shared/workspace-layout/wor
 import type { Tab } from '../../../../shared/tab-types'
 import type { RuntimeStore } from '../../runtime-store-contract'
 import { RUNTIME_CAPABILITIES } from '../../../../shared/protocol-version'
-import { MOBILE_RPC_METHOD_ALLOWLIST } from '../server/runtime-rpc-mobile-method-allowlist'
+import { denyRpcMethodForCaller } from '../rpc-caller-scope'
 import { OrcaRuntimeService } from '../../orca-runtime'
 import { eraseRpcMethods, isStreamingMethod, type RpcContext } from '../core'
 import { LAYOUT_APPLY_METHODS } from './workspace-layout'
@@ -91,7 +91,7 @@ describe('layout.apply', () => {
       expect(names, name).not.toContain(name)
     }
     expect(RUNTIME_CAPABILITIES.some((capability) => capability.startsWith('layout'))).toBe(false)
-    expect(MOBILE_RPC_METHOD_ALLOWLIST.has('layout.apply')).toBe(false)
+    expect(denyRpcMethodForCaller({ kind: 'mobile' }, 'layout.apply', 'workspace')).not.toBeNull()
   })
 
   it('keeps only a valid window pane id on a split', async () => {

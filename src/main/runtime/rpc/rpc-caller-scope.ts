@@ -1,5 +1,4 @@
 /** Transport stamps proven scope; unstamped calls are local desktop/owner CLI. Non-owner methods require an explicitly granted permission. */
-import { MOBILE_RPC_METHOD_ALLOWLIST } from './server/runtime-rpc-mobile-method-allowlist'
 import type { RpcMethodPermission, RuntimeDeviceGrant } from './rpc-method-permission'
 
 export type { RuntimeDeviceGrant }
@@ -23,19 +22,15 @@ const RUNTIME_PAIRED_STANDARD: ReadonlySet<RpcMethodPermission> = new Set([
   'device-self'
 ])
 
-/** Mobile checks unknown methods by name because older phones interpret forbidden as unsupported; other callers retain method_not_found. */
+/** Historical mobile identities are always denied, including probes for unknown methods.
+ * Kept at dispatcher admission as a second boundary behind WebSocket authentication. */
 export function denyRpcMethodForCaller(
   scope: RpcCallerScope,
   methodName: string,
   permission: RpcMethodPermission | undefined
 ): string | null {
   if (scope.kind === 'mobile') {
-    if (!MOBILE_RPC_METHOD_ALLOWLIST.has(methodName)) {
-      return `Method '${methodName}' is not available to mobile clients`
-    }
-    return scope.delegated && permission === 'pairing-admin'
-      ? `Method '${methodName}' is not available to a phone connected through a paired desktop`
-      : null
+    return 'Mobile clients are not supported by Ash IDE'
   }
   if (scope.kind === 'owner' || permission === undefined) {
     return null

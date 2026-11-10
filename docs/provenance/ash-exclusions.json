@@ -17571,6 +17571,26 @@
       "reason": "Removed migration tests for mobile pairing files after Ash stopped copying any pairing data into its private profile."
     },
     {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-mobile-agent-session-methods.ts",
+      "sourceSha256": "fec359a46fe1b0c8c3bcf96be61f2552d057353299893baf18c5ae62363a7b76",
+      "reason": "Removed phone-only agent-session RPC routing entries; Ash accepts runtime-scoped local browser clients instead."
+    },
+    {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-mobile-method-allowlist.ts",
+      "sourceSha256": "262e17c7aba9deb3683625b952934073a37b66577d6137e58e082c6f5f376f5b",
+      "reason": "Retired phone method allowlisting; all historical mobile-scoped RPC callers are now denied before method lookup."
+    },
+    {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-mobile-method-routing.ts",
+      "sourceSha256": "269a194b4b467cad41d6d1eca2d8f2b83ff2f2d086cea0dc90bcbb848c2b93df",
+      "reason": "Removed dormant mobile-to-execution-host routing policy after removing the live WebSocket relay-forwarding path."
+    },
+    {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-mobile-paired-desktop-methods.ts",
+      "sourceSha256": "0128002a56c1bdeac16fd5796798043f534150c4bf67f5cfb3f9f9c5ac296af0",
+      "reason": "Removed the obsolete relaying-desktop phone RPC allowlist including excluded cloud, speech and plugin methods."
+    },
+    {
       "path": "src/main/runtime/run-terminal-shell-alone.node-pty.test.ts",
       "sourceSha256": "b94dde8bbb814339ad3ce69d7b64254d92ecc0996ba5afba44e5ef5a648216e8",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."

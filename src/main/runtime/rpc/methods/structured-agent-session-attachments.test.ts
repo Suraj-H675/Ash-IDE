@@ -2,7 +2,7 @@ import * as fs from 'node:fs/promises'
 import type { RpcResponse } from '../core'
 import { RUNTIME_CAPABILITIES as runtimeCapabilities } from '../../../../shared/protocol-version'
 import { AGENT_SESSION_TEXT_ATTACHMENT_READ_CAPABILITY } from '../../../../shared/agent-session/agent-session-runtime-capabilities'
-import { MOBILE_RPC_METHOD_ALLOWLIST } from '../server/runtime-rpc-mobile-method-allowlist'
+import { denyRpcMethodForCaller } from '../rpc-caller-scope'
 import {
   AttachmentTextSource,
   ATTACHMENT_TEXT_BLOCK_BYTES,
@@ -370,7 +370,9 @@ it('reads a committed text attachment through the registered mobile RPC and vali
     return result(reply)
   })
   expect(runtimeCapabilities).toContain(AGENT_SESSION_TEXT_ATTACHMENT_READ_CAPABILITY)
-  expect(MOBILE_RPC_METHOD_ALLOWLIST.has('agentSessionAttachment.readTextChunk')).toBe(true)
+  expect(
+    denyRpcMethodForCaller({ kind: 'mobile' }, 'agentSessionAttachment.readTextChunk', 'workspace')
+  ).not.toBeNull()
   await expect(store.readTextChunk({ path, offset: 0, length: 256 * 1024 + 1 })).rejects.toThrow()
   await expect(
     store.readTextChunk({ path: join(root, 'outside.txt'), offset: 0, length: 10 })

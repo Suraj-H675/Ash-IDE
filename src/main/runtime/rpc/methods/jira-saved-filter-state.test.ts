@@ -1,4 +1,4 @@
-import { MOBILE_RPC_METHOD_ROUTES } from '../server/runtime-rpc-mobile-method-routing'
+import { denyRpcMethodForCaller } from '../rpc-caller-scope'
 import '../unused-default-rpc-methods.test-fixture'
 import { describe, expect, it, vi } from 'vitest'
 import { getDefaultUIState } from '../../../../shared/constants'
@@ -79,9 +79,13 @@ describe('Jira saved-filter runtime UI state', () => {
   })
 })
 
-it('routes mobile saved-filter persistence to the execution host', () => {
-  expect(MOBILE_RPC_METHOD_ROUTES.get('ui.getJiraSavedFilters')).toBe('execution-host')
-  expect(MOBILE_RPC_METHOD_ROUTES.get('ui.mutateJiraSavedFilters')).toBe('execution-host')
+it('denies historical mobile callers rather than routing saved-filter requests', () => {
+  expect(
+    denyRpcMethodForCaller({ kind: 'mobile' }, 'ui.getJiraSavedFilters', 'workspace')
+  ).not.toBeNull()
+  expect(
+    denyRpcMethodForCaller({ kind: 'mobile' }, 'ui.mutateJiraSavedFilters', 'workspace')
+  ).not.toBeNull()
 })
 
 it('persists quick filters on the execution host without rewriting saved JQL or resume fields', async () => {
@@ -104,6 +108,10 @@ it('persists quick filters on the execution host without rewriting saved JQL or 
     ok: false,
     error: { code: 'invalid_argument' }
   })
-  expect(MOBILE_RPC_METHOD_ROUTES.get('ui.getJiraQuickFilters')).toBe('execution-host')
-  expect(MOBILE_RPC_METHOD_ROUTES.get('ui.setJiraQuickFilters')).toBe('execution-host')
+  expect(
+    denyRpcMethodForCaller({ kind: 'mobile' }, 'ui.getJiraQuickFilters', 'workspace')
+  ).not.toBeNull()
+  expect(
+    denyRpcMethodForCaller({ kind: 'mobile' }, 'ui.setJiraQuickFilters', 'workspace')
+  ).not.toBeNull()
 })

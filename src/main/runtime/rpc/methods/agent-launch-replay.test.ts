@@ -72,7 +72,8 @@ const NOW = Date.now()
 const OPERATION_ID = `${NOW}-000000000000000000000000000000aa`
 
 const PAIRED_CLIENT: Partial<RpcContext> = {
-  clientKind: 'mobile',
+  // Ash's retained paired browser clients use runtime scope, never phone scope.
+  clientKind: 'runtime',
   pairedDeviceId: 'device-1',
   clientId: 'credential-a',
   clientCapabilities: [AGENT_LAUNCH_RUNTIME_CAPABILITY]

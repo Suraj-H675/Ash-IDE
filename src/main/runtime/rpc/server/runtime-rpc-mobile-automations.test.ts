@@ -1,8 +1,9 @@
 import { expect, it } from 'vitest'
-import { MOBILE_RPC_METHOD_ALLOWLIST } from './runtime-rpc-mobile-method-allowlist'
-import { MOBILE_RPC_METHOD_ROUTES } from './runtime-rpc-mobile-method-routing'
+import { OrcaRuntimeService } from '../../orca-runtime'
+import { RpcDispatcher } from '../dispatcher'
 
-it('does not allow scheduled automation RPC methods through mobile relay routing', () => {
+it('does not register scheduled automation methods or permit historical mobile callers', async () => {
+  const dispatcher = new RpcDispatcher({ runtime: new OrcaRuntimeService() })
   const excluded = [
     'automation.list',
     'automation.show',
@@ -14,7 +15,14 @@ it('does not allow scheduled automation RPC methods through mobile relay routing
   ]
 
   for (const method of excluded) {
-    expect(MOBILE_RPC_METHOD_ROUTES.has(method), method).toBe(false)
-    expect(MOBILE_RPC_METHOD_ALLOWLIST.has(method), method).toBe(false)
+    const request = { id: `excluded-${method}`, authToken: 'unused', method, params: {} }
+    expect(await dispatcher.dispatch(request, { callerScope: { kind: 'owner' } })).toMatchObject({
+      ok: false,
+      error: { code: 'method_not_found' }
+    })
+    expect(await dispatcher.dispatch(request, { callerScope: { kind: 'mobile' } })).toMatchObject({
+      ok: false,
+      error: { code: 'forbidden' }
+    })
   }
 })
