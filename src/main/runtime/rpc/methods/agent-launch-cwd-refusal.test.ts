@@ -620,7 +620,7 @@ describe('CLI cwd refusal through production creation and durable failed receipt
     expect(log.mock.calls.flat().join('\n')).toContain('term_started')
   })
 
-  it('preserves original failed history through authenticated mobile crypto, admission and true reopen', async () => {
+  it('preserves original failed history through authenticated runtime-client crypto, admission and true reopen', async () => {
     let records = await openTestAgentSessionRecordStore(directory)
     const parent = buildWorktree('/tmp/worktree-a', 'main', 'abc', 'repo-1')
     const host = managedCwdLaunchFixture(records, parent, directory)
@@ -693,10 +693,15 @@ describe('CLI cwd refusal through production creation and durable failed receipt
             .map((row) => row.callerKey)
         )
       ).toEqual(new Set([phone.device.deviceId, other.device.deviceId]))
+      // This client now has the retained runtime scope, not the removed phone
+      // scope. An invalid file mutation must fail schema admission before the
+      // file-deletion handler is invoked.
+      const deleteFile = vi.spyOn(host.runtime, 'deleteFileExplorerPath')
       expect(
         (await phone.send('files.delete', { worktree: `id:${parent.id}`, path: 'fixture' }))
           .response
-      ).toMatchObject({ ok: false, error: { code: 'forbidden' } })
+      ).toMatchObject({ ok: false, error: { code: 'invalid_argument' } })
+      expect(deleteFile).not.toHaveBeenCalled()
       const beforeMalformed = host.create.mock.calls.length
       expect(
         (

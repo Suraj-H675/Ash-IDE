@@ -240,8 +240,10 @@ export class RuntimeRpcWebSocketDispatch extends RuntimeRpcMobileDevices {
         callerScope,
         clientCapabilities: authenticatedSocket?.clientCapabilities,
         capabilitySource: authenticatedSocket?.capabilitySource,
+        // Ash's retained local browser sessions are runtime-scoped, not mobile.
+        // Capability updates affect only this already-authenticated socket.
         updateClientCapabilities:
-          authenticatedSocket && device.scope === 'mobile'
+          authenticatedSocket && device.scope === 'runtime'
             ? (clientCapabilities) => {
                 authenticatedSocket.clientCapabilities = clientCapabilities
               }

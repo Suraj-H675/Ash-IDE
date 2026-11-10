@@ -56,7 +56,7 @@ class FakeTransport implements MobileSocketTransport {
 function registryFor(
   deviceId: string,
   token: string,
-  scope: 'mobile' | 'runtime' = 'mobile'
+  scope: 'mobile' | 'runtime' = 'runtime'
 ): DeviceRegistry {
   // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: transport tests use only credential lookups and last-seen writes.
   return {
@@ -81,6 +81,99 @@ function registryFor(
 }
 
 describe('MobileSocketWiring', () => {
+  it('refuses a saved mobile-scoped bearer at the real encrypted handshake before dispatch', () => {
+    const desktop = generateKeyPair()
+    const phone = generateKeyPair()
+    const ws = new FakeSocket()
+    const transport = new FakeTransport()
+    const onReady = vi.fn()
+    const onText = vi.fn()
+    const registry = registryFor('phone-device', 'existing-phone-token', 'mobile')
+    const wiring = new MobileSocketWiring({
+      deviceRegistry: registry,
+      e2eeKeypair: {
+        publicKey: desktop.publicKey,
+        secretKey: desktop.secretKey,
+        publicKeyB64: Buffer.from(desktop.publicKey).toString('base64')
+      },
+      onText,
+      onBinary: vi.fn(),
+      onClose: vi.fn(),
+      onReady
+    })
+    wiring.attachTransport(transport)
+
+    transport.receive(
+      ws,
+      JSON.stringify({
+        type: 'e2ee_hello',
+        publicKeyB64: Buffer.from(phone.publicKey).toString('base64')
+      })
+    )
+    transport.receive(
+      ws,
+      encrypt(
+        JSON.stringify({ type: 'e2ee_auth', deviceToken: 'existing-phone-token' }),
+        deriveSharedKey(phone.secretKey, desktop.publicKey)
+      )
+    )
+    expect(ws.close).toHaveBeenCalledWith(4001, 'Unauthorized')
+    expect(transport.setClientId).not.toHaveBeenCalled()
+    expect(onReady).not.toHaveBeenCalled()
+    expect(onText).not.toHaveBeenCalled()
+    expect(wiring.channelCount).toBe(0)
+    expect(registry.updateLastSeenDeferred).not.toHaveBeenCalled()
+    wiring.dispose()
+  })
+
+  it('closes a runtime session if its saved device scope changes to mobile after authentication', () => {
+    const desktop = generateKeyPair()
+    const phone = generateKeyPair()
+    const ws = new FakeSocket()
+    const transport = new FakeTransport()
+    const onText = vi.fn()
+    const registry = registryFor('local-browser', 'browser-token', 'runtime')
+    const realResolve = registry.resolveAuthenticatedPrincipal.bind(registry)
+    let currentScope: 'runtime' | 'mobile' = 'runtime'
+    vi.spyOn(registry, 'resolveAuthenticatedPrincipal').mockImplementation((principal) => {
+      const device = realResolve(principal)
+      return device ? { ...device, scope: currentScope } : null
+    })
+    const wiring = new MobileSocketWiring({
+      deviceRegistry: registry,
+      e2eeKeypair: {
+        publicKey: desktop.publicKey,
+        secretKey: desktop.secretKey,
+        publicKeyB64: Buffer.from(desktop.publicKey).toString('base64')
+      },
+      onText,
+      onBinary: vi.fn(),
+      onClose: vi.fn()
+    })
+    wiring.attachTransport(transport)
+
+    transport.receive(
+      ws,
+      JSON.stringify({
+        type: 'e2ee_hello',
+        publicKeyB64: Buffer.from(phone.publicKey).toString('base64')
+      })
+    )
+    const sharedKey = deriveSharedKey(phone.secretKey, desktop.publicKey)
+    transport.receive(
+      ws,
+      encrypt(JSON.stringify({ type: 'e2ee_auth', deviceToken: 'browser-token' }), sharedKey)
+    )
+    transport.receive(ws, encrypt('{"id":"before","method":"status.get"}', sharedKey))
+    expect(onText).toHaveBeenCalledOnce()
+    currentScope = 'mobile'
+    transport.receive(ws, encrypt('{"id":"after","method":"status.get"}', sharedKey))
+    expect(ws.close).toHaveBeenCalledWith(4001, 'Unauthorized')
+    expect(onText).toHaveBeenCalledOnce()
+    expect(wiring.channelCount).toBe(0)
+    wiring.dispose()
+  })
+
   it('terminates a revoked device across every attached transport', () => {
     const direct = new FakeTransport()
     const relay = new FakeTransport()
@@ -224,7 +317,7 @@ describe('MobileSocketWiring', () => {
     const transport = new FakeTransport()
     const onText = vi.fn()
     const wiring = new MobileSocketWiring({
-      deviceRegistry: registryFor('device-1', 'valid-token', 'mobile'),
+      deviceRegistry: registryFor('device-1', 'valid-token', 'runtime'),
       e2eeKeypair: {
         publicKey: desktop.publicKey,
         secretKey: desktop.secretKey,

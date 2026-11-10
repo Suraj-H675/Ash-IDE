@@ -147,7 +147,7 @@ describe('OrcaRuntimeRpcServer', () => {
     }
   })
 
-  it('terminates active WebSockets for a revoked mobile device', async () => {
+  it('can revoke a saved mobile device without opening a mobile WebSocket session', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
     const runtime = new OrcaRuntimeService()
     const server = new OrcaRuntimeRpcServer({
@@ -170,18 +170,11 @@ describe('OrcaRuntimeRpcServer', () => {
       if (!offer.available) {
         throw new Error('WebSocket pairing unavailable')
       }
-      const first = await authenticateMobileWs(offer.pairingUrl)
-      const second = await authenticateMobileWs(offer.pairingUrl)
-
+      // The mobile credential remains revocable but can no longer authenticate.
+      expect(server.getDeviceRegistry()?.getDevice(offer.deviceId)?.scope).toBe('mobile')
       await expect(server.revokeMobileDevice(offer.deviceId)).resolves.toBe(true)
-      await Promise.all([waitForWsClose(first), waitForWsClose(second)])
-      await waitFor(
-        () =>
-          server['mobileSocketWiring']?.channelCount === 0 &&
-          server['mobileSocketWiring']?.connectionCount === 0
-      )
-
-      expect(disconnectSpy).toHaveBeenCalledTimes(1)
+      expect(server.getDeviceRegistry()?.getDevice(offer.deviceId)).toBeNull()
+      expect(disconnectSpy).not.toHaveBeenCalled()
     } finally {
       disconnectSpy.mockRestore()
       await server.stop()
@@ -258,9 +251,8 @@ describe('OrcaRuntimeRpcServer', () => {
   }, 15_000)
 
   it.each([
-    ['mobile', false],
     ['runtime', false],
-    ['mobile', true]
+    ['runtime', true]
   ] as const)(
     'revoking a %s bearer, removed on disk %s, removes descendants and closes their sockets',
     async (scope, removedOnDisk) => {
@@ -297,18 +289,7 @@ describe('OrcaRuntimeRpcServer', () => {
             ? registry.upsertDelegatedMobileDevices(fork, [{ phoneKey: 'p', name: 'Pixel' }])
             : []
         const sockets = [parentSocket, forkSocket]
-        for (const child of children) {
-          sockets.push(
-            await authenticateMobileWs(
-              encodePairingOffer({
-                ...parsed,
-                deviceToken: child.token,
-                pairedDeviceId: child.deviceId,
-                scope: 'mobile'
-              })
-            )
-          )
-        }
+        // Delegated mobile child records remain revocable but cannot open sockets.
         const unrelated = registry.addDevice('Unrelated', scope)
         const unrelatedSocket = await authenticateMobileWs(
           encodePairingOffer({
@@ -324,10 +305,7 @@ describe('OrcaRuntimeRpcServer', () => {
           writeFileSync(path, JSON.stringify(rows.filter((row) => row.deviceId !== offer.deviceId)))
         }
 
-        const revoked =
-          scope === 'mobile'
-            ? await server.revokeMobileDevice(offer.deviceId)
-            : server.revokeRuntimeAccess(offer.deviceId)
+        const revoked = server.revokeRuntimeAccess(offer.deviceId)
 
         expect(revoked).toBe(true)
         for (const device of [fork, idleFork, ...children]) {
@@ -370,7 +348,7 @@ describe('OrcaRuntimeRpcServer', () => {
         const offer = server.createPairingOffer({
           address: '127.0.0.1',
           name: 'Parent',
-          scope: kind === 'sibling-cascade' ? 'mobile' : 'runtime'
+          scope: 'runtime'
         })
         if (!offer.available) {
           throw new Error('WebSocket pairing unavailable')
@@ -398,18 +376,8 @@ describe('OrcaRuntimeRpcServer', () => {
                 'Later'
               )
             : null
-        if (kind === 'sibling-cascade') {
-          server.setMobileRelayBinding(fork.deviceId, {
-            relayHostId: 'host',
-            relayDeviceId: fork.deviceId,
-            ownerIdentityKey: 'owner'
-          })
-          registry.setPushRegistration(fork.deviceId, {
-            registrationId: 'fork-push',
-            filter: {},
-            expiresAt: 4_000_000_000_000
-          })
-        }
+        // Runtime-scoped local clients have neither a phone relay binding nor
+        // mobile push registration. Sibling revocation must stay local.
         const { ws, peer } = await authenticateKeyedWs(
           parsePairingCode(offer.pairingUrl)!,
           fork.deviceId,
@@ -465,19 +433,15 @@ describe('OrcaRuntimeRpcServer', () => {
         const closed = waitForWsClose(ws)
 
         if (kind === 'sibling-cascade') {
-          expect(await server.revokeMobileDevice(offer.deviceId)).toBe(true)
+          expect(server.revokeRuntimeAccess(offer.deviceId)).toBe(true)
           for (const device of [earlier, fork, later]) {
             if (device) {
               expect(registry.getDevice(device.deviceId)).toBeNull()
             }
           }
           expect(registry.getDevice(offer.deviceId)).toBeNull()
-          expect(server.getRelayRevokeOutbox().pendingFor('owner', 'host')).toMatchObject([
-            { relayDeviceId: fork.deviceId }
-          ])
-          expect(server.getPushUnregisterOutbox().pending()).toMatchObject([
-            { deviceId: fork.deviceId, registrationId: 'fork-push' }
-          ])
+          expect(server.getRelayRevokeOutbox().pendingFor('owner', 'host')).toEqual([])
+          expect(server.getPushUnregisterOutbox().pending()).toEqual([])
         } else if (kind === 'binary') {
           sendInput('after')
         } else {

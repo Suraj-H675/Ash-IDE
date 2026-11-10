@@ -89,7 +89,9 @@ export function managedCwdMobileFixture(runtime: OrcaRuntimeService, directory: 
     name: string,
     capabilities: readonly RuntimeCapability[] = AGENT_LAUNCH_RUNTIME_CAPABILITIES
   ) {
-    const device = registry.addDevice(name, 'mobile')
+    // The retained local E2EE client is runtime-scoped; phone-scoped clients
+    // are rejected before any RPC or agent launch reaches this fixture.
+    const device = registry.addDevice(name, 'runtime')
     const phone = generateKeyPair()
     const sharedKey = deriveSharedKey(phone.secretKey, desktop.publicKey)
     const socket = new CwdSocket()

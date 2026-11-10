@@ -577,13 +577,28 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/rpc/device-key-auth.test.ts",
+      "sha256": "2f3f9c83430a84fddb6791834a05712e269594ab2d3c0a71200ad6cc95481ce3",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/rpc/dispatcher.ts",
       "sha256": "cbdb288f0117f138a146a38743f186758b6e55abdf5e0ea6033ddc97089717f1",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/rpc/methods/agent-launch-cwd-refusal.test.ts",
+      "sha256": "3c51f063006053224e94d5dbcf8d4b11c05be33a5404d24596eaa92ce3333b8e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/rpc/methods/index.ts",
       "sha256": "9473794b51fb84027a6ff15f35871ec3e68fc81e608e6975409d823c1246c42c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/managed-cwd-mobile.test-fixture.ts",
+      "sha256": "c7b49236f4ca8466f1da5c6900bfb47773a3ae19e33cbe705df8332188bcb120",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -602,8 +617,28 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/rpc/mobile-socket-wiring.test.ts",
+      "sha256": "99d99087e5a9b599f9ed78ff62d914b863080291f612493f5262bad7f237a310",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/mobile-socket-wiring.ts",
+      "sha256": "303e95cddde64522b045e1e2deaee2561f5250627ce7e9d35d7269b544f723a4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/rpc/rpc-caller-scope.test.ts",
       "sha256": "d5be16afd4866cb66b31468d14394e9c24ff7fc41744b1751c40c0f81ad4b4b4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-device-key-dispatch.test.ts",
+      "sha256": "7c816de32e3998ec130ce582e449e112ebc5dbbbf9d0e60f2978423c5c791eae",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-device-revocation.test.ts",
+      "sha256": "8f28d86798f2aa595fdcb4292e77b2d6792d56dbc0032ce710f31a993b69be61",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -617,8 +652,18 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-mobile-terminal-streaming.test.ts",
+      "sha256": "644249d798bbafec4dfa4e559a75b3db5c4ef05e1eed0febeba967cab7111236",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/rpc/server/runtime-rpc-state.ts",
       "sha256": "741064e4db68437919b37a58ba91607d08b6bb5c6c05df0127b5b5bd44902069",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-websocket-dispatch.ts",
+      "sha256": "bbc391cfa804873d10aa50c853512bc1ab8ebf5634d27d4c2570dbc720ed689a",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

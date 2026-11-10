@@ -87,7 +87,7 @@ describe('requests on a key-authenticated socket', () => {
   })
 })
 
-describe('pairing.registerDeviceKey over the dispatcher', () => {
+describe('excluded pairing.registerDeviceKey over the Ash dispatcher', () => {
   it.each(['runtime', 'mobile'] as const)(
     'forks a %s token row bound to the calling socket',
     async (scope) => {
@@ -134,16 +134,20 @@ describe('pairing.registerDeviceKey over the dispatcher', () => {
         }
       )
       const reply: unknown = JSON.parse(replies.at(-1)!)
-      expect(reply).toMatchObject({ id: 'register', ok: true, result: { credentialRevision: 0 } })
+      expect(reply).toMatchObject({
+        id: 'register',
+        ok: false,
+        error: { code: 'method_not_found' }
+      })
       expect(
         registry.listDevices().filter((row) => row.forkedFrom === legacy.deviceId)
-      ).toHaveLength(1)
+      ).toHaveLength(0)
     }
   )
 })
 
-describe('streams on an authenticated phone socket', () => {
-  it('re-project when the phone later updates its capabilities on that socket', async () => {
+describe('streams on an authenticated local browser socket', () => {
+  it('keeps local tab subscriptions and capability updates available after authenticated E2EE', async () => {
     const snapshot = {
       ...visibleSnapshot(),
       tabs: [
@@ -179,11 +183,11 @@ describe('streams on an authenticated phone socket', () => {
       wsPort: 0
     })
     await server.start()
-    const offer = server.createPairingOffer({ address: '127.0.0.1', name: 'p', scope: 'mobile' })
+    const offer = server.createPairingOffer({ address: '127.0.0.1', name: 'p', scope: 'runtime' })
     if (!offer.available) {
       throw new Error('WebSocket pairing unavailable')
     }
-    // Token auth carries no capabilities, as a phone's does before its advisory update.
+    // A local runtime client can see structured tabs even before advisory capability updates.
     const session = await authenticateMobileWsSession(offer.pairingUrl)
     const reader = createEncryptedWsResponseReader(session)
     try {
@@ -192,7 +196,10 @@ describe('streams on an authenticated phone socket', () => {
         method: 'session.tabs.subscribe',
         params: { worktree: 'id:wt-1' }
       })
-      expect(JSON.stringify(await reader.next('tabs'))).toContain('Open on desktop')
+      expect(await reader.next('tabs')).toMatchObject({
+        ok: true,
+        result: { type: 'snapshot' }
+      })
       sendEncryptedWsRequest(session, {
         id: 'caps',
         method: 'runtime.clientCapabilities.update',
@@ -200,9 +207,13 @@ describe('streams on an authenticated phone socket', () => {
           clientCapabilities: ['agent-session.structured.v1', 'agent-session.structured.claude.v1']
         }
       })
-      const recovered = await reader.next('tabs')
-      expect(recovered).toMatchObject({ result: { type: 'updated' } })
-      expect(JSON.stringify(recovered)).toContain('Claude chat')
+      expect(await reader.next('caps')).toMatchObject({
+        id: 'caps',
+        ok: true,
+        result: {
+          clientCapabilities: ['agent-session.structured.v1', 'agent-session.structured.claude.v1']
+        }
+      })
     } finally {
       reader.dispose()
       session.ws.close()

@@ -103,6 +103,19 @@ jobs:
             src/main/runtime/rpc/server/runtime-rpc-mobile-automations.test.ts \
             src/cli/runtime/serve-orcad-launch.test.ts \
             src/cli/excluded-scheduled-automation-registration.test.ts
+      - name: Test runtime-scoped WebSocket authentication and legacy mobile rejection
+        run: |
+          node node_modules/vitest/vitest.mjs run \
+            --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
+            --no-file-parallelism \
+            src/main/runtime/rpc/server/ash-mobile-websocket-auth-exclusion.test.ts \
+            src/main/runtime/rpc/mobile-socket-wiring.test.ts \
+            src/main/runtime/rpc/device-key-auth.test.ts \
+            src/main/runtime/rpc/web-session-pairing.test.ts \
+            src/main/runtime/rpc/server/runtime-rpc-device-revocation.test.ts \
+            src/main/runtime/rpc/server/runtime-rpc-device-key-dispatch.test.ts \
+            src/main/runtime/rpc/server/runtime-rpc-mobile-terminal-streaming.test.ts \
+            src/main/runtime/rpc/methods/agent-launch-cwd-refusal.test.ts
       - name: Test excluded renderer startup capability gates
         run: |
           node node_modules/vitest/vitest.mjs run \

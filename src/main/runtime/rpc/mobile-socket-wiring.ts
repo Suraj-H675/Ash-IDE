@@ -178,7 +178,12 @@ export class MobileSocketWiring {
     metadata: MobileSocketTransportMetadata
   ): void {
     const socket = this.authenticatedSockets.get(ws)
-    if (socket && !this.deviceRegistry.resolveAuthenticatedPrincipal(socket.device)) {
+    const currentDevice = socket
+      ? this.deviceRegistry.resolveAuthenticatedPrincipal(socket.device)
+      : null
+    if (socket && currentDevice?.scope !== 'runtime') {
+      // A historical mobile row must never regain RPC access, even if an external
+      // registry edit changes the scope after this connection authenticated.
       ws.close(4001, 'Unauthorized')
       this.handleClose(ws)
       return
@@ -197,9 +202,10 @@ export class MobileSocketWiring {
         outboundMemoryBudget: this.outboundMemoryBudget,
         resolveAuthenticatedDevice: (token) => {
           const device = this.deviceRegistry.validateToken(token)
-          if (!device) {
+          if (!device || device.scope !== 'runtime') {
             return null
           }
+          // Historical mobile bearer credentials are retained on disk, never admitted.
           // Outer relay authorization cannot choose Orca identity; E2EE resolves the device before readiness.
           if (metadata.transport === 'relay' && metadata.relayDeviceId !== device.deviceId) {
             return null
@@ -210,6 +216,11 @@ export class MobileSocketWiring {
           const lookup = this.deviceRegistry.lookupDeviceKey(deviceId)
           if (lookup.kind !== 'found') {
             return lookup
+          }
+          if (lookup.device.scope !== 'runtime') {
+            // "refused" avoids falsely telling a mobile client its existing key was
+            // revoked; do not erase or mutate historical credentials during denial.
+            return { kind: 'refused' }
           }
           // Enforce token auth's Relay binding; forks inherit it. Never answer unknown for an existing device or the client deletes its key.
           if (

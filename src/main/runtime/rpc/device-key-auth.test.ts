@@ -95,9 +95,42 @@ function freshRegistry(): DeviceRegistry {
 }
 
 describe('device-key authentication (host)', () => {
+  it('refuses both mobile-scoped bearer tokens and device-key proofs without revoking saved credentials', () => {
+    const registry = freshRegistry()
+    const mobile = registry.addDevice('Legacy phone', 'mobile')
+    const key = nacl.sign.keyPair()
+    const forked = registry.forkDeviceKey(
+      mobile.deviceId,
+      Buffer.from(key.publicKey).toString('base64'),
+      'Legacy phone key'
+    )
+    const { connect, ready } = harness(registry)
+
+    const bearer = connect(() => ({ deviceToken: mobile.token }))
+    expect(bearer.reply).toEqual({ type: 'e2ee_error', error: { code: 'unauthorized' } })
+    expect(bearer.ws.close).toHaveBeenCalledWith(4001, 'Unauthorized')
+    expect(bearer.socket).toBeUndefined()
+
+    const keyed = connect((hash) => ({
+      deviceId: forked.deviceId,
+      deviceProofB64: sign(key, 'auth', hash)
+    }))
+    expect(keyed.reply).toEqual({ type: 'e2ee_error', error: { code: 'unauthorized' } })
+    expect(keyed.ws.close).toHaveBeenCalledWith(4001, 'Unauthorized')
+    expect(keyed.socket).toBeUndefined()
+    expect(ready).toHaveLength(0)
+
+    // Existing paired phone rows are not silently revoked, rotated, or deleted.
+    expect(registry.validateToken(mobile.token)?.scope).toBe('mobile')
+    expect(registry.lookupDeviceKey(forked.deviceId)).toMatchObject({
+      kind: 'found',
+      device: { scope: 'mobile', deviceId: forked.deviceId }
+    })
+  })
+
   it('forks a token row per installation, then authenticates the key and keeps the token working', () => {
     const registry = freshRegistry()
-    const legacy = registry.addDevice('Phone', 'mobile')
+    const legacy = registry.addDevice('Browser', 'runtime')
     registry.updateLastSeen(legacy.deviceId)
     const { connect } = harness(registry)
 
@@ -116,7 +149,7 @@ describe('device-key authentication (host)', () => {
       credentialKind: 'device-key',
       forkedFrom: legacy.deviceId,
       name: 'Pixel evil',
-      scope: 'mobile'
+      scope: 'runtime'
     })
     expect(registry.getDevice(forked.deviceId)?.token).toBeUndefined()
 
@@ -142,7 +175,7 @@ describe('device-key authentication (host)', () => {
     })
     expect(otherFork.deviceId).not.toBe(forked.deviceId)
 
-    registry.rotatePendingDevice('New QR', 'mobile')
+    registry.rotatePendingDevice('New local browser QR', 'runtime')
     expect(
       connect((keyedHash) => ({
         deviceId: forked.deviceId,
@@ -154,7 +187,7 @@ describe('device-key authentication (host)', () => {
 
   it('refuses a keyed row presented with a token, a replayed proof and a wrong-purpose proof', () => {
     const registry = freshRegistry()
-    const legacy = registry.addDevice('Phone', 'mobile')
+    const legacy = registry.addDevice('Browser', 'runtime')
     const { connect } = harness(registry)
     const migrating = connect(() => ({ deviceToken: legacy.token }))
     const key = nacl.sign.keyPair()
@@ -190,8 +223,8 @@ describe('device-key authentication (host)', () => {
 
   it("accepts a fork over its token row's Relay binding and refuses other bindings without a revocation verdict", () => {
     const registry = freshRegistry()
-    const legacy = registry.addDevice('Phone', 'mobile')
-    const stranger = registry.addDevice('Other phone', 'mobile')
+    const legacy = registry.addDevice('Browser', 'runtime')
+    const stranger = registry.addDevice('Other browser', 'runtime')
     const key = nacl.sign.keyPair()
     const forked = registry.forkDeviceKey(
       legacy.deviceId,
