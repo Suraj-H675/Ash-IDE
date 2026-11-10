@@ -183,6 +183,13 @@ describe.skipIf(process.platform === 'win32')('Claude managed profile session ro
     expect(nextLaunch).not.toBeNull()
     expect(nextLaunch?.path).not.toBe(pin?.path)
     expect(readFileSync(nextLaunch!.path, 'utf8')).toBe(`${profileB.home}\n`)
+    // Each issued pin owns an open inode lease. Closing through the public
+    // cleanup path avoids Node 24's garbage-collected FileHandle exception
+    // after this test removes its disposable profile directory.
+    pin!.cleanupIfUnspawned()
+    nextLaunch!.cleanupIfUnspawned()
+    expect(() => lstatSync(pin!.path)).toThrow()
+    expect(() => lstatSync(nextLaunch!.path)).toThrow()
   })
 
   it('rejects post-assembly native environment changes to the pinned route', async () => {

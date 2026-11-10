@@ -21,6 +21,10 @@ Renderer default status is unavailable to avoid a first-frame actionable update 
 - Provenance **PASS**: 33,506 pinned upstream source files, 254 adapted Ash file hashes, 8,260 removals, unchanged source MIT license digest.
 - CI foundation workflow now includes both new tests in the hosted Node-forks steps.
 
+### Hosted-runner regression correction
+
+The first code-tip hosted CI run `42801504872` failed at the pre-existing pinned runtime suite despite **347 passing tests**. Node 24 reported two unhandled `ERR_INVALID_STATE` garbage-collected `FileHandle` exceptions originating in `claude-session-profile-routing-pin.test.ts`. Its first test issued **two** private pin leases and forgot their cleanup, leaving open descriptors after the temporary profile directory was deleted. This feature closes both via their existing public `cleanupIfUnspawned` API and asserts their paths are gone; production Claude pinning logic is unchanged. The exact pinned foundation runner was rerun locally with **39/39 suites, 347/347 tests passing and zero unhandled exceptions**. Hosted CI on the new final tip is still a separate gate.
+
 ## Native Wayland evidence, exact code commit
 
 A real Electron source app launched on Arch Linux/Hyprland native Wayland with a fresh isolated private profile at `/tmp/ash-gui-ready-qa-PgOP4W/`: private HOME/XDG dirs, Ash userData, browser state, CODEX_HOME and CLAUDE_CONFIG_DIR. No ordinary user repository, credentials, SSH config, foreign hooks or app state were loaded/changed.
