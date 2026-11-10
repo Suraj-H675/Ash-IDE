@@ -77,6 +77,15 @@ jobs:
             src/main/providers/accounts/agent-auth-restart-preservation.test.ts \
             src/main/startup/ash-windows-installer-ownership.test.ts \
             src/main/runtime/rpc/methods/terminal/ash-agent-teams-rpc-disabled.test.ts
+      # Native shell readiness in a PTY requires the Node fork worker here.
+      # The Bun-driven node-runtime pool has no reliable shell data/exit events
+      # for this fixture; keep the existing foundation suite on its pinned runner.
+      - name: Test Claude runtime-controller native PTY routing
+        run: |
+          node node_modules/vitest/vitest.mjs run \
+            --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
+            --no-file-parallelism \
+            src/main/ipc/pty/runtime/claude-session-profile-routing-pin.runtime-controller.node-pty.test.ts
       - name: Build the Ash CLI
         run: ORCA_CLI_BUILD_COMPILER=tsrs node config/scripts/cli-build/build-cli.mjs
       - name: Build the Electron desktop bundle
