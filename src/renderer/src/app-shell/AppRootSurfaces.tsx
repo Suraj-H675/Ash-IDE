@@ -11,9 +11,7 @@ import NewWorkspaceComposerModal from '../components/NewWorkspaceComposerModal'
 import { CrashReportDialog } from '../components/crash-report/CrashReportDialog'
 import { MarkdownTemplatePicker } from '../components/editor/markdown/documents/MarkdownTemplatePicker'
 import RecentTabSwitcher from '../components/tab-bar/RecentTabSwitcher'
-import { StarNagAgentValueMomentObserver } from '../components/star-nag/StarNagAgentValueMomentObserver'
 import { NativeChatResumeOnRestartModal } from '../components/NativeChatResumeRuntimeModal'
-import { StarNagToastHost } from '../components/star-nag/StarNagToastHost'
 import { TelemetryFirstLaunchSurface } from '../components/TelemetryFirstLaunchSurface'
 import { ZoomOverlay } from '../components/ZoomOverlay'
 import { WslMoveDialogHost } from '../components/wsl-move/WslMoveDialog'
@@ -306,10 +304,6 @@ export const AppRootSurfaces = memo(function AppRootSurfaces(props: {
       <OverlayBoundary boundaryId="overlay.native-chat-resume-on-restart" resetKey={activeView}>
         <NativeChatResumeOnRestartModal />
       </OverlayBoundary>
-      <OverlayBoundary boundaryId="overlay.star-nag-toast" resetKey={activeView}>
-        <StarNagToastHost />
-      </OverlayBoundary>
-      <StarNagAgentValueMomentObserver />
       {/* Mount once per session; the internal gate selects pre-telemetry users (telemetry-plan.md §First-launch experience). */}
       <OverlayBoundary boundaryId="overlay.telemetry-first-launch" resetKey={telemetryOptedIn}>
         <TelemetryFirstLaunchSurface />

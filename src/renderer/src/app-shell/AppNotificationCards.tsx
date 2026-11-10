@@ -3,7 +3,6 @@ import type { TopLevelView } from '../../../shared/ui-chrome-types'
 import { lazyWithRetry as lazy } from '@/lib/lazy-with-retry'
 import { CodexSharedSettingsNoticeCard } from '../components/CodexSharedSettingsNoticeCard'
 import { NotificationCardStack } from '../components/NotificationCardStack'
-import { StarNagCard } from '../components/StarNagCard'
 import { OverlayBoundary } from './app-root-surface-boundaries'
 
 const ChatUiHereCornerCard = lazy(() =>
@@ -43,9 +42,6 @@ export function AppNotificationCards({
           </OverlayBoundary>
         </Suspense>
       ) : null}
-      <OverlayBoundary boundaryId="overlay.star-nag" resetKey={activeView}>
-        <StarNagCard />
-      </OverlayBoundary>
       <OverlayBoundary boundaryId="overlay.codex-shared-settings-notice" resetKey={activeView}>
         <CodexSharedSettingsNoticeCard />
       </OverlayBoundary>

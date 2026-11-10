@@ -4,7 +4,6 @@ import { translate } from '@/i18n/i18n'
 import { searchKeywords, translateSearchKeyword } from '../search/settings-search-keywords'
 import { createLocalizedCatalog } from '@/i18n/localized-catalog'
 import { getGeneralProjectRuntimeSearchEntries } from './project-runtime/general-project-runtime-search'
-import { getGeneralSupportSearchEntries } from './general-support-search'
 import { getUpdateDelayDescription, getUpdateDelayTitle } from '../updates/update-delay-copy'
 
 export const getGeneralWorkspaceSearchEntries = createLocalizedCatalog(() => [
@@ -279,7 +278,6 @@ export function getGeneralPaneSearchEntries(
     ...(options.includeProjectRuntime === false ? [] : getGeneralProjectRuntimeSearchEntries()),
     ...getGeneralEditorSearchEntries(),
     ...getGeneralCliSearchEntries(),
-    ...getGeneralUpdateSearchEntries(),
-    ...getGeneralSupportSearchEntries()
+    ...getGeneralUpdateSearchEntries()
   ]
 }

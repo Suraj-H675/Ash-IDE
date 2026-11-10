@@ -3,7 +3,6 @@ import type { GlobalSettings } from '../../../../../shared/global-settings-types
 import { useAppStore } from '../../../store/index'
 import { CliSection } from '../cli/install/CliSection'
 import { GeneralEditorSettingsSection } from '../editor/GeneralEditorSettingsSection'
-import { GeneralSupportSection } from './GeneralSupportSection'
 import { GeneralUpdateSettingsSection } from '../updates/GeneralUpdateSettingsSection'
 import { GeneralWorkspaceSettingsSection } from './GeneralWorkspaceSettingsSection'
 import {
@@ -13,7 +12,6 @@ import {
   getGeneralWorkspaceSearchEntries
 } from './general-search'
 import { getGeneralEditorSearchEntries } from '../editor/general-editor-search'
-import { getGeneralSupportSearchEntries } from './general-support-search'
 import { getGeneralProjectRuntimeSearchEntries } from './project-runtime/general-project-runtime-search'
 import { RecentTabOrderControl } from '../appearance/RecentTabOrderControl'
 import { SettingsSectionStack } from '../section-layout/SettingsSectionStack'
@@ -261,17 +259,11 @@ export function GeneralPane({
     matchesSettingsSearch(searchQuery, getGeneralUpdateSearchEntries()) ? (
       <GeneralUpdateSettingsSection key="updates" />
     ) : null
-    // Render Support separately so its placeholder/divider can collapse without leaving a dangling separator.
   ]
 
   return (
     <div className="space-y-6">
       <SettingsSectionStack sections={visibleSections} spacing="section" />
-      {matchesSettingsSearch(searchQuery, getGeneralSupportSearchEntries()) ? (
-        <GeneralSupportSection
-          hasPrecedingSections={visibleSections.some((section) => section !== null)}
-        />
-      ) : null}
     </div>
   )
 }

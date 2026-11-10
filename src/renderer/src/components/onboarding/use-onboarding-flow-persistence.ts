@@ -123,12 +123,7 @@ export function useCloseWith({ onOnboardingChange, startTimeRef, setError }: Clo
           total_duration_ms: total
         })
       }
-      if (outcome === 'completed') {
-        // Wait until the next commit can unmount onboarding before notifying star nag.
-        window.setTimeout(() => {
-          void window.api.starNag.onboardingCompleted()
-        }, 0)
-      } else if (outcome === 'dismissed') {
+      if (outcome === 'dismissed') {
         trackOnboardingDismissed(lastStepReached, dismissedExtras)
       }
       return true

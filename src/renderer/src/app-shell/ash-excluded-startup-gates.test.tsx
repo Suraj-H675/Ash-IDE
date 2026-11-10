@@ -8,6 +8,7 @@ import { runWslMoveRendererStoreRewrites } from '../lib/wsl-move-renderer-store-
 import { jiraStatusForTarget } from '../runtime/runtime-jira-project-client'
 import { linearStatusForTarget } from '../runtime/runtime-linear-client'
 import { sanitizeHydratedActiveView } from '../store/slices/ui/ui-slice-hydration-sanitizers'
+import { getGeneralPaneSearchEntries } from '../components/settings/general/general-search'
 
 describe('Ash excluded desktop startup capabilities', () => {
   let priorApi: PropertyDescriptor | undefined
@@ -143,5 +144,17 @@ describe('Ash excluded desktop startup capabilities', () => {
     expect(sanitizeHydratedActiveView('automations')).toBe('terminal')
     expect(sanitizeHydratedActiveView('settings')).toBe('settings')
     expect(sanitizeHydratedActiveView('terminal')).toBe('terminal')
+  })
+
+  it('does not advertise the inherited Orca GitHub-star promotion in settings search', () => {
+    const entries = getGeneralPaneSearchEntries()
+    expect(
+      entries.some((entry) =>
+        /star orca|support the project with a github star/i.test(
+          [entry.title, entry.description, ...(entry.keywords ?? [])].join(' ')
+        )
+      )
+    ).toBe(false)
+    expect(entries.length).toBeGreaterThan(0)
   })
 })
