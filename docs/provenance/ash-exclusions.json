@@ -41314,6 +41314,41 @@
       "path": "src/wsl-guest/wsl-install-plugins-handler.test.ts",
       "sourceSha256": "083df7566c1abd4456c301b1a06eb2887c0b04d059bd0ced237849c9870ffc71",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/preload/api/feedback-bridge.ts",
+      "sourceSha256": "a2474e67ea630c9e6d7edc380ddf23fda473eb51e8c10928fc75db3f7a9d072b",
+      "reason": "Ash M8 exclusion: removed unmounted upstream vendor-feedback submission UI/attachment helper or unsafe preload submit bridge. Ash retains local diagnostic review and user-directed crash copy; source is recoverable from the pinned Orca snapshot."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/sidebar-feedback/SidebarFeedbackDialog.tsx",
+      "sourceSha256": "79c55826c0b32d351c1e55040183328679afecd28771e001ef1996b7024b2c7f",
+      "reason": "Ash M8 exclusion: removed unmounted upstream vendor-feedback submission UI/attachment helper or unsafe preload submit bridge. Ash retains local diagnostic review and user-directed crash copy; source is recoverable from the pinned Orca snapshot."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/sidebar-feedback/SidebarFeedbackImageAttachments.tsx",
+      "sourceSha256": "568efffabc568ee1905a34b33092cbc98ad690586589dc2d701fc48e62122c29",
+      "reason": "Ash M8 exclusion: removed unmounted upstream vendor-feedback submission UI/attachment helper or unsafe preload submit bridge. Ash retains local diagnostic review and user-directed crash copy; source is recoverable from the pinned Orca snapshot."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/sidebar-feedback/sidebar-feedback-draft.test-fixture.ts",
+      "sourceSha256": "450ae961e03ae55174fd83a87ab2ba2dfbf58182e14ae7dac61fe08ef9d51004",
+      "reason": "Ash M8 exclusion: removed unmounted upstream vendor-feedback submission UI/attachment helper or unsafe preload submit bridge. Ash retains local diagnostic review and user-directed crash copy; source is recoverable from the pinned Orca snapshot."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/sidebar-feedback/use-feedback-image-drop.ts",
+      "sourceSha256": "a7810ccab941e2822041d8d52b1ad39c3f73723e485f3627b9b3f865da0f6c61",
+      "reason": "Ash M8 exclusion: removed unmounted upstream vendor-feedback submission UI/attachment helper or unsafe preload submit bridge. Ash retains local diagnostic review and user-directed crash copy; source is recoverable from the pinned Orca snapshot."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/sidebar-feedback/use-sidebar-feedback-environment-prefill.ts",
+      "sourceSha256": "5f1362a166065f16af81a7095a7117001f1b923fbb5b073cc22e255e71bbafa5",
+      "reason": "Ash M8 exclusion: removed unmounted upstream vendor-feedback submission UI/attachment helper or unsafe preload submit bridge. Ash retains local diagnostic review and user-directed crash copy; source is recoverable from the pinned Orca snapshot."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/sidebar-feedback/use-sidebar-feedback-images.ts",
+      "sourceSha256": "11086f9eeb5bb8a35e621311fdee7560cc05f3a98f850645f7eedf420db8e636",
+      "reason": "Ash M8 exclusion: removed unmounted upstream vendor-feedback submission UI/attachment helper or unsafe preload submit bridge. Ash retains local diagnostic review and user-directed crash copy; source is recoverable from the pinned Orca snapshot."
     }
   ]
 }

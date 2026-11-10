@@ -872,8 +872,18 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/preload/api/crash-report-api.ts",
+      "sha256": "b5501b3044e78bf122abaa487422166ad1bcdde2bc37c8a3719cb6dda35629bc",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/preload/api-types.ts",
+      "sha256": "ac8bc03daf3b193673e1f852a5d1c85e21b814217e812a90922b22fd80d6ebf8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/preload/index.ts",
-      "sha256": "b2ba2f7d769f1065e7a69caaa72e3ece7aaf3aa2f783264cbe8c38d790bdd67d",
+      "sha256": "4da806227222652f90a2e7ced175e9fe0d6c6770dc9cf4f25bdf3b072d75f3cf",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
