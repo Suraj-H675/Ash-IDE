@@ -38,6 +38,10 @@ import type {
   ClaudeShellEntryEnvironmentWitness,
   ClaudeShellEntryLaunchContext
 } from './claude-shell-entry-environment-witness'
+import type {
+  ClaudeManagedProfileRouteSelection,
+  ClaudeSessionProfileRoutingPin
+} from './claude-session-profile-routing-pin'
 
 export type RuntimePtySpawnState = {
   deps: PtyRuntimeControllerDeps
@@ -54,6 +58,8 @@ export type RuntimePtySpawnState = {
   correctStartupCwd?: string
   provider: IPtyProvider
   isClaudeLaunch: boolean
+  claudeManagedProfileRouteSelection: ClaudeManagedProfileRouteSelection | null
+  claudeSessionProfileRoutingPin: ClaudeSessionProfileRoutingPin | null
   terminalRuntimeOptions: { shellOverride?: string; terminalWindowsWslDistro?: string | null }
   daemonShellOverride: string | undefined
   isDaemonHostSpawn: boolean
@@ -206,6 +212,8 @@ export function createRuntimePtySpawnState(
     startupCwdFallback: undefined,
     provider: localProvider,
     isClaudeLaunch: false,
+    claudeManagedProfileRouteSelection: null,
+    claudeSessionProfileRoutingPin: null,
     terminalRuntimeOptions: {},
     daemonShellOverride: undefined,
     isDaemonHostSpawn: false,

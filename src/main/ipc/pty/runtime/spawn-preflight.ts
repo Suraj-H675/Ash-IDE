@@ -1,6 +1,7 @@
 import { withClaudeProfileTerminalEnv } from '../../../claude-accounts/claude-profile-installed-router'
 import type { PtySpawnResult } from '../../../providers/pty-provider-contract'
 import { LocalPtyProvider } from '../../../providers/local-pty/local-pty-provider'
+import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import { isValidTerminalTabId } from '../../../../shared/workspace-layout/terminal-tab-id'
 import { isTerminalLeafId } from '../../../../shared/workspace-layout/stable-pane-id'
 import { getProvider } from '../provider/registry'
@@ -29,6 +30,8 @@ import {
   hasCallerClaudeShellEnvironmentOverride,
   prepareClaudeShellEntryEnvironmentWitness
 } from './claude-shell-entry-environment-witness'
+import { isDirectClaudeInvocation } from './committed-local-pty-spawn-evidence'
+import { captureClaudeManagedProfileRouteSelection } from './claude-session-profile-routing-pin'
 
 export async function prepareRuntimePtySpawn(
   ctx: RuntimePtySpawnState
@@ -112,6 +115,33 @@ export async function prepareRuntimePtySpawn(
   const claudeSelectionBeforePreparation = shouldObserveClaudeShellEntry
     ? beginClaudeShellEntryEnvironmentSnapshot(ctx.deps.getSettings)
     : null
+  const captureManagedProfileSelection =
+    shouldObserveClaudeShellEntry &&
+    !callerClaudeEnvironmentOverride &&
+    process.platform !== 'win32' &&
+    ctx.provider instanceof LocalPtyProvider &&
+    !ctx.isDaemonHostSpawn &&
+    args.connectionId == null &&
+    ctx.codexSelectionTarget.runtime === 'host' &&
+    !ctx.expectedWslDistro &&
+    args.sessionId === undefined &&
+    !ctx.preAdoptedStablePane &&
+    !args.adoptedStablePane &&
+    !args.shellOverride &&
+    !ctx.daemonShellOverride &&
+    args.commandDelivery !== 'renderer' &&
+    isDirectClaudeInvocation(args.command) &&
+    isDirectClaudeInvocation(args.launchConfig?.agentCommand)
+  if (captureManagedProfileSelection) {
+    let settings: GlobalSettings | undefined
+    try {
+      settings = ctx.deps.getSettings?.()
+    } catch {
+      settings = undefined
+    }
+    ctx.claudeManagedProfileRouteSelection =
+      await captureClaudeManagedProfileRouteSelection(settings)
+  }
   args.env = withClaudeProfileTerminalEnv(args.env, ctx.codexSelectionTarget)
   ctx.claudeAuth =
     ctx.isClaudeLaunch && ctx.deps.prepareClaudeAuth

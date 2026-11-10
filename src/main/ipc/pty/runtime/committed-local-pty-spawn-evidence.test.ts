@@ -567,6 +567,7 @@ describe('committed local PTY spawn evidence', () => {
       comparison: 'matched',
       selector: 'stable',
       selectedHostPointer: 'stable',
+      routingPointer: 'selected-host',
       accountEvidence: {
         status: 'missing',
         reason: 'no-independent-private-marker-verified-profile-binding'
@@ -624,6 +625,7 @@ describe('committed local PTY spawn evidence', () => {
         comparison: 'matched',
         selector: 'stable',
         selectedHostPointer: 'stable',
+        routingPointer: 'selected-host',
         accountEvidence: {
           status: 'missing',
           reason: 'no-independent-private-marker-verified-profile-binding'

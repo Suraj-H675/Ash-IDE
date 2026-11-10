@@ -73,6 +73,55 @@ describe.skipIf(process.platform !== 'linux')('node-pty local shell fallback obs
 })
 
 describe('native shell-entry observation isolation', () => {
+  it('checks the exact native environment immediately before node-pty dispatch', () => {
+    const env = {
+      CLAUDE_CONFIG_DIR: '/disposable/managed-home',
+      ORCA_CLAUDE_PROFILE_POINTER: '/disposable/private-pin'
+    }
+    const events: string[] = []
+    const proc = spawnPtyExecutable({
+      file: '/bin/sh',
+      args: ['-c', 'exit 0'],
+      cols: 80,
+      rows: 24,
+      cwd: '/disposable',
+      env,
+      assertNativeSpawnEnvironment: (nativeEnv) => {
+        events.push('assert')
+        expect(nativeEnv).toBe(env)
+      },
+      onNativeSpawnAttempt: () => events.push('attempt'),
+      ptySpawn: (_file, _args, options) => {
+        events.push('spawn')
+        expect(options.env).toBe(env)
+        return { pid: 84 } as never
+      }
+    })
+
+    expect(proc.pid).toBe(84)
+    expect(events).toEqual(['assert', 'attempt', 'spawn'])
+
+    const failedEvents: string[] = []
+    expect(() =>
+      spawnPtyExecutable({
+        file: '/bin/sh',
+        args: ['-c', 'exit 0'],
+        cols: 80,
+        rows: 24,
+        cwd: '/disposable',
+        env,
+        assertNativeSpawnEnvironment: () => failedEvents.push('assert'),
+        onNativeSpawnAttempt: () => failedEvents.push('attempt'),
+        onNativeSpawnCallFailure: () => failedEvents.push('failure'),
+        ptySpawn: () => {
+          failedEvents.push('spawn')
+          throw new Error('ambiguous native failure')
+        }
+      })
+    ).toThrow('ambiguous native failure')
+    expect(failedEvents).toEqual(['assert', 'attempt', 'spawn', 'failure'])
+  })
+
   it('passes only a frozen allowlisted copy; mutation and a thrown observer never change native env', () => {
     const nativeEnv = {
       CLAUDE_CONFIG_DIR: '/disposable/managed-home',

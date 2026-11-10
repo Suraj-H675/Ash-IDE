@@ -1,5 +1,6 @@
 import type { IPtyProvider, PtySpawnResult } from '../../../providers/pty-provider-contract'
 import { LocalPtyProvider } from '../../../providers/local-pty/local-pty-provider'
+import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import { makePaneKey, isTerminalLeafId } from '../../../../shared/workspace-layout/stable-pane-id'
 import { isValidTerminalTabId } from '../../../../shared/workspace-layout/terminal-tab-id'
 import {
@@ -16,7 +17,12 @@ import { isRuntimeWslBackgroundStart, type RuntimePtySpawnState } from './spawn-
 import { prepareAntigravityAccountForLaunch } from '../../../antigravity/native-account-launch'
 import { isFreshLocalClaudeShellEntryCandidate } from './committed-local-pty-spawn-evidence'
 import { attachLocalPtyShellEntryObserver } from '../../../providers/local-pty/local-pty-shell-entry-observer'
-import { createClaudeShellEntryEnvironmentObserver } from './claude-shell-entry-environment-witness'
+import {
+  createClaudeShellEntryEnvironmentObserver,
+  withClaudeShellEntrySessionPin
+} from './claude-shell-entry-environment-witness'
+import { createClaudeSessionProfileRoutingPin } from './claude-session-profile-routing-pin'
+import { CLAUDE_PROFILE_POINTER_ENV } from '../../../../shared/claude-profile-routing'
 
 export async function buildRuntimePtySpawnOptions(
   ctx: RuntimePtySpawnState
@@ -132,6 +138,44 @@ export async function buildRuntimePtySpawnOptions(
   }
   if (ctx.wslHoldReadAnchor !== undefined) {
     ctx.spawnOptions.wslHoldReadAnchor = ctx.wslHoldReadAnchor
+  }
+  if (ctx.claudeShellEntryContext && isFreshLocalClaudeShellEntryCandidate(ctx)) {
+    let currentSettings: GlobalSettings | undefined
+    try {
+      currentSettings = ctx.deps.getSettings?.()
+    } catch {
+      currentSettings = undefined
+    }
+    const pin = await createClaudeSessionProfileRoutingPin({
+      selection: ctx.claudeManagedProfileRouteSelection,
+      currentSettings,
+      auth: ctx.claudeAuth,
+      nativeSpawnEnv: ctx.spawnOptions.env,
+      callerEnvironmentOverride: ctx.claudeShellEntryContext.callerEnvironmentOverride,
+      envToDelete: ctx.spawnOptions.envToDelete
+    })
+    if (ctx.claudeManagedProfileRouteSelection && !pin) {
+      throw new Error('claude_session_profile_routing_pin_unavailable')
+    }
+    if (pin && ctx.spawnOptions.env) {
+      ctx.claudeSessionProfileRoutingPin = pin
+      const env = { ...ctx.spawnOptions.env, [CLAUDE_PROFILE_POINTER_ENV]: pin.path }
+      ctx.spawnOptions = {
+        ...ctx.spawnOptions,
+        env,
+        assertLocalPtySpawnEnvironment: (nativeEnv) => pin.assertNativeSpawnEnvironment(nativeEnv),
+        onLocalPtyNativeSpawnAttempt: () => pin.noteNativeSpawnAttempt(),
+        onLocalPtyNativeSpawnCallFailed: () => pin.noteNativeSpawnCallFailed(),
+        onLocalPtySpawnReturned: (ptyId, incarnationId) =>
+          pin.noteNativeSpawnReturned(ptyId, incarnationId),
+        onLocalPtyExit: (ptyId, incarnationId) => pin.cleanupOnPtyExit(ptyId, incarnationId)
+      }
+      ctx.env = env
+      ctx.claudeShellEntryContext = withClaudeShellEntrySessionPin(
+        ctx.claudeShellEntryContext,
+        pin.path
+      )
+    }
   }
   if (ctx.claudeShellEntryContext && isFreshLocalClaudeShellEntryCandidate(ctx)) {
     const capture = createClaudeShellEntryEnvironmentObserver(

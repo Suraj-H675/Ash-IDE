@@ -388,22 +388,22 @@
     },
     {
       "path": "src/main/ipc/pty/runtime/spawn-options.ts",
-      "sha256": "21c0287d9659d7b29de4b2749ca674983e834f8d880ff4e20697caf08bd8aea9",
+      "sha256": "80b71e0d5badd39ff3f49a74db94ebe6f0015fd06796e3ca358e2530ada4da43",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/main/ipc/pty/runtime/spawn-preflight.ts",
-      "sha256": "82abe8e3d12a7a51acc8f8579988404e9d69f327938220527b03f5ba6e1c3584",
+      "sha256": "5e5a363b99b4286066dca647d053333a0bef45e92e3a463062c717c379190d7f",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/main/ipc/pty/runtime/spawn-state.ts",
-      "sha256": "63d782ff3cd328094a97efb385bef2de8017fd7f06f0aafdc2e00fd710318c0b",
+      "sha256": "0cc4439250cd2ea5de6be40a8483341f39ab8a8a34a4d5d4af950cf1993a87c4",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/main/ipc/pty/runtime/spawn.ts",
-      "sha256": "c74bcda79b6d05677c027656c67684fa9867398a76efb634e9f5628354000f58",
+      "sha256": "6bf972135c5d2f3650b3312818b34da39865952f5f53855690d45399cb677026",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -478,12 +478,22 @@
     },
     {
       "path": "src/main/providers/local-pty/local-pty-executable-spawn.ts",
-      "sha256": "7079ef660a76e0c763b210c64aa6f463eb49a774ca772510a04beb43800f6c25",
+      "sha256": "77064654c73608c0909da0d9701186103a3d460a3d9aa624914f5f23378848a3",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/providers/local-pty/local-pty-session-activation.ts",
+      "sha256": "8c03a0bb1be9d9099e989d723448454f0594e416ffb75c123c485780c4b2ad1c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/main/providers/local-pty/local-pty-spawn.ts",
-      "sha256": "ff76c5c1182ae5abbadb3772009f8defd62236edb2b0aed79c2640ab45e7f3aa",
+      "sha256": "473fbc2abfe1f8968b477184f35a950fb2b57c8bb2724402707d05665a191994",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/providers/pty-provider-contract.ts",
+      "sha256": "164f4d0b6d34b7850eaae1dc86a450bfb5031fb8b17bca4f619e9fdc113035fc",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -884,6 +894,11 @@
     {
       "path": "src/shared/app-icon.ts",
       "sha256": "c281e4b97d06626102d9fe90467354174ccf9b3a8b4cc3ade7f02c5158578fb6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/claude-shell-function.ts",
+      "sha256": "4b6b43252989dd1c5170c7d199705103c736b428d471249e92f45ffb1dcb0daa",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

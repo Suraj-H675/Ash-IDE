@@ -180,6 +180,11 @@ export function activateLocalPtySession(args: {
     // Release the natural-exit ptmx fd now instead of waiting for GC (docs/fix-pty-fd-leak.md).
     destroyPtyProcess(proc, { alreadyKilled: wasTerminationRequested })
     ptyReportsChildExitStatus.delete(id)
+    try {
+      spawn.onLocalPtyExit?.(id, incarnationId)
+    } catch {
+      // Per-session cleanup must never interfere with PTY exit publication.
+    }
     const { onExit } = getOptions()
     onExit?.(id, exitCode, incarnationId, cause)
     for (const cb of exitListeners) {

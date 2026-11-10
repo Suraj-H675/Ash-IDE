@@ -109,6 +109,16 @@ export type PtySpawnOptions = {
   agentSessionCreateOperationId?: string
   /** Signals that the native process exists even if later publication fails. */
   onPtySpawnCommitted?: () => void
+  /** Native local PTY call was attempted; an exception from this boundary is ambiguous. */
+  onLocalPtyNativeSpawnAttempt?: () => void
+  /** The native call threw after dispatch; even a later fallback exit cannot prove cleanup safe. */
+  onLocalPtyNativeSpawnCallFailed?: () => void
+  /** Local native spawn returned a PTY generation; used only for host-owned per-session cleanup. */
+  onLocalPtySpawnReturned?: (ptyId: string, incarnationId: string) => void
+  /** Matching local node-pty exit; GUI detach and adoption do not call this. */
+  onLocalPtyExit?: (ptyId: string, incarnationId: string) => void
+  /** Final local native environment guard for a verified per-session Claude route pin. */
+  assertLocalPtySpawnEnvironment?: (env: Readonly<Record<string, string>>) => void
   /** Cancels only before physical dispatch; operation identity fences later ambiguity. */
   signal?: AbortSignal
 }

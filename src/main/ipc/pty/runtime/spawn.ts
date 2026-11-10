@@ -58,6 +58,8 @@ export async function spawnPtyFromRuntimeController(
       commitRuntimeSpawnHiddenDelivery(ctx)
       recordCommittedLocalPtySpawnEvidence(deps.runtime, ctx, committedOutcome)
     },
+    onOutcome: () => ctx.claudeSessionProfileRoutingPin?.cleanupIfUnspawned(),
+    releasePreparation: () => ctx.claudeSessionProfileRoutingPin?.cleanupIfUnspawned(),
     releaseHiddenMark: () => releaseRuntimeSpawnPreSpawnHiddenMark(ctx),
     adoption: () => ({ completed: args.adoptedStablePane })
   })

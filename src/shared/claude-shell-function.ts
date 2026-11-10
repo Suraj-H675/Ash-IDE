@@ -7,6 +7,16 @@ if [[ -n "\${ORCA_CLAUDE_PROFILE_POINTER:-}" && -n "\${__orca_claude_binary:-}" 
     # Why: a WSL pane's pointer is relative to the guest home, which the host cannot know at spawn.
     case "$__orca_claude_pointer" in '~/'*) __orca_claude_pointer="\${HOME:-}/\${__orca_claude_pointer#??}" ;; esac
     __orca_claude_home="$(cat "$__orca_claude_pointer" 2>/dev/null || :)"
+    # A live agent's Ash-private pointer is a fixed route, not the mutable
+    # selected-host selector. If lost or replaced with another account,
+    # refusing this invocation is safer than silently using System default.
+    case "$__orca_claude_pointer" in
+      */claude-profiles/session-pins/*.route)
+        if [ -z "$__orca_claude_home" ] || [ "$__orca_claude_home" != "\${ORCA_CLAUDE_INJECTED_CONFIG_DIR:-}" ]; then
+          return 1
+        fi
+        ;;
+    esac
     if [ -n "\${CLAUDE_CONFIG_DIR:-}" ] && [ "$CLAUDE_CONFIG_DIR" != "\${ORCA_CLAUDE_INJECTED_CONFIG_DIR:-}" ] &&
       { [ -z "\${ORCA_CLAUDE_USER_CONFIG_DIR:-}" ] || [ "\${CLAUDE_CONFIG_DIR%/}" != "\${ORCA_CLAUDE_USER_CONFIG_DIR%/}" ]; }; then
       command claude "$@"; return
@@ -37,6 +47,13 @@ if test -n "$ORCA_CLAUDE_PROFILE_POINTER"; and test "$__orca_claude_type" = file
     # Why: a WSL pane's pointer is relative to the guest home, which the host cannot know at spawn.
     set -l pointer (string replace -r '^~/' "$HOME/" -- "$ORCA_CLAUDE_PROFILE_POINTER")
     set -l profile (cat "$pointer" 2>/dev/null)
+    # Pinned agent routes fail closed if the file disappeared or now names a
+    # different home; generic shared selected-host fallback stays unchanged.
+    if string match -qr '/claude-profiles/session-pins/[^/]+[.]route$' -- "$pointer"
+      if test (count $profile) -ne 1; or test "$profile" != "$ORCA_CLAUDE_INJECTED_CONFIG_DIR"
+        return 1
+      end
+    end
     set -l own (string trim -r -c / -- "$ORCA_CLAUDE_USER_CONFIG_DIR")
     set -l current (string trim -r -c / -- "$CLAUDE_CONFIG_DIR")
     if test -n "$CLAUDE_CONFIG_DIR"; and test "$CLAUDE_CONFIG_DIR" != "$ORCA_CLAUDE_INJECTED_CONFIG_DIR"; and begin; test -z "$own"; or test "$current" != "$own"; end

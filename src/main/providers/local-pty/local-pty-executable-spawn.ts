@@ -123,6 +123,12 @@ export type ShellSpawnParams = {
   windowsFallbackAttempts?: WindowsShellSpawnAttempt[]
   /** Private in-memory observation of the env passed at native shell entry. */
   onNativeShellSpawnPhase?: NativeShellSpawnPhaseObserver
+  /** Final host-owned pre-dispatch guard; may reject before node-pty receives the env. */
+  assertNativeSpawnEnvironment?: (env: Readonly<Record<string, string>>) => void
+  /** Marks an ambiguous native boundary before node-pty can launch a process. */
+  onNativeSpawnAttempt?: () => void
+  /** A throw from the native dispatch may follow process creation and remains uncertain. */
+  onNativeSpawnCallFailure?: () => void
 }
 
 export type NativeShellSpawnPhaseObserver = (args: {
@@ -193,7 +199,10 @@ function spawnWindowsFallbackChain(
         env,
         ptySpawn,
         attempt: 'fallback',
-        onNativeShellSpawnPhase
+        onNativeShellSpawnPhase,
+        assertNativeSpawnEnvironment: params.assertNativeSpawnEnvironment,
+        onNativeSpawnAttempt: params.onNativeSpawnAttempt,
+        onNativeSpawnCallFailure: params.onNativeSpawnCallFailure
       })
       console.warn(
         `[pty] Primary shell "${params.shellPath}" failed (${primaryError}), fell back to "${attempt.shellPath}"`
@@ -212,7 +221,15 @@ function spawnWindowsFallbackChain(
 
 export type PtyExecutableSpawnParams = Pick<
   ShellSpawnParams,
-  'termName' | 'cols' | 'rows' | 'cwd' | 'env' | 'ptySpawn'
+  | 'termName'
+  | 'cols'
+  | 'rows'
+  | 'cwd'
+  | 'env'
+  | 'ptySpawn'
+  | 'assertNativeSpawnEnvironment'
+  | 'onNativeSpawnAttempt'
+  | 'onNativeSpawnCallFailure'
 > & {
   file: string
   args: string[]
@@ -232,7 +249,10 @@ export function spawnPtyExecutable(params: PtyExecutableSpawnParams): pty.IPty {
     env,
     ptySpawn,
     attempt = 'primary',
-    onNativeShellSpawnPhase
+    onNativeShellSpawnPhase,
+    assertNativeSpawnEnvironment,
+    onNativeSpawnAttempt,
+    onNativeSpawnCallFailure
   } = params
   const options = {
     name: termName,
@@ -243,7 +263,19 @@ export function spawnPtyExecutable(params: PtyExecutableSpawnParams): pty.IPty {
     ...windowsConptyDllOptions()
   }
   reportNativeShellSpawnPhase(onNativeShellSpawnPhase, 'before', attempt, env, file)
-  const proc = ptySpawn(file, args, options)
+  assertNativeSpawnEnvironment?.(env)
+  onNativeSpawnAttempt?.()
+  let proc: pty.IPty
+  try {
+    proc = ptySpawn(file, args, options)
+  } catch (error) {
+    try {
+      onNativeSpawnCallFailure?.()
+    } catch {
+      // Pin bookkeeping must not replace the native dispatch error.
+    }
+    throw error
+  }
   reportNativeShellSpawnPhase(onNativeShellSpawnPhase, 'after', attempt, env, file)
   return proc
 }
@@ -282,7 +314,10 @@ export function spawnShellWithFallback(params: ShellSpawnParams): ShellSpawnResu
           env,
           ptySpawn,
           attempt: 'primary',
-          onNativeShellSpawnPhase
+          onNativeShellSpawnPhase,
+          assertNativeSpawnEnvironment: params.assertNativeSpawnEnvironment,
+          onNativeSpawnAttempt: params.onNativeSpawnAttempt,
+          onNativeSpawnCallFailure: params.onNativeSpawnCallFailure
         }),
         shellPath,
         reportsChildExitStatus: hostReportsChildExitStatus(wrapped.file)
@@ -336,7 +371,10 @@ export function spawnShellWithFallback(params: ShellSpawnParams): ShellSpawnResu
           env,
           ptySpawn,
           attempt: 'fallback',
-          onNativeShellSpawnPhase
+          onNativeShellSpawnPhase,
+          assertNativeSpawnEnvironment: params.assertNativeSpawnEnvironment,
+          onNativeSpawnAttempt: params.onNativeSpawnAttempt,
+          onNativeSpawnCallFailure: params.onNativeSpawnCallFailure
         })
         console.warn(
           `[pty] Primary shell "${shellPath}" failed (${primaryError ?? 'unknown error'}), fell back to "${fallback}"`

@@ -36,6 +36,7 @@ export type ClaudeShellEntryLaunchContext = Readonly<{
   expectedConfigDirSha256: string | null
   inheritedConfigDirSha256: string | null
   preparedPointerPathSha256: string | null
+  sessionPinPathSha256: string | null
   selectionBeforePreparation: Fingerprint
   selectionAfterPreparation: Fingerprint
   pointerBeforePreparation: PointerSnapshot
@@ -61,6 +62,7 @@ export type ClaudeShellEntryEnvironmentWitness = Readonly<{
     | 'refused-pointer-change'
   selector: 'stable' | 'changed' | 'unavailable'
   selectedHostPointer: 'stable' | 'changed' | 'unavailable'
+  routingPointer: 'selected-host' | 'session-pin'
   accountEvidence: Readonly<{
     status: 'missing'
     reason: 'no-independent-private-marker-verified-profile-binding'
@@ -262,11 +264,19 @@ export function prepareClaudeShellEntryEnvironmentWitness(args: {
       ? sha256(process.env.CLAUDE_CONFIG_DIR)
       : null,
     preparedPointerPathSha256: pointerPath ? sha256(pointerPath) : null,
+    sessionPinPathSha256: null,
     selectionBeforePreparation: args.before.selector,
     selectionAfterPreparation: args.after.selector,
     pointerBeforePreparation: args.before.pointer,
     pointerAfterPreparation: args.after.pointer
   })
+}
+
+export function withClaudeShellEntrySessionPin(
+  context: ClaudeShellEntryLaunchContext,
+  path: string
+): ClaudeShellEntryLaunchContext {
+  return Object.freeze({ ...context, sessionPinPathSha256: sha256(path) })
 }
 
 function sameFingerprint(left: Fingerprint, right: Fingerprint): boolean | null {
@@ -315,6 +325,12 @@ function stablePointer(
 ): 'stable' | 'changed' | 'unavailable' {
   if (before.pointerEnvAmbiguous || after.pointerEnvAmbiguous) {
     return 'unavailable'
+  }
+  if (context.sessionPinPathSha256 !== null) {
+    return before.pointerEnvPathSha256 === context.sessionPinPathSha256 &&
+      after.pointerEnvPathSha256 === context.sessionPinPathSha256
+      ? 'stable'
+      : 'changed'
   }
   const prepared = samePointer(context.pointerBeforePreparation, context.pointerAfterPreparation)
   const beforeSpawn = samePointer(context.pointerAfterPreparation, before.runtime.pointer)
@@ -380,11 +396,14 @@ function makeWitness(
   let comparison: ClaudeShellEntryEnvironmentWitness['comparison']
   if (context.callerEnvironmentOverride) {
     comparison = 'refused-caller-override'
-  } else if (selector === 'changed') {
+  } else if (selector === 'changed' && context.sessionPinPathSha256 === null) {
     comparison = 'refused-selection-change'
   } else if (selectedHostPointer === 'changed') {
     comparison = 'refused-pointer-change'
-  } else if (selector === 'unavailable' || selectedHostPointer === 'unavailable') {
+  } else if (
+    (selector === 'unavailable' || selectedHostPointer === 'unavailable') &&
+    context.sessionPinPathSha256 === null
+  ) {
     comparison = 'unavailable'
   } else if (after.configDirStatus === 'missing') {
     comparison = 'missing'
@@ -419,6 +438,7 @@ function makeWitness(
     comparison,
     selector,
     selectedHostPointer,
+    routingPointer: context.sessionPinPathSha256 === null ? 'selected-host' : 'session-pin',
     accountEvidence: Object.freeze({
       status: 'missing',
       reason: 'no-independent-private-marker-verified-profile-binding'

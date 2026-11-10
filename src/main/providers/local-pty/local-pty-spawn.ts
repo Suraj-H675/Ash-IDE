@@ -99,6 +99,7 @@ export async function spawnLocalPty(
       plan,
       env: finalEnv
     })
+    args.assertLocalPtySpawnEnvironment?.(finalEnv)
 
     const fallbackHistory = historyResult?.historyDir ? historyResult : undefined
     const [spawn] = await Promise.all([loadLocalPtyRuntimeSpawn(), prepareMacosTccLoginShell()])
@@ -130,6 +131,9 @@ export async function spawnLocalPty(
         onBeforeFallbackSpawn: fallbackHistory
           ? (env, fallbackShell) => updateHistoryEnvForFallback(env, fallbackShell, fallbackHistory)
           : undefined,
+        assertNativeSpawnEnvironment: args.assertLocalPtySpawnEnvironment,
+        onNativeSpawnAttempt: args.onLocalPtyNativeSpawnAttempt,
+        onNativeSpawnCallFailure: args.onLocalPtyNativeSpawnCallFailed,
         ...(shellEntryObserver
           ? {
               onNativeShellSpawnPhase: ({ phase, attempt, env }) =>
@@ -139,6 +143,7 @@ export async function spawnLocalPty(
         windowsFallbackAttempts: plan.windowsFallbackAttempts
       })
       const spawnResult = pendingSpawn instanceof Promise ? await pendingSpawn : pendingSpawn
+      args.onLocalPtySpawnReturned?.(id, incarnationId)
       try {
         checkCanceled()
       } catch (error) {
