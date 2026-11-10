@@ -897,6 +897,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/lib/wsl-drive-unc-renderer-store-rewrites.ts",
+      "sha256": "0557413e54eed57085f29e8f79c63fb7814e405d57df678139e792f30dc650ec",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/lib/wsl-move-renderer-store-rewrites.ts",
       "sha256": "6561d3ae560125dcac71d4b59341b90944ba5222216cf47c372d2a1ec3ec9548",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."

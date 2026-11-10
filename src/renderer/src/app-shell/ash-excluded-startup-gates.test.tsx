@@ -3,6 +3,7 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { _skillFreshnessCacheForTests, useSkillFreshness } from '../hooks/useSkillFreshness'
+import { runWslDriveUncRendererStoreRewrites } from '../lib/wsl-drive-unc-renderer-store-rewrites'
 import { runWslMoveRendererStoreRewrites } from '../lib/wsl-move-renderer-store-rewrites'
 import { sanitizeHydratedActiveView } from '../store/slices/ui/ui-slice-hydration-sanitizers'
 
@@ -16,6 +17,7 @@ describe('Ash excluded desktop startup capabilities', () => {
     throw new Error('skills:bundledPlan should never run on local Ash')
   })
   const listPendingWslRewrites = vi.fn(async () => [])
+  const listPendingDriveUncRewrites = vi.fn(async () => [])
 
   beforeEach(() => {
     vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
@@ -25,12 +27,14 @@ describe('Ash excluded desktop startup capabilities', () => {
     host = null
     bundledPlan.mockClear()
     listPendingWslRewrites.mockClear()
+    listPendingDriveUncRewrites.mockClear()
     Object.defineProperty(window, 'api', {
       configurable: true,
       value: {
         platform: { get: () => ({ platform }) },
         skills: { bundledPlan },
-        wslMove: { listPendingRendererRewrites: listPendingWslRewrites }
+        wslMove: { listPendingRendererRewrites: listPendingWslRewrites },
+        wslDriveUnc: { listPendingRendererRewrites: listPendingDriveUncRewrites }
       }
     })
     _skillFreshnessCacheForTests.reset()
@@ -77,6 +81,17 @@ describe('Ash excluded desktop startup capabilities', () => {
     platform = 'win32'
     await runWslMoveRendererStoreRewrites()
     expect(listPendingWslRewrites).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not invoke WSL drive UNC conversion on Linux/macOS; Windows migration remains intact', async () => {
+    await runWslDriveUncRendererStoreRewrites()
+    platform = 'darwin'
+    await runWslDriveUncRendererStoreRewrites()
+    expect(listPendingDriveUncRewrites).not.toHaveBeenCalled()
+
+    platform = 'win32'
+    await runWslDriveUncRendererStoreRewrites()
+    expect(listPendingDriveUncRewrites).toHaveBeenCalledTimes(1)
   })
 
   it('does not restore removed mobile or bundled-skills pages as the active view', () => {

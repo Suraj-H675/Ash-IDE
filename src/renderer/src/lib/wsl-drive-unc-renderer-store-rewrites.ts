@@ -94,6 +94,11 @@ async function rewriteConversion(conversion: WslDriveUncPendingRendererRewrite):
 
 /** Never throws. */
 export async function runWslDriveUncRendererStoreRewrites(): Promise<void> {
+  // UNC drive conversion only exists on Windows. Ash has no Linux/macOS handler
+  // for this legacy migration; do not invoke the absent IPC at desktop startup.
+  if (window.api.platform.get().platform !== 'win32') {
+    return
+  }
   try {
     const conversions = await window.api.wslDriveUnc.listPendingRendererRewrites()
     for (const conversion of conversions) {
