@@ -81,6 +81,7 @@ export type UpdateInstallBlock = {
 
 export type UpdateStatus = (
   | { state: 'idle' }
+  | { state: 'unavailable'; reason: 'source-build' | 'not-configured' }
   | { state: 'checking'; userInitiated?: boolean }
   | {
       state: 'available'

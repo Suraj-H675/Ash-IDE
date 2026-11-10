@@ -83,6 +83,7 @@ export abstract class UpdaterStatus extends BaseUpdaterState {
     }
     if (
       status.state === 'idle' ||
+      status.state === 'unavailable' ||
       status.state === 'checking' ||
       status.state === 'not-available'
     ) {

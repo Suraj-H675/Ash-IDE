@@ -35,6 +35,7 @@ import { repairDuplicatePtyPanesOnStart } from '../runtime/moved-pane-owner-reke
 import { registerGitHubPRRefreshHandlers } from '../ipc/source-control/github-pr-refresh-handlers'
 import { registerRateLimitHandlers } from '../ipc/rate-limits'
 import { registerProviderNativeSkillDiscoveryHandler } from '../ipc/skills'
+import { registerAshUpdaterReadOnlyHandlers } from '../ipc/ash-updater-status'
 
 // Headless serve has no first window; timer fallback must still sweep trash.
 const WORKTREE_TRASH_SWEEP_FALLBACK_MS = 15_000
@@ -62,6 +63,7 @@ export async function initializeReadyRuntimeServices(): Promise<void> {
   const runtime = initializeMainProcessRuntime()
   configureRuntimeServices(runtime)
   registerProviderNativeSkillDiscoveryHandler(store, runtime)
+  registerAshUpdaterReadOnlyHandlers()
   installFirstWorkRenameHookSubscription()
   state.agentBrowserBridge = new AgentBrowserBridge(browserManager)
   runtime.setAgentBrowserBridge(state.agentBrowserBridge)

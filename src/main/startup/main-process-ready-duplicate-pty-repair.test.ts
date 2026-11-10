@@ -99,6 +99,7 @@ vi.mock('../ipc/source-control/github-pr-refresh-handlers', () => ({
 }))
 vi.mock('../ipc/rate-limits', () => ({ registerRateLimitHandlers: vi.fn() }))
 vi.mock('../ipc/skills', () => ({ registerProviderNativeSkillDiscoveryHandler: vi.fn() }))
+vi.mock('../ipc/ash-updater-status', () => ({ registerAshUpdaterReadOnlyHandlers: vi.fn() }))
 vi.mock('./branch-rename-hook', () => ({ installFirstWorkRenameHookSubscription: vi.fn() }))
 vi.mock('./main-process-account-services', () => ({
   initializeMainProcessAccountServices: vi.fn()
@@ -121,6 +122,7 @@ import { initializeReadyRuntimeServices } from './main-process-ready-runtime'
 import { registerGitHubPRRefreshHandlers } from '../ipc/source-control/github-pr-refresh-handlers'
 import { registerRateLimitHandlers } from '../ipc/rate-limits'
 import { registerProviderNativeSkillDiscoveryHandler } from '../ipc/skills'
+import { registerAshUpdaterReadOnlyHandlers } from '../ipc/ash-updater-status'
 
 const TAB = 'tab-1'
 const KEPT = '11111111-1111-4111-8111-111111111111'
@@ -211,4 +213,5 @@ it('finishes the duplicate-terminal repair before ready services resolve, even b
     store,
     fixture.state.runtime
   )
+  expect(registerAshUpdaterReadOnlyHandlers).toHaveBeenCalledOnce()
 })

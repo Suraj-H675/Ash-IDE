@@ -55,6 +55,33 @@ export function GeneralUpdateSettingsSection(): React.JSX.Element {
     }
   }, [])
 
+  // Until Ash has an independently verified release feed, authenticated
+  // artifact verification, and safe runtime-preserving rollback, the inherited
+  // Orca update controls must not offer actions that Main intentionally omits.
+  if (updateStatus.state === 'unavailable') {
+    return (
+      <section key="updates" className="space-y-4">
+        <SettingsSubsectionHeader
+          title="Updates"
+          description={`Current Ash IDE version: ${appVersion ?? '…'}`}
+        />
+        <SearchableSetting
+          title="Update availability"
+          description="Ash IDE updates require an independently verified Ash release."
+          keywords={['update', 'version', 'release', 'manual']}
+        >
+          <p className="text-xs text-muted-foreground">
+            {updateStatus.reason === 'source-build'
+              ? 'This development build cannot check for or install app updates.'
+              : 'Automatic updates are not configured for this Ash IDE package.'}{' '}
+            Install a verified Ash IDE release manually when one is available. Running terminals and
+            agent sessions will not be interrupted by an automatic update.
+          </p>
+        </SearchableSetting>
+      </section>
+    )
+  }
+
   const handleRestartToUpdate = (): void => {
     // quitAndInstall schedules quitting and resolves early; only broken IPC can reject here.
     void window.api.updater.quitAndInstall().catch(console.error)

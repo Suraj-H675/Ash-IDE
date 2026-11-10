@@ -93,14 +93,16 @@ jobs:
             --no-file-parallelism \
             src/main/ipc/source-control/github-pr-refresh-handlers.test.ts \
             src/main/ipc/rate-limits.test.ts \
-            src/main/ipc/provider-native-skill-discovery.test.ts
+            src/main/ipc/provider-native-skill-discovery.test.ts \
+            src/main/ipc/ash-updater-status.test.ts
       - name: Test excluded renderer startup capability gates
         run: |
           node node_modules/vitest/vitest.mjs run \
             --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
             --no-file-parallelism \
             src/renderer/src/app-shell/ash-excluded-startup-gates.test.tsx \
-            src/renderer/src/store/app-plugin-host-boundary.test.tsx
+            src/renderer/src/store/app-plugin-host-boundary.test.tsx \
+            src/renderer/src/components/settings/updates/ash-unavailable-update-settings.test.tsx
       - name: Build the Ash CLI
         run: ORCA_CLI_BUILD_COMPILER=tsrs node config/scripts/cli-build/build-cli.mjs
       - name: Build the Electron desktop bundle

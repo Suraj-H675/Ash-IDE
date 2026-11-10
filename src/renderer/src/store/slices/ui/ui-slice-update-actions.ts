@@ -7,7 +7,7 @@ import { normalizeKagiSessionLink } from '../../../../../shared/browser-url'
 import { DEFAULT_BROWSER_DEVTOOLS_DOCK_LAYOUT } from '../../../../../shared/browser-devtools-dock'
 export function createUiUpdateActions(set: UISliceSet, get: UISliceGet): Partial<UISlice> {
   return {
-    updateStatus: { state: 'idle' },
+    updateStatus: { state: 'unavailable', reason: 'not-configured' },
     setUpdateStatus: (status) => {
       const { updateStatus: previousStatus, updateUserInitiatedCycle } = get()
       const update: Partial<
@@ -20,7 +20,7 @@ export function createUiUpdateActions(set: UISliceSet, get: UISliceGet): Partial
       }
       if (status.state === 'checking') {
         update.updateUserInitiatedCycle = status.userInitiated === true
-      } else if (status.state === 'idle') {
+      } else if (status.state === 'idle' || status.state === 'unavailable') {
         update.updateUserInitiatedCycle = false
       }
       if (status.state === 'available') {
@@ -28,6 +28,7 @@ export function createUiUpdateActions(set: UISliceSet, get: UISliceGet): Partial
         update.updateChangelog = status.changelog ?? null
       } else if (
         status.state === 'idle' ||
+        status.state === 'unavailable' ||
         status.state === 'checking' ||
         status.state === 'not-available'
       ) {

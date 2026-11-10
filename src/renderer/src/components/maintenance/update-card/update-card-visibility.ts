@@ -24,7 +24,7 @@ export function isUpdateCardVisible({
   if (status.state === 'not-available' && (!isUserInitiated || autoDismissed)) {
     return false
   }
-  if (status.state === 'idle') {
+  if (status.state === 'idle' || status.state === 'unavailable') {
     return false
   }
   if (cachedVersion && dismissedVersion === cachedVersion && !updateUserInitiatedCycle) {
@@ -42,6 +42,8 @@ export function getUpdateCardAriaLabel(status: UpdateStatus): string {
   switch (status.state) {
     case 'idle':
       return translate('auto.components.UpdateCard.aria.statusIdle', 'Update status')
+    case 'unavailable':
+      return 'App updates unavailable'
     case 'checking':
       return translate('auto.components.UpdateCard.aria.statusChecking', 'Checking for updates')
     case 'not-available':
