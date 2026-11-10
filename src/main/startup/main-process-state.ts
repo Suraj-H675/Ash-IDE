@@ -14,7 +14,6 @@ import type { RateLimitService } from '../rate-limits/service'
 import type { OrcaRuntimeRpcServer } from '../runtime/rpc/server/runtime-rpc'
 import type { DesktopRelayService } from '../runtime/mobile-cloud-relay/desktop-relay-service'
 import type { DesktopRelayServiceInstaller } from '../runtime/mobile-cloud-relay/desktop-relay-service-installer'
-import type { DesktopPushService } from '../runtime/push/desktop-push-service'
 import type { AgentAwakeService } from '../power/agent-awake-service'
 import type { CrashReportStore } from '../crash-reporting/crash-report-store'
 import type { PluginService } from '../plugins/plugin-service'
@@ -94,7 +93,6 @@ export const mainProcessState = {
   desktopRelayService: null as DesktopRelayService | null,
   // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: widens the null slot to the installer assigned by main-process-relay-startup.
   desktopRelayInstaller: null as DesktopRelayServiceInstaller | null,
-  desktopPushService: null as DesktopPushService | null,
   desktopRelayStatus,
   pendingUnpairedDeviceAuthFailure: false,
   // Advertise headless browser panes only when offscreen display initialization succeeds.

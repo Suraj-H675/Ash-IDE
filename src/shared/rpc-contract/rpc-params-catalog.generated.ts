@@ -445,7 +445,6 @@ import {
 import { NativeChatSession, NativeChatUnsubscribe } from './native-chat-params'
 import {
   NotificationGetMissedSinceParams,
-  NotificationRegisterPushParams,
   NotificationReportDesktopPresenceParams,
   NotificationUnsubscribeParams,
   NotificationsSubscribeParams
@@ -1270,11 +1269,8 @@ export const RPC_PARAMS_BY_METHOD = {
   'nativeChat.unsubscribe': NativeChatUnsubscribe,
   'network.browserTunnel': BrowserNetworkTunnelAttachParams,
   'notifications.getMissedSince': NotificationGetMissedSinceParams,
-  'notifications.registerPush': NotificationRegisterPushParams,
   'notifications.reportDesktopPresence': NotificationReportDesktopPresenceParams,
   'notifications.subscribe': NotificationsSubscribeParams,
-  'notifications.testPush': null,
-  'notifications.unregisterPush': null,
   'notifications.unsubscribe': NotificationUnsubscribeParams,
   'orcad.migration.abortCatalog': OrcadMigrationCatalogParams,
   'orcad.migration.abortCatalogByReference': OrcadMigrationCatalogReferenceParams,

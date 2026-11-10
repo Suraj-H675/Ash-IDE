@@ -583,7 +583,12 @@
     },
     {
       "path": "src/main/runtime/rpc/methods/index.ts",
-      "sha256": "401d1dfda56a9bfc8b3b579ef42dd77d64367459b1c7a7c12ca13723aae8d6fb",
+      "sha256": "9473794b51fb84027a6ff15f35871ec3e68fc81e608e6975409d823c1246c42c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/notifications.ts",
+      "sha256": "9da8083737fc472e13a12080bd37e5fb4d0ed0a1eab097cb87a59f259c0fe299",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -668,7 +673,7 @@
     },
     {
       "path": "src/main/startup/main-process-quit.ts",
-      "sha256": "300fdab33d3367586abc6fa37aa64a51f6cc5331cef4c10fdcd50c087c5d70d7",
+      "sha256": "7189337736fc1ea3fe0c2384d1cf2875f91d762425c94422d3b50ad1d1498ab1",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -708,7 +713,7 @@
     },
     {
       "path": "src/main/startup/main-process-state.ts",
-      "sha256": "c7dfb57dd23929bfae06f2ebd3a3babcf657b105bc7df7cd993685ea9bad8a09",
+      "sha256": "3b008b4f354233f2e61d6ca95fbdd4d1041f28ece5e1eb42ff9d21b32ef611b8",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1478,7 +1483,7 @@
     },
     {
       "path": "src/shared/rpc-contract/rpc-params-catalog.generated.ts",
-      "sha256": "060d36c53563efede923943ef6f8b07104df91c80d2c484b1c481a20aeca73b3",
+      "sha256": "6623693b21ca6e9a98f5170f4d3cc0ee22e1bb515d1f21baf8be4e3b64304298",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

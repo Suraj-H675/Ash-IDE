@@ -20301,6 +20301,11 @@
       "reason": "Removed startup of the general app plugin and marketplace service."
     },
     {
+      "path": "src/main/startup/main-process-push-startup.ts",
+      "sourceSha256": "c70538c5916a325526349051611a87f5bfd16eb9669e57de98921e23465648fc",
+      "reason": "Removed the unused desktop mobile push gateway startup to prevent future registration or vendor uploads."
+    },
+    {
       "path": "src/main/startup/orca-deep-link-url.ts",
       "sourceSha256": "cc1c149936a1b7d7270f8351d81e8d71b4b2f038dfce113f9f8236865691fc2c",
       "reason": "Removed the desktop deep-link router for excluded Orca plugin-install and skill-share routes."

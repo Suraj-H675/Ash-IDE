@@ -180,6 +180,8 @@ const ASH_UNAVAILABLE_RPC_PREFIXES = [
   'mobileRelayHosts.',
   'network.browserTunnel',
   'notifications.registerPush',
+  'notifications.testPush',
+  'notifications.unregisterPush',
   'orcad.',
   'pairing.',
   'plugins.',

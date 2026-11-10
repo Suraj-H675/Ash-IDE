@@ -3,7 +3,6 @@ import { defineStreamingMethod, defineMethod, type RpcContext } from '../core'
 import type { OrcaRuntimeService } from '../../orca-runtime'
 import {
   NotificationGetMissedSinceParams,
-  NotificationRegisterPushParams,
   NotificationReportDesktopPresenceParams,
   NotificationUnsubscribeParams,
   NotificationsSubscribeParams
@@ -96,41 +95,5 @@ export const NOTIFICATION_METHODS = [
     permission: 'workspace',
     params: NotificationReportDesktopPresenceParams,
     handler: async (params, context) => reportDesktopPresence(params, context)
-  }),
-  defineMethod({
-    name: 'notifications.registerPush',
-    permission: 'pairing-admin',
-    params: NotificationRegisterPushParams,
-    // Register only the transport-proven revocable mobile device; CLI/in-process callers have no device identity.
-    handler: async (params, { runtime, clientKind, pairedDeviceId }) => {
-      if (clientKind !== 'mobile' || !pairedDeviceId) {
-        return { registered: false, reason: 'not_mobile' }
-      }
-      // The paired identity is spread last so no parameter can ever override it.
-      return await runtime.registerMobilePushDevice({ ...params, deviceId: pairedDeviceId })
-    }
-  }),
-  defineMethod({
-    name: 'notifications.testPush',
-    permission: 'pairing-admin',
-    params: null,
-    handler: async (_params, { runtime, clientKind, pairedDeviceId }) => {
-      if (clientKind !== 'mobile' || !pairedDeviceId) {
-        return { accepted: false, reason: 'not_registered' }
-      }
-      return await runtime.testMobilePushDevice(pairedDeviceId)
-    }
-  }),
-  defineMethod({
-    name: 'notifications.unregisterPush',
-    permission: 'pairing-admin',
-    params: null,
-    // Durable gateway deletion lets unregister succeed even while the gateway is offline.
-    handler: async (_params, { runtime, clientKind, pairedDeviceId }) => {
-      if (clientKind !== 'mobile' || !pairedDeviceId) {
-        return { unregistered: false }
-      }
-      return await runtime.unregisterMobilePushDevice(pairedDeviceId)
-    }
   })
 ]
