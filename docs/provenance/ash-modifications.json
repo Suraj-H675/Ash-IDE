@@ -947,6 +947,26 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/store/plugin-auto-updates.ts",
+      "sha256": "ebbcd6faa040ec5ca8abeaa8e232190377c543152e73af169c20b45f48748c04",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-content-list-store.ts",
+      "sha256": "20ee125208bbaf27028144f704c7ba81488ae5426666e2d369a21e4b665d8be7",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-panels.ts",
+      "sha256": "df61b44bced56500f4c99c8d7ad3183341036330e4dd1dac96ab04c16e06f429",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-status-bar-items.ts",
+      "sha256": "43aa52efb080d9a0c6dfb2bf2dd440e42a5057b183ae6d5a0f81c7d17b0414b4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/store/slices/ui/ui-slice-hydration-sanitizers.ts",
       "sha256": "7b3ec7c6448c563f0991b79b43355880b6b7d45cca91e1fb865c02312f4965f2",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."

@@ -4,6 +4,7 @@ import type { PluginAutoUpdateEvent } from '../../../preload/api-types'
 import type { PluginAutoUpdateState } from '../../../shared/plugins/catalog/plugin-update-policy'
 import { translate } from '@/i18n/i18n'
 import { announcePluginUpdateReviews } from './plugin-update-review-toast'
+import { ASH_APP_PLUGIN_HOST_ENABLED } from './app-plugin-host-boundary'
 
 /** What automatic plugin updates last did, mirrored from main. */
 export const usePluginAutoUpdatesStore = create<PluginAutoUpdateState>(() => ({
@@ -43,6 +44,9 @@ async function announceUntoldUpdateReviews(): Promise<void> {
 
 /** Starts mirroring automatic update results; safe to call repeatedly. */
 export function ensurePluginAutoUpdatesWatched(): void {
+  if (!ASH_APP_PLUGIN_HOST_ENABLED) {
+    return
+  }
   const plugins = window.api?.plugins
   if (watching || !plugins?.onAutoUpdateChanged) {
     return

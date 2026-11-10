@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { create } from 'zustand'
 import { ensurePluginAutoUpdatesWatched } from './plugin-auto-updates'
+import { ASH_APP_PLUGIN_HOST_ENABLED } from './app-plugin-host-boundary'
 import type { PluginHostListEntry, PluginHostPanel } from '../../../preload/api-types'
 
 /** A panel contribution from an enabled plugin, flattened for sidebar use. */
@@ -63,7 +64,7 @@ export const usePluginPanelsStore = create<PluginPanelsState>()((set) => ({
     clearPluginListRetryTimer()
     // Older paired preload, or a browser client (no `list`): no plugins, so files open in Source.
     const pluginsApi = window.api?.plugins
-    if (!pluginsApi?.list) {
+    if (!ASH_APP_PLUGIN_HOST_ENABLED || !pluginsApi?.list) {
       if (generation === pluginListGeneration) {
         pluginListRetryAttempt = 0
         set({ fetchStatus: 'ready', plugins: [], panelErrors: {} })
@@ -134,7 +135,13 @@ let changeSubscriptionStarted = false
 
 /** Install startup fetch/change subscription once; safe for repeated callers. */
 export function ensurePluginPanelsLoaded(): void {
-  const { fetchStatus, fetchPlugins } = usePluginPanelsStore.getState()
+  const { fetchStatus, fetchPlugins, plugins, panelErrors } = usePluginPanelsStore.getState()
+  if (!ASH_APP_PLUGIN_HOST_ENABLED) {
+    if (fetchStatus !== 'ready' || plugins.length > 0 || Object.keys(panelErrors).length > 0) {
+      void fetchPlugins()
+    }
+    return
+  }
   if (fetchStatus === 'idle') {
     void fetchPlugins()
   }

@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import type { PluginsApi } from '../../../preload/api/plugin-host-api'
 import { structuralValuesEqual } from '../../../shared/structural-value-equality'
 import { arrayElementsUnchanged } from './catalog-identity'
+import { ASH_APP_PLUGIN_HOST_ENABLED } from './app-plugin-host-boundary'
 
 type PluginContentListState<Entry> = {
   entries: Entry[]
@@ -31,6 +32,13 @@ export function createPluginContentListStore<Entry extends { id: string }>(optio
     fetchEntries: async () => {
       const generation = ++requestGeneration
       latestRequestStartedAt = Date.now()
+      if (!ASH_APP_PLUGIN_HOST_ENABLED) {
+        // Excluded app-plugin catalogs are empty, not an unresolved startup
+        // request. Resolve 'loaded' so built-in themes/languages still paint.
+        latestRequestStartedAt = null
+        set({ entries: keepUnchangedEntries([]), loaded: true })
+        return []
+      }
       const api = window.api?.plugins
       const list = api ? options.list(api) : undefined
       if (!list) {
@@ -81,6 +89,12 @@ export function createPluginContentListStore<Entry extends { id: string }>(optio
 
   function ensureLoaded(): void {
     const state = useStore.getState()
+    if (!ASH_APP_PLUGIN_HOST_ENABLED) {
+      if (!state.loaded || state.entries.length > 0) {
+        void state.fetchEntries()
+      }
+      return
+    }
     const joinable =
       latestRequestStartedAt !== null &&
       Date.now() - latestRequestStartedAt < STARTUP_REQUEST_JOIN_WINDOW_MS

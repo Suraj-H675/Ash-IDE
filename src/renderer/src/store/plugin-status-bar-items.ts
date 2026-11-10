@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import type { PluginHostListEntry } from '../../../preload/api-types'
 import type { PluginStatusBarOverrides } from '../../../shared/plugins/contributions/plugin-status-bar-state'
 import type { PluginDeclarativeTone } from '../../../shared/plugins/declarative/plugin-declarative-catalog'
+import { ASH_APP_PLUGIN_HOST_ENABLED } from './app-plugin-host-boundary'
 import {
   fromPlugin,
   isLivePlugin,
@@ -30,6 +31,9 @@ export const usePluginStatusBarStore = create<{ overrides: PluginStatusBarOverri
 let watching = false
 
 function watchPluginStatusBar(): void {
+  if (!ASH_APP_PLUGIN_HOST_ENABLED) {
+    return
+  }
   const plugins = window.api?.plugins
   if (watching || !plugins?.statusBarState || !plugins.onStatusBarChanged) {
     return
