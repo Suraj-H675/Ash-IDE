@@ -33,6 +33,7 @@ import { runGatedWslMoveDesktopRewritePass } from '../persistence/moving-wsl-pro
 import { ORCA_LAYOUT_OWNER_IS_MAIN } from '../../shared/layout-owner-switch'
 import { repairDuplicatePtyPanesOnStart } from '../runtime/moved-pane-owner-rekey'
 import { registerGitHubPRRefreshHandlers } from '../ipc/source-control/github-pr-refresh-handlers'
+import { registerRateLimitHandlers } from '../ipc/rate-limits'
 
 // Headless serve has no first window; timer fallback must still sweep trash.
 const WORKTREE_TRASH_SWEEP_FALLBACK_MS = 15_000
@@ -53,6 +54,10 @@ export async function initializeReadyRuntimeServices(): Promise<void> {
   }
   registerGitHubPRRefreshHandlers(store, stats)
   initializeMainProcessAccountServices()
+  if (!state.rateLimits || !state.codexAccounts) {
+    throw new Error('Rate limit services must be initialized before ready handlers')
+  }
+  registerRateLimitHandlers(state.rateLimits, state.codexAccounts)
   const runtime = initializeMainProcessRuntime()
   configureRuntimeServices(runtime)
   installFirstWorkRenameHookSubscription()

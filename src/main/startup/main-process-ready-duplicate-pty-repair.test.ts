@@ -97,6 +97,7 @@ vi.mock('./main-process-observers', () => ({ initializeMainProcessObservers: vi.
 vi.mock('../ipc/source-control/github-pr-refresh-handlers', () => ({
   registerGitHubPRRefreshHandlers: vi.fn()
 }))
+vi.mock('../ipc/rate-limits', () => ({ registerRateLimitHandlers: vi.fn() }))
 vi.mock('./branch-rename-hook', () => ({ installFirstWorkRenameHookSubscription: vi.fn() }))
 vi.mock('./main-process-account-services', () => ({
   initializeMainProcessAccountServices: vi.fn()
@@ -117,6 +118,7 @@ vi.mock('../orcad/orcad-artifact-cache-retention', () => ({
 
 import { initializeReadyRuntimeServices } from './main-process-ready-runtime'
 import { registerGitHubPRRefreshHandlers } from '../ipc/source-control/github-pr-refresh-handlers'
+import { registerRateLimitHandlers } from '../ipc/rate-limits'
 
 const TAB = 'tab-1'
 const KEPT = '11111111-1111-4111-8111-111111111111'
@@ -199,4 +201,8 @@ it('finishes the duplicate-terminal repair before ready services resolve, even b
 
   expect(atReady).toEqual({ memory: [KEPT], disk: [KEPT] })
   expect(registerGitHubPRRefreshHandlers).toHaveBeenCalledWith(store, fixture.state.stats)
+  expect(registerRateLimitHandlers).toHaveBeenCalledWith(
+    fixture.state.rateLimits,
+    fixture.state.codexAccounts
+  )
 })
