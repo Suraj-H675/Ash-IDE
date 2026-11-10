@@ -488,7 +488,7 @@
     },
     {
       "path": "src/main/providers/local-pty/local-pty-spawn.ts",
-      "sha256": "473fbc2abfe1f8968b477184f35a950fb2b57c8bb2724402707d05665a191994",
+      "sha256": "004667d52cc891756c38e2efcf7a371153ce5289e827561bc4b68f3ac79ed29c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -898,7 +898,7 @@
     },
     {
       "path": "src/shared/claude-shell-function.ts",
-      "sha256": "4b6b43252989dd1c5170c7d199705103c736b428d471249e92f45ffb1dcb0daa",
+      "sha256": "4308f148486089f3f9794919c7eb6aca7a9a005e4b920ae8256968befc97aa4d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

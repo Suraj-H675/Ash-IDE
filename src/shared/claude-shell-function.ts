@@ -12,7 +12,8 @@ if [[ -n "\${ORCA_CLAUDE_PROFILE_POINTER:-}" && -n "\${__orca_claude_binary:-}" 
     # refusing this invocation is safer than silently using System default.
     case "$__orca_claude_pointer" in
       */claude-profiles/session-pins/*.route)
-        if [ -z "$__orca_claude_home" ] || [ "$__orca_claude_home" != "\${ORCA_CLAUDE_INJECTED_CONFIG_DIR:-}" ]; then
+        if [ -z "$__orca_claude_home" ] || [ "$__orca_claude_home" != "\${ORCA_CLAUDE_INJECTED_CONFIG_DIR:-}" ] ||
+           [ ! -d "$__orca_claude_home" ] || [ -L "$__orca_claude_home" ]; then
           return 1
         fi
         ;;
@@ -50,7 +51,7 @@ if test -n "$ORCA_CLAUDE_PROFILE_POINTER"; and test "$__orca_claude_type" = file
     # Pinned agent routes fail closed if the file disappeared or now names a
     # different home; generic shared selected-host fallback stays unchanged.
     if string match -qr '/claude-profiles/session-pins/[^/]+[.]route$' -- "$pointer"
-      if test (count $profile) -ne 1; or test "$profile" != "$ORCA_CLAUDE_INJECTED_CONFIG_DIR"
+      if test (count $profile) -ne 1; or test "$profile" != "$ORCA_CLAUDE_INJECTED_CONFIG_DIR"; or not test -d "$profile"; or test -L "$profile"
         return 1
       end
     end

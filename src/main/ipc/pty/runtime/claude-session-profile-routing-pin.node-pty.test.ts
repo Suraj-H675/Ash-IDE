@@ -5,6 +5,7 @@ import {
   mkdtempSync,
   readFileSync,
   realpathSync,
+  renameSync,
   rmSync,
   writeFileSync
 } from 'node:fs'
@@ -58,7 +59,7 @@ describe.skipIf(process.platform === 'win32')(
     let root = ''
     let previousAppEnvironment: AppEnvironment | null = null
     let liveProcesses: nodePty.IPty[] = []
-    let nativeSpawnEnvs: Array<Readonly<Record<string, string>>> = []
+    let nativeSpawnEnvs: Readonly<Record<string, string>>[] = []
     const activePins: ClaudeSessionProfileRoutingPin[] = []
 
     afterEach(() => {
@@ -356,6 +357,15 @@ describe.skipIf(process.platform === 'win32')(
       })
       expect(sharedMissingAttempt.status).toBe(0)
       expect(readFileSync(entrySentinel, 'utf8')).toBe('entered\n')
+      rmSync(entrySentinel)
+
+      // Losing the *home* after a valid pin must not make the function create
+      // an unverified replacement folder and accidentally launch a new login.
+      renameSync(profileA.home, `${profileA.home}.original`)
+      const missingHomeAttempt = attemptThroughShell(nativeEnvA)
+      expect(missingHomeAttempt.status).toBe(1)
+      expect(missingHomeAttempt.stdout).toBe('')
+      expect(() => readFileSync(entrySentinel)).toThrow()
       expect(canAshWriteProviderGlobalHooks()).toBe(false)
       expect(processBExited).toBe(false)
     })

@@ -212,6 +212,44 @@ describe.skipIf(process.platform === 'win32')('Claude managed profile session ro
     expect(readFileSync(foreignSettingsPath, 'utf8')).toBe(foreignSettingsBytes)
   })
 
+  it('reverifies the original marker inode immediately before native dispatch', async () => {
+    const selection = await captureClaudeManagedProfileRouteSelection(settings(ACCOUNT_A))
+    const pin = await issuePin(selection, profileA)
+    expect(pin).not.toBeNull()
+    const env = { ...nativeEnvFor(profileA), [CLAUDE_PROFILE_POINTER_ENV]: pin!.path }
+    expect(() => pin!.assertNativeSpawnEnvironment(env)).not.toThrow()
+
+    const marker = claudeProfileMarkerPath(profileA)
+    const replacement = `${marker}.same-bytes-replacement`
+    writeFileSync(replacement, readFileSync(marker), { mode: 0o600 })
+    renameSync(replacement, marker)
+    expect(() => pin!.assertNativeSpawnEnvironment(env)).toThrow(
+      'claude_session_profile_routing_pin_marker_changed'
+    )
+    pin!.cleanupIfUnspawned()
+    expect(() => lstatSync(pin!.path)).toThrow()
+    expect(readFileSync(foreignSettingsPath, 'utf8')).toBe(foreignSettingsBytes)
+  })
+
+  it('reverifies the original physical config home immediately before native dispatch', async () => {
+    const selection = await captureClaudeManagedProfileRouteSelection(settings(ACCOUNT_A))
+    const pin = await issuePin(selection, profileA)
+    expect(pin).not.toBeNull()
+    const env = { ...nativeEnvFor(profileA), [CLAUDE_PROFILE_POINTER_ENV]: pin!.path }
+    expect(() => pin!.assertNativeSpawnEnvironment(env)).not.toThrow()
+
+    // Keep the marker path and its content unchanged while replacing the home
+    // with a new ordinary directory at the identical pathname.
+    renameSync(profileA.home, `${profileA.home}.original`)
+    mkdirSync(profileA.home, { mode: 0o700 })
+    expect(() => pin!.assertNativeSpawnEnvironment(env)).toThrow(
+      'claude_session_profile_routing_pin_profile_changed'
+    )
+    pin!.cleanupIfUnspawned()
+    expect(() => lstatSync(pin!.path)).toThrow()
+    expect(readFileSync(foreignSettingsPath, 'utf8')).toBe(foreignSettingsBytes)
+  })
+
   it('refuses forged or replaced ownership markers', async () => {
     const selection = await captureClaudeManagedProfileRouteSelection(settings(ACCOUNT_A))
     const marker = claudeProfileMarkerPath(profileA)

@@ -147,6 +147,25 @@ export async function spawnLocalPty(
       try {
         checkCanceled()
       } catch (error) {
+        // A native PTY was already created but the runtime's normal activation
+        // (and its exit listener) has not happened. Observe this precise
+        // incarnation before terminating it, so an Ash-private routing pin is
+        // retired only after physical exit rather than leaking indefinitely.
+        // If observation fails, leave the pin intact: uncertain live processes
+        // must not be silently switched to System-default Claude credentials.
+        let canceledExitSubscription: { dispose(): void } | undefined
+        try {
+          canceledExitSubscription = spawnResult.process.onExit(() => {
+            try {
+              args.onLocalPtyExit?.(id, incarnationId)
+            } catch {
+              // Cleanup failure must never replace the original cancellation.
+            }
+            canceledExitSubscription?.dispose()
+          })
+        } catch {
+          // Lack of a trustworthy native exit notification preserves the pin.
+        }
         try {
           spawnResult.process.kill('SIGKILL')
         } finally {
