@@ -872,6 +872,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/preload/index.ts",
+      "sha256": "eb14640637f97fa6c2e96635d8479c75289c4809c491e1ba5ecdb531210c6dff",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/App.tsx",
       "sha256": "80784c2c60f790c2c867d0cb2d19b3aafdd0dd488ca479893ff6c85fc9f2bd01",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -883,7 +888,7 @@
     },
     {
       "path": "src/renderer/src/app-shell/AppRootSurfaces.tsx",
-      "sha256": "08e0336db62f11166cc5052a1103a999c35f570caf1f661bf9fea41f84b7a683",
+      "sha256": "992bcdea2bf3f5e32c0020d2c3d179fb2dff1ad30f523261689556b56c8449cb",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1099,6 +1104,11 @@
     {
       "path": "src/renderer/src/store/slices/ui/ui-slice-update-actions.ts",
       "sha256": "de1973cb691baceba52d44bec89d6ad8a2f0e4cc64c22f3601e0d65fa9208593",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/web/preload-api/web-telemetry-api.ts",
+      "sha256": "d10304e7386c2f796876b661ab2d995db3c6ceb9c3c6417161a7327c212c9df5",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

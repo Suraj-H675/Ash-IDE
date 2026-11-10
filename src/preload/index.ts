@@ -94,14 +94,15 @@ import { speechApi } from './api/speech-bridge'
 
 installBrowserFindListener()
 
-const telemetryTrackApi: PreloadApi['telemetryTrack'] = (name, props) =>
-  ipcRenderer.invoke('telemetry:track', name, props)
-const telemetrySetOptInApi: PreloadApi['telemetrySetOptIn'] = (optedIn) =>
-  ipcRenderer.invoke('telemetry:setOptIn', optedIn)
+// Ash excludes product telemetry. Do not even dispatch to an unregistered
+// Main IPC channel: a no-op at the preload boundary protects all renderers,
+// including legacy callers, without creating a synthetic tracking service.
+const telemetryTrackApi: PreloadApi['telemetryTrack'] = () => Promise.resolve(false)
+const telemetrySetOptInApi: PreloadApi['telemetrySetOptIn'] = () => Promise.resolve()
 const telemetryAcknowledgeBannerApi: PreloadApi['telemetryAcknowledgeBanner'] = () =>
-  ipcRenderer.invoke('telemetry:acknowledgeBanner')
+  Promise.resolve()
 const telemetryGetConsentStateApi: PreloadApi['telemetryGetConsentState'] = () =>
-  ipcRenderer.invoke('telemetry:getConsentState')
+  Promise.resolve({ effective: 'disabled', reason: 'user_opt_out' })
 
 const api = {
   app: appApi,
