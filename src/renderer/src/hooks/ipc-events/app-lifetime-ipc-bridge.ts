@@ -2,7 +2,6 @@ import { observeJiraImageHostStatus } from '@/runtime/runtime-jira-image-cache'
 import { observeRuntimeHostStatusForPendingRemovals } from '@/store/repos/pending-runtime-repo-removal-replay'
 import type { RuntimeHostStatusSnapshot } from '../../../../shared/remote-runtime/host-status/runtime-host-status'
 import { getTabIdsAwaitingHostHydrationRemount } from '@/lib/parked-terminal-host-hydration'
-import { emitAutomationsChangedWindowEvent } from '@/lib/automations-changed-window-event'
 import { createBackgroundSleepingAgentWakeDispatcher } from '@/lib/wake-sleeping-agents-in-background'
 import { remoteRuntimeTerminalColorPush } from '@/runtime/remote-runtime-terminal-color-push'
 import { resetAgentHookCompletionNotificationCoordinators } from '../agent-hook-completion-notifications'
@@ -19,7 +18,6 @@ import { registerContentCreationIpcBridge } from './content-creation-ipc-bridge'
 import { registerDirectSshStateIpcBridge } from './direct-ssh-state-ipc-bridge'
 import { registerMobileAndTerminalCloseIpcBridge } from './mobile-terminal-close-ipc-bridge'
 import { registerMobileDriverIpcBridge } from './mobile-driver-ipc-bridge'
-import { registerOrcaProfileAuthIpcBridge } from './orca-profile-auth-ipc-bridge'
 import { registerPluginViewIpcBridge } from './plugin-view-ipc-bridge'
 import { registerPreflightWslRetryIpcBridge } from './preflight-wsl-retry-ipc-bridge'
 import { registerOsMarkdownFileOpenBridge } from './os-markdown-file-open-bridge'
@@ -59,9 +57,6 @@ export function installAppLifetimeIpcEvents(): () => void {
   const unsubs: (() => void)[] = []
   const backgroundWakeDispatcher = createBackgroundSleepingAgentWakeDispatcher()
   unsubs.push(backgroundWakeDispatcher.dispose)
-  unsubs.push(
-    window.api.automations.onChanged((payload) => emitAutomationsChangedWindowEvent(payload))
-  )
 
   const worktreeRuntime = createWorktreeEventRuntime(unsubs, isRuntimeEnvironmentActive)
   const statusApi = window.api.runtimeEnvironments
@@ -96,7 +91,6 @@ export function installAppLifetimeIpcEvents(): () => void {
   )
   registerSettingsAndSidebarIpcBridge(unsubs)
   registerQuitAndStopAllSessionsIpcBridge(unsubs)
-  registerOrcaProfileAuthIpcBridge(unsubs)
   registerPreflightWslRetryIpcBridge(unsubs)
   registerWorkspaceShortcutIpcBridge(unsubs)
   registerOsMarkdownFileOpenBridge(unsubs)

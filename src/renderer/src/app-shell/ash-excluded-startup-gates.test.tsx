@@ -97,6 +97,7 @@ describe('Ash excluded desktop startup capabilities', () => {
   it('does not restore removed mobile or bundled-skills pages as the active view', () => {
     expect(sanitizeHydratedActiveView('mobile')).toBe('terminal')
     expect(sanitizeHydratedActiveView('skills')).toBe('terminal')
+    expect(sanitizeHydratedActiveView('automations')).toBe('terminal')
     expect(sanitizeHydratedActiveView('settings')).toBe('settings')
     expect(sanitizeHydratedActiveView('terminal')).toBe('terminal')
   })
