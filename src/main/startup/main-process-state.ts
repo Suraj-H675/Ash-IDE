@@ -12,8 +12,6 @@ import type { ClaudeRuntimeAuthService } from '../claude-accounts/runtime-auth-s
 import type { OrcaRuntimeService } from '../runtime/orca-runtime'
 import type { RateLimitService } from '../rate-limits/service'
 import type { OrcaRuntimeRpcServer } from '../runtime/rpc/server/runtime-rpc'
-import type { DesktopRelayService } from '../runtime/mobile-cloud-relay/desktop-relay-service'
-import type { DesktopRelayServiceInstaller } from '../runtime/mobile-cloud-relay/desktop-relay-service-installer'
 import type { AgentAwakeService } from '../power/agent-awake-service'
 import type { CrashReportStore } from '../crash-reporting/crash-report-store'
 import type { PluginService } from '../plugins/plugin-service'
@@ -24,7 +22,6 @@ import type { PluginUpdateReviewNotices } from '../plugins/catalog/plugin-update
 import type { PluginMarketplaceService } from '../plugins/catalog/plugin-marketplace-service'
 import type { PluginMarketplaceInstaller } from '../plugins/catalog/plugin-marketplace-installer'
 import type { KeybindingService } from '../keybindings/keybinding-service'
-import type { MobileRelayStatusDetail } from '../../shared/remote-runtime/relay/mobile-relay-status'
 import type { AgentBrowserBridge } from '../browser/agent-browser/agent-browser-bridge'
 import type { EmulatorBridge } from '../emulator/emulator-bridge'
 import type { GpuFallbackMarker, GpuFallbackEnvironment } from './gpu-fallback-marker'
@@ -64,7 +61,6 @@ function createInitialProfileStateAdmission(): ProfileStateRuntimeAdmission | un
 }
 
 /** Mutable composition-root state shared by startup, window, serve, and quit phases. */
-const desktopRelayStatus: MobileRelayStatusDetail = { status: 'offline' }
 
 export const mainProcessState = {
   mainWindow: null as BrowserWindow | null,
@@ -90,10 +86,6 @@ export const mainProcessState = {
   rateLimits: null as RateLimitService | null,
   runtimeRpc: null as OrcaRuntimeRpcServer | null,
   serveReadinessPublisher: new ServeReadinessPublisher(),
-  desktopRelayService: null as DesktopRelayService | null,
-  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: widens the null slot to the installer assigned by main-process-relay-startup.
-  desktopRelayInstaller: null as DesktopRelayServiceInstaller | null,
-  desktopRelayStatus,
   pendingUnpairedDeviceAuthFailure: false,
   // Advertise headless browser panes only when offscreen display initialization succeeds.
   headlessBrowserDisplayAvailable: false,

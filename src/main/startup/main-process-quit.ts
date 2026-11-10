@@ -83,9 +83,7 @@ function installBeforeQuitHandler(): void {
     }
     state.isQuitting = true
     flushUnsavedCloudSessions()
-    state.desktopRelayService?.fenceAndCloseNow()
     desktopConnectorCloud()?.fence()
-    state.runtimeRpc?.setMobileRelayPairingProvider(null)
     state.unsubscribeAgentAwakeStatusChanges?.()
     state.unsubscribeAgentAwakeStatusChanges = null
     state.agentAwakeService?.dispose()

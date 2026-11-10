@@ -98,6 +98,8 @@ jobs:
             src/main/ipc/m8-local-only-report-ipc.test.ts \
             src/main/orcad/orcad-scheduled-automation-exclusion.test.ts \
             src/main/orcad/orcad-ash-local-only-network.test.ts \
+            src/main/startup/ash-excluded-mobile-cloud-relay-startup.test.ts \
+            src/main/startup/main-process-quit-update-veto.test.ts \
             src/main/runtime/rpc/methods/ash-runtime-methods.test.ts \
             src/main/runtime/rpc/methods/ash-excluded-mobile-push-rpc.test.ts \
             src/main/runtime/rpc/server/runtime-rpc-mobile-automations.test.ts \

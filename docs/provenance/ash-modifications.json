@@ -732,8 +732,18 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/startup/main-process-quit-pending-writer.test.ts",
+      "sha256": "233a6efffacb59d5e8c3b28dca863d25af5d2ebe783963951d21542afe7e4338",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-quit-update-veto.test.ts",
+      "sha256": "576266f2716cfcd7c87a7fab11c45882656345c9982bc0faff3429cf0cf9abc3",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/startup/main-process-quit.ts",
-      "sha256": "7189337736fc1ea3fe0c2384d1cf2875f91d762425c94422d3b50ad1d1498ab1",
+      "sha256": "3685aaed9202ebe38258add7cb584d9a2a1d1e18f23c44a74778354d2ca4a5ba",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -773,7 +783,7 @@
     },
     {
       "path": "src/main/startup/main-process-state.ts",
-      "sha256": "3b008b4f354233f2e61d6ca95fbdd4d1041f28ece5e1eb42ff9d21b32ef611b8",
+      "sha256": "4346deaf3611ad16a8013e3dea63fb3ae4608ae66f671f403149425396db7344",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

@@ -15376,9 +15376,19 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/desktop-relay-service-installer.ts",
+      "sourceSha256": "ce1f170a8c99def2ba6c4c206938502a1faa07a54cad2082e85c7c70f2ad9356",
+      "reason": "Removed the obsolete mobile cloud relay service installer; Ash has no phone relay or vendor-cloud startup."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/desktop-relay-service.test.ts",
       "sourceSha256": "8101a7497ed70fb1fa288ebed3e0fbdb5123bbc25d5a0e071e75bec618618d32",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/desktop-relay-service.ts",
+      "sourceSha256": "7ad61b8b54089c8fec9da0cbc9401bb9f0ae3c05238f3b5ac7d89784c5af92bd",
+      "reason": "Removed the unused vendor mobile cloud relay service, broker startup and refresh timers from Ash's retained desktop source."
     },
     {
       "path": "src/main/runtime/mobile-cloud-relay/mobile-relay-e2ee.integration.test.ts",
@@ -20304,6 +20314,16 @@
       "path": "src/main/startup/main-process-push-startup.ts",
       "sourceSha256": "c70538c5916a325526349051611a87f5bfd16eb9669e57de98921e23465648fc",
       "reason": "Removed the unused desktop mobile push gateway startup to prevent future registration or vendor uploads."
+    },
+    {
+      "path": "src/main/startup/main-process-relay-startup.ts",
+      "sourceSha256": "537abe27eb34a71b3bff5fb63567e31a2aa3e52daebadaa548b2a8f723c4c025",
+      "reason": "Removed the unused desktop mobile cloud relay launcher and power-resume hook; no mobile relay service starts in Ash."
+    },
+    {
+      "path": "src/main/startup/main-process-relay-status.ts",
+      "sourceSha256": "31b249a56cf826417d8f6c1cd5ac9ff94295b5a97d67e4fb0af1c9dd6fd81b9f",
+      "reason": "Removed the orphan mobile relay status IPC broadcaster, which has no desktop product consumer."
     },
     {
       "path": "src/main/startup/orca-deep-link-url.ts",
