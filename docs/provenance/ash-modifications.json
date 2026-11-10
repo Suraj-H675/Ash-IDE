@@ -852,6 +852,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/app-shell/AppNotificationCards.tsx",
+      "sha256": "36f7ccd72e928242d251ada1565b4c44d2343ee5c4b630e9c1f348756416275b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/app-shell/AppRootSurfaces.tsx",
       "sha256": "440a9a49871f893d47e1d1c049aaaa80efe165210a4117a980a9c81f3516c84b",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."

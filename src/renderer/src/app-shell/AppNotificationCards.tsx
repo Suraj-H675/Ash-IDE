@@ -14,11 +14,6 @@ const ChatUiHereCornerCard = lazy(() =>
 const UpdateCard = lazy(() =>
   import('../components/UpdateCard').then((module) => ({ default: module.UpdateCard }))
 )
-const UnexpectedSignoutCard = lazy(() =>
-  import('../components/UnexpectedSignoutCard').then((module) => ({
-    default: module.UnexpectedSignoutCard
-  }))
-)
 
 /** The bottom-right notification stack and every card that shares it. */
 export function AppNotificationCards({
@@ -48,11 +43,6 @@ export function AppNotificationCards({
           </OverlayBoundary>
         </Suspense>
       ) : null}
-      <Suspense fallback={null}>
-        <OverlayBoundary boundaryId="overlay.unexpected-signout" resetKey={activeView}>
-          <UnexpectedSignoutCard />
-        </OverlayBoundary>
-      </Suspense>
       <OverlayBoundary boundaryId="overlay.star-nag" resetKey={activeView}>
         <StarNagCard />
       </OverlayBoundary>
