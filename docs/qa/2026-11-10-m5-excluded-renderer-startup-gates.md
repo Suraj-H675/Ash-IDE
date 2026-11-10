@@ -1,7 +1,8 @@
-# M5 — excluded renderer startup capability gates
+# M8 early slice — excluded renderer startup capability gates
 
 - **Date:** 2026-11-10 (Asia/Kolkata)
 - **Branch:** `feat/m5-excluded-renderer-startup-gates`, based on `fd3761ed62586e3eb6d9f0785c576588f8db8be7`
+- **Milestone classification:** Early M8 vertical-removal work, performed during M2 hardening; the historical feature-branch name does not mean M5 editor acceptance.
 - **Scope:** Ordinary local desktop renderer startup; limited removal of excluded global app-managed skill and mobile entry points, plus non-Windows WSL migration gating
 - **Acceptance:** Source-level and isolated React/native runner verification only. A real post-change Arch Wayland GUI console run, Windows native recovery, and packaged desktop acceptance are **not** established by these tests.
 
