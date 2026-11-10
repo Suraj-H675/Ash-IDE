@@ -347,18 +347,27 @@ describe.skipIf(process.platform === 'win32')('Claude managed profile session ro
     expect(readFileSync(foreignSettingsPath, 'utf8')).toBe(foreignSettingsBytes)
   })
 
-  it('does not unlink a replacement file at a pin path', async () => {
+  it.each([
+    ['different contents', 'foreign replacement\n'],
+    ['identical contents', null]
+  ])('does not unlink a replacement file at a pin path (%s)', async (_scenario, replacement) => {
     const selection = await captureClaudeManagedProfileRouteSelection(settings(ACCOUNT_A))
     const pin = await issuePin(selection, profileA)
     expect(pin).not.toBeNull()
     const path = pin!.path
+    const original = lstatSync(path, { bigint: true })
     pin!.noteNativeSpawnReturned(PTY_ID, INCARNATION_A)
     rmSync(path)
-    writeFileSync(path, 'foreign replacement\n', { mode: 0o600 })
+    const foreignBytes = replacement ?? `${profileA.home}\n`
+    writeFileSync(path, foreignBytes, { mode: 0o600 })
+    const replacementStat = lstatSync(path, { bigint: true })
+    // The still-open original inode cannot be reused, even on CI filesystems
+    // that immediately recycle an inode once its last descriptor is closed.
+    expect([replacementStat.dev, replacementStat.ino]).not.toEqual([original.dev, original.ino])
 
     pin!.cleanupOnPtyExit(PTY_ID, INCARNATION_A)
 
-    expect(readFileSync(path, 'utf8')).toBe('foreign replacement\n')
+    expect(readFileSync(path, 'utf8')).toBe(foreignBytes)
     expect(readFileSync(foreignSettingsPath, 'utf8')).toBe(foreignSettingsBytes)
   })
 })

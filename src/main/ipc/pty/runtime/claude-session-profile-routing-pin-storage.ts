@@ -159,18 +159,34 @@ function makePinLease(
   directory: string,
   directoryIdentity: FileIdentity,
   fileIdentity: FileIdentity,
-  verifiedProfile: VerifiedClaudeManagedAccountProfile
+  verifiedProfile: VerifiedClaudeManagedAccountProfile,
+  pinFile: FileHandle
 ): ClaudeSessionProfileRoutingPin {
   let nativeSpawn: { ptyId: string; incarnationId: string } | null = null
   let nativeSpawnAttempted = false
   let nativeSpawnUncertain = false
   let finished = false
+  let fileClosed = false
+  const closePinFile = (): void => {
+    if (fileClosed) {
+      return
+    }
+    fileClosed = true
+    void pinFile.close().catch(() => {})
+  }
   const cleanup = (): void => {
     if (finished) {
       return
     }
     finished = true
-    safelyUnlinkOwnedPin(path, directory, directoryIdentity, fileIdentity)
+    // Retain the original open inode until after unlink: otherwise unlink +
+    // immediate replacement can recycle its dev/ino (observed on GitHub CI).
+    // Closing first would let a foreign replacement pass our identity check.
+    try {
+      safelyUnlinkOwnedPin(path, directory, directoryIdentity, fileIdentity)
+    } finally {
+      closePinFile()
+    }
   }
   return Object.freeze({
     path,
@@ -192,6 +208,9 @@ function makePinLease(
     noteNativeSpawnCallFailed: () => {
       if (!finished) {
         nativeSpawnUncertain = true
+        // An ambiguous native dispatch forbids pin unlink even after a later
+        // fallback exits. Keep the file itself, not an unused descriptor.
+        closePinFile()
       }
     },
     noteNativeSpawnReturned: (ptyId, incarnationId) => {
@@ -252,15 +271,15 @@ export async function createPrivatePointer(
         (opened.mode & 0o077n) !== 0n ||
         (process.getuid && opened.uid !== BigInt(process.getuid()))
       ) {
+        safelyUnlinkOwnedPin(path, directory, directoryIdentity, fileIdentity)
         await handle.close()
         handle = undefined
-        safelyUnlinkOwnedPin(path, directory, directoryIdentity, fileIdentity)
         return null
       }
       await handle.writeFile(Buffer.from(`${configHome}\n`, 'utf8'))
       await handle.sync()
-      await handle.close()
-      handle = undefined
+      // Hold this descriptor until the matching native PTY exits. An open
+      // inode cannot be recycled by a rapid pathname replacement.
       const pathStat = await lstat(path, { bigint: true })
       if (
         !pathStat.isFile() ||
@@ -271,23 +290,30 @@ export async function createPrivatePointer(
         !samePathIdentity(pathStat, fileIdentity)
       ) {
         safelyUnlinkOwnedPin(path, directory, directoryIdentity, fileIdentity)
+        await handle.close()
+        handle = undefined
         return null
       }
-      return makePinLease(
+      const lease = makePinLease(
         path,
         configHome,
         directory,
         directoryIdentity,
         fileIdentity,
-        verifiedProfile
+        verifiedProfile,
+        handle
       )
+      handle = undefined
+      return lease
     } catch (error) {
+      // If a descriptor is open, unlink before closing to prevent an ABA
+      // reuse of its inode during cleanup of a partially issued pin.
+      if (fileIdentity) {
+        safelyUnlinkOwnedPin(path, directory, directoryIdentity, fileIdentity)
+      }
       await handle?.close().catch(() => {})
       if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
         continue
-      }
-      if (fileIdentity) {
-        safelyUnlinkOwnedPin(path, directory, directoryIdentity, fileIdentity)
       }
       return null
     }
