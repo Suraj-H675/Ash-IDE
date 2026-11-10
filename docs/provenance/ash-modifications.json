@@ -382,6 +382,16 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/ipc/crash-reporting/crash-reporting.ts",
+      "sha256": "1784f4b248b8c1c00af3ad01aa808c5da02adfaef8846036d97e4c654e3d38d8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/diagnostics.ts",
+      "sha256": "54c21f00f2f1ac4e2c701d10bac82056bbdfd5794ad9fe99b1cdeddf2014e2b6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/ipc/notification-system-settings-link.ts",
       "sha256": "835f151637b2269125ea7c6d459cf1f1406f5aa3d24195618fd5c0177528cd13",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -907,6 +917,16 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/crash-report/CrashReportDialog.tsx",
+      "sha256": "d0189786d615211aa17710a21048d4df0ffce09f2320c58c8fd95727e966667c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/crash-report/CrashReportDialogSurface.tsx",
+      "sha256": "3334e97cccadea5e484e2becd2bbbdbf4143ca76a4136e568b82b9509663bbdc",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/maintenance/update-card/update-card-visibility.ts",
       "sha256": "5ab57253ea4944aef78439ec54f99db864c2d437e3e25a20cceed9e6f4f6e133",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -914,6 +934,11 @@
     {
       "path": "src/renderer/src/components/onboarding/OnboardingFlow.tsx",
       "sha256": "21a8f45008c94e8d8d8bae427d26bbdf283335eba921e9a1032576c634aea50a",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/onboarding/OnboardingLanguageSwitcher.tsx",
+      "sha256": "dd92dee5fa2c1cadb52159ef61decb70a6aa40d2879cfbffb442f47297ca5cc9",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -954,6 +979,26 @@
     {
       "path": "src/renderer/src/components/settings/general/general-search.ts",
       "sha256": "29964afc581c0d25d7b7b2bb8aa135f816bd01490aa5edb80927a5a9d7c28c4f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/settings/privacy/PrivacyDiagnosticBundleControls.tsx",
+      "sha256": "f60083341ef472bde4dbd7a2bfdf8b79e33fa8aac3d7f922b68bc7ca85aea9fd",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/settings/privacy/PrivacyDiagnosticsSection.tsx",
+      "sha256": "2922231e0f33e2494f68dc43dbf38508b7218834bc26c619622474971b1feaa0",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/settings/privacy/PrivacyPane.tsx",
+      "sha256": "26c102930fc82a570e148e88f5d1dfa401c449eb8b668bd983b5d062423a03b9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/settings/privacy/privacy-search.ts",
+      "sha256": "73b55cda01227872461e54af7431359a9e67dd0e70e121880963a907a00db2a8",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

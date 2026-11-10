@@ -2,6 +2,7 @@ import { clipboard, ipcMain } from 'electron'
 import {
   type CrashReportCopyDiagnosticsArgs,
   type CrashReportSubmitArgs,
+  type CrashReportSubmitResult,
   formatCrashReportText
 } from '../../../shared/crash-reporting'
 import type { CrashReportStore } from '../../crash-reporting/crash-report-store'
@@ -27,7 +28,7 @@ import {
   inFlightSubmissions,
   submittedReportIds
 } from './crash-reporting-sendable-reports'
-import { buildUncapturedCrashReportText, submitCrashReport } from './crash-reporting-submission'
+import { buildUncapturedCrashReportText } from './crash-reporting-submission'
 
 export function _resetRendererErrorReportDedupeForTests(): void {
   recentRendererErrorReportKeys.clear()
@@ -115,7 +116,13 @@ export function registerCrashReportingHandlers(store: CrashReportStore): void {
   })
 
   ipcMain.removeHandler('crashReports:submit')
-  ipcMain.handle('crashReports:submit', async (_event, args: CrashReportSubmitArgs) =>
-    submitCrashReport(store, args)
+  ipcMain.handle(
+    'crashReports:submit',
+    async (_event, _args: CrashReportSubmitArgs): Promise<CrashReportSubmitResult> => ({
+      ok: false,
+      status: null,
+      error: 'Ash IDE does not upload crash reports. Copy details locally instead.',
+      report: null
+    })
   )
 }

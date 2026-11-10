@@ -35,7 +35,7 @@ export function CrashReportDialog(): React.JSX.Element | null {
         let displayedReport = nextReport
         if (nextReport?.status === 'pending' && promptIfPresent) {
           try {
-            // Dismiss startup prompts once; retain report data for immediate send and later reopening through Help.
+            // Dismiss startup prompts once; preserve local report details for later review.
             await window.api.crashReports.dismiss({ reportId: nextReport.id })
             displayedReport = { ...nextReport, status: 'dismissed' as const }
           } catch (error) {

@@ -11,20 +11,19 @@ import {
   getDiagnosticBundleDescription,
   PrivacyDiagnosticBundleControls
 } from './PrivacyDiagnosticBundleControls'
-import { translate } from '@/i18n/i18n'
 import { diagnosticsErrorText } from './diagnostics-bundle-error-copy'
 
+/**
+ * User-initiated local diagnostic files only. Do not present or invoke inherited
+ * upload, remote ticket/deletion, or cloud support controls.
+ */
 export function PrivacyDiagnosticsSection(): React.JSX.Element {
   const [status, setStatus] = useState<DiagnosticsStatusPayload | null>(null)
   const [bundle, setBundle] = useState<DiagnosticsBundlePayload | null>(null)
   const [previewOpened, setPreviewOpened] = useState(false)
-  const [ticketId, setTicketId] = useState<string | null>(null)
   const [collecting, setCollecting] = useState(false)
   const [openingPreview, setOpeningPreview] = useState(false)
-  const [uploading, setUploading] = useState(false)
   const [discarding, setDiscarding] = useState(false)
-  const [copyingTicket, setCopyingTicket] = useState(false)
-  const [deletingTicket, setDeletingTicket] = useState(false)
   const mountedRef = useRef(true)
   const activeBundleSubmissionIdRef = useRef<string | null>(null)
 
@@ -35,7 +34,7 @@ export function PrivacyDiagnosticsSection(): React.JSX.Element {
         setStatus(next)
       }
     } catch {
-      /* Show N/A while IPC is unavailable. */
+      // Keep local creation disabled if the status cannot be checked.
     }
   }, [])
 
@@ -61,25 +60,13 @@ export function PrivacyDiagnosticsSection(): React.JSX.Element {
         await window.api.diagnostics.discardBundlePreview(nextBundle.bundleSubmissionId)
         return
       }
-      // Update retained preview IDs at mutation sites; unmount cleanup can precede passive ref mirrors.
       activeBundleSubmissionIdRef.current = nextBundle.bundleSubmissionId
       setBundle(nextBundle)
       setPreviewOpened(false)
-      setTicketId(null)
-      toast.success(
-        translate(
-          'auto.components.settings.PrivacyDiagnosticsSection.a2b3505c77',
-          'Review file created'
-        )
-      )
+      toast.success('Local diagnostic file created')
     } catch (error) {
       if (mountedRef.current) {
-        toast.error(
-          diagnosticsErrorText(
-            error,
-            translate('settings.diagnostics.errors.createFailed', 'Could not create review file')
-          )
-        )
+        toast.error(diagnosticsErrorText(error, 'Could not create local diagnostic file'))
       }
     } finally {
       if (mountedRef.current) {
@@ -99,63 +86,14 @@ export function PrivacyDiagnosticsSection(): React.JSX.Element {
         return
       }
       setPreviewOpened(true)
-      toast.success(
-        translate(
-          'auto.components.settings.PrivacyDiagnosticsSection.db3228e01a',
-          'Review file opened'
-        )
-      )
+      toast.success('Local diagnostic review file opened')
     } catch (error) {
       if (mountedRef.current) {
-        toast.error(
-          diagnosticsErrorText(
-            error,
-            translate('settings.diagnostics.errors.openFailed', 'Could not open review file')
-          )
-        )
+        toast.error(diagnosticsErrorText(error, 'Could not open local review file'))
       }
     } finally {
       if (mountedRef.current) {
         setOpeningPreview(false)
-      }
-    }
-  }, [bundle])
-
-  const handleUploadBundle = useCallback(async (): Promise<void> => {
-    if (!bundle) {
-      return
-    }
-    setUploading(true)
-    try {
-      const upload = await window.api.diagnostics.uploadBundle(bundle.bundleSubmissionId)
-      if (!mountedRef.current) {
-        return
-      }
-      if ('canceled' in upload) {
-        return
-      }
-      activeBundleSubmissionIdRef.current = null
-      setBundle(null)
-      setPreviewOpened(false)
-      setTicketId(upload.ticketId)
-      toast.success(
-        translate(
-          'auto.components.settings.PrivacyDiagnosticsSection.49fc6c80e8',
-          'Diagnostics sent'
-        )
-      )
-    } catch (error) {
-      if (mountedRef.current) {
-        toast.error(
-          diagnosticsErrorText(
-            error,
-            translate('settings.diagnostics.errors.sendFailed', 'Could not send diagnostics')
-          )
-        )
-      }
-    } finally {
-      if (mountedRef.current) {
-        setUploading(false)
       }
     }
   }, [bundle])
@@ -173,20 +111,10 @@ export function PrivacyDiagnosticsSection(): React.JSX.Element {
       activeBundleSubmissionIdRef.current = null
       setBundle(null)
       setPreviewOpened(false)
-      toast.success(
-        translate(
-          'auto.components.settings.PrivacyDiagnosticsSection.860bca9ec9',
-          'Review file discarded'
-        )
-      )
+      toast.success('Local diagnostic review file discarded')
     } catch (error) {
       if (mountedRef.current) {
-        toast.error(
-          diagnosticsErrorText(
-            error,
-            translate('settings.diagnostics.errors.discardFailed', 'Could not discard review file')
-          )
-        )
+        toast.error(diagnosticsErrorText(error, 'Could not discard local review file'))
       }
     } finally {
       if (mountedRef.current) {
@@ -195,171 +123,38 @@ export function PrivacyDiagnosticsSection(): React.JSX.Element {
     }
   }, [bundle])
 
-  const handleCopyTicket = useCallback(async (): Promise<void> => {
-    if (!ticketId) {
-      return
-    }
-    setCopyingTicket(true)
-    try {
-      await window.api.ui.writeClipboardText(ticketId)
-      if (!mountedRef.current) {
-        return
-      }
-      toast.success(
-        translate(
-          'auto.components.settings.PrivacyDiagnosticsSection.13eb2c65a1',
-          'Reference ID copied'
-        )
-      )
-    } catch {
-      if (mountedRef.current) {
-        toast.error(
-          translate(
-            'auto.components.settings.PrivacyDiagnosticsSection.7a4944595b',
-            'Could not copy reference ID'
-          )
-        )
-      }
-    } finally {
-      if (mountedRef.current) {
-        setCopyingTicket(false)
-      }
-    }
-  }, [ticketId])
-
-  const handleDeleteUploadedBundle = useCallback(async (): Promise<void> => {
-    if (!ticketId) {
-      return
-    }
-    setDeletingTicket(true)
-    try {
-      await window.api.diagnostics.deleteBundle(ticketId)
-      if (!mountedRef.current) {
-        return
-      }
-      setTicketId(null)
-      toast.success(
-        translate(
-          'auto.components.settings.PrivacyDiagnosticsSection.c18cbe45df',
-          'Sent diagnostics deleted'
-        )
-      )
-    } catch (error) {
-      if (mountedRef.current) {
-        toast.error(
-          diagnosticsErrorText(
-            error,
-            translate(
-              'settings.diagnostics.errors.deleteFailed',
-              'Could not delete sent diagnostics'
-            )
-          )
-        )
-      }
-    } finally {
-      if (mountedRef.current) {
-        setDeletingTicket(false)
-      }
-    }
-  }, [ticketId])
-
   return (
     <>
       {status?.disabledReason ? (
-        <DiagnosticsDisabledStateNote reason={status.disabledReason} />
+        <p className="text-xs text-muted-foreground">
+          Local diagnostic collection is disabled by the current environment (
+          {status.disabledReason}).
+        </p>
       ) : null}
       <Separator />
-      <PrivacyDiagnosticsRow
-        icon={<FileText className="size-4" />}
-        title={translate(
-          'auto.components.settings.PrivacyDiagnosticsSection.af2fc82cde',
-          'Send app diagnostics to support'
-        )}
-        description={getDiagnosticBundleDescription({ bundle, previewOpened, ticketId })}
-      >
-        <PrivacyDiagnosticBundleControls
-          status={status}
-          bundle={bundle}
-          previewOpened={previewOpened}
-          ticketId={ticketId}
-          collecting={collecting}
-          openingPreview={openingPreview}
-          uploading={uploading}
-          discarding={discarding}
-          copyingTicket={copyingTicket}
-          deletingTicket={deletingTicket}
-          onCollect={handleCollectBundle}
-          onOpenPreview={handleOpenPreview}
-          onUpload={handleUploadBundle}
-          onDiscard={handleDiscardBundle}
-          onCopyTicket={handleCopyTicket}
-          onDeleteUploadedBundle={handleDeleteUploadedBundle}
-          onDismissTicket={() => setTicketId(null)}
-        />
-      </PrivacyDiagnosticsRow>
-    </>
-  )
-}
-
-function DiagnosticsDisabledStateNote({
-  reason
-}: {
-  reason: NonNullable<DiagnosticsStatusPayload['disabledReason']>
-}): React.JSX.Element {
-  const message =
-    reason === 'do_not_track'
-      ? translate(
-          'auto.components.settings.PrivacyDiagnosticsRows.5a7cbe069a',
-          'DO_NOT_TRACK=1 is set — creating and sending diagnostic files is disabled.'
-        )
-      : reason === 'orca_telemetry_disabled'
-        ? translate(
-            'auto.components.settings.PrivacyDiagnosticsRows.63d03261d1',
-            'ORCA_TELEMETRY_DISABLED=1 is set — creating and sending diagnostic files is disabled.'
-          )
-        : reason === 'orca_diagnostics_disabled'
-          ? translate(
-              'auto.components.settings.PrivacyDiagnosticsRows.d37e92a06b',
-              'ORCA_DIAGNOSTICS_DISABLED=1 is set — app diagnostics are off.'
-            )
-          : reason === 'ci'
-            ? translate(
-                'auto.components.settings.PrivacyDiagnosticsRows.5ebb31e1fb',
-                'Running in CI — diagnostics are off.'
-              )
-            : translate(
-                'auto.components.settings.PrivacyDiagnosticsRows.e27c8d45bf',
-                'Diagnostics are disabled by an environment variable.'
-              )
-
-  return (
-    <div className="rounded border border-dashed border-border/60 bg-card/30 px-3 py-2 text-xs text-muted-foreground">
-      {message}
-    </div>
-  )
-}
-
-function PrivacyDiagnosticsRow({
-  icon,
-  title,
-  description,
-  children
-}: {
-  icon: React.ReactNode
-  title: string
-  description: string
-  children: React.ReactNode
-}): React.JSX.Element {
-  return (
-    <div className="flex items-center justify-between gap-4 py-2">
-      <div className="flex min-w-0 flex-1 items-start gap-2.5">
-        <div className="mt-0.5 text-muted-foreground">{icon}</div>
-        <div className="min-w-0 space-y-0.5">
-          <Label className="text-sm">{title}</Label>
-          <p className="text-xs text-muted-foreground">{description}</p>
+      <div className="flex items-center justify-between gap-4 py-2">
+        <div className="flex min-w-0 flex-1 items-start gap-2.5">
+          <FileText className="mt-0.5 size-4 text-muted-foreground" />
+          <div className="min-w-0 space-y-0.5">
+            <Label className="text-sm">Local app diagnostics</Label>
+            <p className="text-xs text-muted-foreground">
+              {getDiagnosticBundleDescription({ bundle, previewOpened })}
+            </p>
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+          <PrivacyDiagnosticBundleControls
+            status={status}
+            bundle={bundle}
+            collecting={collecting}
+            openingPreview={openingPreview}
+            discarding={discarding}
+            onCollect={handleCollectBundle}
+            onOpenPreview={handleOpenPreview}
+            onDiscard={handleDiscardBundle}
+          />
         </div>
       </div>
-      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">{children}</div>
-    </div>
+    </>
   )
 }
