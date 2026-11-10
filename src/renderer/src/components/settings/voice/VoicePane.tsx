@@ -1,3 +1,4 @@
+import { requireLegacySpeechApi } from '@/lib/require-legacy-speech-api'
 import { UnsealedCredentialNotice } from '../../provider-accounts/UnsealedCredentialNotice'
 import type { SecretAtRestProtection } from '../../../../../shared/secret-at-rest-protection'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -64,7 +65,7 @@ export function VoicePane({ settings, updateSettings }: VoicePaneProps): React.J
   useEffect(() => {
     let cancelled = false
     refreshModelStates()
-    void window.api.speech
+    void requireLegacySpeechApi()
       .getCatalog()
       .then((nextCatalog) => {
         if (!cancelled) {
@@ -72,7 +73,7 @@ export function VoicePane({ settings, updateSettings }: VoicePaneProps): React.J
         }
       })
       .catch(() => {})
-    void window.api.speech
+    void requireLegacySpeechApi()
       .getOpenAiApiKeyStatus()
       .then((status) => {
         if (cancelled) {
@@ -91,13 +92,14 @@ export function VoicePane({ settings, updateSettings }: VoicePaneProps): React.J
   }, [refreshModelStates, updateVoiceSettings, voiceSettings.openAiApiKeyConfigured])
 
   useEffect(() => {
-    const cleanup = window.api.speech.onDownloadProgress(() => {
+    const cleanup = requireLegacySpeechApi().onDownloadProgress(() => {
       refreshModelStates()
     })
     return cleanup
   }, [refreshModelStates])
 
   const toggleVoiceDictation = async (): Promise<void> => {
+    requireLegacySpeechApi()
     await handleVoiceDictationToggle({
       voiceEnabled: voiceSettings.enabled,
       markFeatureTipsSeen,
@@ -153,7 +155,7 @@ export function VoicePane({ settings, updateSettings }: VoicePaneProps): React.J
   const saveOpenAiApiKey = async (): Promise<void> => {
     setOpenAiKeyPending(true)
     try {
-      await window.api.speech.saveOpenAiApiKey(openAiApiKeyDraft)
+      await requireLegacySpeechApi().saveOpenAiApiKey(openAiApiKeyDraft)
       updateVoiceSettings({
         openAiApiKeyConfigured: true,
         sttModel: pendingCloudModelId ?? voiceSettings.sttModel
@@ -184,7 +186,7 @@ export function VoicePane({ settings, updateSettings }: VoicePaneProps): React.J
   const clearOpenAiApiKey = async (): Promise<void> => {
     setOpenAiKeyPending(true)
     try {
-      await window.api.speech.clearOpenAiApiKey()
+      await requireLegacySpeechApi().clearOpenAiApiKey()
       updateVoiceSettings({
         openAiApiKeyConfigured: false,
         sttModel: selectedModel?.provider === 'openai' ? '' : voiceSettings.sttModel

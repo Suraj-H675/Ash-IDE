@@ -14,7 +14,6 @@ import { deriveNeededSectionIds } from '../page/settings-load-performance'
 import { DESKTOP_TERMINAL_SCROLLBACK_ROW_PRESETS as SCROLLBACK_PRESETS_ROWS } from '../../../../../shared/terminal/replay/terminal-scrollback-policy'
 import type { SettingsStoreModel } from '../page/use-settings-store-model'
 import type { SettingsInteractionController } from '../page/use-settings-interaction-controller'
-import { hasReadyVoiceModel } from './settings-navigation-foundations'
 
 export function useSettingsNavigationModel(
   model: SettingsStoreModel,
@@ -86,16 +85,6 @@ export function useSettingsNavigationModel(
           plan: applicableSkillPlan
         })
       )
-      if (model.settings) {
-        next.set(
-          'voice',
-          model.voiceModelStatesLoading
-            ? 'checking'
-            : hasReadyVoiceModel(model.settings, model.modelStates)
-              ? 'installed'
-              : 'install'
-        )
-      }
     }
     return next
   }, [
@@ -105,12 +94,9 @@ export function useSettingsNavigationModel(
     linearSkillLoading,
     linearSkills,
     model.linearConnected,
-    model.modelStates,
-    model.settings,
     model.showDesktopOnlySettings,
     model.skillFreshnessApplies,
     model.skillPlan,
-    model.voiceModelStatesLoading,
     orchestrationSkillInstalled,
     orchestrationSkillLoading
   ])

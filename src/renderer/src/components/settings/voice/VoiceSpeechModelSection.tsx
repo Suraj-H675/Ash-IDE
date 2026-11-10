@@ -1,3 +1,4 @@
+import { requireLegacySpeechApi } from '@/lib/require-legacy-speech-api'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import type {
@@ -100,16 +101,18 @@ export function VoiceSpeechModelSection({
                   } else if (!isDownloading) {
                     // Keep the menu open so download progress remains visible.
                     event.preventDefault()
-                    void window.api.speech.downloadModel(manifest.id).catch((error: unknown) =>
-                      toast.error(
-                        translate(
-                          'auto.components.settings.VoicePane.cfde55c7b0',
-                          'Failed to download model.'
-                        ),
-                        // Include the raw cause because it is the diagnosable failure users can report.
-                        { description: describeSpeechModelDownloadError(error) }
+                    void requireLegacySpeechApi()
+                      .downloadModel(manifest.id)
+                      .catch((error: unknown) =>
+                        toast.error(
+                          translate(
+                            'auto.components.settings.VoicePane.cfde55c7b0',
+                            'Failed to download model.'
+                          ),
+                          // Include the raw cause because it is the diagnosable failure users can report.
+                          { description: describeSpeechModelDownloadError(error) }
+                        )
                       )
-                    )
                   }
                 }}
                 className={`group flex items-center gap-2.5 py-2.5 ${
@@ -189,7 +192,7 @@ export function VoiceSpeechModelSection({
                         next.add(manifest.id)
                         return next
                       })
-                      void window.api.speech
+                      void requireLegacySpeechApi()
                         .deleteModel(manifest.id)
                         .then(onRefreshModelStates)
                         .catch(() =>

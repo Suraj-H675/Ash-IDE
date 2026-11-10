@@ -174,7 +174,8 @@ export type PreloadApi = {
   plugins: PluginsApi
   agentStatus: AgentStatusApi
   mobile: MobileApi
-  speech: SpeechApi
+  /** Optional legacy compatibility surface; desktop Ash does not expose speech. */
+  speech?: SpeechApi
 }
 
 export type {

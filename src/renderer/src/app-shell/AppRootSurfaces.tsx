@@ -21,10 +21,7 @@ import type { UpdateStatus } from '../../../shared/update-status-types'
 import { useLazyModalMounts } from './use-lazy-modal-mounts'
 import { AppNotificationCards } from './AppNotificationCards'
 import { usePreloadWorktreeJumpPalette, WorktreeJumpPalette } from './worktree-jump-palette-preload'
-import {
-  selectAppRootSurfacePetEnabled,
-  selectAppRootSurfaceVoiceEnabled
-} from './app-root-surface-settings'
+import { selectAppRootSurfacePetEnabled } from './app-root-surface-settings'
 import type { FloatingWorkspacePanelState } from './use-floating-workspace-panel'
 import type { OnboardingGate } from './use-onboarding-and-feature-tips'
 
@@ -65,11 +62,6 @@ const DeleteWorktreeDialog = lazy(
 )
 const PreservedBranchBatchReviewModal = lazy(
   () => import('../components/sidebar/workspace-actions/deletion/PreservedBranchBatchReviewModal')
-)
-const DictationController = lazy(() =>
-  import('../components/dictation/DictationController').then((module) => ({
-    default: module.DictationController
-  }))
 )
 const SshPassphraseDialog = lazy(() =>
   import('../components/ssh-authentication/SshPassphraseDialog').then((module) => ({
@@ -123,19 +115,16 @@ export const AppRootSurfaces = memo(function AppRootSurfaces(props: {
   const activeView = useAppStore((s) => s.activeView)
   const activeModal = useAppStore((s) => s.activeModal)
   // Subscribe only to consumed settings so unrelated preferences cannot rerender every overlay.
-  const voiceEnabled = useAppStore(selectAppRootSurfaceVoiceEnabled)
   const petEnabled = useAppStore(selectAppRootSurfacePetEnabled)
   const statusBarVisible = useAppStore((s) => s.statusBarVisible)
   const persistedUIReady = useAppStore((s) => s.persistedUIReady)
   const petVisible = useAppStore((s) => s.petVisible)
-  const dictationState = useAppStore((s) => s.dictationState)
   const updateStatus = useAppStore((s) => s.updateStatus)
   const activeContextualTourId = useAppStore((s) => s.activeContextualTourId)
   const hasSshCredentialRequest = useAppStore((s) => s.sshCredentialQueue.length > 0)
 
   const shouldMountSetupGuideTelemetryObserver = persistedUIReady
   const shouldMountUpdateCard = shouldMountUpdateCardForStatus(updateStatus)
-  const shouldMountDictationController = voiceEnabled || dictationState !== 'idle'
   const renderPetOverlay = shouldRenderPetOverlay({ persistedUIReady, petEnabled, petVisible })
 
   return (
@@ -366,13 +355,6 @@ export const AppRootSurfaces = memo(function AppRootSurfaces(props: {
             document.body
           )
         : null}
-      {shouldMountDictationController ? (
-        <Suspense fallback={null}>
-          <OverlayBoundary boundaryId="overlay.dictation" resetKey={activeView}>
-            <DictationController />
-          </OverlayBoundary>
-        </Suspense>
-      ) : null}
       <OverlayBoundary boundaryId="overlay.recent-tab-switcher" resetKey={activeView}>
         <RecentTabSwitcher />
       </OverlayBoundary>
