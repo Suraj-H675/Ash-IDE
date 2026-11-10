@@ -91,13 +91,6 @@ import {
   AntigravityChatSignInFlowParams
 } from './antigravity-accounts-params'
 import { ArtifactsDeleteParams, ListOptions, SourceRequest, WriteRequest } from './artifacts-params'
-import {
-  AutomationCreate,
-  AutomationId,
-  AutomationList,
-  AutomationRuns,
-  AutomationUpdate
-} from './automation-params'
 import { CertificateProceed } from './browser-core-params'
 import { MouseClick } from './browser-extras-params'
 import { BrowserIdentitySet, ProfileCreate } from './browser-identity-params'
@@ -862,13 +855,6 @@ export const RPC_PARAMS_BY_METHOD = {
   'artifacts.share': WriteRequest,
   'artifacts.unshare': SourceRequest,
   'artifacts.update': WriteRequest,
-  'automation.create': AutomationCreate,
-  'automation.delete': AutomationId,
-  'automation.list': AutomationList,
-  'automation.runNow': AutomationId,
-  'automation.runs': AutomationRuns,
-  'automation.show': AutomationId,
-  'automation.update': AutomationUpdate,
   'browser.back': ExpectUrlBrowserTarget,
   'browser.capture.start': BrowserTarget,
   'browser.capture.stop': BrowserTarget,
