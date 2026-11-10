@@ -6,6 +6,7 @@ import { useMountedRef } from '../../hooks/useMountedRef'
 import { translate } from '../../i18n/i18n'
 import { Button } from '../ui/button'
 import { cn } from '../../lib/utils'
+import { requireLegacyMobileApi } from '../../lib/require-legacy-mobile-api'
 
 type WindowsFirewallNoticeProps = {
   pairingReady: boolean
@@ -34,7 +35,7 @@ export function WindowsFirewallNotice({
       return null
     }
     try {
-      const next = await window.api.mobile.getWindowsFirewallStatus(
+      const next = await requireLegacyMobileApi().getWindowsFirewallStatus(
         address ? { address } : undefined
       )
       if (mountedRef.current && inspectIdRef.current === inspectId) {
@@ -76,7 +77,7 @@ export function WindowsFirewallNotice({
   async function repair(): Promise<void> {
     setRepairing(true)
     try {
-      const result = await window.api.mobile.repairWindowsFirewall()
+      const result = await requireLegacyMobileApi().repairWindowsFirewall()
       if (!mountedRef.current) {
         return
       }
@@ -188,7 +189,7 @@ export function WindowsFirewallNotice({
               type="button"
               size="sm"
               variant="outline"
-              onClick={() => void window.api.mobile.openWindowsNetworkSettings()}
+              onClick={() => void requireLegacyMobileApi().openWindowsNetworkSettings()}
             >
               {translate(
                 'auto.components.mobile.WindowsFirewallNotice.open-settings',

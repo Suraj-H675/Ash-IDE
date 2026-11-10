@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateA
 import { toast } from 'sonner'
 import { useMountedRef } from '@/hooks/useMountedRef'
 import { useMobilePairingDevicePolling } from '../settings/mobile/pairing/mobile-pairing-device-polling'
+import { requireLegacyMobileApi } from '@/lib/require-legacy-mobile-api'
 import type { PairedDevice, StepIndex } from './MobileHero'
 import {
   shouldShowPairedAfterDeviceRefresh,
@@ -124,7 +125,7 @@ export function useMobilePagePairedDevices({
       revokingDeviceIdsRef.current.add(deviceId)
       setRevokingDeviceIds((prev) => [...prev, deviceId])
       try {
-        const { revoked } = await window.api.mobile.revokeDevice({ deviceId })
+        const { revoked } = await requireLegacyMobileApi().revokeDevice({ deviceId })
         // revoked=false is failure; do not refresh, announce success or route away.
         if (!revoked) {
           throw new Error('mobile.revokeDevice returned revoked=false')

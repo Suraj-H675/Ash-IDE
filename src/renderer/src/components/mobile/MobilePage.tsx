@@ -18,6 +18,7 @@ import { useMobilePairingQrInvalidation } from './use-mobile-pairing-qr-invalida
 import { useMobileInstallActions } from './use-mobile-install-actions'
 import { useMobilePagePairedDevices } from './use-mobile-page-paired-devices'
 import type { MobileRelayMintFailure } from '../../../../shared/remote-runtime/relay/mobile-relay-mint-failure'
+import { requireLegacyMobileApi } from '@/lib/require-legacy-mobile-api'
 import {
   type MobilePairingAddressChange,
   useMobilePairingAddressPreference
@@ -64,7 +65,8 @@ export default function MobilePage(): React.JSX.Element {
   const pairingAddressSettled = addressedFlowVisit === pairingFlowVisit
   const networkInterfacesRequestIdRef = useRef(0)
   const mountedRef = useMountedRef()
-  const closeMobilePage = useAppStore((s) => s.closeMobilePage)
+  const setActiveView = useAppStore((s) => s.setActiveView)
+  const closeMobilePage = useCallback(() => setActiveView('terminal'), [setActiveView])
   const showMobileButton = useAppStore((s) => s.settings?.showMobileButton !== false)
   const updateSettings = useAppStore((s) => s.updateSettings)
   const {
@@ -191,7 +193,7 @@ export default function MobilePage(): React.JSX.Element {
       setRefreshingNetworkInterfaces(true)
     }
     try {
-      const result = await window.api.mobile.listNetworkInterfaces()
+      const result = await requireLegacyMobileApi().listNetworkInterfaces()
       // Only the latest lookup may move the address; stale selection changes would remint over the advertised offer.
       if (mountedRef.current && requestId === networkInterfacesRequestIdRef.current) {
         setNetworkInterfaces(result.interfaces)
@@ -221,7 +223,7 @@ export default function MobilePage(): React.JSX.Element {
         return true
       }
       try {
-        const result = await window.api.mobile.getPairingQR({ address, connectionMode })
+        const result = await requireLegacyMobileApi().getPairingQR({ address, connectionMode })
         return result.available && result.qrDataUrl !== null
       } catch {
         return false

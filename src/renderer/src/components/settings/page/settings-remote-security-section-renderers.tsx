@@ -29,11 +29,7 @@ export function renderServersSettingsSection(context: SettingsRenderContext): Re
               )
         }
         searchEntries={navigation.getSectionSearchEntries('servers')}
-        headerAction={
-          mounted ? (
-            <RuntimeServersHeaderActions canGeneratePairingUrl={!model.isWebClient} />
-          ) : undefined
-        }
+        headerAction={mounted ? <RuntimeServersHeaderActions /> : undefined}
         // Rows/cards already supply surfaces; another frame would nest cards.
         bodyClassName="rounded-none border-0 bg-transparent px-0 py-0 shadow-none"
       >
@@ -41,7 +37,6 @@ export function renderServersSettingsSection(context: SettingsRenderContext): Re
           <RuntimeEnvironmentsPane
             settings={model.settings}
             setActiveRuntimeEnvironmentPreference={model.setActiveRuntimeEnvironmentPreference}
-            canGeneratePairingUrl={!model.isWebClient}
             allowLocalRuntime={!model.isWebClient}
             addServerIntentSignal={model.remoteServerAddIntentSignal}
           />

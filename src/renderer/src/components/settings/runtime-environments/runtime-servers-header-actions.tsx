@@ -11,7 +11,6 @@ import {
   DropdownMenuTrigger
 } from '../../ui/dropdown-menu'
 import { useRuntimeServersPage } from './runtime-servers-page-context'
-import { RuntimeShareComputerButton } from './pairing/runtime-share-computer-button'
 import { getManagedOrcadApi } from './managed-servers/use-managed-server-catalog'
 
 function AddServerMenuItem({
@@ -41,11 +40,7 @@ function AddServerMenuItem({
   )
 }
 
-export function RuntimeServersHeaderActions({
-  canGeneratePairingUrl
-}: {
-  canGeneratePairingUrl: boolean
-}): React.JSX.Element {
+export function RuntimeServersHeaderActions(): React.JSX.Element {
   const { setDialog } = useRuntimeServersPage()
   const remoteServerUpdates = useAppStore((state) => state.remoteServerUpdates)
   const remoteServerUpdatesChecking = useAppStore((state) => state.remoteServerUpdatesChecking)
@@ -149,7 +144,6 @@ export function RuntimeServersHeaderActions({
           </DropdownMenuContent>
         </DropdownMenu>
       </ButtonGroup>
-      {canGeneratePairingUrl ? <RuntimeShareComputerButton /> : null}
     </div>
   )
 }

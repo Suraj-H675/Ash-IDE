@@ -26,6 +26,7 @@ import type { MobileRelayMintFailure } from '../../../../../shared/remote-runtim
 import { useMobilePairingConnectionMode } from '../../mobile/use-mobile-pairing-connection-mode'
 import { useMobilePairingAddressPreference } from '../../mobile/use-mobile-pairing-address-preference'
 import { shouldOpenMobilePairingAddress } from './mobile-pane-search'
+import { requireLegacyMobileApi } from '@/lib/require-legacy-mobile-api'
 
 export function MobilePane(): React.JSX.Element {
   const autoRestoreFitMs = useAppStore((s) => s.settings?.mobileAutoRestoreFitMs ?? null)
@@ -131,7 +132,7 @@ export function MobilePane(): React.JSX.Element {
     async (opts: { notifyOnError?: boolean } = {}) => {
       setRefreshingNetworkInterfaces(true)
       try {
-        const result = await window.api.mobile.listNetworkInterfaces()
+        const result = await requireLegacyMobileApi().listNetworkInterfaces()
         if (mountedRef.current) {
           setNetworkInterfaces(result.interfaces)
           selectAddressAfterRefresh(result.interfaces)
@@ -170,7 +171,7 @@ export function MobilePane(): React.JSX.Element {
       setLoading(true)
       setQrError(false)
       try {
-        const result = await window.api.mobile.getPairingQR({
+        const result = await requireLegacyMobileApi().getPairingQR({
           ...(selectedAddress ? { address: selectedAddress } : {}),
           connectionMode: preferredMode,
           ...(opts.rotate || rotateNextQr ? { rotate: true } : {})

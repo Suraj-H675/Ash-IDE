@@ -16,6 +16,7 @@ import {
   type RuntimePairingIntent,
   type RuntimePairingUrlGeneratorProps
 } from './runtime-pairing-link-state'
+import { requireLegacyMobileApi } from '@/lib/require-legacy-mobile-api'
 
 export function RuntimePairingUrlGenerator({
   framed = true,
@@ -76,7 +77,7 @@ export function RuntimePairingUrlGenerator({
         setIsLoadingAccessGrants(true)
       }
       try {
-        const result = await window.api.mobile.listRuntimeAccessGrants()
+        const result = await requireLegacyMobileApi().listRuntimeAccessGrants()
         if (mountedRef.current && loadId === accessGrantLoadIdRef.current) {
           setRuntimeAccessGrants(result.grants)
         }
@@ -112,7 +113,7 @@ export function RuntimePairingUrlGenerator({
         setRefreshingNetworkInterfaces(true)
       }
       try {
-        const result = await window.api.mobile.listNetworkInterfaces()
+        const result = await requireLegacyMobileApi().listNetworkInterfaces()
         if (mountedRef.current && loadId === networkInterfaceLoadIdRef.current) {
           setNetworkInterfaces(result.interfaces)
         }
@@ -185,7 +186,7 @@ export function RuntimePairingUrlGenerator({
     }
     setIsGeneratingPairing(true)
     try {
-      const result = await window.api.mobile.getRuntimePairingUrl({
+      const result = await requireLegacyMobileApi().getRuntimePairingUrl({
         address,
         rotate: true,
         // Send declared reach with the address; loopback alone cannot distinguish local-only intent from a tunnel frontend.
@@ -252,7 +253,9 @@ export function RuntimePairingUrlGenerator({
   const revokeRuntimeAccess = async (grant: RuntimeAccessGrant): Promise<void> => {
     setRevokingGrantId(grant.deviceId)
     try {
-      const result = await window.api.mobile.revokeRuntimeAccess({ deviceId: grant.deviceId })
+      const result = await requireLegacyMobileApi().revokeRuntimeAccess({
+        deviceId: grant.deviceId
+      })
       if (!result.revoked) {
         if (mountedRef.current) {
           toast.error(

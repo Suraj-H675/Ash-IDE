@@ -6,6 +6,7 @@ import {
   type MobilePairingConnectionMode
 } from '../../../../shared/remote-runtime/pairing/mobile-pairing-connection-mode'
 import type { MobileRelayMintFailure } from '../../../../shared/remote-runtime/relay/mobile-relay-mint-failure'
+import { requireLegacyMobileApi } from '@/lib/require-legacy-mobile-api'
 
 type MutableRef<T> = { current: T }
 
@@ -65,7 +66,7 @@ export function useMobilePairingGeneration(params: {
       }
       try {
         const address = addressOverride ?? selectedAddress
-        const result = await window.api.mobile.getPairingQR({
+        const result = await requireLegacyMobileApi().getPairingQR({
           ...(address ? { address } : {}),
           connectionMode: preferredMode,
           ...(rotate ? { rotate: true } : {})

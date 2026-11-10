@@ -114,6 +114,7 @@ jobs:
             src/renderer/src/components/settings/privacy/ash-local-only-privacy.test.tsx \
             src/renderer/src/components/terminal-pane/legacy-relay-bridge-panes-no-preload.test.ts \
             src/renderer/src/app-shell/ash-excluded-speech-entrypoints.test.ts \
+            src/renderer/src/app-shell/ash-excluded-mobile-entrypoints.test.ts \
             src/renderer/src/web/preload-api/ash-no-product-telemetry.test.ts
       - name: Build the Ash CLI
         run: ORCA_CLI_BUILD_COMPILER=tsrs node config/scripts/cli-build/build-cli.mjs

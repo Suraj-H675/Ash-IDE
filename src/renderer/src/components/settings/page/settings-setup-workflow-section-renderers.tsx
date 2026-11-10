@@ -2,7 +2,6 @@ import { SessionHistorySettingsPane } from '../session-history/SessionHistorySet
 import { ArtifactsSettingsPane } from '../artifacts/ArtifactsSettingsPane'
 import { GeneralPane } from '../general/GeneralPane'
 import { IntegrationsPane } from '../integrations/IntegrationsPane'
-import { MobileSettingsPane } from '../mobile/MobileSettingsPane'
 import { OrcaAccountSettingsPane } from '../accounts/orca/OrcaAccountSettingsPane'
 import { SettingsSetupGuidePane } from '../setup-guide/SettingsSetupGuidePane'
 import { ShareSkillsSettingsPane } from '../skills/sharing/ShareSkillsSettingsPane'
@@ -94,26 +93,6 @@ export function renderIntegrationsSettingsSection(
       {view.isSectionMounted('integrations') ? <IntegrationsPane /> : null}
     </SettingsSection>
   )
-}
-
-export function renderMobileSettingsSection(
-  context: SettingsRenderContext
-): React.JSX.Element | null {
-  const { model, navigation, view } = context
-  return model.showDesktopOnlySettings ? (
-    <SettingsSection
-      id="mobile"
-      title={translate('auto.components.settings.Settings.c40dadaac8', 'Mobile')}
-      badge="Beta"
-      description={translate(
-        'auto.components.settings.Settings.c6c01ac209',
-        'Control terminals and agents from your phone.'
-      )}
-      searchEntries={navigation.getSectionSearchEntries('mobile')}
-    >
-      {view.isSectionMounted('mobile') ? <MobileSettingsPane /> : null}
-    </SettingsSection>
-  ) : null
 }
 
 export function renderArtifactsSettingsSection(context: SettingsRenderContext): React.JSX.Element {

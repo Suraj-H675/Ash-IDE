@@ -29,7 +29,6 @@ import { LOCAL_RUNTIME_VALUE, NO_RUNTIME_VALUE } from './runtime-environment-sel
 type RuntimeEnvironmentsPaneProps = {
   settings: GlobalSettings
   setActiveRuntimeEnvironmentPreference: (environmentId: string | null) => Promise<boolean>
-  canGeneratePairingUrl?: boolean
   allowLocalRuntime?: boolean
   addServerIntentSignal?: number
 }
@@ -37,7 +36,6 @@ type RuntimeEnvironmentsPaneProps = {
 export function RuntimeEnvironmentsPane({
   settings,
   setActiveRuntimeEnvironmentPreference,
-  canGeneratePairingUrl = true,
   allowLocalRuntime = true,
   addServerIntentSignal
 }: RuntimeEnvironmentsPaneProps): React.JSX.Element {
@@ -151,7 +149,7 @@ export function RuntimeEnvironmentsPane({
   const removingActiveServer = pendingRemove
     ? isRuntimeEnvironmentRemovalBlocked(settings.activeRuntimeEnvironmentId, pendingRemove.id)
     : false
-  const searchEntry = canGeneratePairingUrl
+  const searchEntry = allowLocalRuntime
     ? getRuntimeEnvironmentsSearchEntry()
     : getWebRuntimeEnvironmentsSearchEntry()
   const reloadAll = (): void => {

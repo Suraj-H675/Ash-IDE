@@ -18,7 +18,6 @@ import {
   renderSessionHistorySettingsSection,
   renderGeneralSettingsSection,
   renderIntegrationsSettingsSection,
-  renderMobileSettingsSection,
   renderOrcaAccountSettingsSection,
   renderSetupGuideSettingsSection,
   renderShareSkillsSettingsSection
@@ -141,7 +140,6 @@ export function renderSettingsPage(context: SettingsRenderContext): React.JSX.El
                   {renderSetupGuideSettingsSection(context)}
                   {renderGeneralSettingsSection(context)}
                   {renderIntegrationsSettingsSection(context)}
-                  {renderMobileSettingsSection(context)}
                   {renderArtifactsSettingsSection(context)}
                   {renderShareSkillsSettingsSection(context)}
                   {renderSessionHistorySettingsSection(context)}

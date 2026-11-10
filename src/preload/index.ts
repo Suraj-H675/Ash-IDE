@@ -85,7 +85,6 @@ import { cursorAccountsApi } from './api/cursor-accounts-bridge'
 import { sshApi } from './api/ssh-bridge'
 import { plainSshTerminalApi } from './api/plain-ssh-terminal-bridge'
 import { e2eApi } from './api/e2e-bridge'
-import { mobileApi } from './api/mobile-bridge'
 import { agentStatusApi } from './api/agent-status-bridge'
 
 installBrowserFindListener()
@@ -187,7 +186,6 @@ const api = {
   ssh: sshApi,
   plainSsh: plainSshTerminalApi,
   e2e: e2eApi,
-  mobile: mobileApi,
   agentStatus: agentStatusApi
 } satisfies PreloadApi
 

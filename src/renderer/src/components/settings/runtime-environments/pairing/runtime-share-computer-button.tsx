@@ -15,6 +15,7 @@ import {
 import { MachineNameField } from '../../../machine-identity/MachineNameField'
 import { RuntimePairingUrlGenerator } from './RuntimePairingUrlGenerator'
 import { usePublishedMachineName } from '../../../machine-identity/use-published-machine-name'
+import { requireLegacyMobileApi } from '@/lib/require-legacy-mobile-api'
 
 /** Desktop only: lets other devices pair with this computer. */
 export function RuntimeShareComputerButton(): React.JSX.Element {
@@ -27,7 +28,7 @@ export function RuntimeShareComputerButton(): React.JSX.Element {
 
   const loadActiveLinkCount = useCallback(async () => {
     try {
-      const result = await window.api.mobile.listRuntimeAccessGrants()
+      const result = await requireLegacyMobileApi().listRuntimeAccessGrants()
       if (mountedRef.current) {
         setActiveLinkCount(result.grants.length)
       }

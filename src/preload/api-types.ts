@@ -173,7 +173,8 @@ export type PreloadApi = {
   gitBash: RuntimeApi['gitBash']
   plugins: PluginsApi
   agentStatus: AgentStatusApi
-  mobile: MobileApi
+  /** Optional legacy compatibility surface; desktop Ash does not expose mobile pairing. */
+  mobile?: MobileApi
   /** Optional legacy compatibility surface; desktop Ash does not expose speech. */
   speech?: SpeechApi
 }

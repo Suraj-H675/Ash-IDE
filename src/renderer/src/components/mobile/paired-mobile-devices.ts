@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react'
+import { requireLegacyMobileApi } from '@/lib/require-legacy-mobile-api'
 
 export type PairedMobileDevice = {
   deviceId: string
@@ -87,7 +88,7 @@ export function refreshPairedMobileDevices({
   latestRequestId = requestId
   publish({ ...snapshot, loading: true })
 
-  const promise = window.api.mobile
+  const promise = requireLegacyMobileApi()
     .listDevices()
     .then((result) => {
       const devices = [...result.devices]

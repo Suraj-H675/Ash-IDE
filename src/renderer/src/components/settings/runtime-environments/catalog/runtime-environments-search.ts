@@ -2,7 +2,6 @@ import type { SettingsSearchEntry } from '../../search/settings-search'
 import { translate } from '@/i18n/i18n'
 import { translateSearchKeyword } from '../../search/settings-search-keywords'
 import { createLocalizedCatalog } from '@/i18n/localized-catalog'
-import { getMachineNameSearchKeywords } from '../../machine-identity/machine-name-search'
 
 export const getRuntimeEnvironmentsSearchEntry = createLocalizedCatalog(
   (): SettingsSearchEntry => ({
@@ -12,7 +11,7 @@ export const getRuntimeEnvironmentsSearchEntry = createLocalizedCatalog(
     ),
     description: translate(
       'auto.components.settings.runtime.environments.search.addShareDefault',
-      'Add a remote Orca server, share this computer, or choose where new projects open.'
+      'Add a remote Orca server or choose where new projects open.'
     ),
     keywords: [
       ...translateSearchKeyword(
@@ -38,10 +37,6 @@ export const getRuntimeEnvironmentsSearchEntry = createLocalizedCatalog(
       ...translateSearchKeyword(
         'auto.components.settings.runtime.environments.search.104f4d7dbd',
         'pairing'
-      ),
-      ...translateSearchKeyword(
-        'auto.components.settings.runtime.environments.search.81444c4102',
-        'pairing url'
       ),
       ...translateSearchKeyword(
         'auto.components.settings.runtime.environments.search.f1575f1e09',
@@ -78,10 +73,6 @@ export const getRuntimeEnvironmentsSearchEntry = createLocalizedCatalog(
       ),
       ...translateSearchKeyword('auto.components.settings.managedServers.search.keywordSsh', 'ssh'),
       ...translateSearchKeyword(
-        'auto.components.settings.runtime.environments.search.shareComputerKeyword',
-        'share this computer'
-      ),
-      ...translateSearchKeyword(
         'auto.components.settings.runtime.environments.search.accessLinkKeyword',
         'access link'
       ),
@@ -93,9 +84,7 @@ export const getRuntimeEnvironmentsSearchEntry = createLocalizedCatalog(
       ...translateSearchKeyword(
         'auto.components.settings.managedServers.search.keywordFormerName',
         'managed servers'
-      ),
-      // Index machine-name fields mounted by Share this computer.
-      ...getMachineNameSearchKeywords()
+      )
     ]
   })
 )

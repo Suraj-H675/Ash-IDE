@@ -12,6 +12,7 @@ import type { MobilePairingConnectionMode } from '../../../../../../shared/remot
 import { MobilePairingPathOption } from './MobilePairingPathOption'
 import { MobileRelaySignInPanel } from './MobileRelaySignInPanel'
 import { relayClockSkewMessage } from '../../../mobile/relay-clock-skew-message'
+import { requireLegacyMobileApi } from '@/lib/require-legacy-mobile-api'
 
 function relayStatusLabel(status: MobileRelayStatus): string {
   if (status === 'registered') {
@@ -108,13 +109,14 @@ export function MobilePairingConnectionOptions({
     const apply = (detail: MobileRelayStatusDetail): void => {
       setRelayStatus(detail)
     }
-    const unsubscribe = window.api.mobile.onRelayStatusChanged((detail) => {
+    const mobileApi = requireLegacyMobileApi()
+    const unsubscribe = mobileApi.onRelayStatusChanged((detail) => {
       receivedEvent = true
       if (active) {
         apply(detail)
       }
     })
-    void window.api.mobile
+    void mobileApi
       .getRelayStatus()
       .then((detail) => {
         if (active && !receivedEvent) {

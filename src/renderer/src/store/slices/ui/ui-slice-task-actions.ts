@@ -23,9 +23,9 @@ export function createUiTaskActions(set: UISliceSet, get: UISliceGet): Partial<U
     previousViewBeforeSkills: 'terminal',
     pendingSkillShareId: null,
     pendingSkillsSharedView: false,
-    previousViewBeforeMobile: 'terminal',
     previousViewBeforeArtifacts: 'terminal',
-    setActiveView: (view) => set({ activeView: view }),
+    // Hydration already maps this legacy destination to terminal; reject new desktop navigation too.
+    setActiveView: (view) => set({ activeView: view === 'mobile' ? 'terminal' : view }),
     taskPageData: {},
     taskResumeState: undefined,
     taskListPosition: null,

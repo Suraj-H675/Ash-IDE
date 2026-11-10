@@ -6,6 +6,7 @@ import {
   getPairedMobileDevicesSnapshot,
   replacePairedMobileDevices
 } from '../../../mobile/paired-mobile-devices'
+import { requireLegacyMobileApi } from '@/lib/require-legacy-mobile-api'
 
 export function useMobilePairedDeviceRevocation(
   refreshDevices: (options: { force: true }) => Promise<unknown>
@@ -14,7 +15,7 @@ export function useMobilePairedDeviceRevocation(
   return useCallback(
     async (deviceId: string) => {
       try {
-        const { revoked } = await window.api.mobile.revokeDevice({ deviceId })
+        const { revoked } = await requireLegacyMobileApi().revokeDevice({ deviceId })
         // Resolved false means nothing was removed; do not announce successful revocation.
         if (!revoked) {
           throw new Error('mobile.revokeDevice returned revoked=false')
