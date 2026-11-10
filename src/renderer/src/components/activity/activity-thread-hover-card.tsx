@@ -235,19 +235,7 @@ function ActivityThreadHoverCardContent({
 
         {/* Automation Provenance */}
         {secondary.metaAutomationProvenance && (
-          <WorktreeCardAutomationDetailSection
-            provenance={secondary.metaAutomationProvenance}
-            onOpenAutomation={
-              foundation.handleOpenAutomation
-                ? dismissAndRun(foundation.handleOpenAutomation)
-                : undefined
-            }
-            onOpenAutomationRun={
-              foundation.handleOpenAutomationRun
-                ? dismissAndRun(foundation.handleOpenAutomationRun)
-                : undefined
-            }
-          />
+          <WorktreeCardAutomationDetailSection provenance={secondary.metaAutomationProvenance} />
         )}
 
         {/* CLI Provenance */}

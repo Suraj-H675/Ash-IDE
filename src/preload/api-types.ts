@@ -163,7 +163,8 @@ export type PreloadApi = {
   plainSsh?: PlainSshTerminalApi
   /** COMPAT(legacy-relay-bridge): desktop-only, revisit 2027-01-15. */
   legacyRelayBridge?: LegacyRelayBridgeApi
-  automations: AutomationsApi
+  /** Optional legacy compatibility surface; desktop Ash does not expose scheduled automations. */
+  automations?: AutomationsApi
   wsl: RuntimeApi['wsl']
   wslMove: WslMoveApi
   wslDriveProject: WslDriveProjectApi

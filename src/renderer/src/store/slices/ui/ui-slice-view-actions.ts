@@ -19,16 +19,6 @@ export function createUiViewActions(set: UISliceSet, get: UISliceGet): Partial<U
     pendingAutomationRunNavigation: null,
     setPendingAutomationRunNavigation: (navigation) =>
       set({ pendingAutomationRunNavigation: navigation }),
-    openAutomationsPage: () => {
-      get().recordViewVisit('automations')
-      set((state) => ({
-        activeView: 'automations',
-        previousViewBeforeAutomations:
-          state.activeView === 'automations'
-            ? state.previousViewBeforeAutomations
-            : state.activeView
-      }))
-    },
     closeAutomationsPage: () =>
       set((state) => ({
         activeView: state.previousViewBeforeAutomations,

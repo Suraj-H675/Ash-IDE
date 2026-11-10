@@ -135,6 +135,10 @@ function getHistoryEntryKey(entry: WorktreeNavHistoryEntry): string {
 }
 
 function isLiveEntry(entry: WorktreeNavHistoryEntry, state: AppState): boolean {
+  // Retired view entries may remain in an in-memory history stack from before the exclusion.
+  if (entry === 'automations') {
+    return false
+  }
   if (isViewEntry(entry)) {
     return true
   }

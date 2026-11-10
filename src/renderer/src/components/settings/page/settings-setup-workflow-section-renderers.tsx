@@ -1,6 +1,5 @@
 import { SessionHistorySettingsPane } from '../session-history/SessionHistorySettingsPane'
 import { ArtifactsSettingsPane } from '../artifacts/ArtifactsSettingsPane'
-import { AutomationsSettingsPane } from '../automations/AutomationsSettingsPane'
 import { GeneralPane } from '../general/GeneralPane'
 import { IntegrationsPane } from '../integrations/IntegrationsPane'
 import { MobileSettingsPane } from '../mobile/MobileSettingsPane'
@@ -115,27 +114,6 @@ export function renderMobileSettingsSection(
       {view.isSectionMounted('mobile') ? <MobileSettingsPane /> : null}
     </SettingsSection>
   ) : null
-}
-
-export function renderAutomationsSettingsSection(
-  context: SettingsRenderContext
-): React.JSX.Element {
-  const { model, navigation, view } = context
-  return (
-    <SettingsSection
-      id="automations"
-      title={translate('auto.components.settings.automations.title', 'Automations')}
-      description={translate(
-        'auto.components.settings.automations.description',
-        'Schedule agent work and choose whether Automations appears in the sidebar.'
-      )}
-      searchEntries={navigation.getSectionSearchEntries('automations')}
-    >
-      {view.isSectionMounted('automations') ? (
-        <AutomationsSettingsPane settings={model.settings} updateSettings={model.updateSettings} />
-      ) : null}
-    </SettingsSection>
-  )
 }
 
 export function renderArtifactsSettingsSection(context: SettingsRenderContext): React.JSX.Element {

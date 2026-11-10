@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { ownerKey } from '../../../../shared/automation-owner-key'
 import { externalAutomationProbeOwners } from './external-automation-scope-gating'
 import type { AutomationHostCatalogEntry } from './automation-host-catalog-types'
+import { requireLegacyAutomationsApi } from '@/lib/require-legacy-automations-api'
 
 /** Retain probes only for visible hosts; cancel filtered/page-exit work so stale results cannot compete with requested Orca traffic. */
 export function useExternalAutomationScopeRetention(
@@ -14,12 +15,12 @@ export function useExternalAutomationScopeRetention(
   ownersRef.current = owners
 
   useEffect(() => {
-    void window.api.automations.retainExternalScopes({ owners: ownersRef.current })
+    void requireLegacyAutomationsApi().retainExternalScopes({ owners: ownersRef.current })
   }, [signature])
 
   useEffect(() => {
     return () => {
-      void window.api.automations.retainExternalScopes({ owners: [] })
+      void requireLegacyAutomationsApi().retainExternalScopes({ owners: [] })
     }
   }, [])
 }

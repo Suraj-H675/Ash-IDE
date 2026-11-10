@@ -9,6 +9,7 @@ import type { AutomationOwnerRef } from '../../../../shared/automation-owner-ref
 import { EXTERNAL_AUTOMATION_PROVIDERS } from '../../../../shared/external-automation-scope'
 import type { AutomationHostCatalogEntry } from './automation-host-catalog-types'
 import { resolveExternalAutomationScopeGate } from './external-automation-scope-gating'
+import { requireLegacyAutomationsApi } from '@/lib/require-legacy-automations-api'
 
 export type ExternalAutomationScope = {
   owner: AutomationOwnerRef
@@ -67,7 +68,10 @@ export async function listScopedExternalAutomationManagers(
   const results = await Promise.all(
     scopes.map(async (scope) => {
       try {
-        return { scope, result: await window.api.automations.listExternalManagerForOwner(scope) }
+        return {
+          scope,
+          result: await requireLegacyAutomationsApi().listExternalManagerForOwner(scope)
+        }
       } catch (error) {
         // One provider's failure is a fact about that provider, never about the host.
         return {
@@ -98,5 +102,5 @@ export async function runScopedExternalAutomationAction(
   jobId: string,
   action: ExternalAutomationAction
 ): Promise<void> {
-  await window.api.automations.runExternalActionForOwner({ ...scope, jobId, action })
+  await requireLegacyAutomationsApi().runExternalActionForOwner({ ...scope, jobId, action })
 }

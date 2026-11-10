@@ -7,6 +7,7 @@ import { observeExistingAutomationSession } from '@/lib/automation-session-obser
 import { findReusableAutomationSession } from '@/lib/automation-session-reuse'
 import type { AutomationTerminalOwnership } from '@/lib/automation-terminal-ownership'
 import { useAppStore } from '@/store'
+import { requireLegacyAutomationsApi } from '@/lib/require-legacy-automations-api'
 import { getRepoExecutionHostId } from '../../../shared/execution-host'
 import { captureWorkspaceSelection, restoreWorkspaceSelection } from '@/lib/active-workspace-host'
 import type {
@@ -37,7 +38,7 @@ export async function handleAutomationDispatchRequest({
 }: AutomationDispatchRequest): Promise<void> {
   const markDispatchResult = async (result: AutomationDispatchResult): Promise<void> => {
     // The writer publishes host-scoped change before reply; another unscoped emit would invalidate every host.
-    await window.api.automations.markDispatchResult(result)
+    await requireLegacyAutomationsApi().markDispatchResult(result)
   }
   const state = useAppStore.getState()
   const focusBeforeDispatch = {

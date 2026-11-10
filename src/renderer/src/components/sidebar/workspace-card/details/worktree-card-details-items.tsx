@@ -93,8 +93,6 @@ export function WorktreeCardMetaDetailsHover({
       onOpenLinearIssueInOrca={card.linearIssue?.url ? card.handleOpenLinearIssueInOrca : undefined}
       onOpenReviewInOrca={repo ? card.handleOpenReviewInOrca : undefined}
       onOpenReviewInBrowser={metaReview?.url ? card.handleOpenReviewInBrowser : undefined}
-      onOpenAutomation={affiliateListMode ? undefined : card.handleOpenAutomation}
-      onOpenAutomationRun={affiliateListMode ? undefined : card.handleOpenAutomationRun}
       onUnlinkReview={canUnlink(card) ? card.handleUnlinkReview : undefined}
     >
       {children}
@@ -166,8 +164,6 @@ export function WorktreeCardIdentityHover({
       onOpenLinearIssueInOrca={card.linearIssue?.url ? card.handleOpenLinearIssueInOrca : undefined}
       onOpenReviewInOrca={repo ? card.handleOpenReviewInOrca : undefined}
       onOpenReviewInBrowser={hoverReview?.url ? card.handleOpenReviewInBrowser : undefined}
-      onOpenAutomation={affiliateListMode ? undefined : card.handleOpenAutomation}
-      onOpenAutomationRun={affiliateListMode ? undefined : card.handleOpenAutomationRun}
       onUnlinkReview={canUnlink(card) ? card.handleUnlinkReview : undefined}
     >
       {React.cloneElement(children, { ref })}

@@ -189,7 +189,6 @@ export type UISliceCore = {
   setPendingAutomationRunNavigation: (
     navigation: { automationId: string; runId: string | null; hostId?: ExecutionHostId } | null
   ) => void
-  openAutomationsPage: () => void
   closeAutomationsPage: () => void
   openSpacePage: () => void
   closeSpacePage: () => void

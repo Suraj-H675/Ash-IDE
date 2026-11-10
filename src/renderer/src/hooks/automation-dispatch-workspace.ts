@@ -3,6 +3,7 @@ import { findAutomationRepo } from '../../../shared/automation-repo-target'
 import { useAppStore } from '@/store'
 import { translate } from '@/i18n/i18n'
 import { createBrowserUuid } from '@/lib/browser-uuid'
+import { requireLegacyAutomationsApi } from '@/lib/require-legacy-automations-api'
 import type {
   Automation,
   AutomationDispatchResult,
@@ -164,7 +165,7 @@ export async function prepareAutomationDispatchWorkspace(args: {
   }
 
   if (run.trigger === 'scheduled' && automation.precheck) {
-    context.precheckResult = await window.api.automations.runPrecheck({
+    context.precheckResult = await requireLegacyAutomationsApi().runPrecheck({
       automationId: automation.id,
       runId: run.id
     })

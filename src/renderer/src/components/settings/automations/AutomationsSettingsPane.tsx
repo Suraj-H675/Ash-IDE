@@ -1,8 +1,5 @@
-import { ArrowRight, CalendarClock } from 'lucide-react'
 import type { GlobalSettings } from '../../../../../shared/global-settings-types'
-import { Button } from '@/components/ui/button'
 import { SettingsSwitchRow } from '../form-controls/SettingsFormControls'
-import { useAppStore } from '@/store/index'
 import { translate } from '@/i18n/i18n'
 
 export function AutomationsSettingsPane({
@@ -12,8 +9,6 @@ export function AutomationsSettingsPane({
   settings: GlobalSettings
   updateSettings: (updates: Partial<GlobalSettings>) => Promise<void>
 }): React.JSX.Element {
-  const openAutomationsPage = useAppStore((state) => state.openAutomationsPage)
-
   return (
     <div className="divide-y divide-border">
       <SettingsSwitchRow
@@ -107,32 +102,6 @@ export function AutomationsSettingsPane({
             </div>
           </li>
         </ol>
-
-        <Button
-          type="button"
-          variant="ghost"
-          className="h-auto w-full justify-start whitespace-normal rounded-md border border-border/60 bg-muted/20 px-4 py-3 text-left hover:bg-muted/35 hover:text-foreground"
-          onClick={openAutomationsPage}
-        >
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
-            <CalendarClock className="size-4" />
-          </span>
-          <span className="min-w-0 flex-1 space-y-0.5">
-            <span className="block text-sm font-medium text-foreground">
-              {translate(
-                'auto.components.settings.automations.openAutomations',
-                'Open Automations'
-              )}
-            </span>
-            <span className="block text-xs font-normal text-muted-foreground">
-              {translate(
-                'auto.components.settings.automations.openAutomationsDescription',
-                'Create schedules and inspect recent runs.'
-              )}
-            </span>
-          </span>
-          <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground" />
-        </Button>
       </section>
     </div>
   )
