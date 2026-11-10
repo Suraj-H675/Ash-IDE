@@ -432,6 +432,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/ipc/skills.ts",
+      "sha256": "3a3e4576efa96d384465c897e17e9be6c59156833ac5c4b193c5a7698d5e44e1",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/local-builds/local-build-candidate.test.ts",
       "sha256": "041354df0e1fb8795049c7d6d50afb3a2c3288328422562675abb877dca1f01d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -598,7 +603,7 @@
     },
     {
       "path": "src/main/startup/main-process-ready-duplicate-pty-repair.test.ts",
-      "sha256": "53b2b102a36fbe2277056ba1ff3d91aea7920911b306772f54cdbb5aa7afd775",
+      "sha256": "b54b2a3a51373d8fe8efd4bf4196c7e9a996a4e45144d79bc4edac94d5f40ffa",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -608,7 +613,7 @@
     },
     {
       "path": "src/main/startup/main-process-ready-runtime.ts",
-      "sha256": "cca699f9e0ecba3228949bd1f65af67c8862681638277a520c23c4419cd6e1e8",
+      "sha256": "bd6285c7f0669de0a7622208c78b29b4a82201df486eb5b6f1023ef22f3d3be4",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

@@ -21,8 +21,8 @@ import { runAsWslUserAct, wslDistroForPath } from '../wsl/filesystem/wsl-unc-acc
 import { registerSkillCloudIpcHandlers } from './skill-cloud-ipc-handlers'
 import { handleMainWindowSkillIpc } from './skill-ipc-main-window'
 
-export function registerSkillsHandlers(store: Store, runtime?: OrcaRuntimeService): void {
-  const discoverResolved = async (
+function createDiscoverResolved(store: Store, runtime?: OrcaRuntimeService) {
+  return async (
     resolvedTarget: Awaited<ReturnType<typeof resolveSkillDiscoveryTarget>>,
     refresh: boolean,
     readStoppedWslRootsFor?: 'all' | readonly string[]
@@ -32,6 +32,13 @@ export function registerSkillsHandlers(store: Store, runtime?: OrcaRuntimeServic
       refresh,
       ...(readStoppedWslRootsFor ? { readStoppedWslRootsFor } : {})
     })
+}
+
+export function registerProviderNativeSkillDiscoveryHandler(
+  store: Store,
+  runtime?: OrcaRuntimeService
+): void {
+  const discoverResolved = createDiscoverResolved(store, runtime)
   // Passive UI mounts discovery, so it must not start a stopped WSL distro.
   const discover = async (target?: SkillDiscoveryTarget): Promise<SkillDiscoveryResult> => {
     const parsedTarget = target ? SkillDiscoveryTargetSchema.parse(target) : undefined
@@ -44,6 +51,15 @@ export function registerSkillsHandlers(store: Store, runtime?: OrcaRuntimeServic
       parsedTarget?.sourceKinds
     )
   }
+  handleMainWindowSkillIpc(
+    'skills:discover',
+    async (_event, target?: SkillDiscoveryTarget): Promise<SkillDiscoveryResult> => discover(target)
+  )
+}
+
+export function registerSkillsHandlers(store: Store, runtime?: OrcaRuntimeService): void {
+  registerProviderNativeSkillDiscoveryHandler(store, runtime)
+  const discoverResolved = createDiscoverResolved(store, runtime)
   // Share is a click on named skills: it may start their distro, as any user act may.
   const discoverForUserAct = async (
     target?: SkillDiscoveryTarget,
@@ -62,11 +78,6 @@ export function registerSkillsHandlers(store: Store, runtime?: OrcaRuntimeServic
       discoverResolved(resolvedTarget, parsedTarget?.refresh === true, skillDirectories ?? 'all')
     )
   }
-
-  handleMainWindowSkillIpc(
-    'skills:discover',
-    async (_event, target?: SkillDiscoveryTarget): Promise<SkillDiscoveryResult> => discover(target)
-  )
 
   if (!runtime) {
     return

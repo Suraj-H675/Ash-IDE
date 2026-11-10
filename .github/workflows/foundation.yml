@@ -86,13 +86,14 @@ jobs:
             --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
             --no-file-parallelism \
             src/main/ipc/pty/runtime/claude-session-profile-routing-pin.runtime-controller.node-pty.test.ts
-      - name: Test retained GitHub and usage IPC registrations
+      - name: Test retained IPC registrations
         run: |
           node node_modules/vitest/vitest.mjs run \
             --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
             --no-file-parallelism \
             src/main/ipc/source-control/github-pr-refresh-handlers.test.ts \
-            src/main/ipc/rate-limits.test.ts
+            src/main/ipc/rate-limits.test.ts \
+            src/main/ipc/provider-native-skill-discovery.test.ts
       - name: Test excluded renderer startup capability gates
         run: |
           node node_modules/vitest/vitest.mjs run \

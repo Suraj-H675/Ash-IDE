@@ -34,6 +34,7 @@ import { ORCA_LAYOUT_OWNER_IS_MAIN } from '../../shared/layout-owner-switch'
 import { repairDuplicatePtyPanesOnStart } from '../runtime/moved-pane-owner-rekey'
 import { registerGitHubPRRefreshHandlers } from '../ipc/source-control/github-pr-refresh-handlers'
 import { registerRateLimitHandlers } from '../ipc/rate-limits'
+import { registerProviderNativeSkillDiscoveryHandler } from '../ipc/skills'
 
 // Headless serve has no first window; timer fallback must still sweep trash.
 const WORKTREE_TRASH_SWEEP_FALLBACK_MS = 15_000
@@ -60,6 +61,7 @@ export async function initializeReadyRuntimeServices(): Promise<void> {
   registerRateLimitHandlers(state.rateLimits, state.codexAccounts)
   const runtime = initializeMainProcessRuntime()
   configureRuntimeServices(runtime)
+  registerProviderNativeSkillDiscoveryHandler(store, runtime)
   installFirstWorkRenameHookSubscription()
   state.agentBrowserBridge = new AgentBrowserBridge(browserManager)
   runtime.setAgentBrowserBridge(state.agentBrowserBridge)
