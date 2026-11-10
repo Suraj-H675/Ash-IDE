@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { _skillFreshnessCacheForTests, useSkillFreshness } from '../hooks/useSkillFreshness'
 import { runWslDriveUncRendererStoreRewrites } from '../lib/wsl-drive-unc-renderer-store-rewrites'
 import { runWslMoveRendererStoreRewrites } from '../lib/wsl-move-renderer-store-rewrites'
+import { jiraStatusForTarget } from '../runtime/runtime-jira-project-client'
+import { linearStatusForTarget } from '../runtime/runtime-linear-client'
 import { sanitizeHydratedActiveView } from '../store/slices/ui/ui-slice-hydration-sanitizers'
 
 describe('Ash excluded desktop startup capabilities', () => {
@@ -18,6 +20,15 @@ describe('Ash excluded desktop startup capabilities', () => {
   })
   const listPendingWslRewrites = vi.fn(async () => [])
   const listPendingDriveUncRewrites = vi.fn(async () => [])
+  const jiraStatus = vi.fn(() => {
+    throw new Error('jira.status should be excluded on Ash')
+  })
+  const linearStatus = vi.fn(() => {
+    throw new Error('linear.status should be excluded on Ash')
+  })
+  const runtimeEnvironmentCall = vi.fn(() => {
+    throw new Error('runtime status RPC should be excluded on Ash')
+  })
 
   beforeEach(() => {
     vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
@@ -28,11 +39,17 @@ describe('Ash excluded desktop startup capabilities', () => {
     bundledPlan.mockClear()
     listPendingWslRewrites.mockClear()
     listPendingDriveUncRewrites.mockClear()
+    jiraStatus.mockClear()
+    linearStatus.mockClear()
+    runtimeEnvironmentCall.mockClear()
     Object.defineProperty(window, 'api', {
       configurable: true,
       value: {
         platform: { get: () => ({ platform }) },
         skills: { bundledPlan },
+        jira: { status: jiraStatus },
+        linear: { status: linearStatus },
+        runtimeEnvironments: { call: runtimeEnvironmentCall },
         wslMove: { listPendingRendererRewrites: listPendingWslRewrites },
         wslDriveUnc: { listPendingRendererRewrites: listPendingDriveUncRewrites }
       }
@@ -92,6 +109,32 @@ describe('Ash excluded desktop startup capabilities', () => {
     platform = 'win32'
     await runWslDriveUncRendererStoreRewrites()
     expect(listPendingDriveUncRewrites).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns disconnected Jira and Linear status without local IPC or remote runtime RPC', async () => {
+    const localTarget = { kind: 'local' } as const
+    const remoteTarget = { kind: 'environment', environmentId: 'remote-test' } as const
+
+    await expect(jiraStatusForTarget(localTarget)).resolves.toMatchObject({
+      connected: false,
+      viewer: null
+    })
+    await expect(linearStatusForTarget(localTarget)).resolves.toMatchObject({
+      connected: false,
+      viewer: null
+    })
+    await expect(jiraStatusForTarget(remoteTarget)).resolves.toMatchObject({
+      connected: false,
+      viewer: null
+    })
+    await expect(linearStatusForTarget(remoteTarget)).resolves.toMatchObject({
+      connected: false,
+      viewer: null
+    })
+
+    expect(jiraStatus).not.toHaveBeenCalled()
+    expect(linearStatus).not.toHaveBeenCalled()
+    expect(runtimeEnvironmentCall).not.toHaveBeenCalled()
   })
 
   it('does not restore removed mobile or bundled-skills pages as the active view', () => {

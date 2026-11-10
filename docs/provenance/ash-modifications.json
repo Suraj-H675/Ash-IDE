@@ -947,6 +947,16 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/runtime/runtime-jira-project-client.ts",
+      "sha256": "38ea040e12cb4b38b426771dde0dc89212ab9662a01cb5a74cfca594a193d527",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/runtime/runtime-linear-client.ts",
+      "sha256": "5b2763a7e6924d5ac86eca1193d576c9df5be7a138f1a16567d057c8fdfb4cc4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/store/plugin-auto-updates.ts",
       "sha256": "ebbcd6faa040ec5ca8abeaa8e232190377c543152e73af169c20b45f48748c04",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."

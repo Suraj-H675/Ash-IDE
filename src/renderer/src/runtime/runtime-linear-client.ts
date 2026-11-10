@@ -12,6 +12,7 @@ import type { RuntimeClientTarget } from '../../../shared/runtime-client-target'
 import { rowLessSourceTarget, type RowLessSource } from '@/lib/default-creation-host'
 import { isRuntimeProviderSearchQueryWithinLimit } from './runtime-provider-search-bounds'
 import type { LinearIssueAttributeFilter } from '../../../shared/linear/issue-attribute-filter'
+import { ASH_TASK_TRACKER_STATUS_ENABLED } from './ash-task-tracker-exclusion'
 import {
   canonicalizeLinearIssueAttributeFilter,
   isEmptyLinearIssueAttributeFilter
@@ -85,6 +86,9 @@ export async function linearStatus(
 export async function linearStatusForTarget(
   target: RuntimeClientTarget
 ): Promise<LinearConnectionStatus> {
+  if (!ASH_TASK_TRACKER_STATUS_ENABLED) {
+    return { connected: false, viewer: null }
+  }
   return target.kind === 'environment'
     ? callRuntimeRpc<LinearConnectionStatus>(target, 'linear.status', undefined, {
         timeoutMs: 15_000
