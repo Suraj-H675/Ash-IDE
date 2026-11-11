@@ -187,7 +187,6 @@ export abstract class OrcaRuntimeWithStateFields extends OrcaRuntimeWithLinearCo
     this.skillCommands = new RuntimeSkillCommands({
       getRuntimeId: () => this.runtimeId,
       getUserDataPath: () => getAppEnvironment().getPath('userData'),
-      isPackaged: () => getAppEnvironment().isPackaged(),
       listRepos: () => this.listRepos(),
       listFolderWorkspaces: () =>
         (this.store?.getFolderWorkspaces?.() ?? []).map((workspace) => ({

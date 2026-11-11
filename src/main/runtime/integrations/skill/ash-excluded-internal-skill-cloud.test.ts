@@ -29,14 +29,16 @@ it('excludes orphaned vendor Cloud skill publishing, auth, and transfer implemen
   expect(clientSettings).not.toContain('agentSkillSharingEnabled')
 })
 
-it('preserves shared skill install error handling, upload cleanup and local bundled skills', () => {
+it('preserves shared skill install error handling and local bundled skills without Cloud upload entrypoints', () => {
   const errors = source('src/main/skills/skill-install-operation-error.ts')
-  const upload = source('src/main/runtime/integrations/skill/runtime-skill-install-commands.ts')
+  const runtime = source('src/main/runtime/integrations/skill/runtime-skill-command-surface.ts')
   const bundled = source('src/main/runtime/integrations/skill/runtime-bundled-skill-install.ts')
 
   expect(errors).toContain("from './skill-cloud-request-error'")
   expect(existsSync(resolve(root, 'src/main/skills/skill-cloud-request-error.ts'))).toBe(true)
-  expect(upload).toContain('async disposeSkillUploadSessions()')
-  expect(upload).toContain('planLocalBundledSkills(')
+  expect(runtime).toContain('planLocalBundledSkills(')
+  expect(runtime).toContain('resolveSkillDiscoveryProviderRoots(')
+  expect(runtime).not.toContain('disposeSkillUploadSessions')
   expect(bundled).toContain('resolveSkillInstallDestination')
+  expect(bundled).toContain('await host.skillTransactionRecovery')
 })

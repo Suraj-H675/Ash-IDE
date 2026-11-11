@@ -214,7 +214,6 @@ function installWillQuitHandler(): void {
     ]).then(() => {})
     disposeDesktopBrowserBridge()
     const browserClientHostShutdown = shutdownPairedRuntimeBrowserClientHosts()
-    const skillUploadShutdown = state.runtime?.disposeSkillUploadSessions() ?? Promise.resolve()
     // Capture ownership before awaits let other teardown paths clear runtime state.
     const ownedPid = process.pid
     const ownedRuntimeId = state.runtime?.getRuntimeId()
@@ -248,7 +247,6 @@ function installWillQuitHandler(): void {
       { name: 'local-ssh-browser-routes', promise: localSshRouteShutdown },
       { name: 'ssh', promise: sshShutdown },
       { name: 'plugin-hosts', promise: pluginHostShutdown },
-      { name: 'skill-uploads', promise: skillUploadShutdown },
       { name: 'ref-maintenance', promise: refMaintenanceShutdown },
       { name: 'codex-backfill-recovery', promise: codexBackfillRecoveryShutdown },
       { name: 'structured-agent-session', promise: structuredAgentSessionShutdown },

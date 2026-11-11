@@ -15386,6 +15386,16 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/integrations/skill/runtime-skill-install-commands.ts",
+      "sourceSha256": "7a376474017aae19f9d69787f1f0420617f5c3153cc13507ba14cd184e752560",
+      "reason": "Ash M8 exclusion: retired dormant vendor Orca Cloud skill managed installation, upload session, and remote-install command/query runtime operation layer, no longer registered by live runtime. Retains native skill discovery, bundled local skill maintenance, and legacy recovery journals without migrating or deleting user data."
+    },
+    {
+      "path": "src/main/runtime/integrations/skill/runtime-skill-install-queries.ts",
+      "sourceSha256": "fb5c4350b48458d233b345e68a07d0f463e2f59b710fb3328d5b9ac104ea9695",
+      "reason": "Ash M8 exclusion: retired dormant vendor Orca Cloud skill managed installation, upload session, and remote-install command/query runtime query layer, no longer registered by live runtime. Retains native skill discovery, bundled local skill maintenance, and legacy recovery journals without migrating or deleting user data."
+    },
+    {
       "path": "src/main/runtime/integrations/skill/runtime-skill-install-commands.test.ts",
       "sourceSha256": "2b58613e7d1336866a1f31230e2a0335eacf27473e08c650bd64d7f2e941b178",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."

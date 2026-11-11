@@ -151,7 +151,6 @@ it('writes a pane grid still inside its write burst before the final flush', asy
       getOffscreenBrowserBackend: () => null,
       getAgentBrowserBridge: () => null,
       getEmulatorBridge: () => null,
-      disposeSkillUploadSessions: settled(),
       getRuntimeId: () => undefined,
       closeNotificationDismissals: settled(),
       flushPaneGrids: () => paneGrids.promise
@@ -207,7 +206,6 @@ it.each([
         getOffscreenBrowserBackend: () => null,
         getAgentBrowserBridge: () => null,
         getEmulatorBridge: () => null,
-        disposeSkillUploadSessions: settled(),
         getRuntimeId: () => undefined,
         closeNotificationDismissals,
         flushPaneGrids: () => null

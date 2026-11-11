@@ -603,17 +603,17 @@
     },
     {
       "path": "src/main/runtime/construction/runtime-construction.ts",
-      "sha256": "9aafcb9bb2ffce400aed2079a10a9581982171fbf1aaff50225754d6e0f42a69",
+      "sha256": "4aa81a4afc051287328acc35b447cf1d8ab5476b39f9f72a281db44948a3ccc5",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/main/runtime/integrations/skill/runtime-skill-command-contract.ts",
-      "sha256": "18d6629cbf5217b120dcf2487516fc0582c0300ea398446f3b5e81642b073de1",
+      "sha256": "4c65fe067e507f503cd7b4c26c89e098db40e4f82c184f5abba2603344bc3fd6",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/main/runtime/integrations/skill/runtime-skill-command-surface.ts",
-      "sha256": "302998249fba15948c275695191ea4496753d0839384207e3ce01291028bb064",
+      "sha256": "3cadb11b851c8f22cfb3bd45e35e42e7f1b2656f367f5ffa1449c4f233f7b747",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -883,7 +883,7 @@
     },
     {
       "path": "src/main/startup/main-process-quit-pending-writer.test.ts",
-      "sha256": "233a6efffacb59d5e8c3b28dca863d25af5d2ebe783963951d21542afe7e4338",
+      "sha256": "ecf40f7f9c8aa511950f03b057699cfe3a5695487a91b3c39e75a0c321bd3565",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -893,7 +893,7 @@
     },
     {
       "path": "src/main/startup/main-process-quit.ts",
-      "sha256": "3685aaed9202ebe38258add7cb584d9a2a1d1e18f23c44a74778354d2ca4a5ba",
+      "sha256": "5182e98315299acc984cd76fc4ba64e0f9e8f7c15b4d588cfdc42b44f87ed448",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

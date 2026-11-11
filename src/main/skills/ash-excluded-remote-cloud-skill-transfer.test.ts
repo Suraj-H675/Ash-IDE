@@ -32,7 +32,7 @@ it('excludes unreachable vendor Cloud skill grants and remote runtime archive tr
   expect(rpc).toContain("name: 'skills.delete'")
 })
 
-it('retains the local skill transaction, download and upload shutdown dependencies', () => {
+it('retains local transaction, download and recovery dependencies without a live Cloud upload shutdown', () => {
   const single = source('src/main/skills/skill-install-request-service.ts')
   const bundle = source('src/main/skills/skill-bundle-install-request-service.ts')
   const download = source('src/main/skills/skill-package-download.ts')
@@ -47,5 +47,6 @@ it('retains the local skill transaction, download and upload shutdown dependenci
   expect(operations).toContain("from './skill-bundle-observability-summary'")
   expect(errors).toContain("from './skill-cloud-request-error'")
   expect(startup).toContain('recoverPendingSkillTransactions(')
-  expect(quit).toContain('disposeSkillUploadSessions()')
+  expect(quit).not.toContain('disposeSkillUploadSessions()')
+  expect(quit).not.toContain("name: 'skill-uploads'")
 })

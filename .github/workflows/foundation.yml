@@ -108,6 +108,7 @@ jobs:
             src/main/runtime/mobile-cloud-relay/ash-retired-vendor-relay-session.test.ts \
             src/main/ipc/profiles/ash-excluded-cloud-org-admin.test.ts \
             src/main/startup/main-process-quit-update-veto.test.ts \
+            src/main/startup/main-process-quit-pending-writer.test.ts \
             src/main/runtime/rpc/methods/ash-runtime-methods.test.ts \
             src/main/runtime/rpc/methods/ash-excluded-mobile-push-rpc.test.ts \
             src/main/runtime/push/ash-mobile-push-gateway-retirement.test.ts \
@@ -144,6 +145,7 @@ jobs:
             src/main/runtime/rpc/methods/skills.test.ts \
             src/main/runtime/rpc/methods/publish-capability-settings.test.ts \
             src/main/runtime/integrations/skill/ash-excluded-internal-skill-cloud.test.ts \
+            src/main/runtime/integrations/skill/ash-retired-cloud-skill-runtime-surface.test.ts \
             src/main/skills/ash-excluded-remote-cloud-skill-transfer.test.ts \
             src/renderer/src/app-shell/ash-excluded-startup-gates.test.tsx \
             src/renderer/src/app-shell/ash-excluded-automation-entrypoints.test.tsx \
