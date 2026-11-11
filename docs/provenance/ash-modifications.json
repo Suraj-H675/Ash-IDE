@@ -1432,11 +1432,6 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
-      "path": "src/renderer/src/components/skills/SkillShareDialog.tsx",
-      "sha256": "072c63b4b3e10b5c7bf9ed35c080d2e2056ef0d4ee0963153a91219c9f2e1351",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
       "path": "src/renderer/src/components/skills/SkillsFilterToolbar.tsx",
       "sha256": "bf7ffe50d7359d32516697c4db9ba7b4870c1de12b97babaf9896f68a25a1834",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1459,11 +1454,6 @@
     {
       "path": "src/renderer/src/components/skills/skill-selection.ts",
       "sha256": "365eb0f6c769c297125113b617fff3762b005db7277409ce9621f25aea01e751",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/skills/skill-share-selection.ts",
-      "sha256": "e0f6733023cfff1bf833e6682e8e43ea3a996bc5b839fc54858844cffcddd8f3",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

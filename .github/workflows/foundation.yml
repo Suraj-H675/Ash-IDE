@@ -147,6 +147,7 @@ jobs:
             src/renderer/src/app-shell/ash-excluded-mobile-entrypoints.test.ts \
             src/renderer/src/app-shell/ash-excluded-orca-cloud-settings.test.tsx \
             src/renderer/src/components/skills/ash-excluded-cloud-skills-page.test.tsx \
+            src/renderer/src/components/skills/ash-excluded-cloud-publishing-components.test.ts \
             src/renderer/src/components/settings/general/ash-skills-shortcut-settings.test.tsx \
             src/renderer/src/i18n/ash-excluded-phone-locales.test.ts \
             src/renderer/src/web/preload-api/ash-no-product-telemetry.test.ts

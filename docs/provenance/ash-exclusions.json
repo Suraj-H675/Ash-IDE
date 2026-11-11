@@ -29136,6 +29136,51 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/skills/SkillShareDialog.tsx",
+      "sourceSha256": "7519ff7d89acb2c5cd56c7c68ced0d0fd1490af45d052cc6e7bd8ed2e2981f4e",
+      "reason": "Ash M8 exclusion: Orphaned vendor Cloud skill publishing dialog after live Skills page actions and the Cloud IPC backend were retired."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillShareReviewContent.tsx",
+      "sourceSha256": "16299e965ceb21f2f831fe1808ea7bd73b64ee57946a01fe9f0116ec882388a5",
+      "reason": "Ash M8 exclusion: Orphaned Cloud publishing review and generated share-link presentation after its parent dialog was excluded."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillShareReleaseNotesField.tsx",
+      "sourceSha256": "b07c64e2901c378bc2eb97d0b5e80868252463525ca352b8364b9f855ffc7ccb",
+      "reason": "Ash M8 exclusion: Vendor publishing release-notes control reachable only through retired Cloud skill publishing review."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillSharePackageSummary.tsx",
+      "sourceSha256": "c193fa351eece0916bfa8c64c597d1e3c22893498707ff82189c028baff56c4b",
+      "reason": "Ash M8 exclusion: Orphaned Cloud skill publishing package summary; retained separate install review and package checklist components."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillSharedLinksView.tsx",
+      "sourceSha256": "e1a81c637a7fe4c5eb5e69eb3cfc246c0c4dee10f6431099d4e49b910bb9cd6e",
+      "reason": "Ash M8 exclusion: Orphaned vendor Cloud owned-link list after Skills shared-links route was retired."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillSharedLinkRow.tsx",
+      "sourceSha256": "007184738c10aa01bcc6b1323bf506d1e214f7e7d48894e2d8cec63269c117b3",
+      "reason": "Ash M8 exclusion: Orphaned vendor Cloud owned-link actions (copy/revoke) after shared-links view removal."
+    },
+    {
+      "path": "src/renderer/src/components/skills/use-owned-skill-shares.ts",
+      "sourceSha256": "dda264aff933f2e6775b0d1b6fb8dc111ad45b06b47588235a226ff544fec559",
+      "reason": "Ash M8 exclusion: Orphaned Orca Cloud owned-link hook that fetched and revoked account-backed vendor share links."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-share-selection.ts",
+      "sourceSha256": "7e32a62fa187b482456ef502ddedfe60c63a283c2a419e1387a9692f3e36cd37",
+      "reason": "Ash M8 exclusion: Orphaned selection policy used only by retired Cloud skill publishing; generic deletion selection stays in independent skill-selection.ts."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-share-package-selection.ts",
+      "sourceSha256": "0a9ccdaa6677272caaa278a7b5dd8f0d99bc37260a8985dd7f171eb8cbae916b",
+      "reason": "Ash M8 exclusion: Orphaned managed-published-share lookup used only by retired Orca Cloud skill publishing dialog."
+    },
+    {
       "path": "src/renderer/src/components/skills/SkillWarningPreviewLauncher.tsx",
       "sourceSha256": "53ba70b4141477e43955848dfe42022b4b07cb158b031006c10d4ec474088e32",
       "reason": "Ash M8 exclusion: removed the dev-only launcher that opened excluded Orca Cloud skill-share previews, now unsupported by the Skills page."

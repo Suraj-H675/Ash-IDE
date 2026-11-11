@@ -51,11 +51,9 @@ it('excludes vendor Cloud skill sharing from Settings navigation, search, and de
     'utf8'
   )
   expect(renderer).not.toContain('renderShareSkillsSettingsSection')
-  const shareDialog = readFileSync(
-    resolve(process.cwd(), 'src/renderer/src/components/skills/SkillShareDialog.tsx'),
-    'utf8'
-  )
-  expect(shareDialog).not.toContain("pane: 'share-skills'")
+  expect(
+    existsSync(resolve(process.cwd(), 'src/renderer/src/components/skills/SkillShareDialog.tsx'))
+  ).toBe(false)
 })
 
 it('keeps the Skills sidebar preference discoverable under General', () => {
