@@ -1172,31 +1172,6 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
-      "path": "src/renderer/src/components/mobile/MobilePage.tsx",
-      "sha256": "66e8a18b7563ed207ffcdd7dce719cb2f0057ddcd43548b5b3689dfdc7c447c2",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/mobile/WindowsFirewallNotice.tsx",
-      "sha256": "cf35915ac0ea9dda58ad41bcdf329b7fb34543c164554d1f1215c5f7f4d69d2f",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/mobile/paired-mobile-devices.ts",
-      "sha256": "68a58592497161ff420abe045733d9a27455111bd7eab5b22af83a513cf7a4ff",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/mobile/use-mobile-page-paired-devices.ts",
-      "sha256": "575cb40d9f78f8c8d77a7838d867ec1b7a4f0da6988175ebb640d50f5079292f",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/mobile/use-mobile-pairing-generation.ts",
-      "sha256": "e802acda8132dd51543a72fcec1ffa95576593e4e2f659735338651ce9ac027f",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
       "path": "src/renderer/src/components/onboarding/OnboardingFlow.tsx",
       "sha256": "21a8f45008c94e8d8d8bae427d26bbdf283335eba921e9a1032576c634aea50a",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1254,21 +1229,6 @@
     {
       "path": "src/renderer/src/components/settings/general/general-search.ts",
       "sha256": "7d448ff785f81aa545cb80ca4f6b4a7d9a2480eb9901b46754332bb1e5a883e9",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/settings/mobile/MobilePane.tsx",
-      "sha256": "4585435f09026dbf369dc60ea68fc7f72680bf806b8ce6b1ccfb9a19f254ec2f",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/settings/mobile/pairing/MobilePairingConnectionOptions.tsx",
-      "sha256": "3647f3bb9d5efffbfd19c24c593c8138b25dd03ba4c7ca0758f97eabc58bc4b8",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/settings/mobile/pairing/use-mobile-paired-device-revocation.ts",
-      "sha256": "b75a7d3935b636eedc46a7836464d696788c2957478b3a203dcc908fd7514f03",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1334,16 +1294,6 @@
     {
       "path": "src/renderer/src/components/settings/runtime-environments/catalog/runtime-environments-search.ts",
       "sha256": "8d27324fcc53e61eb9d0bdc93541eaff033ce5ff4041898e81e27e30af4ec2a5",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/settings/runtime-environments/pairing/RuntimePairingUrlGenerator.tsx",
-      "sha256": "72439373af233e00864126b6d4b3fd2d5ba38f11ab0bb008c55a5e910024c932",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/settings/runtime-environments/pairing/runtime-share-computer-button.tsx",
-      "sha256": "a6fd239282f8ec0c8014efbd644d7ae317813d132c1265c749299e53285c545e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

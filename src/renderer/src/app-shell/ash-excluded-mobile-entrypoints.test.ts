@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
 import {
@@ -7,7 +7,6 @@ import {
 } from '../hooks/settings-navigation-capability-sections'
 import { getGeneralPaneSearchEntries } from '../components/settings/general/general-search'
 import { getRuntimeEnvironmentsSearchEntry } from '../components/settings/runtime-environments/catalog/runtime-environments-search'
-import { requireLegacyMobileApi } from '../lib/require-legacy-mobile-api'
 import { isSettingsNavigationTarget } from '../lib/settings-navigation-types'
 import { createUiTaskActions } from '../store/slices/ui/ui-slice-task-actions'
 import type { UISliceGet, UISliceSet } from '../store/slices/ui/ui-slice-contract'
@@ -87,10 +86,7 @@ it('does not publish the obsolete mobile bridge from Electron preload', () => {
   expect(preload).toMatch(/nativeChat: nativeChatApi/)
 })
 
-it('fails closed for archived mobile callers and removes the remote share button', () => {
-  vi.stubGlobal('window', { api: { settings: {}, pty: {}, nativeChat: {} } })
-  expect(() => requireLegacyMobileApi()).toThrow('Mobile pairing is not available in Ash IDE')
-
+it('does not ship dormant phone pairing pages, settings, or their bridge callers', () => {
   const archivedCallers = [
     'src/renderer/src/components/mobile/use-mobile-pairing-generation.ts',
     'src/renderer/src/components/mobile/use-mobile-page-paired-devices.ts',
@@ -104,9 +100,29 @@ it('fails closed for archived mobile callers and removes the remote share button
     'src/renderer/src/components/settings/runtime-environments/pairing/RuntimePairingUrlGenerator.tsx'
   ]
   for (const path of archivedCallers) {
-    expect(source(path), path).toContain('requireLegacyMobileApi')
-    expect(source(path), path).not.toContain('window.api.mobile')
+    expect(existsSync(resolve(process.cwd(), path)), path).toBe(false)
   }
+  for (const path of [
+    'src/renderer/src/components/settings/mobile/pairing',
+    'src/renderer/src/components/settings/mobile/MobileSettingsPane.tsx',
+    'src/renderer/src/components/sidebar/mobile-sidebar-onboarding-badge.ts',
+    'src/renderer/src/lib/require-legacy-mobile-api.ts'
+  ]) {
+    expect(existsSync(resolve(process.cwd(), path)), path).toBe(false)
+  }
+  // The emulator still uses the shared iOS/Android icons; remove pairing
+  // content, not reusable local-emulator presentation assets.
+  const sharedMobileAssets = resolve(process.cwd(), 'src/renderer/src/components/mobile')
+  expect(readdirSync(sharedMobileAssets)).toEqual(['MobileBrandIcons.tsx'])
+  // The optional local emulator is a separate retained desktop capability.
+  const emulatorRoot = resolve(process.cwd(), 'src/renderer/src/components/settings/mobile')
+  expect(readdirSync(emulatorRoot)).toEqual(['emulator'])
+  expect(existsSync(resolve(emulatorRoot, 'emulator/MobileEmulatorSettingsPane.tsx'))).toBe(true)
+  expect(
+    source(
+      'src/renderer/src/components/settings/page/settings-interface-primary-section-renderers.tsx'
+    )
+  ).toContain('MobileEmulatorSettingsPane')
 
   const serverActions = source(
     'src/renderer/src/components/settings/runtime-environments/runtime-servers-header-actions.tsx'

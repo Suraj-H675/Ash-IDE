@@ -24996,9 +24996,59 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/mobile/mobile-page-stage.ts",
+      "sourceSha256": "3df66455d1e72d7879c33cfc329be2851af3beb5c352bb07498de82b191ae132",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/mobile-platform-copy.ts",
+      "sourceSha256": "eba7002c284a94dc8c2b867925eefd4f79605bddec8c7724bbdcc10eef3e78f8",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/mobile-relay-mint-failure-notice.tsx",
+      "sourceSha256": "1466ad6e1f8f9582d6288e44ed9d0f540b795d70a58c7aa8bb546861d5ad7744",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/MobileAndroidInstallHelp.tsx",
+      "sourceSha256": "3f7e35000fbe8f93d34c268dcb3929ff5c776212eb30b062bbcc63bb1dd7f34a",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/MobileHero.tsx",
+      "sourceSha256": "a63402cc3ca20e397b19f5793a0199fa7002938b7904556ab280a46311e5fbf0",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/MobileHeroIntro.tsx",
+      "sourceSha256": "ec06151094eeda565a9afc201701e4ff80b4b7c73289f5604a7396a2e3dd5b30",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/MobileHeroPairedDevices.tsx",
+      "sourceSha256": "df1d1dbeb28989a9eaf5696430b60d0fcee7e29ee21c9c8f75a4fa81da1740d5",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/MobileHeroPairingStep.tsx",
+      "sourceSha256": "62063942cd6d10fcdc322fba74019dfd971978c286ead6677d95a2003b9608c2",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
       "path": "src/renderer/src/components/mobile/MobilePage.test.tsx",
       "sourceSha256": "3e43418b7b8e2eebb4a8f6bd0fb9d059c13b7c031d7ca4e21c1f9d3be7283afa",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/MobilePage.tsx",
+      "sourceSha256": "23ab8134cdb2edee9123f3d7e6035272d1a68de7bf0306398d5bbea2b5121916",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/MobilePageContent.tsx",
+      "sourceSha256": "f73dde0dda04523fe806a74dccaf0364d940318df6e038a2484cd9b5f0c43022",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
     },
     {
       "path": "src/renderer/src/components/mobile/MobilePageToolbar.test.tsx",
@@ -25006,9 +25056,19 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/mobile/MobilePageToolbar.tsx",
+      "sourceSha256": "22d116384854d6f91eaefe86305b651427e5212500ba3cb86cc0f36870148e11",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
       "path": "src/renderer/src/components/mobile/NetworkInterfacePicker.test.tsx",
       "sourceSha256": "fc5c9a4de5cc32d24c095a31deb8c4deff85659940a316ba328f29a70394a0ee",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/NetworkInterfacePicker.tsx",
+      "sourceSha256": "e8dd130de614116e6b00950e7a69c32bc21b709847582e9dacd3fd54e02d14da",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
     },
     {
       "path": "src/renderer/src/components/mobile/paired-mobile-devices.test.ts",
@@ -25016,14 +25076,99 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/mobile/paired-mobile-devices.ts",
+      "sourceSha256": "0ea8636aefd3b714b4fbb5b980fed0b101a51073d53707a5808998274a9e17c7",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/PhoneCarousel.tsx",
+      "sourceSha256": "ad3be49ac57af095cf322a69522adac13a738ba8203bcc92cfec4148d0cdd965",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/relay-clock-skew-message.ts",
+      "sourceSha256": "4ccc5605a5276e256343a9f5ae974f7d513cfb2285601688d5eb412d05652df8",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/slides/HomeSlide.fixture.tsx",
+      "sourceSha256": "2f90cfa9853c2be7292ad126e82e29fe2ca11de4de09a0fea9f866bc4ca254db",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/slides/HomeSlide.tsx",
+      "sourceSha256": "d3792afe82c42ac8478653e024f5982b81f7cb67fcb3012a1ddee071afb95b15",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/slides/TerminalSlide.tsx",
+      "sourceSha256": "e5d473f32e456882ff28af9e26b16c2b954c33b095af3b79867dc3b40ed0eac8",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/slides/WorktreeListSlide.tsx",
+      "sourceSha256": "8e6dfeb337359eda22909924b9e16847d99de41441f564f8e0efabcfc1c62399",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/use-mobile-install-actions.ts",
+      "sourceSha256": "5617fa0e83d7145b8f054fe3c1610dd4d4b12a8f0caef11a4f69366f40fefa33",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/use-mobile-install-qr.ts",
+      "sourceSha256": "badc9512d9b1b510a9f0224a05389f27531841ac2681592492b8d1deef38bf82",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/use-mobile-page-escape.ts",
+      "sourceSha256": "c68b25bd69af1918b40a0837c5364df0dcecde01e3805477763e7bd4b39f72bf",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
       "path": "src/renderer/src/components/mobile/use-mobile-page-paired-devices.test.ts",
       "sourceSha256": "6fc49a10522aa2413d67eb1650799530c7a79b778ef2fce0b32bef5d9701c929",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/mobile/use-mobile-page-paired-devices.ts",
+      "sourceSha256": "2dcbfdb11bd5ecc28531310b766b4b08575e89181cb1b7ae0c1267d985fd6c18",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/use-mobile-pairing-address-preference.ts",
+      "sourceSha256": "b9af9808764eedc1591d05921ca73d24b9963a8edef0b3bad80c644c75967cb1",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/use-mobile-pairing-connection-mode.ts",
+      "sourceSha256": "b6325b1ac4379cea080545dcc919de7a04477c4dc4b4065e33c867621fa55544",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/use-mobile-pairing-custom-address.ts",
+      "sourceSha256": "e34e374afd170473745aab09b1717929f2a471a1972922b70faed6495c7d3ee3",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/use-mobile-pairing-generation.ts",
+      "sourceSha256": "b9506e490ed4db627e71ce1c6df64b420b24c8da81ded64190b21ae3d471357d",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/use-mobile-pairing-qr-invalidation.ts",
+      "sourceSha256": "1616b9ec872d27d837680dc268f3895ab07484c678804789d0bae7f127aeb2c1",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
       "path": "src/renderer/src/components/mobile/WindowsFirewallNotice.test.tsx",
       "sourceSha256": "08ea6f0600350fe8b44de2336e053af776adde7ab448ad4831b3bd756d106bc3",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/renderer/src/components/mobile/WindowsFirewallNotice.tsx",
+      "sourceSha256": "15c1bad12315ccb7929488805fe5f1deacc5744f3ef1225ce1885576323d5c4e",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
     },
     {
       "path": "src/renderer/src/components/native-chat-launch-resume-decision.test.tsx",
@@ -27611,14 +27756,94 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/settings/mobile/mobile-auto-restore-options.ts",
+      "sourceSha256": "1704470cdda501fa31e9f7ac0101c5ee355f39ac8e91f279ad8941c882d58e33",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/mobile-pane-search.ts",
+      "sourceSha256": "51f924beb32c88298f52fa9a4e585ecd33e92f79a8b18b952abb9beb6a9bd4a4",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/mobile-settings-search.ts",
+      "sourceSha256": "755571aab7bbfcefd908431b54477c2644d93b47fc16ccacf3873ed17d6261f5",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/MobileAutoRestoreFitSection.tsx",
+      "sourceSha256": "6ae305f4e66dab5a9bdce702ab816fd3283af908829c30eb7e0368bf5564d4a2",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
       "path": "src/renderer/src/components/settings/mobile/MobilePane.test.tsx",
       "sourceSha256": "b5d330a44340660eb3c588a1d9a684d9a55c6a65521476af42b3ccf380a9fc7e",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/settings/mobile/MobilePane.tsx",
+      "sourceSha256": "3adcd9628fdd97b6b691063ae0c98ae4f47bd8de0e53ad6d419a1bf6bb4dcfbd",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/MobileSettingsPane.tsx",
+      "sourceSha256": "f5d6ac4c2442bb9f5b91d4e7753cf016b8a20f9660feaf70a334876709e27b4a",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/pairing/mobile-network-interface-selection.ts",
+      "sourceSha256": "972d630db91a70be6aa1c3b12476af00dccb6bf6e48011290d1924e493bdd9f7",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/pairing/mobile-pairing-device-polling.ts",
+      "sourceSha256": "9eb1271ca773c3a7723b750cc24b0e09cbfef742979f955c99b896efa9807b13",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/pairing/MobilePairedDevicesSection.tsx",
+      "sourceSha256": "79bc86f0bdb4a28758b8e25df845de4287ec415cd4390be04bb29d93d8e4fb11",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/pairing/MobilePairingConnectionOptions.tsx",
+      "sourceSha256": "795c22591b0cc554f028519bcc3b428f0a239d2935dee28b3c64760457d5a753",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/pairing/MobilePairingPathOption.tsx",
+      "sourceSha256": "142f37996209d172b6f48234e31b64bf90f15e7109267e79aa19790583d043f0",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
       "path": "src/renderer/src/components/settings/mobile/pairing/MobilePairingQrSection.test.tsx",
       "sourceSha256": "00bd7b66ad4cab10ca60f90ff0b94590087d674a200f7444b7ae903862d0c301",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/pairing/MobilePairingQrSection.tsx",
+      "sourceSha256": "6ab8e42c9383cd121630b277173c4ea72c7500754e84205127d945096d42c551",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/pairing/MobilePairingSetupSection.tsx",
+      "sourceSha256": "c7f08cccc6276a033053f7e604d2d764eb6c0ffb0867f1372d34796aca308ff7",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/pairing/MobileRelayBetaNotice.tsx",
+      "sourceSha256": "2f7bc5342c5c46c26030046792d6e03a2d7a7cf5ab569956724cc4c1f0a44e7f",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/pairing/MobileRelaySignInPanel.tsx",
+      "sourceSha256": "e50ce52c1ca7cc6115ed122a5134fd10a05e1bb460ef64d971474767103fc214",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
+    },
+    {
+      "path": "src/renderer/src/components/settings/mobile/pairing/use-mobile-paired-device-revocation.ts",
+      "sourceSha256": "78e52f9dff5f80442a5d58ffa541f1e3da5d0bc9351ac90bef3ac35920afa30c",
+      "reason": "Removed the unreachable Orca mobile pairing page, phone app illustration, settings, search or relay UI; the local emulator remains available."
     },
     {
       "path": "src/renderer/src/components/settings/navigation/settings-project-list.test.ts",
@@ -27706,9 +27931,19 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/settings/runtime-environments/pairing/runtime-share-computer-button.tsx",
+      "sourceSha256": "164b3e470ceddc7078a9b0aa81956d68875d58bf61e15e0fe66a2dabfd97856c",
+      "reason": "Removed an unreachable mobile/API-based remote runtime sharing control; Ash retains authenticated loopback browser sessions."
+    },
+    {
       "path": "src/renderer/src/components/settings/runtime-environments/pairing/RuntimePairingGeneratorForm.test.tsx",
       "sourceSha256": "59a19224f7872dd662a86ec84c33743e4d3e1744104b447970fc89d2a678b08e",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/renderer/src/components/settings/runtime-environments/pairing/RuntimePairingUrlGenerator.tsx",
+      "sourceSha256": "1879f7cdfe3c6df2d937cdffcd7280c9bdf77efe2cd0c516d939654ed9b65408",
+      "reason": "Removed an unreachable mobile/API-based remote runtime sharing control; Ash retains authenticated loopback browser sessions."
     },
     {
       "path": "src/renderer/src/components/settings/session-history/SessionHistorySettingsPane.test.tsx",
@@ -27989,6 +28224,11 @@
       "path": "src/renderer/src/components/sidebar/mobile-sidebar-onboarding-badge.test.ts",
       "sourceSha256": "c15d259e7b461ee1ad20727cd7873c7add53a6ea001df8582880348e1df1d7df",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/mobile-sidebar-onboarding-badge.ts",
+      "sourceSha256": "61852a31c69efe3307ccc9daf78ab267e929ca2f8d74ab1e4131b7dadbdd4dc2",
+      "reason": "Removed the orphan phone onboarding badge and its mobile pairing polling hook; desktop sidebar remains independent of phone pairing."
     },
     {
       "path": "src/renderer/src/components/sidebar/OrcaYamlTrustDialog.test.tsx",
