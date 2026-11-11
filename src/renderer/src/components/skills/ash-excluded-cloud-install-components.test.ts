@@ -55,11 +55,12 @@ it('removes the complete unmounted vendor Cloud install and managed-install rend
   expect(page).not.toMatch(/SkillInstallDialog|SkillBundleInstallFlow|SkillInstallManagementDialog/)
 })
 
-it('preserves native provider skills, runtime skill updates and non-Cloud CLI utilities', () => {
+it('preserves native provider skills, runtime skill updates and native CLI discovery', () => {
   const page = source('src/renderer/src/components/skills/SkillsPage.tsx')
   const freshness = source('src/renderer/src/components/skills/SkillFreshnessUpdateDialog.tsx')
   const labels = source('src/renderer/src/components/skills/skill-display-labels.ts')
-  const cli = source('src/cli/handlers/skill-sharing.ts')
+  const cli = source('src/cli/handlers/skill-installed.ts')
+  const cliSpecs = source('src/cli/specs/skills.ts')
 
   expect(page).toContain('discoverSkillsForRuntimeTarget')
   expect(page).toContain('useSkillDeleteFlow')
@@ -68,8 +69,11 @@ it('preserves native provider skills, runtime skill updates and non-Cloud CLI ut
   expect(labels).toContain('fileCountLabel')
   expect(labels).not.toContain('shareLinkCountLabel')
   expect(labels).not.toContain('installSkillsActionLabel')
-  expect(cli).toContain('skill-bundle-name')
-  expect(existsSync(resolve(root, 'src/renderer/src/components/skills/skill-bundle-name.ts'))).toBe(
-    true
-  )
+  expect(cli).toContain("ctx.client.call<SkillDiscoveryResult>('skills.discover'")
+  expect(cli).toContain("'skills installed'")
+  expect(cli).not.toContain('skills.share')
+  expect(cliSpecs).toContain("path: ['skills', 'install']")
+  expect(cliSpecs).toContain("path: ['skills', 'update']")
+  expect(cliSpecs).not.toContain("path: ['skills', 'share']")
+  expect(existsSync(resolve(root, 'src/cli/handlers/skill-sharing.ts'))).toBe(false)
 })
