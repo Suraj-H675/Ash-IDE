@@ -94,7 +94,9 @@ jobs:
             src/main/ipc/source-control/github-pr-refresh-handlers.test.ts \
             src/main/ipc/rate-limits.test.ts \
             src/main/ipc/provider-native-skill-discovery.test.ts \
+            src/main/ipc/skill-delete/ash-native-delete-ipc-transaction.test.ts \
             src/main/ipc/ash-excluded-skill-cloud-handlers.test.ts \
+            src/main/startup/main-process-ready-duplicate-pty-repair.test.ts \
             src/main/ipc/ash-updater-status.test.ts \
             src/main/ipc/m8-local-only-report-ipc.test.ts \
             src/main/orcad/orcad-scheduled-automation-exclusion.test.ts \

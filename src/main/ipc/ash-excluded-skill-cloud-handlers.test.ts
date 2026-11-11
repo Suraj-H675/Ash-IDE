@@ -23,6 +23,7 @@ it('does not ship the dormant Orca Cloud skill sharing and managed install IPC h
 
   const startup = source('src/main/startup/main-process-ready-runtime.ts')
   expect(startup).toContain('registerProviderNativeSkillDiscoveryHandler(store, runtime)')
+  expect(startup).toContain('registerSkillDeleteIpcHandlers(store, runtime)')
   expect(startup).not.toContain('registerSkillsHandlers(')
 })
 
@@ -33,4 +34,10 @@ it('preserves provider-native skills discovery and passive WSL protections', () 
   expect(skills).toContain('resolveSkillDiscoveryProviderRoots')
   expect(skills).toContain('unavailableWhileWslDistroStopped')
   expect(skills).toContain('refuseStoppedWslDistro: true')
+
+  const deleteHandlers = source('src/main/ipc/skill-delete/handlers.ts')
+  expect(deleteHandlers).toContain("'skills:previewDelete'")
+  expect(deleteHandlers).toContain("'skills:delete'")
+  expect(deleteHandlers).toContain('SkillDeleteRequestSchema.parse(value)')
+  expect(deleteHandlers).toContain('handleMainWindowSkillIpc(')
 })

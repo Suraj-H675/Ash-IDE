@@ -35,6 +35,7 @@ import { repairDuplicatePtyPanesOnStart } from '../runtime/moved-pane-owner-reke
 import { registerGitHubPRRefreshHandlers } from '../ipc/source-control/github-pr-refresh-handlers'
 import { registerRateLimitHandlers } from '../ipc/rate-limits'
 import { registerProviderNativeSkillDiscoveryHandler } from '../ipc/skills'
+import { registerSkillDeleteIpcHandlers } from '../ipc/skill-delete/handlers'
 import { registerAshUpdaterReadOnlyHandlers } from '../ipc/ash-updater-status'
 
 // Headless serve has no first window; timer fallback must still sweep trash.
@@ -63,6 +64,9 @@ export async function initializeReadyRuntimeServices(): Promise<void> {
   const runtime = initializeMainProcessRuntime()
   configureRuntimeServices(runtime)
   registerProviderNativeSkillDiscoveryHandler(store, runtime)
+  // The desktop Skills page uses the trusted-window preload bridge for local
+  // preview/delete. Runtime RPC alone only serves remote/paired targets.
+  registerSkillDeleteIpcHandlers(store, runtime)
   registerAshUpdaterReadOnlyHandlers()
   installFirstWorkRenameHookSubscription()
   state.agentBrowserBridge = new AgentBrowserBridge(browserManager)
