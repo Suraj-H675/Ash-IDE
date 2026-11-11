@@ -673,12 +673,12 @@
     },
     {
       "path": "src/main/runtime/rpc/methods/skills.test.ts",
-      "sha256": "bea0821730a537571c819b43fe125f6c97f4b4110e8797338087ce6e34051c6b",
+      "sha256": "bdfaeec7a83faf513bbad8bfaa3c26f86c1a0910c68c3d4054f546dfdbfaf14d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/main/runtime/rpc/methods/skills.ts",
-      "sha256": "f3f210b34bce1bf37e226b30eb9fa40858c7e2d0a34898c89f4e6229200da3e3",
+      "sha256": "c83f179003653111c81f4358e63e62a2a47f1955a5b29345bd19fe25c16f7c4f",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1783,7 +1783,7 @@
     },
     {
       "path": "src/shared/rpc-contract/rpc-params-catalog.generated.ts",
-      "sha256": "6623693b21ca6e9a98f5170f4d3cc0ee22e1bb515d1f21baf8be4e3b64304298",
+      "sha256": "70f4b61d95445916f790dc904dadc999af57e50f7f140442cdddd9b5aa01857c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1794,6 +1794,11 @@
     {
       "path": "src/shared/serve-bundle-coordination.ts",
       "sha256": "21f6f8be48aed3155dff8fdf740a358b7443e7c2da37328141f345cea9efc1c9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/skill-install-capability.ts",
+      "sha256": "089ba155fc6da88e9c3c1eada16b07095f8df2e38a9f9b0beb9b05a0aab4bbce",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

@@ -14,31 +14,12 @@ import {
 } from '../../../skills/skill-delete/request-service'
 import type { SkillDiscoveryTargetSchema } from '../../../../shared/skills'
 import {
-  SkillInstallPreviewRequestSchema,
-  SkillInstallRequestSchema,
-  SkillRemoveRequestSchema
-} from '../../../../shared/skill-install-contract'
-import {
-  SkillBundleInstallProgressSchema,
-  SkillBundleInstallRequestSchema
-} from '../../../../shared/skill-bundle-install-contract'
-import {
-  SkillUploadBeginRequestSchema,
-  SkillUploadChunkRequestSchema,
-  SkillUploadCommitRequestSchema
-} from '../../../../shared/skill-upload-session-contract'
-import {
   discoverSkillsOnTarget,
   resolveSkillDiscoveryTarget
 } from '../../../skills/skill-discovery-target'
-import { SKILL_INSTALL_RESULT_V2_CAPABILITY } from '../../../../shared/skill-install-capability'
 import type { OrcaRuntimeService } from '../../orca-runtime'
 import { parseExecutionHostId } from '../../../../shared/execution-host'
-import {
-  SkillsCancelInstallParams,
-  SkillsDiscoverParams,
-  SkillsGetInstallProgressParams
-} from '../../../../shared/rpc-contract/skills-params'
+import { SkillsDiscoverParams } from '../../../../shared/rpc-contract/skills-params'
 import { unavailableWhileWslDistroStopped } from '../../../skills/skill-discovery-stopped-wsl-roots'
 
 // Use the same target resolution for discovery and delete-plan roots, including WSL.
@@ -140,91 +121,5 @@ export const SKILL_METHODS = [
     permission: 'skills-admin',
     params: BundledSkillAutoUpdateRequestSchema,
     handler: (params, { runtime }) => runtime.autoUpdateLocalBundledSkills(params)
-  }),
-  defineMethod({
-    name: 'skills.install',
-    permission: 'skills-admin',
-    params: SkillInstallRequestSchema,
-    handler: async (params, { runtime, signal, clientCapabilities }) => {
-      const result = await runtime.installSharedSkillRequest(params, signal)
-      if (
-        result.status === 'cancelled' &&
-        !clientCapabilities?.includes(SKILL_INSTALL_RESULT_V2_CAPABILITY)
-      ) {
-        return {
-          ...result,
-          status: 'failed' as const,
-          errorCategory: result.failure?.code ?? 'skill-install-cancelled',
-          failure: undefined
-        }
-      }
-      return result
-    }
-  }),
-  defineMethod({
-    name: 'skills.installBundle',
-    permission: 'skills-admin',
-    params: SkillBundleInstallRequestSchema,
-    handler: (params, { runtime, signal }) =>
-      runtime.installSharedSkillBundleRequest(params, signal)
-  }),
-  defineMethod({
-    name: 'skills.cancelInstall',
-    permission: 'skills-admin',
-    params: SkillsCancelInstallParams,
-    handler: (params, { runtime }) => ({
-      cancelled: runtime.cancelSharedSkillInstall(params.operationId)
-    })
-  }),
-  defineMethod({
-    name: 'skills.getInstallProgress',
-    permission: 'workspace',
-    params: SkillsGetInstallProgressParams,
-    handler: (params, { runtime }) => {
-      const progress = runtime.getSharedSkillInstallProgress(params.operationId)
-      return progress ? SkillBundleInstallProgressSchema.parse(progress) : null
-    }
-  }),
-  defineMethod({
-    name: 'skills.previewInstall',
-    permission: 'workspace',
-    params: SkillInstallPreviewRequestSchema,
-    handler: (params, { runtime }) => runtime.previewSharedSkillInstallRequest(params)
-  }),
-  defineMethod({
-    name: 'skills.removeInstall',
-    permission: 'skills-admin',
-    params: SkillRemoveRequestSchema,
-    handler: (params, { runtime }) => runtime.removeSharedSkillInstallRequest(params)
-  }),
-  defineMethod({
-    name: 'skills.listManagedInstalls',
-    permission: 'workspace',
-    params: null,
-    handler: (_params, { runtime }) => runtime.listManagedSkillInstalls()
-  }),
-  defineMethod({
-    name: 'skills.beginUpload',
-    permission: 'skills-admin',
-    params: SkillUploadBeginRequestSchema,
-    handler: (params, { runtime }) => runtime.beginSkillUpload(params)
-  }),
-  defineMethod({
-    name: 'skills.uploadChunk',
-    permission: 'skills-admin',
-    params: SkillUploadChunkRequestSchema,
-    handler: (params, { runtime }) => runtime.appendSkillUploadChunk(params)
-  }),
-  defineMethod({
-    name: 'skills.commitUpload',
-    permission: 'skills-admin',
-    params: SkillUploadCommitRequestSchema,
-    handler: (params, { runtime }) => runtime.commitSkillUpload(params.uploadId)
-  }),
-  defineMethod({
-    name: 'skills.cancelUpload',
-    permission: 'skills-admin',
-    params: SkillUploadCommitRequestSchema,
-    handler: (params, { runtime }) => runtime.cancelSkillUpload(params.uploadId)
   })
 ]

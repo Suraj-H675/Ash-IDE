@@ -32,15 +32,10 @@ export const BUNDLED_ORCA_SKILL_UPDATE_REQUIRED_MESSAGE =
 /** skills.discover scans a workspace named only by worktreeId, so phones without its folder can ask. */
 export const SKILL_DISCOVER_WORKSPACE_CAPABILITY = 'skills.discover-workspace.v1' as const
 
+// Advertise only skills supported by Ash's registered local RPC surface.
+// Legacy Cloud installation/upload constants remain for pending service-source cleanup,
+// but must never be announced as working capabilities to local or legacy clients.
 export const SKILL_RUNTIME_CAPABILITIES = [
-  SKILL_INSTALL_CAPABILITY,
-  SKILL_BUNDLE_INSTALL_CAPABILITY,
-  SKILL_INSTALL_CANCEL_CAPABILITY,
-  SKILL_INSTALL_PROGRESS_CAPABILITY,
-  SKILL_INSTALL_RESULT_V2_CAPABILITY,
-  SKILL_UPLOAD_CAPABILITY,
-  SKILL_MANAGEMENT_CAPABILITY,
-  SKILL_INSTALL_PROVIDERS_CAPABILITY,
   SKILL_DELETE_CAPABILITY,
   BUNDLED_ORCA_SKILL_CAPABILITY,
   BUNDLED_ORCA_SKILL_RENAMES_CAPABILITY,

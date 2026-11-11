@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { eraseRpcMethods, type RpcContext } from '../core'
+import { RPC_PARAMS_BY_METHOD } from '../../../../shared/rpc-contract/rpc-params-catalog.generated'
+import { RUNTIME_CAPABILITIES } from '../../../../shared/protocol-version'
+import { SKILL_RUNTIME_CAPABILITIES } from '../../../../shared/skill-install-capability'
 
 vi.mock('electron', () => ({
   app: { getPath: () => '/orca-state', isPackaged: true }
@@ -52,14 +55,6 @@ function discoverMethod() {
   const method = eraseRpcMethods(SKILL_METHODS).find((entry) => entry.name === 'skills.discover')
   if (!method) {
     throw new Error('skills.discover method not registered')
-  }
-  return method
-}
-
-function installMethod() {
-  const method = eraseRpcMethods(SKILL_METHODS).find((entry) => entry.name === 'skills.install')
-  if (!method) {
-    throw new Error('skills.install method not registered')
   }
   return method
 }
@@ -169,125 +164,86 @@ describe('skills.discover RPC', () => {
   })
 })
 
-describe('skills.install RPC', () => {
-  it('routes one bundle request without changing the single-skill method', async () => {
-    const installSharedSkillBundleRequest = vi.fn(async () => ({ status: 'complete' }))
-    const request = {
-      operationId: 'operation_1',
-      package: {
-        packageId: 'package_1',
-        versionId: 'version_1',
-        bundleDigest: 'a'.repeat(64),
-        archiveSha256: 'b'.repeat(64),
-        compressedBytes: 100
-      },
-      selectedSkillIds: ['alpha'],
-      ingress: {
-        kind: 'download-grant' as const,
-        url: 'https://storage.googleapis.com/package',
-        expiresAt: '2026-08-11T12:00:00.000Z'
-      },
-      destination: { scope: 'global' as const },
-      conflictDecisions: []
+describe('native provider skill RPC boundary', () => {
+  const allowed = [
+    'skills.discover',
+    'skills.previewDelete',
+    'skills.delete',
+    'skills.planBundledOrca',
+    'skills.executeBundledOrca',
+    'skills.autoUpdateBundledOrca'
+  ] as const
+
+  const retired = [
+    'skills.share',
+    'skills.install',
+    'skills.installBundle',
+    'skills.cancelInstall',
+    'skills.getInstallProgress',
+    'skills.previewInstall',
+    'skills.removeInstall',
+    'skills.listManagedInstalls',
+    'skills.beginUpload',
+    'skills.uploadChunk',
+    'skills.commitUpload',
+    'skills.cancelUpload'
+  ] as const
+
+  it('registers exactly native discovery, deletion and bundled skill maintenance methods', () => {
+    const names = eraseRpcMethods(SKILL_METHODS).map((entry) => entry.name)
+    expect(names).toEqual([...allowed])
+    const generatedNames = Object.keys(RPC_PARAMS_BY_METHOD).filter((name) =>
+      name.startsWith('skills.')
+    )
+    expect(generatedNames).toEqual([...allowed].sort())
+    for (const name of retired) {
+      expect(names, `${name} must never expose Orca Cloud installation or transfer`).not.toContain(
+        name
+      )
+      expect(generatedNames, `${name} must be absent from generated RPC parameters`).not.toContain(
+        name
+      )
     }
-
-    await method('skills.installBundle').handler(request, {
-      runtime: { installSharedSkillBundleRequest }
-    } as unknown as RpcContext)
-
-    expect(installSharedSkillBundleRequest).toHaveBeenCalledWith(request, undefined)
   })
 
-  it('delegates installation to the executing runtime service', async () => {
-    const installSharedSkillRequest = vi.fn(async () => ({ status: 'installed' }))
+  it('advertises native skill capabilities without Cloud installer, transfer or management claims', () => {
+    const advertised: readonly string[] = SKILL_RUNTIME_CAPABILITIES
+    expect(advertised).toContain('skills.delete.v1')
+    expect(advertised).toContain('skills.bundled-orca.v1')
+    expect(advertised).toContain('skills.bundled-orca-auto-update.v1')
+    for (const capability of [
+      'skills.install.v1',
+      'skills.install.bundle.v1',
+      'skills.install-cancel.v1',
+      'skills.install-progress.v1',
+      'skills.install-result.v2',
+      'skills.upload.v1',
+      'skills.manage.v1',
+      'skills.install-providers.v1'
+    ]) {
+      expect(advertised, `retired Cloud capability ${capability}`).not.toContain(capability)
+      expect(RUNTIME_CAPABILITIES, `runtime must not claim ${capability}`).not.toContain(capability)
+    }
+  })
+
+  it('preserves working local bundled skill plans, execution and auto-update delegates', async () => {
+    const planLocalBundledSkills = vi.fn(async () => ({ plan: 'local' }))
+    const executeLocalBundledSkills = vi.fn(async () => ({ status: 'complete' }))
+    const autoUpdateLocalBundledSkills = vi.fn(async () => ({ status: 'unchanged' }))
     const runtime = {
-      installSharedSkillRequest
+      planLocalBundledSkills,
+      executeLocalBundledSkills,
+      autoUpdateLocalBundledSkills
     }
-    const request = {
-      operationId: 'operation_1',
-      package: {
-        packageId: 'package_1',
-        versionId: 'version_1',
-        packageDigest: 'a'.repeat(64),
-        archiveSha256: 'b'.repeat(64),
-        compressedBytes: 100
-      },
-      ingress: {
-        kind: 'download-grant' as const,
-        url: 'https://storage.googleapis.com/package',
-        expiresAt: '2026-08-11T12:00:00.000Z'
-      },
-      destination: { scope: 'global' as const }
-    }
-    await installMethod().handler(request, { runtime } as unknown as RpcContext)
-    expect(installSharedSkillRequest).toHaveBeenCalledWith(request, undefined)
-  })
-
-  it('downgrades cancelled results for clients without the additive result capability', async () => {
-    const cancelled = {
-      operationId: 'operation_1',
-      status: 'cancelled' as const,
-      name: 'example',
-      packageDigest: 'a'.repeat(64),
-      placements: [],
-      failure: {
-        category: 'cancelled' as const,
-        code: 'skill-install-cancelled',
-        retryable: true
-      }
-    }
-    const runtime = { installSharedSkillRequest: vi.fn(async () => cancelled) }
-    const request = {
-      operationId: 'operation_1',
-      package: {
-        packageId: 'package_1',
-        versionId: 'version_1',
-        packageDigest: 'a'.repeat(64),
-        archiveSha256: 'b'.repeat(64),
-        compressedBytes: 100
-      },
-      ingress: {
-        kind: 'download-grant' as const,
-        url: 'https://storage.googleapis.com/package',
-        expiresAt: '2026-08-11T12:00:00.000Z'
-      },
-      destination: { scope: 'global' as const }
-    }
-
-    await expect(
-      installMethod().handler(request, { runtime, clientCapabilities: [] } as unknown as RpcContext)
-    ).resolves.toMatchObject({ status: 'failed', errorCategory: 'skill-install-cancelled' })
-    await expect(
-      installMethod().handler(request, {
-        runtime,
-        clientCapabilities: ['skills.install-result.v2']
-      } as unknown as RpcContext)
-    ).resolves.toMatchObject({ status: 'cancelled', failure: { category: 'cancelled' } })
-  })
-
-  it('routes cancellation to the destination runtime by operation ID', async () => {
-    const cancelSharedSkillInstall = vi.fn(() => true)
-    const result = await method('skills.cancelInstall').handler({ operationId: 'operation_1' }, {
-      runtime: { cancelSharedSkillInstall }
+    const params = {}
+    await method('skills.planBundledOrca').handler(params, { runtime } as unknown as RpcContext)
+    await method('skills.executeBundledOrca').handler(params, { runtime } as unknown as RpcContext)
+    await method('skills.autoUpdateBundledOrca').handler(params, {
+      runtime
     } as unknown as RpcContext)
-    expect(result).toEqual({ cancelled: true })
-    expect(cancelSharedSkillInstall).toHaveBeenCalledWith('operation_1')
-  })
-
-  it('returns active bundle progress without requiring it from older clients', async () => {
-    const progress = {
-      operationId: 'operation_1',
-      skillId: 'alpha',
-      skillName: 'alpha',
-      skillIndex: 1,
-      skillCount: 2
-    }
-    const getSharedSkillInstallProgress = vi.fn(() => progress)
-    expect(
-      method('skills.getInstallProgress').handler({ operationId: 'operation_1' }, {
-        runtime: { getSharedSkillInstallProgress }
-      } as unknown as RpcContext)
-    ).toEqual(progress)
+    expect(planLocalBundledSkills).toHaveBeenCalledWith(params)
+    expect(executeLocalBundledSkills).toHaveBeenCalledWith(params)
+    expect(autoUpdateLocalBundledSkills).toHaveBeenCalledWith(params)
   })
 })
 
@@ -297,33 +253,5 @@ describe('retired vendor Cloud skill publishing RPC', () => {
       'skills.share'
     )
     expect(eraseRpcMethods(SKILL_METHODS).map((method) => method.name)).toContain('skills.discover')
-  })
-})
-
-describe('skill management RPC', () => {
-  it('delegates preview and removal to the executing runtime', async () => {
-    const previewSharedSkillInstallRequest = vi.fn(async () => ({ currentState: 'missing' }))
-    const removeSharedSkillInstallRequest = vi.fn(async () => ({ status: 'removed' }))
-    const runtime = { previewSharedSkillInstallRequest, removeSharedSkillInstallRequest }
-    const destination = { scope: 'global' as const }
-    const packageIdentity = {
-      packageId: 'package_1',
-      versionId: 'version_1',
-      packageDigest: 'a'.repeat(64),
-      archiveSha256: 'b'.repeat(64),
-      compressedBytes: 100
-    }
-
-    await method('skills.previewInstall').handler(
-      { name: 'example', package: packageIdentity, destination },
-      { runtime } as unknown as RpcContext
-    )
-    await method('skills.removeInstall').handler(
-      { operationId: 'operation_1', name: 'example', destination },
-      { runtime } as unknown as RpcContext
-    )
-
-    expect(previewSharedSkillInstallRequest).toHaveBeenCalledOnce()
-    expect(removeSharedSkillInstallRequest).toHaveBeenCalledOnce()
   })
 })
