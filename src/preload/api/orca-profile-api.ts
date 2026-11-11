@@ -9,13 +9,6 @@ import type {
   FindOrcaProfileProjectsByPathResult,
   OrcaProfileAuthStatus,
   OrcaProfileListResult,
-  OrcaProfileOrgInviteRevokeArgs,
-  OrcaProfileOrgMemberChangeRoleArgs,
-  OrcaProfileOrgMemberInviteArgs,
-  OrcaProfileOrgMemberMutationResult,
-  OrcaProfileOrgMemberRemoveArgs,
-  OrcaProfileOrgMembersListArgs,
-  OrcaProfileOrgMembersListResult,
   RefreshCurrentOrcaProfileAuthResult,
   SelectOrcaProfileOrgArgs,
   SelectOrcaProfileOrgResult,
@@ -51,17 +44,4 @@ export type OrcaProfileApi = {
   refreshAuth: () => Promise<RefreshCurrentOrcaProfileAuthResult>
   signOutCurrent: () => Promise<SignOutCurrentOrcaProfileResult>
   selectOrg: (args: SelectOrcaProfileOrgArgs) => Promise<SelectOrcaProfileOrgResult>
-  orgMembersList: (args: OrcaProfileOrgMembersListArgs) => Promise<OrcaProfileOrgMembersListResult>
-  orgMemberInvite: (
-    args: OrcaProfileOrgMemberInviteArgs
-  ) => Promise<OrcaProfileOrgMemberMutationResult>
-  orgInviteRevoke: (
-    args: OrcaProfileOrgInviteRevokeArgs
-  ) => Promise<OrcaProfileOrgMemberMutationResult>
-  orgMemberChangeRole: (
-    args: OrcaProfileOrgMemberChangeRoleArgs
-  ) => Promise<OrcaProfileOrgMemberMutationResult>
-  orgMemberRemove: (
-    args: OrcaProfileOrgMemberRemoveArgs
-  ) => Promise<OrcaProfileOrgMemberMutationResult>
 }

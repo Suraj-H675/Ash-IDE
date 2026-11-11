@@ -8146,6 +8146,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/ipc/profiles/orca-profile-org-members-handlers.ts",
+      "sourceSha256": "8af267adf9d308fb3e3973555a415406736ef84f5bd7a03144ef56a6a825496d",
+      "reason": "Removed the unreachable Orca vendor-organization member administration endpoint, backing cloud membership client/service, or development roster. Ash retains local profiles and provider-native identities; no cloud org administration IPC is registered."
+    },
+    {
       "path": "src/main/ipc/profiles/orca-profiles-switch-persistence.test.ts",
       "sourceSha256": "afe3e8fce415e322ca6609e8e76fdb6649150575b9b341d8ec17d795dcba51cc",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
@@ -11151,6 +11156,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/orca-profiles/profile-cloud-dev-org-members.ts",
+      "sourceSha256": "82490c4cb8703277aa92284ccb2099b5cb8d56fee2dd2d7db492a12ebc5c939b",
+      "reason": "Removed the unreachable Orca vendor-organization member administration endpoint, backing cloud membership client/service, or development roster. Ash retains local profiles and provider-native identities; no cloud org administration IPC is registered."
+    },
+    {
       "path": "src/main/orca-profiles/profile-cloud-dev-service.test.ts",
       "sourceSha256": "7f1890f392cf4cfeafed55095f39164933c4b9214d8f80128424940bc70bfce1",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
@@ -11161,9 +11171,19 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/orca-profiles/profile-cloud-org-members-client.ts",
+      "sourceSha256": "1630e11ab9a6cc50de37470c2894840b3c74706178dd6ea5c3d0d0a7da33a3dc",
+      "reason": "Removed the unreachable Orca vendor-organization member administration endpoint, backing cloud membership client/service, or development roster. Ash retains local profiles and provider-native identities; no cloud org administration IPC is registered."
+    },
+    {
       "path": "src/main/orca-profiles/profile-cloud-org-members-service.test.ts",
       "sourceSha256": "1681d6720e0f42ed6818585f33046302ed398c53fc1bc55b06524b1ae6a5dab5",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/orca-profiles/profile-cloud-org-members-service.ts",
+      "sourceSha256": "647b9f24d530c26ced275723f9d3ff81ef994e482ded8cd59bdd2166083564b0",
+      "reason": "Removed the unreachable Orca vendor-organization member administration endpoint, backing cloud membership client/service, or development roster. Ash retains local profiles and provider-native identities; no cloud org administration IPC is registered."
     },
     {
       "path": "src/main/orca-profiles/profile-cloud-refresh-replay-guard.test.ts",

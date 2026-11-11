@@ -64,12 +64,7 @@ export function createWebOrcaProfilesApi(): Partial<PreloadApi> {
       selectOrg: async () => ({
         status: 'unconfigured',
         auth: await webOrcaProfileAuthStatus()
-      }),
-      orgMembersList: async () => ({ status: 'unconfigured' }),
-      orgMemberInvite: async () => ({ status: 'unconfigured' }),
-      orgInviteRevoke: async () => ({ status: 'unconfigured' }),
-      orgMemberChangeRole: async () => ({ status: 'unconfigured' }),
-      orgMemberRemove: async () => ({ status: 'unconfigured' })
+      })
     }
   }
 }
