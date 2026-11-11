@@ -19086,6 +19086,51 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/skills/skill-cloud-grant-installation.ts",
+      "sourceSha256": "57eec21a3a80b84a9189244c83add47a08fa6b445a7560aa67ee3bdd303ec2f5",
+      "reason": "Ash M8 exclusion: Orphaned Orca Cloud download-grant installer after Cloud publishing and install RPC removal; it has no production callers. Provider-native local skill handling is retained."
+    },
+    {
+      "path": "src/main/skills/skill-cloud-grant-version.ts",
+      "sourceSha256": "3834b16fd1074ed8b14ff21ccc9858425db7ef7d66f7d7bedf3c812d4db1f49e",
+      "reason": "Ash M8 exclusion: Unreferenced Cloud shared-package version/grant adapter from excluded vendor distribution workflow."
+    },
+    {
+      "path": "src/main/skills/skill-cloud-install-target.ts",
+      "sourceSha256": "4485e24f5a6cc6b9265c91385bdd36ddaf0a05534438ef30d24700e1c202a1c7",
+      "reason": "Ash M8 exclusion: Unreferenced Cloud install-target selection used only by the excluded vendor distribution workflow."
+    },
+    {
+      "path": "src/main/skills/skill-remote-install-service.ts",
+      "sourceSha256": "5d2199c5b9d4040ed0577386dee9326cf927763f54b4bf986a5657d91569cf43",
+      "reason": "Ash M8 exclusion: Orphaned Cloud skill install-on-paired-runtime RPC transport; remote skill management is excluded from Ash."
+    },
+    {
+      "path": "src/main/skills/skill-client-mediated-transfer.ts",
+      "sourceSha256": "5c26abc33c5826de4d18aaefe1996ba4336314e963a506798675644a0d41ba95",
+      "reason": "Ash M8 exclusion: Orphaned client-mediated skill archive relay/upload for a paired remote runtime, reachable only from retired remote installation."
+    },
+    {
+      "path": "src/main/skills/skill-install-progress-polling.ts",
+      "sourceSha256": "7ae172ecf4473a22a208cbd5b7872d083fc24a3bf2297f06c124f35379ebbd92",
+      "reason": "Ash M8 exclusion: Orphaned remote Cloud bundle install progress polling; no caller remains outside retired remote installer."
+    },
+    {
+      "path": "src/main/skills/skill-transfer-rpc-retry.ts",
+      "sourceSha256": "0e23f186bc4cc4156edeb516c1edb02126c62d6ee4d74c66acd9b5d57f664526",
+      "reason": "Ash M8 exclusion: Orphaned Cloud remote install/upload retry helper; only retired transfer modules called it."
+    },
+    {
+      "path": "src/main/skills/skill-runtime-capability.ts",
+      "sourceSha256": "e9282bb593d3c6c0023b2fd02a90890b21dcc6f00dd94aac579306f3d38e5871",
+      "reason": "Ash M8 exclusion: Orphaned remote runtime skill-install capability probing, superseded by Ash native skill RPC capabilities."
+    },
+    {
+      "path": "src/main/skills/skill-remote-install-cancellation.ts",
+      "sourceSha256": "3a1ae084043b407baceb60e67331a61fe9e20d8d2a3682a2004582a62e054cb9",
+      "reason": "Ash M8 exclusion: Orphaned remote shared-skill transfer cancellation controller with no remaining production consumer."
+    },
+    {
       "path": "src/main/skills/agent-skill-selection.ts",
       "sourceSha256": "6b3ece17f1856209ec1b6acb32d925868b2f5690f0a300f246bdffbf036d9f11",
       "reason": "Ash M8 exclusion: orphaned vendor Orca Cloud agent-skill publishing/selection, owned package, authentication, signed-upload, request, or deadline helper. Import/caller audit found no production consumer outside the removed Cloud publisher subtree; shared skill installation, upload shutdown, provider-native discovery, and Cloud error classification remain intact."

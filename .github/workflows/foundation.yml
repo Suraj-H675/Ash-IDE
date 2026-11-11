@@ -142,6 +142,7 @@ jobs:
             src/main/runtime/rpc/methods/skills.test.ts \
             src/main/runtime/rpc/methods/publish-capability-settings.test.ts \
             src/main/runtime/integrations/skill/ash-excluded-internal-skill-cloud.test.ts \
+            src/main/skills/ash-excluded-remote-cloud-skill-transfer.test.ts \
             src/renderer/src/app-shell/ash-excluded-startup-gates.test.tsx \
             src/renderer/src/app-shell/ash-excluded-automation-entrypoints.test.tsx \
             src/renderer/src/store/app-plugin-host-boundary.test.tsx \
