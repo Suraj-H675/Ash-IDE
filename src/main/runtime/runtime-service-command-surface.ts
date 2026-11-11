@@ -43,10 +43,6 @@ export type RuntimeServiceCommandSurface = {
   acknowledgeNotificationAttention(acknowledgement: NotificationAttentionAcknowledgement): void
   reconcileStructuredPromptAttention: RuntimeMobileNotificationController['reconcileStructuredPromptAttention']
   dispatchPluginNotification: RuntimeMobileNotificationController['dispatchPlugin']
-  setMobilePushRegistrar: RuntimeMobileNotificationController['setPushRegistrar']
-  testMobilePushDevice: RuntimeMobileNotificationController['testPushDevice']
-  registerMobilePushDevice: RuntimeMobileNotificationController['registerPushDevice']
-  unregisterMobilePushDevice: RuntimeMobileNotificationController['unregisterPushDevice']
   setAccountServices: RuntimeAccountController['setServices']
   getDataAccountsSnapshot: RuntimeAccountController['dataAccountsSnapshot']
   setCommitMessageAgentEnvironmentResolvers: RuntimeAccountController['setCommitMessageAgentEnvironment']
@@ -159,10 +155,6 @@ export function installRuntimeServiceCommandSurface(
     reconcileStructuredPromptAttention:
       notifications.reconcileStructuredPromptAttention.bind(notifications),
     dispatchPluginNotification: notifications.dispatchPlugin.bind(notifications),
-    setMobilePushRegistrar: notifications.setPushRegistrar.bind(notifications),
-    testMobilePushDevice: notifications.testPushDevice.bind(notifications),
-    registerMobilePushDevice: notifications.registerPushDevice.bind(notifications),
-    unregisterMobilePushDevice: notifications.unregisterPushDevice.bind(notifications),
     setAccountServices: accounts.setServices.bind(accounts),
     getDataAccountsSnapshot: accounts.dataAccountsSnapshot.bind(accounts),
     setCommitMessageAgentEnvironmentResolvers:

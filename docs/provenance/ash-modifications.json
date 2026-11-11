@@ -497,6 +497,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/orca-profiles/profile-cloud-auth-config.ts",
+      "sha256": "4c7efa95c0ac6ab5681a1dedaf10a8f42ffe0a9a58a97eab46ed8e76f110b5ca",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/orca-profiles/profile-cloud-service.ts",
       "sha256": "883270ff0ed0fa9304af68d00fe9d2e6f0e0ad204fbb4480b75ee56f25b573e7",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -587,8 +592,8 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
-      "path": "src/main/runtime/push/push-gateway-session.ts",
-      "sha256": "1a2a70b2d2d8ee64827b028150e167c1652130b0c7934968e990d105bf6e99a6",
+      "path": "src/main/runtime/push/notifications/runtime-mobile-notification-controller.ts",
+      "sha256": "67f88c50574c4bb944c31e31fe5710a43948cf5ac9a604f08c00afc74a5e480f",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -769,6 +774,11 @@
     {
       "path": "src/main/runtime/rpc/unused-default-rpc-methods.test-fixture.ts",
       "sha256": "83cf4e6f2a29320903d5b8df6f22c9741191c9f81430f1b7ede4b765f50ea70e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/runtime-service-command-surface.ts",
+      "sha256": "50a2efdc6c71191408bfce6a8314341ae6dac8655ac8f56d719d299eca41714b",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

@@ -3,7 +3,6 @@ import {
   cleanCloudServiceUrl as cleanUrl,
   cleanCloudServiceOrigin as cleanOrigin
 } from '../../shared/cloud-service-url'
-import { resolvePushGatewayOrigin } from '../runtime/push/push-gateway-origin'
 
 export type OrcaCloudAuthConfig = {
   apiBaseUrl: string
@@ -99,14 +98,6 @@ export function getOrcaCloudAuthConfig(
       scope: env.ORCA_CLOUD_AUTH_SCOPE?.trim() || DEFAULT_SCOPE
     }
   }
-}
-
-/** Host-key authentication keeps phone push available without a signed-in account. */
-export function getOrcaPushGatewayUrl(
-  env: NodeJS.ProcessEnv = process.env,
-  packaged: boolean = isPackagedOrcaBuild()
-): string {
-  return resolvePushGatewayOrigin(env, packaged)
 }
 
 export function allowsPlaintextOrcaCloudSession(

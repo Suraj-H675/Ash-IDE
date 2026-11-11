@@ -106,6 +106,7 @@ jobs:
             src/main/startup/main-process-quit-update-veto.test.ts \
             src/main/runtime/rpc/methods/ash-runtime-methods.test.ts \
             src/main/runtime/rpc/methods/ash-excluded-mobile-push-rpc.test.ts \
+            src/main/runtime/push/ash-mobile-push-gateway-retirement.test.ts \
             src/main/runtime/rpc/ash-mobile-rpc-routing-retirement.test.ts \
             src/main/runtime/rpc/server/runtime-rpc-mobile-automations.test.ts \
             src/cli/runtime/serve-orcad-launch.test.ts \

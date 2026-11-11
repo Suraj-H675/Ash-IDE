@@ -17566,6 +17566,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/push/desktop-push-service.ts",
+      "sourceSha256": "872aa49d2bee73fa74173d46ca85aca7f098147285a70cdc83052d4c415fd6c3",
+      "reason": "Removed unused vendor mobile push gateway service, registration, HTTP authorization, proof handshake, dispatch, retry or scheduling component. Ash retains desktop notification/replay and durable legacy push-unregister records."
+    },
+    {
       "path": "src/main/runtime/push/notifications/mobile-notification-dismissal-read-failure.test.ts",
       "sourceSha256": "aceed85c8849fd8f2a05ff1d342cb9569a0e2746231d2614a7ce870e104e1816",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
@@ -17591,9 +17596,34 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/push/push-dispatcher.test-fixture.ts",
+      "sourceSha256": "159eb600daa0be21d9ee7785aef620be9ac9c283667f054c7206cd755846bb07",
+      "reason": "Removed inherited test-only vendor mobile push gateway proof/vector fixture after retiring all gateway clients and registration code. Retained desktop notification and local runtime acceptance tests."
+    },
+    {
+      "path": "src/main/runtime/push/push-dispatcher.ts",
+      "sourceSha256": "0b87e731790f133a46079058e26a1bafbc92072794026b123e1752bbfad3c980",
+      "reason": "Removed unused vendor mobile push gateway service, registration, HTTP authorization, proof handshake, dispatch, retry or scheduling component. Ash retains desktop notification/replay and durable legacy push-unregister records."
+    },
+    {
       "path": "src/main/runtime/push/push-gateway-client.test.ts",
       "sourceSha256": "722cce3a19bf11c34c3526a1a9d61d4686e4670598327d98f0e8dfc66058915d",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/push/push-gateway-client.ts",
+      "sourceSha256": "41242ba32a9da74044fd64852d16943e66751ab209f21de72d40358b9577d55a",
+      "reason": "Removed unused vendor mobile push gateway service, registration, HTTP authorization, proof handshake, dispatch, retry or scheduling component. Ash retains desktop notification/replay and durable legacy push-unregister records."
+    },
+    {
+      "path": "src/main/runtime/push/push-gateway-origin.ts",
+      "sourceSha256": "f6d71ee92549fd0c9b3cca97386a26f980ac20bbea748694a75bc69600824511",
+      "reason": "Removed unused vendor mobile push gateway service, registration, HTTP authorization, proof handshake, dispatch, retry or scheduling component. Ash retains desktop notification/replay and durable legacy push-unregister records."
+    },
+    {
+      "path": "src/main/runtime/push/push-gateway-response.ts",
+      "sourceSha256": "601d9092ddaeeebd151d7d043b2d2aa2298d6f6da29c760327e7a9fea44d12b9",
+      "reason": "Removed unused vendor mobile push gateway service, registration, HTTP authorization, proof handshake, dispatch, retry or scheduling component. Ash retains desktop notification/replay and durable legacy push-unregister records."
     },
     {
       "path": "src/main/runtime/push/push-gateway-session.test.ts",
@@ -17601,9 +17631,39 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/push/push-gateway-session.ts",
+      "sourceSha256": "0be96fc4868095ad2b3485cafb2fd231a422703d580fed532a9097a1766b1114",
+      "reason": "Removed unused vendor mobile push gateway service, registration, HTTP authorization, proof handshake, dispatch, retry or scheduling component. Ash retains desktop notification/replay and durable legacy push-unregister records."
+    },
+    {
+      "path": "src/main/runtime/push/push-host-challenge-fixtures.ts",
+      "sourceSha256": "e22fbf90a580774c954d684a5b9978022a2604af4b1983ff8665ce4e0d4f515e",
+      "reason": "Removed inherited test-only vendor mobile push gateway proof/vector fixture after retiring all gateway clients and registration code. Retained desktop notification and local runtime acceptance tests."
+    },
+    {
+      "path": "src/main/runtime/push/push-host-proof-vector.json",
+      "sourceSha256": "6bbe3de40215abae1190cac8c3bc1776f149f16a7e274fe01816d6e551b5251d",
+      "reason": "Removed inherited test-only vendor mobile push gateway proof/vector fixture after retiring all gateway clients and registration code. Retained desktop notification and local runtime acceptance tests."
+    },
+    {
+      "path": "src/main/runtime/push/push-host-proof-vector.test.ts",
+      "sourceSha256": "15dde2414273cefd88b909e08c4d12f3febde4849f81835ab9c4313c94e0dc1e",
+      "reason": "Removed inherited test-only vendor mobile push gateway proof/vector fixture after retiring all gateway clients and registration code. Retained desktop notification and local runtime acceptance tests."
+    },
+    {
       "path": "src/main/runtime/push/push-host-proof.test.ts",
       "sourceSha256": "1aacb843c372bae06a30ff3b15a8bc79b3c1c71ef7c42c8a7ea4643558b24687",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/push/push-host-proof.ts",
+      "sourceSha256": "72fd6fc2a4fe1475faf680ecc1a7ed2fdb05dd97c0369cf8dcdc357da7cbc8a3",
+      "reason": "Removed unused vendor mobile push gateway service, registration, HTTP authorization, proof handshake, dispatch, retry or scheduling component. Ash retains desktop notification/replay and durable legacy push-unregister records."
+    },
+    {
+      "path": "src/main/runtime/push/push-outcome-counters.ts",
+      "sourceSha256": "2647c9bc84eb077dc82dd53eac7a820a8dd9a7e95dcb076fb169e65d1f9e8abe",
+      "reason": "Removed unused vendor mobile push gateway service, registration, HTTP authorization, proof handshake, dispatch, retry or scheduling component. Ash retains desktop notification/replay and durable legacy push-unregister records."
     },
     {
       "path": "src/main/runtime/push/push-policy-pipeline.integration.test.ts",
@@ -17614,6 +17674,11 @@
       "path": "src/main/runtime/push/push-preferences.test.ts",
       "sourceSha256": "40752fe9f1f3b4ec9eda73c91886582d7ebcf0958ade01d8f4d07e29eb2fedfc",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/push/push-register-throttle.ts",
+      "sourceSha256": "26c006816a92080d022dd3d85a5efc118dcb73bff5d6aaa6a69ccd4f929637b6",
+      "reason": "Removed unused vendor mobile push gateway service, registration, HTTP authorization, proof handshake, dispatch, retry or scheduling component. Ash retains desktop notification/replay and durable legacy push-unregister records."
     },
     {
       "path": "src/main/runtime/push/push-registration-races.test.ts",

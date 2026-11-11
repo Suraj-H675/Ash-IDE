@@ -1,9 +1,7 @@
-import { createHash } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { PushGatewaySession } from '../push/push-gateway-session'
 import { RelayRevokeOutbox } from './relay-revoke-outbox'
 
 const excludedVendorRelayModules = [
@@ -98,22 +96,5 @@ describe('Ash excludes orphan vendor relay session and control sources', () => {
     )
     expect(cloudService).not.toContain('clearRelayRegionPreferenceCache')
     expect(cloudService).toContain('signOutCloudSession(active.profile.id, userDataPath)')
-  })
-
-  it('keeps the legacy push host fingerprint algorithm without starting a relay service', () => {
-    const publicKey = Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8])
-    const session = new PushGatewaySession({
-      origin: 'https://example.invalid',
-      keypair: {
-        publicKey,
-        secretKey: new Uint8Array(32),
-        publicKeyB64: Buffer.from(publicKey).toString('base64')
-      },
-      fetchImpl: globalThis.fetch,
-      now: () => 0
-    })
-    expect(session.hostFingerprint).toBe(
-      createHash('sha256').update(publicKey).digest('base64url').slice(0, 16)
-    )
   })
 })
