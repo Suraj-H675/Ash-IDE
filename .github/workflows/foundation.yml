@@ -101,6 +101,7 @@ jobs:
             src/main/startup/ash-excluded-mobile-cloud-relay-startup.test.ts \
             src/main/runtime/rpc/server/ash-mobile-pairing-entrypoints-retirement.test.ts \
             src/main/runtime/rpc/server/ash-mobile-relay-provider-hooks-retirement.test.ts \
+            src/main/runtime/mobile-desktop-relay/ash-retired-phone-relay-implementation.test.ts \
             src/main/startup/main-process-quit-update-veto.test.ts \
             src/main/runtime/rpc/methods/ash-runtime-methods.test.ts \
             src/main/runtime/rpc/methods/ash-excluded-mobile-push-rpc.test.ts \

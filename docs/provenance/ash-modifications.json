@@ -757,6 +757,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/sidebar-inputs/paired-server-rows-producer.ts",
+      "sha256": "845136ae3cf13f6daf302e8351a7367392fa1c2e05f5de219c8805712cff6a22",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/terminal/launch/claude-agent-teams-shim-env.ts",
       "sha256": "f153512101a2b254329e678f6cc03fbdb61080d97a8e3619fc07af66b0c9b778",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."

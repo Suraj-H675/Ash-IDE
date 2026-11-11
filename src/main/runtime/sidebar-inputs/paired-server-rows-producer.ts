@@ -15,7 +15,6 @@ import {
   describeRelayHosts,
   relayHostFence
 } from '../mobile-desktop-relay/mobile-relay-host-descriptions'
-import type { ServerWorktreeRows } from '../mobile-desktop-relay/mobile-relay-host-catalog'
 import {
   SERVER_WORKTREE_LIMIT,
   WorktreePsReplySchema,
@@ -48,7 +47,7 @@ type ServerEntry = {
 }
 
 /** Cache paired-server rows without a window; refresh on contact/events/reads and every 30s while visible. Contact gaps make rows unverifiable until a post-gap fetch; only removal/re-pair drops them. */
-export class PairedServerRowsProducer implements ServerWorktreeRows {
+export class PairedServerRowsProducer {
   private readonly servers = new Map<string, ServerEntry>()
   private hosts: MobileDesktopRelayHosts | null = null
   readonly revision = new ProducerRevision()

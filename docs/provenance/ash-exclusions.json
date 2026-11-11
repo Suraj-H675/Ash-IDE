@@ -15496,6 +15496,31 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-desktop-relay/delegated-phone-grant-cache.ts",
+      "sourceSha256": "f500c73551831fea76f554c9a8c07941a936a8a9482bc2e95fbf32bd09ea3f95",
+      "reason": "Retired orphan mobile-desktop phone forwarding, delegated credential grants, remote browser forwarding, or relayed frame handling. Ash retains local browser sessions and historical credential revocation."
+    },
+    {
+      "path": "src/main/runtime/mobile-desktop-relay/delegated-phone-grants.ts",
+      "sourceSha256": "96e87a25486ed042a46f7ac88634166b2a2900d73548906d811815bc2cf98e8d",
+      "reason": "Retired orphan mobile-desktop phone forwarding, delegated credential grants, remote browser forwarding, or relayed frame handling. Ash retains local browser sessions and historical credential revocation."
+    },
+    {
+      "path": "src/main/runtime/mobile-desktop-relay/hosted-browser-page-route.ts",
+      "sourceSha256": "05990a62d3e3f4bf06d097aaee02f55e423cf29c41eeb6ff991b526c9898e4cd",
+      "reason": "Retired orphan mobile-desktop phone forwarding, delegated credential grants, remote browser forwarding, or relayed frame handling. Ash retains local browser sessions and historical credential revocation."
+    },
+    {
+      "path": "src/main/runtime/mobile-desktop-relay/mobile-desktop-relay-link.ts",
+      "sourceSha256": "8a6e0ab4f64dbb3cd362bacad04b29a2bc0ba86ada49bab6ad4fd67196beb5ab",
+      "reason": "Retired orphan mobile-desktop phone forwarding, delegated credential grants, remote browser forwarding, or relayed frame handling. Ash retains local browser sessions and historical credential revocation."
+    },
+    {
+      "path": "src/main/runtime/mobile-desktop-relay/mobile-desktop-relay-phone.test-fixture.ts",
+      "sourceSha256": "c86b4c696aedee8d356404c17b76bcb1d376fc592ee915a45c3464b905b69c83",
+      "reason": "Retired orphan test-only paired-phone relay fixture after deleting excluded mobile relay forwarding functionality."
+    },
+    {
       "path": "src/main/runtime/mobile-desktop-relay/mobile-desktop-relay.integration.test.ts",
       "sourceSha256": "83d1ffbc31c22ef0a366050fb5c6ff525985ce3b19d6f8accde7b39f9534ffa7",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
@@ -15504,6 +15529,11 @@
       "path": "src/main/runtime/mobile-desktop-relay/mobile-desktop-relay.test.ts",
       "sourceSha256": "748b95bc1bdc55cc0bafd575063838a041bb3cdb8bfb887e153bda2ab88df5ea",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/mobile-desktop-relay/mobile-desktop-relay.ts",
+      "sourceSha256": "dc898e60522ac24c63c6b8541a62db6ab57aca61a22e8fe2ab60603a9ee71264",
+      "reason": "Retired orphan mobile-desktop phone forwarding, delegated credential grants, remote browser forwarding, or relayed frame handling. Ash retains local browser sessions and historical credential revocation."
     },
     {
       "path": "src/main/runtime/mobile-desktop-relay/mobile-relay-host-catalog.integration.test.ts",
@@ -15516,14 +15546,44 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-desktop-relay/mobile-relay-host-catalog.ts",
+      "sourceSha256": "d69fa801fac66d6ce5a05db5b0ff1bc5812f4113fa432710a54d427c8dd20526",
+      "reason": "Retired unreachable mobile relay host catalog and on-demand remote worktree fetcher; retained local desktop sidebar producer and its normalization helpers."
+    },
+    {
       "path": "src/main/runtime/mobile-desktop-relay/on-demand-server-worktree-rows.test.ts",
       "sourceSha256": "7e20558db51a32a9fbd39aca8908f099a0868ca41ea3793ea211f71518ce036c",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-desktop-relay/on-demand-server-worktree-rows.ts",
+      "sourceSha256": "a8ce33124a681ca065f9550b371a46723a53026fea5ce5525b8c5dfc8df333a3",
+      "reason": "Retired unreachable mobile relay host catalog and on-demand remote worktree fetcher; retained local desktop sidebar producer and its normalization helpers."
+    },
+    {
+      "path": "src/main/runtime/mobile-desktop-relay/relay-github-authority.ts",
+      "sourceSha256": "6bca68c5b51cf9bc1e298ccb4fc76e7886d9a19bdde6d15d47f76fbcda81289f",
+      "reason": "Retired orphan mobile-desktop phone forwarding, delegated credential grants, remote browser forwarding, or relayed frame handling. Ash retains local browser sessions and historical credential revocation."
+    },
+    {
+      "path": "src/main/runtime/mobile-desktop-relay/relayed-browser-tab-create.ts",
+      "sourceSha256": "b36f3f1979b8b3496bbcc7017f4938a3f48be27bc133a9dc6f4aa806358b1a54",
+      "reason": "Retired orphan mobile-desktop phone forwarding, delegated credential grants, remote browser forwarding, or relayed frame handling. Ash retains local browser sessions and historical credential revocation."
+    },
+    {
       "path": "src/main/runtime/mobile-desktop-relay/relayed-phone-frames.test.ts",
       "sourceSha256": "84fa8e748f86344b3e423f9a02b7e9f798f14c5251066759cf86e7c27d3b17d2",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/mobile-desktop-relay/relayed-phone-frames.ts",
+      "sourceSha256": "edc66726953ef8e623f3ceb262beea4a83e1a23f7f426ed5009b060b7bb28c85",
+      "reason": "Retired orphan mobile-desktop phone forwarding, delegated credential grants, remote browser forwarding, or relayed frame handling. Ash retains local browser sessions and historical credential revocation."
+    },
+    {
+      "path": "src/main/runtime/mobile-desktop-relay/relayed-stream-carriers.ts",
+      "sourceSha256": "67c2cdea8f5782d4abf880b44eb1fc6a175d56df4e32d9b60968373a58bb3eb0",
+      "reason": "Retired orphan mobile-desktop phone forwarding, delegated credential grants, remote browser forwarding, or relayed frame handling. Ash retains local browser sessions and historical credential revocation."
     },
     {
       "path": "src/main/runtime/mobile-presence-lock.test.ts",
