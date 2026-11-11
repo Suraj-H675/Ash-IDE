@@ -1,4 +1,4 @@
-import { RuntimeRpcMobilePairing } from './runtime-rpc-mobile-pairing'
+import { RuntimeRpcPairing } from './runtime-rpc-pairing'
 import { publishHostDescriptor } from '../../hosts/platform-probe/host-descriptor'
 
 export type RuntimeRpcClientActivity = {
@@ -7,7 +7,7 @@ export type RuntimeRpcClientActivity = {
   lastRequestAt: number
 }
 
-export class RuntimeRpcShutdown extends RuntimeRpcMobilePairing {
+export class RuntimeRpcShutdown extends RuntimeRpcPairing {
   /** Why: test-only seam — runs one ownership check instead of waiting out the poll interval. */
   checkRuntimeMetadataOwnership(): Promise<void> {
     return this.metadataOwnershipWatch?.check() ?? Promise.resolve()

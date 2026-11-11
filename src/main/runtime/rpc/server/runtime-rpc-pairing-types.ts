@@ -4,7 +4,6 @@ import type { DeviceRegistry } from './pairing/device-registry'
 import type { E2EEKeypair } from '../../e2ee-keypair'
 import type { MobileSocketTransportMetadata } from '../mobile-socket-wiring'
 import type { PairingRelay } from '../../../../shared/remote-runtime/pairing/mobile-relay-pairing-offer'
-import type { MobilePairingConnectionMode } from '../../../../shared/remote-runtime/pairing/mobile-pairing-connection-mode'
 import type { MobileRelayMintFailure } from '../../../../shared/remote-runtime/relay/mobile-relay-mint-failure'
 import type {
   DeviceCredentialInstalled,
@@ -60,6 +59,7 @@ export type PairingOfferUnavailableReason =
   | 'invalid_advertised_endpoint'
   | 'relay_mint_failed'
   | 'network_exposure_failed'
+  | 'mobile_pairing_disabled'
 
 export type PairingOfferUnavailable = {
   available: false
@@ -68,18 +68,6 @@ export type PairingOfferUnavailable = {
   /** Present when an Anywhere mint refused to silently fall back to LAN-only. */
   relayFailure?: MobileRelayMintFailure
 }
-
-export type MobilePairingOfferAvailable = {
-  available: true
-  pairingUrl: string
-  endpoint: string
-  deviceId: string
-  webClientUrl: string | null
-  /** Mode the offer actually encodes. */
-  connectionMode: MobilePairingConnectionMode
-}
-
-export type MobilePairingOffer = PairingOfferUnavailable | MobilePairingOfferAvailable
 
 export type PairingIdentityInitialization =
   | { ok: true; deviceRegistry: DeviceRegistry; e2eeKeypair: E2EEKeypair }

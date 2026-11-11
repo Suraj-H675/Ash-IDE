@@ -3,7 +3,6 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { OrcaRuntimeService } from '../../orca-runtime'
-import { parsePairingCode } from '../../../../shared/remote-runtime/pairing/pairing'
 import {
   decrypt,
   deriveSharedKey,
@@ -32,25 +31,20 @@ describe('Ash local-only WebSocket device authentication', () => {
     })
     await server.start()
     try {
-      // Only use internal offer minting in this isolated test. Ash's normal
-      // startup does not publish or mint a mobile pairing offer.
-      const mobile = server.createPairingOffer({
-        address: '127.0.0.1',
-        name: 'historical phone',
-        scope: 'mobile'
-      })
-      expect(mobile.available).toBe(true)
-      if (!mobile.available) {
-        throw new Error('Test-only mobile credential could not be constructed')
+      // Legacy registry rows may predate Ash. Inject one without exposing a
+      // mobile pairing API or minting a fresh phone credential.
+      const mobile = server.getDeviceRegistry()?.addDevice('historical phone', 'mobile')
+      const endpoint = server.getWebSocketEndpoint()
+      const publicKeyB64 = server.getE2EEPublicKey()
+      if (!mobile || !endpoint || !publicKeyB64) {
+        throw new Error('Historical credential fixture unavailable')
       }
-      const parsed = parsePairingCode(mobile.pairingUrl)
-      expect(parsed?.scope).toBe('mobile')
-      const ws = await connectWs(parsed!.endpoint)
+      const ws = await connectWs(endpoint)
       try {
         const phoneKeypair = generateKeyPair()
         const sharedKey = deriveSharedKey(
           phoneKeypair.secretKey,
-          Uint8Array.from(Buffer.from(parsed!.publicKeyB64, 'base64'))
+          Uint8Array.from(Buffer.from(publicKeyB64, 'base64'))
         )
         ws.send(
           JSON.stringify({
@@ -62,10 +56,7 @@ describe('Ash local-only WebSocket device authentication', () => {
         const rejection = nextWsMessage(ws)
         const closed = waitForWsClose(ws)
         ws.send(
-          encrypt(
-            JSON.stringify({ type: 'e2ee_auth', deviceToken: parsed!.deviceToken }),
-            sharedKey
-          )
+          encrypt(JSON.stringify({ type: 'e2ee_auth', deviceToken: mobile.token }), sharedKey)
         )
         expect(JSON.parse(decrypt(await rejection, sharedKey)!)).toEqual({
           type: 'e2ee_error',

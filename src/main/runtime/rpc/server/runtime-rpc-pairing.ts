@@ -90,10 +90,6 @@ export class RuntimeRpcPairing extends RuntimeRpcNetworkExposure {
     this.mobileRelayPairingProvider = provider
   }
 
-  setMobileRelayPairingProviderInstaller(install: (() => Promise<unknown>) | null): void {
-    this.mobileRelayPairingProviderInstaller = install
-  }
-
   setMobileDesktopRelayHosts(hosts: MobileDesktopRelayHosts | null): void {
     this.mobileDesktopRelay?.dispose()
     this.mobileDesktopRelay = hosts
@@ -166,6 +162,15 @@ export class RuntimeRpcPairing extends RuntimeRpcNetworkExposure {
         deviceId: string
         webClientUrl: string | null
       } {
+    // Fail closed before generating or rotating credentials. Historical phone
+    // rows remain on disk for non-destructive revocation, but Ash never mints
+    // a new mobile-scoped pairing offer, even via an internal call.
+    if (args.scope === 'mobile') {
+      return pairingUnavailable(
+        'mobile_pairing_disabled',
+        'Ash IDE does not support mobile pairing.'
+      )
+    }
     if (this.pairingInitializationFailure) {
       return this.pairingInitializationFailure
     }

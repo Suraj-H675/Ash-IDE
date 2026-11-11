@@ -76,7 +76,7 @@ describe('OrcaRuntimeRpcServer WebSocket bind host (STA-2370)', () => {
     }
   })
 
-  it('widens the listener to all interfaces when a mobile pairing offer is created', async () => {
+  it('keeps a local runtime browser pairing offer on loopback without widening', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
     const server = new OrcaRuntimeRpcServer({
       methods: [],
@@ -91,16 +91,22 @@ describe('OrcaRuntimeRpcServer WebSocket bind host (STA-2370)', () => {
       const loopbackPort = wsTransportOf(server)?.resolvedPort
       expect(wsTransportOf(server)?.resolvedHost).toBe('127.0.0.1')
 
-      const offer = await server.createMobilePairingOffer({
-        address: '100.64.1.20',
-        connectionMode: 'local-only'
+      const offer = server.createPairingOffer({
+        address: '127.0.0.1',
+        scope: 'runtime',
+        reach: 'this-computer'
       })
       expect(offer.available).toBe(true)
 
-      expect(wsTransportOf(server)?.resolvedHost).toBe('0.0.0.0')
-      expect(new URL(server.getWebSocketEndpoint()!).hostname).toBe('0.0.0.0')
-      // Reuse the advertised port so existing QR endpoints remain valid.
+      expect(wsTransportOf(server)?.resolvedHost).toBe('127.0.0.1')
+      expect(new URL(server.getWebSocketEndpoint()!).hostname).toBe('127.0.0.1')
       expect(wsTransportOf(server)?.resolvedPort).toBe(loopbackPort)
+      expect(
+        server
+          .getDeviceRegistry()
+          ?.listDevices()
+          .map((device) => device.scope)
+      ).toEqual(['runtime'])
     } finally {
       await server.stop()
     }
@@ -326,7 +332,7 @@ describe('OrcaRuntimeRpcServer WebSocket bind host (STA-2370)', () => {
     }
   })
 
-  it('keeps the same MobileSocketWiring instance across a pairing widen (relay capture stays valid)', async () => {
+  it('keeps local client socket wiring consistent across a test-only explicit rebind', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
     const server = new OrcaRuntimeRpcServer({
       methods: [],
@@ -342,14 +348,10 @@ describe('OrcaRuntimeRpcServer WebSocket bind host (STA-2370)', () => {
       expect(wiringBeforeWiden).not.toBeNull()
       expect(wsTransportOf(server)?.resolvedHost).toBe('127.0.0.1')
 
-      const offer = await server.createMobilePairingOffer({
-        address: '100.64.1.20',
-        connectionMode: 'local-only'
-      })
-      expect(offer.available).toBe(true)
+      await server.ensureNetworkExposure()
       expect(wsTransportOf(server)?.resolvedHost).toBe('0.0.0.0')
 
-      // Relay brokers retain session wiring identity; replace its transport, not its connection/binary/revocation state.
+      // Preserve local session wiring identity if a legacy explicit rebind occurs.
       expect(server.getMobileSocketWiring()).toBe(wiringBeforeWiden)
 
       // Prove the wiring swap functionally: pre-widen wiring must revoke through the new wide transport, not merely retain object identity.
@@ -391,7 +393,7 @@ describe('OrcaRuntimeRpcServer WebSocket bind host (STA-2370)', () => {
     }
   })
 
-  it('reports pairing unavailable but keeps a serving loopback listener when the widen bind fails', async () => {
+  it('recovers the serving loopback listener when a test-only rebind fails', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const server = new OrcaRuntimeRpcServer({
@@ -418,15 +420,7 @@ describe('OrcaRuntimeRpcServer WebSocket bind host (STA-2370)', () => {
         return original(opts)
       })
 
-      const offer = await server.createMobilePairingOffer({
-        address: '100.64.1.20',
-        connectionMode: 'local-only'
-      })
-      // Failed exposure must return unavailable rather than advertise an unserved LAN endpoint (STA-2370).
-      expect(offer.available).toBe(false)
-      if (!offer.available) {
-        expect(offer.reason).toBe('network_exposure_failed')
-      }
+      await expect(server.ensureNetworkExposure()).rejects.toThrow('injected wide bind failure')
       // Recovery must keep loopback serving at the original port.
       expect(wsTransportOf(server)?.resolvedHost).toBe('127.0.0.1')
       expect(wsTransportOf(server)?.resolvedPort).toBe(loopbackPort)
@@ -438,7 +432,7 @@ describe('OrcaRuntimeRpcServer WebSocket bind host (STA-2370)', () => {
     }
   })
 
-  it('keeps the widened listener tracked when persisting pairing metadata fails', async () => {
+  it('keeps a test-only rebound listener tracked when metadata persistence fails', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const server = new OrcaRuntimeRpcServer({
@@ -467,13 +461,9 @@ describe('OrcaRuntimeRpcServer WebSocket bind host (STA-2370)', () => {
         return originalWrite()
       })
 
-      const offer = await server.createMobilePairingOffer({
-        address: '100.64.1.20',
-        connectionMode: 'local-only'
-      })
+      await server.ensureNetworkExposure()
       expect(injected).toBe(true)
-      // Wide listener already succeeded; metadata failure must preserve available pairing and exactly one tracked transport.
-      expect(offer.available).toBe(true)
+      // Metadata persistence failure must not lose track of the live transport.
       expect(wsTransportOf(server)?.resolvedHost).toBe('0.0.0.0')
       expect(target.activeTransports.filter((t) => t instanceof WebSocketTransport)).toHaveLength(1)
     } finally {
@@ -586,7 +576,7 @@ describe('OrcaRuntimeRpcServer WebSocket bind host (STA-2370)', () => {
     }
   })
 
-  it('refuses a runtime-widening pairing offer while the bind is pinned to loopback', async () => {
+  it('refuses test-only network widening while keeping pinned local runtime pairing available', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const server = new OrcaRuntimeRpcServer({
@@ -600,15 +590,13 @@ describe('OrcaRuntimeRpcServer WebSocket bind host (STA-2370)', () => {
 
     await server.start()
     try {
-      // Remote pairing RPCs must not override the operator's bind pin.
-      const offer = await server.createMobilePairingOffer({
-        address: '100.64.1.20',
-        connectionMode: 'local-only'
+      await expect(server.ensureNetworkExposure()).rejects.toThrow('refusing to widen')
+      const offer = server.createPairingOffer({
+        address: '127.0.0.1',
+        scope: 'runtime',
+        reach: 'this-computer'
       })
-      expect(offer.available).toBe(false)
-      if (!offer.available) {
-        expect(offer.reason).toBe('network_exposure_failed')
-      }
+      expect(offer.available).toBe(true)
       expect(wsTransportOf(server)?.resolvedHost).toBe('127.0.0.1')
     } finally {
       await server.stop()

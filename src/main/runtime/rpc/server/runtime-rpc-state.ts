@@ -29,7 +29,6 @@ import {
 } from './runtime-rpc-long-poll'
 
 import {
-  type MobilePairingOffer,
   type MobileRelayPairingProvider,
   type OrcaRuntimeRpcServerOptions,
   type PairingOfferUnavailable,
@@ -82,16 +81,6 @@ export class RuntimeRpcState {
   protected mobileRelayHostCatalog: MobileRelayHostCatalog | null = null
   protected detachPairedServerRows: (() => void) | null = null
   protected readonly declaredDesktopClients = new DeclaredDesktopClients()
-  // Why: lets an automatic mint install a provider whose launch-time construction failed.
-  protected mobileRelayPairingProviderInstaller: (() => Promise<unknown>) | null = null
-  protected mobileRelayPairingOfferQueue: Promise<void> = Promise.resolve()
-  protected mobileRelayPairingOfferInFlight: {
-    generation: number
-    address: string | null
-    rotate: boolean
-    request: Promise<MobilePairingOffer>
-  } | null = null
-  protected mobilePairingOfferGeneration = 0
   protected onUnpairedDeviceAuthFailure: (() => void) | null = null
   protected unpairedDeviceAuthThrottle: UnpairedDeviceAuthThrottle | null = null
   protected readonly binaryMessageRouter = new RuntimeBinaryMessageRouter()

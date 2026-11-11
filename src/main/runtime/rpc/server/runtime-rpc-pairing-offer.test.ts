@@ -274,7 +274,7 @@ describe('OrcaRuntimeRpcServer', () => {
     }
   })
 
-  it('creates mobile-scoped pairing offers for headless mobile pairing', async () => {
+  it('refuses mobile-scoped pairing without minting a credential or affecting runtime pairing', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
     const runtime = new OrcaRuntimeService()
     const server = new OrcaRuntimeRpcServer({
@@ -289,21 +289,21 @@ describe('OrcaRuntimeRpcServer', () => {
     await server.start()
 
     try {
+      expect(server.getDeviceRegistry()?.listDevices()).toHaveLength(0)
       const offer = server.createPairingOffer({
         address: '100.64.1.20',
         name: 'Mobile test',
         scope: 'mobile'
       })
-      expect(offer.available).toBe(true)
-      if (!offer.available) {
-        throw new Error('WebSocket pairing unavailable')
-      }
-
-      expect(server.getDeviceRegistry()?.getDevice(offer.deviceId)?.scope).toBe('mobile')
-      expect(offer.webClientUrl).toBeNull()
-      const parsed = parsePairingCode(offer.pairingUrl)
-      expect(parsed?.endpoint).toBe(offer.endpoint)
-      expect(parsed?.endpoint).toContain('100.64.1.20')
+      expect(offer).toMatchObject({
+        available: false,
+        reason: 'mobile_pairing_disabled'
+      })
+      expect(server.getDeviceRegistry()?.listDevices()).toHaveLength(0)
+      expect(server.createPairingOffer({ address: '127.0.0.1', scope: 'runtime' })).toMatchObject({
+        available: true
+      })
+      expect(server.getDeviceRegistry()?.listDevices()).toHaveLength(1)
     } finally {
       await server.stop()
     }
@@ -337,10 +337,8 @@ describe('host descriptor publication', () => {
     expect(
       runtimeOffer.available && parsePairingCode(runtimeOffer.pairingUrl)?.hostDescriptor
     ).toEqual(descriptor)
-    expect(mobileOffer.available && parsePairingCode(mobileOffer.pairingUrl)).toBeTruthy()
-    expect(
-      mobileOffer.available && parsePairingCode(mobileOffer.pairingUrl)?.hostDescriptor
-    ).toBeUndefined()
+    expect(mobileOffer).toMatchObject({ available: false, reason: 'mobile_pairing_disabled' })
+    expect(first.server.getDeviceRegistry()?.listDevices()).toHaveLength(1)
     await first.server.stop()
 
     const second = await start()

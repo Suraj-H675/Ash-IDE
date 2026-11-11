@@ -8041,6 +8041,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/ipc/mobile.ts",
+      "sourceSha256": "4b344b1c487a042e0cafa632e85816d206decf7cfddefc6efa37c78336acfd20",
+      "reason": "Removed the unregistered phone-pairing, LAN exposure, firewall and relay IPC handler so no mobile pairing interface can be reactivated accidentally."
+    },
+    {
       "path": "src/main/ipc/native-chat-renderer-watcher-cleanup.test.ts",
       "sourceSha256": "fa4c0842de90a3c734efd0b8d62210122933fb7dc4f5eb722cb23f906ceb4638",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
@@ -17591,6 +17596,26 @@
       "reason": "Removed the obsolete relaying-desktop phone RPC allowlist including excluded cloud, speech and plugin methods."
     },
     {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-mobile-pairing.ts",
+      "sourceSha256": "e78a9075c3ead5d5a1aafcf0f758c2fbcf7612bdcdf32198b4732ff9a2219008",
+      "reason": "Removed the runtime mobile QR/relay pairing and background offer-minting pipeline; retained only runtime-scoped local browser pairing."
+    },
+    {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-pairing-mode-persistence.test.ts",
+      "sourceSha256": "61650702f1317694732055a626dcb8b1b0c2ea7a0d1d4d133a6b81bc9779fecd",
+      "reason": "Retired inherited tests that expected mobile pairing-mode credentials and relay fallbacks; replaced by Ash no-mobile-credential and local browser admission tests."
+    },
+    {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-relay-pairing.test.ts",
+      "sourceSha256": "b8dc3b2005583ad010d68019d6675f654f1d42cea9544125af66f06d94396a65",
+      "reason": "Retired obsolete vendor-cloud mobile relay pairing and credential-mint tests for excluded product functionality."
+    },
+    {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-relay-provider-install.test.ts",
+      "sourceSha256": "c85dc226c1be4ab062fb19618038c74c4167298cac1b80467a3d3eac00849a33",
+      "reason": "Retired tests of the removed on-demand mobile relay service installer and mint timeout path."
+    },
+    {
       "path": "src/main/runtime/run-terminal-shell-alone.node-pty.test.ts",
       "sourceSha256": "b94dde8bbb814339ad3ce69d7b64254d92ecc0996ba5afba44e5ef5a648216e8",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
@@ -21459,6 +21484,11 @@
       "path": "src/packages/process-host/src/wsl-distro-allowlist.test.ts",
       "sourceSha256": "3112b80e329572514b62287a9e50ea2e5c0c3ef12f74eddaf6ca5a53e3ac0e8d",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/preload/api/mobile-bridge.ts",
+      "sourceSha256": "ec340330f1b557980ee3b290b6d9805225dcc9a78ef4c5bbbcf7ad987d4cb5c7",
+      "reason": "Removed the unused Electron preload bridge for mobile pairing, relay, firewall configuration and phone device administration."
     },
     {
       "path": "src/preload/api/notification-sound-playback.test.ts",

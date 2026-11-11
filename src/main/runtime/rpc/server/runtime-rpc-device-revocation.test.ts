@@ -115,8 +115,8 @@ describe('OrcaRuntimeRpcServer', () => {
     try {
       const offer = server.createPairingOffer({
         address: '127.0.0.1',
-        name: 'mobile-test',
-        scope: 'mobile'
+        name: 'runtime-test',
+        scope: 'runtime'
       })
       expect(offer.available).toBe(true)
       if (!offer.available) {
@@ -161,19 +161,15 @@ describe('OrcaRuntimeRpcServer', () => {
     await server.start()
 
     try {
-      const offer = server.createPairingOffer({
-        address: '127.0.0.1',
-        name: 'mobile-test',
-        scope: 'mobile'
-      })
-      expect(offer.available).toBe(true)
-      if (!offer.available) {
-        throw new Error('WebSocket pairing unavailable')
-      }
+      // Simulate historical persisted phone credentials without minting a new
+      // mobile pairing offer (excluded by Ash).
+      const historicalDevice = server.getDeviceRegistry()?.addDevice('historical phone', 'mobile')
+      expect(historicalDevice).toBeDefined()
+      if (!historicalDevice) throw new Error('Legacy registry fixture unavailable')
       // The mobile credential remains revocable but can no longer authenticate.
-      expect(server.getDeviceRegistry()?.getDevice(offer.deviceId)?.scope).toBe('mobile')
-      await expect(server.revokeMobileDevice(offer.deviceId)).resolves.toBe(true)
-      expect(server.getDeviceRegistry()?.getDevice(offer.deviceId)).toBeNull()
+      expect(server.getDeviceRegistry()?.getDevice(historicalDevice.deviceId)?.scope).toBe('mobile')
+      await expect(server.revokeMobileDevice(historicalDevice.deviceId)).resolves.toBe(true)
+      expect(server.getDeviceRegistry()?.getDevice(historicalDevice.deviceId)).toBeNull()
       expect(disconnectSpy).not.toHaveBeenCalled()
     } finally {
       disconnectSpy.mockRestore()
