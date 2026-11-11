@@ -1,8 +1,3 @@
-import type {
-  AgentSkillShareOperation,
-  AgentSkillShareRequest
-} from '../../../../shared/agent-skill-sharing-contract'
-import type { DiscoveredSkill } from '../../../../shared/skills'
 import type { ExecutionHostId } from '../../../../shared/execution-host'
 import type {
   SkillBundleInstallPreview,
@@ -17,16 +12,6 @@ import type {
 } from '../../../../shared/skill-upload-session-contract'
 import type { SkillUploadSessionService } from '../../../skills/skill-upload-session-service'
 import type { RuntimeSkillCommands } from './runtime-skill-command-surface'
-import type {
-  SkillCloudDownloadGrant,
-  SkillCloudOperation,
-  SkillCloudOptions,
-  SkillCloudPackageDetails,
-  SkillCloudPublishRequest,
-  SkillCloudPublishResult,
-  SkillCloudVersion
-} from '../../../../shared/skill-cloud-contract'
-import type { SkillCloudService } from '../../../skills/skill-cloud-service'
 import type {
   ManagedSkillInstall,
   SkillInstallPreview,
@@ -44,53 +29,6 @@ import type {
   LocalBundledSkillPlanRequest
 } from '../../../../shared/bundled-skill-plan'
 export type RuntimeSkillCommandSurface = {
-  setSkillCloudService(service: SkillCloudService): void
-  assertAgentSkillSharingAllowed(): void
-  publishDiscoveredSkillsFromAgent(
-    request: AgentSkillShareRequest,
-    discoveredSkills: readonly DiscoveredSkill[],
-    signal?: AbortSignal
-  ): Promise<AgentSkillShareOperation>
-  publishSkillPackage(
-    request: SkillCloudPublishRequest
-  ): Promise<SkillCloudOperation<SkillCloudPublishResult>>
-  publishSkillPackageVersion(
-    request: SkillCloudPublishRequest
-  ): Promise<SkillCloudOperation<SkillCloudVersion>>
-  findOwnedSkillPackageId(
-    name: string,
-    options: SkillCloudOptions
-  ): ReturnType<SkillCloudService['findOwnedPackageId']>
-  createSkillPackageShare(
-    packageId: string,
-    request: SkillCloudOptions & { pinnedVersionId?: string; idempotencyKey?: string }
-  ): ReturnType<SkillCloudService['createShare']>
-  resolveSkillShare(
-    shareId: string,
-    options: SkillCloudOptions
-  ): ReturnType<SkillCloudService['resolveShare']>
-  createSkillDownloadGrant(
-    shareId: string,
-    options: SkillCloudOptions & { versionId?: string; installTarget?: 'local' | 'remote' }
-  ): Promise<SkillCloudOperation<SkillCloudDownloadGrant>>
-  createSkillPackageVersionDownloadGrant(
-    packageId: string,
-    versionId: string,
-    options: SkillCloudOptions & { installTarget?: 'local' | 'remote' }
-  ): Promise<SkillCloudOperation<SkillCloudDownloadGrant>>
-  getSkillPackage(
-    packageId: string,
-    options: SkillCloudOptions
-  ): Promise<SkillCloudOperation<SkillCloudPackageDetails>>
-  listOwnedSkillShares(options: SkillCloudOptions): ReturnType<SkillCloudService['listOwnedShares']>
-  revokeSkillShare(
-    shareId: string,
-    options: SkillCloudOptions
-  ): ReturnType<SkillCloudService['revokeShare']>
-  deleteSkillPackage(
-    packageId: string,
-    options: SkillCloudOptions
-  ): ReturnType<SkillCloudService['deletePackage']>
   installSharedSkillRequest(
     request: SkillInstallRequest,
     signal?: AbortSignal
@@ -152,7 +90,6 @@ export type RuntimeSkillCommandHost = {
   getRuntimeId(): string
   getUserDataPath(): string
   isPackaged(): boolean
-  getSettings(): { agentSkillSharingEnabled?: boolean }
   listRepos(): {
     id: string
     path: string

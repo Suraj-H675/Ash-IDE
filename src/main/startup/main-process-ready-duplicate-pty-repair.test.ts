@@ -54,7 +54,6 @@ vi.mock('../runtime/orca-runtime', () => ({
     setAgentBrowserBridge() {}
     setEmulatorBridge() {}
     setArtifactService() {}
-    setSkillCloudService() {}
     setAccountServices() {}
     setCommitMessageAgentEnvironmentResolvers() {}
   }
@@ -70,7 +69,6 @@ vi.mock('../runtime/agent-state-rules/agent-state-rules-live-update', () => ({
   startAgentStateRulesLiveUpdates: () => {}
 }))
 vi.mock('../artifacts/artifact-cloud-service', () => ({ ArtifactCloudService: class {} }))
-vi.mock('../skills/skill-cloud-service', () => ({ SkillCloudService: class {} }))
 vi.mock('./wsl-orcad-account-env-wiring', () => ({ installWslOrcadAccountShim: vi.fn() }))
 vi.mock('../codex/hooks/reconciliation/codex-hook-reconcile', () => ({ startCodexHooks: vi.fn() }))
 vi.mock('../browser/agent-browser/agent-browser-bridge', () => ({

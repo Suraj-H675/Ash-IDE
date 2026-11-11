@@ -188,7 +188,6 @@ export abstract class OrcaRuntimeWithStateFields extends OrcaRuntimeWithLinearCo
       getRuntimeId: () => this.runtimeId,
       getUserDataPath: () => getAppEnvironment().getPath('userData'),
       isPackaged: () => getAppEnvironment().isPackaged(),
-      getSettings: () => this.store?.getSettings?.() ?? {},
       listRepos: () => this.listRepos(),
       listFolderWorkspaces: () =>
         (this.store?.getFolderWorkspaces?.() ?? []).map((workspace) => ({
@@ -213,10 +212,7 @@ export abstract class OrcaRuntimeWithStateFields extends OrcaRuntimeWithLinearCo
     this.clientSettings = new RuntimeClientSettingsController(
       store,
       () => this.notifyReposChanged(),
-      {
-        artifacts: () => this.artifacts.hasService(),
-        skills: () => this.skillCommands.hasSkillCloudService()
-      }
+      { artifacts: () => this.artifacts.hasService() }
     )
     this.automation = new RuntimeAutomationController(store, {
       showRepo: (selector) => this.showRepo(selector),

@@ -598,7 +598,22 @@
     },
     {
       "path": "src/main/runtime/client/settings/runtime-client-settings.ts",
-      "sha256": "3794a9146017250ea746f5f2fe1b2db40da7cb7965a029e1f3c4227a3d8632f5",
+      "sha256": "8b04c4e2cfa18662a4b2671e378b10039d66820eb9ed7dbfbbb4b8b60a49d039",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/construction/runtime-construction.ts",
+      "sha256": "9aafcb9bb2ffce400aed2079a10a9581982171fbf1aaff50225754d6e0f42a69",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/integrations/skill/runtime-skill-command-contract.ts",
+      "sha256": "18d6629cbf5217b120dcf2487516fc0582c0300ea398446f3b5e81642b073de1",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/integrations/skill/runtime-skill-command-surface.ts",
+      "sha256": "302998249fba15948c275695191ea4496753d0839384207e3ce01291028bb064",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -669,6 +684,11 @@
     {
       "path": "src/main/runtime/rpc/methods/notifications.ts",
       "sha256": "9da8083737fc472e13a12080bd37e5fb4d0ed0a1eab097cb87a59f259c0fe299",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/publish-capability-settings.test.ts",
+      "sha256": "faca25cd63747dedb4c9360d66ba5ce1c5d963cb308e5675ec4fa9d48c3a7991",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -878,7 +898,7 @@
     },
     {
       "path": "src/main/startup/main-process-ready-duplicate-pty-repair.test.ts",
-      "sha256": "b4f7e72cbc7519ec451189e5ba2951086f41f21ca1d26c290072b6f6a1934d7e",
+      "sha256": "e98feb78b9f41f538b439d889c99b0afd4b3cb2928c686481ba26a561686c115",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

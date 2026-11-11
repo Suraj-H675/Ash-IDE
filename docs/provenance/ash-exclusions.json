@@ -19086,6 +19086,41 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/skills/agent-skill-selection.ts",
+      "sourceSha256": "6b3ece17f1856209ec1b6acb32d925868b2f5690f0a300f246bdffbf036d9f11",
+      "reason": "Ash M8 exclusion: orphaned vendor Orca Cloud agent-skill publishing/selection, owned package, authentication, signed-upload, request, or deadline helper. Import/caller audit found no production consumer outside the removed Cloud publisher subtree; shared skill installation, upload shutdown, provider-native discovery, and Cloud error classification remain intact."
+    },
+    {
+      "path": "src/main/skills/skill-share-preparation-service.ts",
+      "sourceSha256": "63934ec3e42e32df60f9502547d21bb92d4619763d192a5a417303b3c6ece678",
+      "reason": "Ash M8 exclusion: orphaned vendor Orca Cloud agent-skill publishing/selection, owned package, authentication, signed-upload, request, or deadline helper. Import/caller audit found no production consumer outside the removed Cloud publisher subtree; shared skill installation, upload shutdown, provider-native discovery, and Cloud error classification remain intact."
+    },
+    {
+      "path": "src/main/skills/skill-cloud-service.ts",
+      "sourceSha256": "4f43a944b14348f7e1d7bd502008f5e33f8c05ca5aa6254ec35acc573f3e7db3",
+      "reason": "Ash M8 exclusion: orphaned vendor Orca Cloud agent-skill publishing/selection, owned package, authentication, signed-upload, request, or deadline helper. Import/caller audit found no production consumer outside the removed Cloud publisher subtree; shared skill installation, upload shutdown, provider-native discovery, and Cloud error classification remain intact."
+    },
+    {
+      "path": "src/main/skills/skill-cloud-auth.ts",
+      "sourceSha256": "38be2a64cd3ba508512847ba5b68ff6aa09046abcad7e17ba2c84a84baafbb12",
+      "reason": "Ash M8 exclusion: orphaned vendor Orca Cloud agent-skill publishing/selection, owned package, authentication, signed-upload, request, or deadline helper. Import/caller audit found no production consumer outside the removed Cloud publisher subtree; shared skill installation, upload shutdown, provider-native discovery, and Cloud error classification remain intact."
+    },
+    {
+      "path": "src/main/skills/skill-cloud-direct-upload.ts",
+      "sourceSha256": "a602e12ebc9a8a5958fd0fb2ebcca24c1bf33422b7a0352206ba30a650b6bac3",
+      "reason": "Ash M8 exclusion: orphaned vendor Orca Cloud agent-skill publishing/selection, owned package, authentication, signed-upload, request, or deadline helper. Import/caller audit found no production consumer outside the removed Cloud publisher subtree; shared skill installation, upload shutdown, provider-native discovery, and Cloud error classification remain intact."
+    },
+    {
+      "path": "src/main/skills/skill-cloud-request.ts",
+      "sourceSha256": "7d5a4a8b6cf0614b9a6e2a282ac0b5ee5bf8b9f3315639212053e59c68e5d45e",
+      "reason": "Ash M8 exclusion: orphaned vendor Orca Cloud agent-skill publishing/selection, owned package, authentication, signed-upload, request, or deadline helper. Import/caller audit found no production consumer outside the removed Cloud publisher subtree; shared skill installation, upload shutdown, provider-native discovery, and Cloud error classification remain intact."
+    },
+    {
+      "path": "src/main/skills/skill-cloud-deadline.ts",
+      "sourceSha256": "6ccb39c3a035c9ce8350411085ebe3e6e539ac153f9df9a349df04bc84d92faf",
+      "reason": "Ash M8 exclusion: orphaned vendor Orca Cloud agent-skill publishing/selection, owned package, authentication, signed-upload, request, or deadline helper. Import/caller audit found no production consumer outside the removed Cloud publisher subtree; shared skill installation, upload shutdown, provider-native discovery, and Cloud error classification remain intact."
+    },
+    {
       "path": "src/main/skills/agent-skill-selection.test.ts",
       "sourceSha256": "244353c3d28731ed58e73228dacf3fabd7b242020c6f40ba1caa4eaa4318adc9",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."

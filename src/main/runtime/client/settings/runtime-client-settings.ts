@@ -1,7 +1,6 @@
 import { publishedLegacyChatPermissionMode } from '../../../../shared/agent-launch/permissions/agent-chat-permission-mode'
 import { getAppEnvironment } from '../../../../shared/app-environment'
 import { isArtifactSharingEnabled } from '../../../../shared/artifact-sharing-gate'
-import { isAgentSkillSharingEnabled } from '../../../../shared/agent-skill-sharing-gate'
 import { applyPRBotAuthorOverride } from '../../../../shared/source-control/review-comments/pr-bot-author-overrides'
 import { TASK_PROVIDERS } from '../../../../shared/task-providers'
 import {
@@ -38,10 +37,9 @@ import type {
   RuntimeHostDisplayLabelOverrides
 } from './runtime-client-settings-shape'
 
-/** Which Orca cloud services this host registered; headless hosts register none. */
+/** The retained artifact sharing service is independently gated by its host registration. */
 export type RuntimeSharingServicePresence = {
   artifacts(): boolean
-  skills(): boolean
 }
 
 export class RuntimeClientSettingsController {
@@ -102,9 +100,6 @@ export class RuntimeClientSettingsController {
         ? {}
         : { artifactSharingEnabled: isArtifactSharingEnabled(settings) }),
       worktreeVisibilityDefaults: settings.worktreeVisibilityDefaults ?? { external: 'hide' },
-      ...(this.sharingServices?.skills() === false
-        ? {}
-        : { agentSkillSharingEnabled: isAgentSkillSharingEnabled(settings) }),
       nativeChatAutoContinueAfterUsageLimit:
         settings.nativeChatAutoContinueAfterUsageLimit === true,
       machineName: settings.machineName ?? '',
