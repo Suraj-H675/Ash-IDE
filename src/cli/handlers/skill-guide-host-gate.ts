@@ -1,6 +1,6 @@
 import type { HandlerContext } from '../dispatch'
 
-// Guides wrap feature-specific text in these blocks so agents only learn features the host has on.
+// Keep the retired skill-publishing marker recognized so old bundled guide text stays hidden.
 export const GUIDE_HOST_CAPABILITIES = ['artifact-publishing', 'skill-publishing'] as const
 export type GuideHostCapability = (typeof GUIDE_HOST_CAPABILITIES)[number]
 
@@ -17,7 +17,7 @@ export function filterHostCapabilityBlocks(markdown: string, enabled: ReadonlySe
   )
 }
 
-type SharingSettings = { artifactSharingEnabled?: boolean; agentSkillSharingEnabled?: boolean }
+type SharingSettings = { artifactSharingEnabled?: boolean }
 
 /** Mirrors the publish commands' targets; any unreadable state hides the blocks (fail closed). */
 export async function readEnabledHostCapabilities(
@@ -33,14 +33,6 @@ export async function readEnabledHostCapabilities(
     const settings = response.result?.settings
     if (settings?.artifactSharingEnabled === true) {
       enabled.add('artifact-publishing')
-    }
-    // `skills share` refuses forwarded and remote invocations, so their hosts cannot publish skills.
-    if (
-      settings?.agentSkillSharingEnabled === true &&
-      !process.env.ORCA_CLI_CWD &&
-      !ctx.client.isRemote
-    ) {
-      enabled.add('skill-publishing')
     }
   } catch {
     // Orca not running, sandboxed, or an older host; the publish commands still enforce the real gate.

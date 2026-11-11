@@ -9,6 +9,16 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/cli/handlers/skill-sharing.ts",
+      "sourceSha256": "bf5845add572551a6f280cef5225e865991df4c45c19494c49ea524f1092ec44",
+      "reason": "Ash M8 exclusion: retired CLI handler exposing unsupported vendor Cloud skills.share; replaced with native-only skills installed command in skill-installed.ts."
+    },
+    {
+      "path": "src/cli/handlers/skill-sharing.test.ts",
+      "sourceSha256": "6a798e8b0e37b088c95a51c9ef50b1e7f9152d337b86edcdd20a47a724c731cd",
+      "reason": "Ash M8 exclusion: replaced obsolete vendor Cloud publisher tests with native skill discovery and exclusion tests."
+    },
+    {
       "path": "config/dev-app-update.yml",
       "sourceSha256": "68e0edf896b74d480e0f715f9aa7589ede2273caf4118f994179522565fca62c",
       "reason": "Removed the upstream development auto-updater feed so Ash cannot check stablyai/orca releases."

@@ -278,9 +278,10 @@ export const HANDLER_GROUPS: readonly HandlerGroup[] = [
     load: async () => (await import('./handlers/vm.js')).VM_HANDLERS
   },
   {
-    name: 'skill-sharing',
-    keys: ['skills installed', 'skills share'],
-    load: async () => (await import('./handlers/skill-sharing.js')).SKILL_SHARING_HANDLERS
+    // Installed skills remain useful for native provider discovery; Cloud publishing does not.
+    name: 'skill-discovery',
+    keys: ['skills installed'],
+    load: async () => (await import('./handlers/skill-installed.js')).SKILL_DISCOVERY_HANDLERS
   },
   ...PLUGIN_HANDLER_GROUPS,
   {

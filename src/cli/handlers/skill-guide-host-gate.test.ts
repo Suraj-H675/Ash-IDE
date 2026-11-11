@@ -116,7 +116,7 @@ describe('skills get host-capability gating', () => {
     expect(withheld.stderr).toContain('turned off on this host')
   })
 
-  it('serves publishing guidance when the host has it on, asking the host once', async () => {
+  it('retains enabled artifact guidance but never exposes retired Cloud skill publishing', async () => {
     const host: Host = {
       settings: { artifactSharingEnabled: true, agentSkillSharingEnabled: true }
     }
@@ -126,14 +126,14 @@ describe('skills get host-capability gating', () => {
 
     expect(full.stdout).toContain('## Artifacts')
     expect(full.stdout).toContain('ORCA artifacts share <file> --json')
-    expect(full.stdout).toContain('ORCA skills share --skill')
+    expect(full.stdout).not.toContain('ORCA skills share --skill')
+    expect(full.stdout).not.toContain('## Skill Sharing')
     expect(full.stdout).not.toContain('host-capability')
     expect(listed.stdout.trim().split('\n')).toEqual([
       'artifacts',
       'automations',
       'browser',
-      'plugins',
-      'skill-sharing'
+      'plugins'
     ])
   })
 
@@ -151,15 +151,18 @@ describe('skills get host-capability gating', () => {
       { settings: { artifactSharingEnabled: true, agentSkillSharingEnabled: true } },
       { ORCA_CLI_CWD: '/remote/repo' }
     ]
-  ])('withholds skill sharing from %s, where skills share refuses', async (_label, host, env) => {
-    for (const [name, value] of Object.entries(env)) {
-      vi.stubEnv(name, value)
-    }
-    const guide = await skillsGet([], host)
+  ])(
+    'withholds retired Cloud skill sharing from %s, even when enabled',
+    async (_label, host, env) => {
+      for (const [name, value] of Object.entries(env)) {
+        vi.stubEnv(name, value)
+      }
+      const guide = await skillsGet([], host)
 
-    expect(guide.stdout).toContain('## Artifacts')
-    expect(guide.stdout).not.toContain('## Skill Sharing')
-  })
+      expect(guide.stdout).toContain('## Artifacts')
+      expect(guide.stdout).not.toContain('## Skill Sharing')
+    }
+  )
 
   it('serves an ungated reference without contacting the host', async () => {
     const { stdout, stderr } = await skillsGet(['--reference', 'browser'], 'no-access')

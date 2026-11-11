@@ -38,7 +38,7 @@
     },
     {
       "path": "src/cli/handler-group-manifest.ts",
-      "sha256": "8f609d7ee62e2205f868c52da618398763d53b2452963572ab2f84c19db5bf60",
+      "sha256": "8c5b9aca93da9eba5072e10e9fe39e7cd879004a495014f76eb6060772123357",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -79,6 +79,16 @@
     {
       "path": "src/cli/handlers/serve-service.ts",
       "sha256": "c8e80895c939b474e9a9124a16914f2a7cae3f66668bebe7a128d3fe5aa3a78b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handlers/skill-guide-host-gate.test.ts",
+      "sha256": "45b885022302cd2f1e3becca6377941d7ccc411ebf437368b310fbdc67e4fd08",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handlers/skill-guide-host-gate.ts",
+      "sha256": "a00093e934c6aaccf7c1e68f7890a0b7db3e817aa09f2523fbe50531a5d7d2fe",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -264,6 +274,11 @@
     {
       "path": "src/cli/specs/serve.ts",
       "sha256": "77253e8d42d821314006770c6cd9b4b0e68eb94312daf244ba403166145b0214",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/specs/skills.ts",
+      "sha256": "8b630dc4a97649f96aa1efad443c8ef76d064d3a31f3d3f0220251dbfdf2c46c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -654,6 +669,16 @@
     {
       "path": "src/main/runtime/rpc/methods/notifications.ts",
       "sha256": "9da8083737fc472e13a12080bd37e5fb4d0ed0a1eab097cb87a59f259c0fe299",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/skills.test.ts",
+      "sha256": "bea0821730a537571c819b43fe125f6c97f4b4110e8797338087ce6e34051c6b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/skills.ts",
+      "sha256": "f3f210b34bce1bf37e226b30eb9fa40858c7e2d0a34898c89f4e6229200da3e3",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
