@@ -135,6 +135,7 @@ jobs:
             --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
             --no-file-parallelism \
             src/preload/ash-no-orca-feedback-surface.test.ts \
+            src/preload/api/ash-excluded-skill-cloud-preload.test.ts \
             src/renderer/src/app-shell/ash-excluded-startup-gates.test.tsx \
             src/renderer/src/app-shell/ash-excluded-automation-entrypoints.test.tsx \
             src/renderer/src/store/app-plugin-host-boundary.test.tsx \
@@ -145,6 +146,7 @@ jobs:
             src/renderer/src/app-shell/ash-excluded-speech-entrypoints.test.ts \
             src/renderer/src/app-shell/ash-excluded-mobile-entrypoints.test.ts \
             src/renderer/src/app-shell/ash-excluded-orca-cloud-settings.test.tsx \
+            src/renderer/src/components/skills/ash-excluded-cloud-skills-page.test.tsx \
             src/renderer/src/components/settings/general/ash-skills-shortcut-settings.test.tsx \
             src/renderer/src/i18n/ash-excluded-phone-locales.test.ts \
             src/renderer/src/web/preload-api/ash-no-product-telemetry.test.ts

@@ -150,6 +150,10 @@ export function createComputerUsePermissionsApi(): NonNullable<
 }
 
 export function createSkillsApi(): NonNullable<Partial<PreloadApi>['skills']> {
+  const cloudUnavailable = (): Promise<never> =>
+    Promise.reject(
+      new Error('Orca Cloud skill sharing and managed installs are unavailable in Ash IDE.')
+    )
   return {
     discover: (target) =>
       callRuntimeResult<SkillDiscoveryResult>('skills.discover', target, 15_000),
@@ -159,23 +163,19 @@ export function createSkillsApi(): NonNullable<Partial<PreloadApi>['skills']> {
       Promise.reject(new Error('Updating Orca skills requires the desktop app.')),
     bundledAutoUpdate: () =>
       Promise.reject(new Error('Updating Orca skills requires the desktop app.')),
-    prepareShare: () => Promise.reject(new Error('Skill publishing requires the desktop app.')),
-    publishShare: () => Promise.reject(new Error('Skill publishing requires the desktop app.')),
-    cancelShare: () => Promise.resolve(),
-    releaseShare: () => Promise.resolve(),
-    resolveShare: () => Promise.reject(new Error('Skill share links require the desktop app.')),
-    installShare: () => Promise.reject(new Error('Skill installation requires the desktop app.')),
-    installBundleShare: () =>
-      Promise.reject(new Error('Skill installation requires the desktop app.')),
-    installPackageVersion: () =>
-      Promise.reject(new Error('Skill installation requires the desktop app.')),
-    installBundlePackageVersion: () =>
-      Promise.reject(new Error('Skill installation requires the desktop app.')),
-    cancelInstall: () => Promise.resolve({ cancelled: false }),
-    previewInstall: () => Promise.reject(new Error('Skill installation requires the desktop app.')),
-    previewBundleInstall: () =>
-      Promise.reject(new Error('Skill installation requires the desktop app.')),
-    removeInstall: () => Promise.reject(new Error('Skill installation requires the desktop app.')),
+    prepareShare: cloudUnavailable,
+    publishShare: cloudUnavailable,
+    cancelShare: cloudUnavailable,
+    releaseShare: cloudUnavailable,
+    resolveShare: cloudUnavailable,
+    installShare: cloudUnavailable,
+    installBundleShare: cloudUnavailable,
+    installPackageVersion: cloudUnavailable,
+    installBundlePackageVersion: cloudUnavailable,
+    cancelInstall: cloudUnavailable,
+    previewInstall: cloudUnavailable,
+    previewBundleInstall: cloudUnavailable,
+    removeInstall: cloudUnavailable,
     // Disable deletion when the paired host predates the capability.
     deleteSupported: async () => {
       const status = await getRemoteRuntimeStatus().catch(() => null)
@@ -184,16 +184,12 @@ export function createSkillsApi(): NonNullable<Partial<PreloadApi>['skills']> {
     previewDelete: (request) =>
       callRuntimeResult<SkillDeletePlan>('skills.previewDelete', request, 60_000),
     delete: (request) => callRuntimeResult<SkillDeleteResult>('skills.delete', request, 5 * 60_000),
-    listManagedInstalls: () =>
-      Promise.reject(new Error('Skill installation requires the desktop app.')),
-    getPackage: () => Promise.reject(new Error('Skill installation requires the desktop app.')),
-    listOwnedShares: () =>
-      Promise.reject(new Error('Skill package management requires the desktop app.')),
-    revokeShare: () =>
-      Promise.reject(new Error('Skill package management requires the desktop app.')),
-    deletePackage: () =>
-      Promise.reject(new Error('Skill package management requires the desktop app.')),
-    listWslDistros: () => Promise.resolve([]),
+    listManagedInstalls: cloudUnavailable,
+    getPackage: cloudUnavailable,
+    listOwnedShares: cloudUnavailable,
+    revokeShare: cloudUnavailable,
+    deletePackage: cloudUnavailable,
+    listWslDistros: cloudUnavailable,
     onInstallProgress: () => () => {},
     onShareProgress: () => () => {}
   }

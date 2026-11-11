@@ -1,5 +1,21 @@
 import type { DiscoveredSkill } from '../../../../shared/skills'
 
+/** Toggle a selected skill ID without exceeding the caller's batch limit. */
+export function updatedSkillSelection(
+  current: ReadonlySet<string>,
+  skillId: string,
+  selected: boolean,
+  maxSelection?: number
+): Set<string> {
+  const next = new Set(current)
+  if (selected && (maxSelection === undefined || next.size < maxSelection)) {
+    next.add(skillId)
+  } else {
+    next.delete(skillId)
+  }
+  return next
+}
+
 /** Share collapses lowercase names to satisfy publishing constraints; Delete uses null collision keys to keep distinct files. */
 export type SkillSelectionPolicy = {
   isEligible: (skill: DiscoveredSkill) => boolean

@@ -1127,6 +1127,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/preload/api/skills-bridge.ts",
+      "sha256": "73c8733ea2d30ae3a3e9278450554ba8b074ee079282ee7076cf15a89a5cb559",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/preload/api-types.ts",
       "sha256": "e3ae6861eb6989f322714a9b89cb4bad9d50a37352572f1b04e0ea09079858d7",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1417,8 +1422,58 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/skills/SkillDetailDialog.tsx",
+      "sha256": "3e65c4adae0c3e1d22947e644249ffaf171a560778372b69dae4f2a45e987865",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillRow.tsx",
+      "sha256": "f6730a1aee20f00d2c49d1332c19d21195ce0ec838314a7c4766d86eccfaf39f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/skills/SkillShareDialog.tsx",
       "sha256": "072c63b4b3e10b5c7bf9ed35c080d2e2056ef0d4ee0963153a91219c9f2e1351",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillsFilterToolbar.tsx",
+      "sha256": "bf7ffe50d7359d32516697c4db9ba7b4870c1de12b97babaf9896f68a25a1834",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillsList.tsx",
+      "sha256": "bf3ab899fe1976a23a25663d4e1b0c7d2dc48780d4296c322b302c201a2f7e9c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillsPage.tsx",
+      "sha256": "d3952e41ebb21621d2b905e1010b774cffe3cc25e50a9c96dbcacced4b4b73cf",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillsPageHeader.tsx",
+      "sha256": "781a2c569fb2d68a5487d6130b14ead9b647fff1971e1ad08ee94c2c583a73c2",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-selection.ts",
+      "sha256": "365eb0f6c769c297125113b617fff3762b005db7277409ce9621f25aea01e751",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-share-selection.ts",
+      "sha256": "e0f6733023cfff1bf833e6682e8e43ea3a996bc5b839fc54858844cffcddd8f3",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skills-page-states.tsx",
+      "sha256": "0b27dd8ea54e662d9f8f968e475243bd3d997cbd60fc8900c2a080b65c20beae",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/skills/use-skills-page-keyboard-navigation.ts",
+      "sha256": "b92231761f100918edfa0b3d4d3d0a882f2a91d0fee34cecea0ecefb3f89d56c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1443,7 +1498,7 @@
     },
     {
       "path": "src/renderer/src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts",
-      "sha256": "474cee554815ffba12d56e83f735ef2c69acf26dffdb51d88d2b3e5dc3faaf7a",
+      "sha256": "d26c7b45a8ec030c1cfd4ac4791685603268389fd0d05db683aa5d640beda14d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1478,7 +1533,7 @@
     },
     {
       "path": "src/renderer/src/i18n/locales/en.json",
-      "sha256": "a47520ee9971b2fdc15bc2038ed3c19ceeaf13f2924b8a453fb287170727e38c",
+      "sha256": "10673ccad8c217b3a79444099a5c84963a3c36f408052a46599ca0595a5f4c3d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1552,6 +1607,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/main.tsx",
+      "sha256": "ceae9bffa191378f85f7279dae092176fc0031149314ecc0e20fb453d19a7d1f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/runtime/runtime-jira-project-client.ts",
       "sha256": "38ea040e12cb4b38b426771dde0dc89212ab9662a01cb5a74cfca594a193d527",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1614,6 +1674,11 @@
     {
       "path": "src/renderer/src/store/slices/worktree-nav-history.ts",
       "sha256": "ef62711f08be440b855a1cb80f9b8345cc999b44de0d6d27c7cb18470b0a26bd",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/web/preload-api/web-host-capability-api.ts",
+      "sha256": "7bf973d2a04157c635dfe5a9adada06c5df59f1179795d96c33bc0a6ef546989",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

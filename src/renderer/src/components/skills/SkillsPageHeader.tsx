@@ -1,11 +1,5 @@
-import { BookOpen, Download, History, Link2, MoreHorizontal, Share2, Trash2, X } from 'lucide-react'
+import { BookOpen, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
@@ -20,27 +14,19 @@ export function SkillsPageHeader({
   scannedSourceCount,
   hostLabel,
   onClose,
-  onStartShare,
   deleteSupported,
   deleteUnsupportedReason,
-  onStartDelete,
-  onInstallFromLink,
-  onManageInstalls,
-  onOpenSharedLinks
+  onStartDelete
 }: {
   skillCount: number
   sourceEntries: readonly SkillSourceInventoryEntry[]
   scannedSourceCount: number
   hostLabel: string | null
   onClose: () => void
-  onStartShare: () => void
   /** Disable deletion with a reason until the target and host capability are known. */
   deleteSupported: boolean
   deleteUnsupportedReason: string | null
   onStartDelete: () => void
-  onInstallFromLink: () => void
-  onManageInstalls: () => void
-  onOpenSharedLinks: () => void
 }): React.JSX.Element {
   return (
     <header className="shrink-0 border-b border-border">
@@ -86,61 +72,27 @@ export function SkillsPageHeader({
             ) : null}
           </div>
         </div>
-        <Button type="button" size="sm" onClick={onStartShare}>
-          <Share2 className="size-3.5" />
-          {translate(
-            'auto.components.skills.SkillShareSelectionControls.01c5a15e02',
-            'Share skills'
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="pointer-events-auto inline-flex">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!deleteSupported}
+                onClick={onStartDelete}
+              >
+                <Trash2 className="size-3.5" />
+                {translate('auto.components.skills.SkillsPage.deleteSkills', 'Delete skills…')}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {deleteSupported || !deleteUnsupportedReason ? null : (
+            <TooltipContent side="bottom" sideOffset={4}>
+              {deleteUnsupportedReason}
+            </TooltipContent>
           )}
-        </Button>
-        <Button type="button" variant="outline" size="sm" onClick={onInstallFromLink}>
-          <Download className="size-3.5" />
-          {translate('auto.components.skills.SkillsPage.aee7b99cc6', 'Install from link')}
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label={translate(
-                'auto.components.skills.SkillsPage.moreActions',
-                'More actions'
-              )}
-            >
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={onManageInstalls}>
-              <History />
-              {translate('auto.components.skills.SkillsPage.c13b82793c', 'Manage installs')}
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={onOpenSharedLinks}>
-              <Link2 />
-              {translate('auto.components.skills.SkillsPage.sharedLinks', 'Shared links')}
-            </DropdownMenuItem>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="pointer-events-auto block">
-                  <DropdownMenuItem
-                    variant="destructive"
-                    disabled={!deleteSupported}
-                    onSelect={onStartDelete}
-                  >
-                    <Trash2 />
-                    {translate('auto.components.skills.SkillsPage.deleteSkills', 'Delete skills…')}
-                  </DropdownMenuItem>
-                </span>
-              </TooltipTrigger>
-              {deleteSupported || !deleteUnsupportedReason ? null : (
-                <TooltipContent side="left" sideOffset={4}>
-                  {deleteUnsupportedReason}
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        </Tooltip>
       </div>
     </header>
   )

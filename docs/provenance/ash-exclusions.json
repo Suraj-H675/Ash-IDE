@@ -29136,6 +29136,16 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/skills/SkillWarningPreviewLauncher.tsx",
+      "sourceSha256": "53ba70b4141477e43955848dfe42022b4b07cb158b031006c10d4ec474088e32",
+      "reason": "Ash M8 exclusion: removed the dev-only launcher that opened excluded Orca Cloud skill-share previews, now unsupported by the Skills page."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skills-page-view.ts",
+      "sourceSha256": "5a987dd4239f23dd4772ee6cf5679a00d0560f7ae7449a61854d2055a2705053",
+      "reason": "Ash M8 exclusion: removed the shared-links UI view type after the vendor Cloud shared-links inventory was retired from the native Skills page."
+    },
+    {
       "path": "src/renderer/src/components/skills/setup/AgentSkillSetupPanel.freshness.test.tsx",
       "sourceSha256": "b4eefab45419cf571e1b1123cd97fa20a977e83b12d13dcca5e50f2d41efc23c",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."

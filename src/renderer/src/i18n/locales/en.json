@@ -5641,7 +5641,7 @@
           "closeTooltip": "Close · Esc",
           "moreActions": "More actions",
           "sharedLinks": "Shared links",
-          "emptyCopy": "The scanned skill folders are empty. Install a shared bundle, or refresh after adding a skill.",
+          "emptyCopy": "The scanned skill folders are empty. Add a skill in your agent's skills folder, then refresh.",
           "retry": "Retry",
           "remoteShareNotice": "These skills live on {{host}}. Open Skills on that machine to share them.",
           "viewSwitch": "Show",

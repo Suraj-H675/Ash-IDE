@@ -5,11 +5,6 @@ import type { ExecutionHostId } from '../../../../shared/execution-host'
 import type { DiscoveredSkill } from '../../../../shared/skills'
 import { SkillRow } from './SkillRow'
 import { SkillDetailDialog } from './SkillDetailDialog'
-import {
-  isSkillShareEligible,
-  selectedShareSkillNameKeys,
-  skillShareEligibilityReason
-} from './skill-share-selection'
 import { isSkillDeleteEligible, skillDeleteEligibilityReason } from './skill-delete-selection'
 
 const OPTION_SELECTOR = '[role="option"]'
@@ -26,8 +21,6 @@ function focusEdgeOption(listbox: HTMLElement | null, edge: 'first' | 'last'): v
 
 export function SkillsList({
   skills,
-  allSkills,
-  local,
   ownerHostId,
   agentByRootPath,
   selectedIds,
@@ -36,23 +29,19 @@ export function SkillsList({
   deleteUnsupportedReason,
   onSelectedChange,
   onSelectResults,
-  onShare,
   onDelete
 }: {
   skills: readonly DiscoveredSkill[]
-  allSkills: readonly DiscoveredSkill[]
-  local: boolean
   /** Host the listed skill files live on. */
   ownerHostId: ExecutionHostId
   agentByRootPath: ReadonlyMap<string, string>
   selectedIds: ReadonlySet<string>
-  selectionMode: 'share' | 'delete' | null
+  selectionMode: 'delete' | null
   /** Disable deletion with a reason until the target resolves and advertises skills.delete.v1. */
   deleteSupported: boolean
   deleteUnsupportedReason: string | null
   onSelectedChange: (skillId: string, selected: boolean) => void
   onSelectResults: (results: readonly DiscoveredSkill[]) => void
-  onShare: (skill: DiscoveredSkill) => void
   onDelete: (skill: DiscoveredSkill) => void
 }): React.JSX.Element {
   const listRef = useRef<HTMLDivElement>(null)
@@ -69,7 +58,6 @@ export function SkillsList({
       )
     }
   }
-  const selectedNames = selectedShareSkillNameKeys(allSkills, selectedIds)
   const focusTargetId = skills.some((skill) => skill.id === focusedId) ? focusedId : skills[0]?.id
 
   const isMac = navigator.userAgent.includes('Mac')
@@ -119,17 +107,10 @@ export function SkillsList({
         skill={detailSkill}
         agentByRootPath={agentByRootPath}
         ownerHostId={ownerHostId}
-        shareable={detailSkill ? isSkillShareEligible(detailSkill, local) : false}
         deletable={detailSkill ? deleteSupported && isSkillDeleteEligible(detailSkill) : false}
         deleteDisabledReason={detailSkill ? deleteReasonFor(detailSkill) : null}
         onOpenChange={(open) => {
           if (!open) {
-            setDetailSkill(null)
-          }
-        }}
-        onShare={() => {
-          if (detailSkill) {
-            onShare(detailSkill)
             setDetailSkill(null)
           }
         }}
@@ -154,39 +135,25 @@ export function SkillsList({
         aria-orientation="vertical"
       >
         {skills.map((skill, index) => {
-          const duplicateNameSelected =
-            !selectedIds.has(skill.id) && selectedNames.has(skill.name.toLocaleLowerCase('en-US'))
-          const shareEligible = isSkillShareEligible(skill, local)
           const deleteEligible = isSkillDeleteEligible(skill)
-          const deleting = selectionMode === 'delete'
           return (
             <SkillRow
               key={skill.id}
               skill={skill}
               selectionMode={selectionMode !== null}
               selected={selectedIds.has(skill.id)}
-              selectable={deleting ? deleteEligible : shareEligible && !duplicateNameSelected}
-              shareable={shareEligible}
+              selectable={deleteEligible}
               deletable={deleteSupported && deleteEligible}
               deleteDisabledReason={deleteReasonFor(skill)}
-              disabledLabel={
-                deleting
-                  ? translate('auto.components.skills.SkillRow.notDeletable', 'Not deletable')
-                  : translate('auto.components.skills.SkillRow.notShareable', 'Not shareable')
-              }
-              // Remote sharing has one page-level cause; valid remote deletion keeps row-specific reasons.
-              disabledReason={
-                deleting
-                  ? skillDeleteEligibilityReason(skill)
-                  : local
-                    ? skillShareEligibilityReason(skill, local, duplicateNameSelected)
-                    : null
-              }
+              disabledLabel={translate(
+                'auto.components.skills.SkillRow.notDeletable',
+                'Not deletable'
+              )}
+              disabledReason={skillDeleteEligibilityReason(skill)}
               focusable={focusTargetId === skill.id}
               onFocus={() => setFocusedId(skill.id)}
               onOpenDetail={() => setDetailSkill(skill)}
               onSelectionChange={(selected, range) => handleSelection(index, selected, range)}
-              onShare={() => onShare(skill)}
               onDelete={() => onDelete(skill)}
               onReveal={() => void revealSkill(skill)}
               ownerHostId={ownerHostId}

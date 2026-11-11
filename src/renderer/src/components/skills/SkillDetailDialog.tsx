@@ -1,4 +1,4 @@
-import { ClipboardCopy, FolderOpen, Share2, Trash2 } from 'lucide-react'
+import { ClipboardCopy, FolderOpen, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -56,23 +56,19 @@ function agentNames(
 export function SkillDetailDialog({
   skill,
   agentByRootPath,
-  shareable,
   deletable,
   deleteDisabledReason,
   onOpenChange,
-  onShare,
   onDelete,
   onReveal,
   ownerHostId
 }: {
   skill: DiscoveredSkill | null
   agentByRootPath: ReadonlyMap<string, string>
-  shareable: boolean
   deletable: boolean
   /** Remote deletion is supported, so disabled actions need a specific cause. */
   deleteDisabledReason: string | null
   onOpenChange: (open: boolean) => void
-  onShare: () => void
   onDelete: () => void
   onReveal: () => void
   /** Host the skill file lives on. */
@@ -177,10 +173,6 @@ export function SkillDetailDialog({
               </TooltipContent>
             ) : null}
           </Tooltip>
-          <Button type="button" size="sm" disabled={!shareable} onClick={onShare}>
-            <Share2 className="size-3.5" />
-            {translate('auto.components.skills.SkillCard.d25a1b8ae6', 'Share skill')}
-          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
