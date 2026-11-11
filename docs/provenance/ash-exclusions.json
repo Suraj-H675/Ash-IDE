@@ -8256,6 +8256,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/ipc/runtime-environments/runtime-environment-mobile-relay-hosts.ts",
+      "sourceSha256": "9a61b35418c239392dc3994d51c6b059983898e059bd6e886c92cb95e811b2b0",
+      "reason": "Removed unregistered mobile-to-remote runtime host proxy, WSL/SSH forwarding and phone-only subscription watcher after retiring the mobile relay provider; retained local browser client-host retirement."
+    },
+    {
       "path": "src/main/ipc/runtime-environments/runtime-environment-preference.test.ts",
       "sourceSha256": "af242721885e607d434f29e8de76d6c9d57d7d66222879f3a56e5310986faee2",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
@@ -15401,6 +15406,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-assign-rate-gate.ts",
+      "sourceSha256": "ca9ddbc3b7ab51a0c484c7f7e60004e928247bbc89c408104dd0a25c774db314",
+      "reason": "Removed orphan vendor relay assignment throttling, region catalog/protocol, region decision, probe or logging helpers with no live consumers."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-auth-context.ts",
       "sourceSha256": "d6b028be50ef459bbaaab948353bf73a671bfa4c0608b067c98f34aff8a29dc6",
       "reason": "Retired unreachable Orca vendor relay auth and session-broker implementation; Ash has no cloud relay provider or mobile pairing startup."
@@ -15531,6 +15541,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-http-client.ts",
+      "sourceSha256": "242e0b54c6379cec9df8640110591407cd20b83f005832ea364a855bd82409e9",
+      "reason": "Removed the unused vendor relay director network client; preserved the legacy push host fingerprint algorithm directly in its remaining consumer."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-linger-timer.ts",
       "sourceSha256": "bfa761ddb1d3409f3f7cbd24a87fc0b61e96e75e4779686d2f0a62e5f6ee8576",
       "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
@@ -15566,9 +15581,24 @@
       "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-region-catalog-fetch.ts",
+      "sourceSha256": "08ba88e7f9af3c41d8c2db1b042b286e2c7e78484cd320f79f95469cee2b2e63",
+      "reason": "Removed orphan vendor relay assignment throttling, region catalog/protocol, region decision, probe or logging helpers with no live consumers."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-region-correction-protocol.ts",
+      "sourceSha256": "80efc1f0cbb4ff61405cde53d75dcf2996a100fa6895f5eba3b6f459ced7a593",
+      "reason": "Removed orphan vendor relay assignment throttling, region catalog/protocol, region decision, probe or logging helpers with no live consumers."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-region-correction.test.ts",
       "sourceSha256": "cec4568779d86d0ed95821998fde5c7d76863873a3d1a15bbd103b8b6433568f",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-region-decision.ts",
+      "sourceSha256": "9db324e7517d61ab07b54fdef17e72a3df41fd15a63f72b21b69051450252f87",
+      "reason": "Removed orphan vendor relay assignment throttling, region catalog/protocol, region decision, probe or logging helpers with no live consumers."
     },
     {
       "path": "src/main/runtime/mobile-cloud-relay/relay-region-preference-reader.ts",
@@ -15581,9 +15611,24 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-region-preference.ts",
+      "sourceSha256": "10d8c790d2a249431b8b3fd97752c404cf71ea28dadc27ea1219fd4c01aac89a",
+      "reason": "Removed dormant vendor relay region cache, latency probing and region resolution; legacy profile sign-out now preserves historical cache files instead of deleting them."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-region-probe-log.test.ts",
       "sourceSha256": "1c49c117b43f418c03935719232f08f56322e78db2d1ba5fb59addf07787691d",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-region-probe-log.ts",
+      "sourceSha256": "7ef30ef2da6af342745376413c36f1ddafe9275b1dcbaf7eb7d999644154166e",
+      "reason": "Removed orphan vendor relay assignment throttling, region catalog/protocol, region decision, probe or logging helpers with no live consumers."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-region-probe.ts",
+      "sourceSha256": "6dd0beb26d8c81dd7cfe6b15851c6fa6173a1f0ee934ce67bc620e5c69bc986e",
+      "reason": "Removed orphan vendor relay assignment throttling, region catalog/protocol, region decision, probe or logging helpers with no live consumers."
     },
     {
       "path": "src/main/runtime/mobile-cloud-relay/relay-region-refresh.test.ts",

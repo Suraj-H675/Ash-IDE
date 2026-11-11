@@ -38,7 +38,6 @@ import {
   setOrcaCloudSignInLink,
   startOrcaCloudSignInProgress
 } from './profile-cloud-sign-in-progress'
-import { clearRelayRegionPreferenceCache } from '../runtime/mobile-cloud-relay/relay-region-preference'
 
 export { refreshCurrentOrcaProfileAuth } from './profile-cloud-capability-refresh'
 
@@ -172,11 +171,8 @@ export async function signOutCurrentOrcaProfile(
   }
   signOutCloudSession(active.profile.id, userDataPath)
   const list = unlinkOrcaProfileFromCloud(active.profile.id, userDataPath)
-  try {
-    clearRelayRegionPreferenceCache(userDataPath)
-  } catch {
-    // A leftover latency cache must not fail the sign-out itself.
-  }
+  // Ash does not use Orca's vendor relay. Leave any historical relay-region
+  // cache untouched rather than deleting data from a legacy profile.
   return {
     status: 'signed-out',
     auth: getCurrentOrcaProfileAuthStatus(userDataPath),

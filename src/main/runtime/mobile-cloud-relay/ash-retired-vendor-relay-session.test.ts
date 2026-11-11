@@ -1,15 +1,16 @@
 import { createHash } from 'node:crypto'
-import { existsSync, mkdtempSync, readdirSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { deriveRelayHostId } from './relay-http-client'
+import { PushGatewaySession } from '../push/push-gateway-session'
 import { RelayRevokeOutbox } from './relay-revoke-outbox'
 
 const excludedVendorRelayModules = [
   'relay-auth-context.ts',
   'relay-auth-coordinator.ts',
   'relay-auth-identity.ts',
+  'relay-assign-rate-gate.ts',
   'relay-control-client-options.ts',
   'relay-control-client.ts',
   'relay-control-liveness.ts',
@@ -22,13 +23,20 @@ const excludedVendorRelayModules = [
   'relay-control-url.ts',
   'relay-demand-ledger.ts',
   'relay-host-proof.ts',
+  'relay-http-client.ts',
   'relay-linger-timer.ts',
   'relay-origin-pool-options.ts',
   'relay-origin-pool.ts',
   'relay-origin-retirement.ts',
   'relay-pairing-authorization.ts',
   'relay-readiness.ts',
+  'relay-region-catalog-fetch.ts',
+  'relay-region-correction-protocol.ts',
+  'relay-region-decision.ts',
+  'relay-region-preference.ts',
   'relay-region-preference-reader.ts',
+  'relay-region-probe-log.ts',
+  'relay-region-probe.ts',
   'relay-region-refresh.ts',
   'relay-renewal-jitter.ts',
   'relay-retry-schedule.ts',
@@ -37,14 +45,6 @@ const excludedVendorRelayModules = [
 ] as const
 
 const retainedLegacySupport = [
-  'relay-assign-rate-gate.ts',
-  'relay-http-client.ts',
-  'relay-region-catalog-fetch.ts',
-  'relay-region-correction-protocol.ts',
-  'relay-region-decision.ts',
-  'relay-region-preference.ts',
-  'relay-region-probe-log.ts',
-  'relay-region-probe.ts',
   'relay-revoke-outbox.ts',
   'simulated-mobile-e2ee-v2-peer.ts'
 ] as const
@@ -74,9 +74,45 @@ describe('Ash excludes orphan vendor relay session and control sources', () => {
     expect(reloaded.pendingFor(binding.ownerIdentityKey, binding.relayHostId)).toEqual([queued])
   })
 
+  it('excludes the old phone-to-remote-environment adapter but preserves local browser host retirement', () => {
+    const root = process.cwd()
+    expect(
+      existsSync(
+        resolve(root, 'src/main/ipc/runtime-environments/runtime-environment-mobile-relay-hosts.ts')
+      )
+    ).toBe(false)
+    const runtimeEnvironments = readFileSync(
+      resolve(root, 'src/main/ipc/runtime-environments/runtime-environments.ts'),
+      'utf8'
+    )
+    expect(runtimeEnvironments).not.toContain('retireMobileDesktopRelayEnvironment')
+    expect(runtimeEnvironments).toContain('retirePairedRuntimeBrowserClientHostEnvironment(')
+    expect(runtimeEnvironments).toContain('closeSubscriptionsForEnvironment(environmentId)')
+    expect(runtimeEnvironments).toContain('resetDesktopBrowserBridgeEnvironment(environmentId)')
+  })
+
+  it('never clears historical relay region cache during legacy profile sign-out', () => {
+    const cloudService = readFileSync(
+      resolve(process.cwd(), 'src/main/orca-profiles/profile-cloud-service.ts'),
+      'utf8'
+    )
+    expect(cloudService).not.toContain('clearRelayRegionPreferenceCache')
+    expect(cloudService).toContain('signOutCloudSession(active.profile.id, userDataPath)')
+  })
+
   it('keeps the legacy push host fingerprint algorithm without starting a relay service', () => {
     const publicKey = Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8])
-    expect(deriveRelayHostId(publicKey)).toBe(
+    const session = new PushGatewaySession({
+      origin: 'https://example.invalid',
+      keypair: {
+        publicKey,
+        secretKey: new Uint8Array(32),
+        publicKeyB64: Buffer.from(publicKey).toString('base64')
+      },
+      fetchImpl: globalThis.fetch,
+      now: () => 0
+    })
+    expect(session.hostFingerprint).toBe(
       createHash('sha256').update(publicKey).digest('base64url').slice(0, 16)
     )
   })

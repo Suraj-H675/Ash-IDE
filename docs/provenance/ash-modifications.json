@@ -437,6 +437,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/ipc/runtime-environments/runtime-environments.ts",
+      "sha256": "6f730759b6cdb90bc80fed880d18c202a580f9441ebe97426c95eefac1ad120b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/ipc/runtime.test.ts",
       "sha256": "f2249c42dc46d12ceef28650c125585a6852c4302d39874342140506a05531c8",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -489,6 +494,11 @@
     {
       "path": "src/main/menu/register-app-menu.ts",
       "sha256": "e474ef007e98f6962ef6e91a9960d8b06d88508bde5b8b8a30fff9faed3a6520",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/orca-profiles/profile-cloud-service.ts",
+      "sha256": "883270ff0ed0fa9304af68d00fe9d2e6f0e0ad204fbb4480b75ee56f25b573e7",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -574,6 +584,11 @@
     {
       "path": "src/main/runtime/orca-runtime-tests/orca-runtime-terminal-persistence-status.test.ts",
       "sha256": "4cad101ea9baf1433a66868fa6610c9eb69f38084f211c84edc134cec3fc3a81",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/push/push-gateway-session.ts",
+      "sha256": "1a2a70b2d2d8ee64827b028150e167c1652130b0c7934968e990d105bf6e99a6",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

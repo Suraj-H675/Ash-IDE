@@ -1,7 +1,7 @@
+import { createHash } from 'node:crypto'
 import { z } from 'zod'
 import { cancelUnreadResponseBody } from '../../lib/unread-response-body'
 import type { E2EEKeypair } from '../e2ee-keypair'
-import { deriveRelayHostId } from '../mobile-cloud-relay/relay-http-client'
 import { answerPushHostChallenge } from './push-host-proof'
 import {
   postPushGatewayJson,
@@ -62,7 +62,12 @@ export class PushGatewaySession {
     this.keypair = options.keypair
     this.fetchImpl = options.fetchImpl
     this.now = options.now
-    this.hostFingerprint = deriveRelayHostId(options.keypair.publicKey)
+    // Preserve the persisted host fingerprint contract without importing
+    // the removed vendor relay HTTP client.
+    this.hostFingerprint = createHash('sha256')
+      .update(options.keypair.publicKey)
+      .digest('base64url')
+      .slice(0, 16)
   }
 
   /** Invalidate only the token that received 401; concurrent requests may already have installed its replacement. */

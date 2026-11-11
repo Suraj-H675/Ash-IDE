@@ -44,7 +44,6 @@ import { registerRuntimeSshAccessHandlers } from '../runtime-ssh-access-handlers
 import { retirePairedRuntimeBrowserClientHostEnvironment } from '../../browser/client-hosts/lifecycle/paired-runtime-browser-client-host-runtime'
 import { registerRuntimeEnvironmentBrowserClientHostHandler } from './runtime-environment-browser-client-host-handler'
 import { advanceRuntimeEnvironmentCapabilityIncarnation } from './runtime-environment-capability-evidence'
-import { retireMobileDesktopRelayEnvironment } from './runtime-environment-mobile-relay-hosts'
 import { watchRuntimeEnvironmentPreference } from './runtime-environment-preference'
 import { publishRuntimeEnvironmentCatalogChanged } from './runtime-environment-catalog-broadcast'
 import { isGatedOffWslHost } from '../../wsl/host-lifecycle/wsl-host-gate'
@@ -86,7 +85,6 @@ export function invalidateRuntimeEnvironmentTransport(environmentId: string): Pr
   advanceRuntimeEnvironmentTransportGeneration(environmentId)
   closeRemoteRuntimeRequestConnection(environmentId)
   closeSubscriptionsForEnvironment(environmentId)
-  retireMobileDesktopRelayEnvironment(environmentId)
   resetDesktopBrowserBridgeEnvironment(environmentId)
   reactivateRuntimeEnvironmentStatus(environmentId)
   return retirePairedRuntimeBrowserClientHostEnvironment(
