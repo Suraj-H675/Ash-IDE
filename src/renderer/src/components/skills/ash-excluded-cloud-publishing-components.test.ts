@@ -31,11 +31,14 @@ it('keeps the orphaned Cloud skill publishing and owned-link component tree excl
   expect(settings).not.toContain('renderShareSkillsSettingsSection')
 })
 
-it('preserves provider-native discovery, local file actions, and independent skill review components', () => {
+it('preserves provider-native discovery, local file actions, and shared skill display labels', () => {
   const page = source('src/renderer/src/components/skills/SkillsPage.tsx')
   const list = source('src/renderer/src/components/skills/SkillsList.tsx')
   const row = source('src/renderer/src/components/skills/SkillRow.tsx')
-  const packageChecklist = source('src/renderer/src/components/skills/SkillPackageChecklist.tsx')
+  const labels = source('src/renderer/src/components/skills/skill-display-labels.ts')
+  const vault = source(
+    'src/renderer/src/components/right-sidebar/ai-vault/scanning/AiVaultScanProgressStrip.tsx'
+  )
   const skillBridge = source('src/preload/api/skills-bridge.ts')
 
   expect(page).toContain('discoverSkillsForRuntimeTarget')
@@ -43,7 +46,8 @@ it('preserves provider-native discovery, local file actions, and independent ski
   expect(list).toContain('SkillDetailDialog')
   expect(row).toContain("key: 'reveal'")
   expect(row).toContain("key: 'copy-path'")
-  expect(packageChecklist).toContain("from './skill-share-preview-summary'")
+  expect(labels).toContain('export function fileCountLabel')
+  expect(vault).toContain('fileCountLabel')
   expect(skillBridge).toContain("ipcRenderer.invoke('skills:discover', target)")
   expect(skillBridge).not.toContain("ipcRenderer.invoke('skills:publishShare'")
   expect(skillBridge).not.toContain("ipcRenderer.invoke('skills:listOwnedShares'")

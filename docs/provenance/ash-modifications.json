@@ -1452,6 +1452,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/skills/skill-display-labels.ts",
+      "sha256": "ccd47b1784e16304677ce886396b43d0396aa159d1e4aecaffb2c34ca22459fd",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/skills/skill-selection.ts",
       "sha256": "365eb0f6c769c297125113b617fff3762b005db7277409ce9621f25aea01e751",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."

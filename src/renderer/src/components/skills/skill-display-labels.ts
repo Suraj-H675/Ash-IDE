@@ -36,13 +36,6 @@ export function fileCountLabel(count: number): string {
   })
 }
 
-export function shareLinkCountLabel(count: number): string {
-  return translate('auto.components.skills.count.link', '{{count}} links', {
-    count,
-    defaultValue_one: '{{count}} link'
-  })
-}
-
 export function resultCountLabel(count: number): string {
   return translate('auto.components.skills.count.result', '{{count}} results', {
     count,
@@ -52,25 +45,4 @@ export function resultCountLabel(count: number): string {
 
 export function selectedCountLabel(count: number): string {
   return translate('auto.components.skills.count.selected', '{{count}} selected', { count })
-}
-
-export function shareSelectionActionLabel(count: number): string {
-  return translate('auto.components.skills.count.share', 'Share {{count}} skills', {
-    count,
-    defaultValue_one: 'Share {{count}} skill'
-  })
-}
-
-export function installSkillsActionLabel(count: number): string {
-  return translate('auto.components.skills.count.install', 'Install {{count}} skills', {
-    count,
-    defaultValue_one: 'Install {{count}} skill'
-  })
-}
-
-export function retrySkillsActionLabel(count: number): string {
-  return translate('auto.components.skills.count.retry', 'Retry {{count}} skills', {
-    count,
-    defaultValue_one: 'Retry {{count}} skill'
-  })
 }

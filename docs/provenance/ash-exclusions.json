@@ -29136,6 +29136,176 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/skills/SkillBundleInstallFlow.tsx",
+      "sourceSha256": "b3dc9e9927fa72e09ded1321e636bbad113083be015822e8a2d0a65b7ff5a20a",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillBundleInstallOutcome.tsx",
+      "sourceSha256": "3f1f118a25438d5e44f9f294d16b5b60d1bba08245d20a46dc2e6e84dbb98a5f",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillBundleInstallReview.tsx",
+      "sourceSha256": "64243c80b0def7896c0d7e35a8aff38433ecc087215d5fc41e65453811805f70",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillInstallAgentPicker.tsx",
+      "sourceSha256": "821c2b16c3e9d2b47e14ea2b48494b0d7dca695cd66cc89aa4da1dfffe63bf4d",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillInstallDialog.tsx",
+      "sourceSha256": "36ebb13b9934d3861e55f23791d74badb6209d254dcade8c4cb1f72a83d8bdd2",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillInstallDialogFooter.tsx",
+      "sourceSha256": "48d41d3f45a1b4eaf90bf2d1c3a00d70e2bfd770bb3f1541f1569138ee5aa343",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillInstallMachineSelect.tsx",
+      "sourceSha256": "16312811bb8d5c7d3f0e802602928345dff8d7a585ba2aaf5fab13c5298a6582",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillInstallManagementDialog.tsx",
+      "sourceSha256": "8876d62446ed02a09df0b0631587a812b3b1b37e1fe48a959bf8bf8d9b577842",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillInstallManagementDialogContent.tsx",
+      "sourceSha256": "95fb36e8d657e8315810b86fdbdda99a748f78a83d25067ba3f43eb52ee17320",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillInstallManagementStatus.tsx",
+      "sourceSha256": "0bc58fb8376a5dc77683e1b880afe34e2953e5f8ae973c0d89f7032529a962f4",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillInstallReviewContent.tsx",
+      "sourceSha256": "c502b436c456785a6203530ad3c0f57e6ec0892851b99c274ec77b6b2e21ee32",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillInstallRiskNotice.tsx",
+      "sourceSha256": "e3bab7645128ed7ca14f4fc03acb7ba9c9aea68cffd883be6c68aaea92b5f911",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillInstallTargetFields.tsx",
+      "sourceSha256": "e74b5be1adc8cc73909622140184ef8cb35165912b244c2b4a5312d5974a85e2",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillInstallWorkspaceCombobox.tsx",
+      "sourceSha256": "3495a0fa0d0ec04a795f36af0b55f17b6f0020f5bd89faa9ff4e75ef0b61dfc4",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillManagedInstallRow.tsx",
+      "sourceSha256": "88cc5ca0c69a78a363f9f1ff2ae773cea11c68bab35e1531dcbf55a5f9cb3ad9",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/SkillPackageChecklist.tsx",
+      "sourceSha256": "80b1b0b762bf38451f446462a598a3c96fa8b8b5f17570fd305b56e094ba109d",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-bundle-retry-selection.ts",
+      "sourceSha256": "2d46c94463f1878ecd8aeef6b10ecaed3097cb6e147d7bfbbfc2ea3e4ddd9f14",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-install-management-copy.ts",
+      "sourceSha256": "0e78b24f365bbb5032e14ec0c2a03631f5604bd18adc94734d6fe25ad90442c1",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-install-progress-state.ts",
+      "sourceSha256": "8ab8eb74175c913db97a885bc205ec03528ef6597310c332d4f2705a935c4a53",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-install-provider-groups.ts",
+      "sourceSha256": "5823364028c8be68e7d70841824efd55e654437feff2df5a4376002d0829b39a",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-install-result-label.ts",
+      "sourceSha256": "1d551eb58b2f6b525da81388831c2bdd57846843305789fac9e6265922c224dc",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-install-workspace-choices.ts",
+      "sourceSha256": "edddbc0a677a895bb8899904af0ef1fced48e7953744633fddc3fe2501e53203",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-managed-install-groups.ts",
+      "sourceSha256": "2b42f276e9d4aaf03e388e31b75c08bacaa6c7c7a8bd5deeabe50515e93a179a",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-managed-install-labels.ts",
+      "sourceSha256": "2b1b8a5d15053fc2b7313ed5ef85a2557eb84f6c2406c3c46218c6cdf1c24a13",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-managed-removal-summary.ts",
+      "sourceSha256": "670d785163c9f2d43fa94e5e4b2687cdce86a0218f7346be5ad30e53a866c788",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-package-checklist-items.ts",
+      "sourceSha256": "546b0dfa30d3ce11b313a60caaba5239591d48b5e782e96f3e0c0536de098e21",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-package-install-risk.ts",
+      "sourceSha256": "025b611c2425ffcdfb2ab697b7c8790693ed2087d2af37d85d5f083113141b70",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-share-link.ts",
+      "sourceSha256": "4fe22663945adaac9cdf255196de4949047de42165a7d6179c679c7ff74fbe51",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-share-preview-summary.ts",
+      "sourceSha256": "f1f9bab2a7e5e1166324ab5903985e66000048d5e21ac198e7b718694da58af4",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-share-version-summary.ts",
+      "sourceSha256": "c07faca57daf8c62d2c821a516e8ee67d560b60c7a9872698799254f2606122b",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-warning-preview-gate.ts",
+      "sourceSha256": "4e094ef0bcb3a302a781ab52aba596c4d07fd210b4373821942bbe17db807a0c",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/skill-warning-preview-version.ts",
+      "sourceSha256": "b5f1afcf25d1a8515be3395f9e19d970289e2d5703215700e5a0fe8ffd81ee0e",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/use-skill-install-detected-agents.ts",
+      "sourceSha256": "701eda12b090aa430b12337830bc24a3c2baea5c90be2cae0f521029610385aa",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
+      "path": "src/renderer/src/components/skills/use-skill-install-risk.ts",
+      "sourceSha256": "06a51e93bf06486cfd754c1b2ddc906e1c01e8c9624d7d7d5c18c9b76e53ed8e",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud skill installation, managed-install, or share-link rendering/helper module. A dependency audit established that its UI tree is unmounted and has no production callers outside that retired subtree; provider-native skill discovery and updates, shared display labels, and independent CLI utilities remain preserved."
+    },
+    {
       "path": "src/renderer/src/components/skills/SkillShareDialog.tsx",
       "sourceSha256": "7519ff7d89acb2c5cd56c7c68ced0d0fd1490af45d052cc6e7bd8ed2e2981f4e",
       "reason": "Ash M8 exclusion: Orphaned vendor Cloud skill publishing dialog after live Skills page actions and the Cloud IPC backend were retired."
