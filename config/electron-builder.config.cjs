@@ -40,17 +40,9 @@ const {
   writeMacBuildCompatibility
 } = require('./scripts/desktop-distribution/macos/mac-build-compatibility.cjs')
 const {
-  MOBILE_WEB_BUNDLE_DIR,
-  assertMobileWebBundleBuilt
-} = require('./scripts/desktop-distribution/runtime-verification/verify-packaged-mobile-web-bundle.cjs')
-const {
   verifyPackagedPluginResources,
   verifyPackagedPluginTypings
 } = require('./scripts/desktop-distribution/runtime-verification/verify-packaged-plugin-resources.cjs')
-const {
-  assertPackagedServeSelectionEntry,
-  assertPackagedWebClient
-} = require('./scripts/desktop-distribution/runtime-verification/verify-packaged-serve-payload.cjs')
 const {
   assertBundledRipgrepInstalled,
   bundledRipgrepExtraResources,
@@ -60,13 +52,6 @@ const {
 const {
   verifyPackagedWindowsNodePty
 } = require('./scripts/desktop-distribution/runtime-verification/verify-packaged-node-pty-job-ownership.cjs')
-const {
-  assertOrcadTemplateBuilt,
-  finalizePackagedOrcadTemplate,
-  orcadTemplateExtraResource,
-  orcadTemplateNodeModulesExtraResource,
-  orcadTemplateMacSignIgnore
-} = require('./scripts/orcad-distribution/template/packaged-orcad-template.cjs')
 const {
   verifySkillsCliRuntime
 } = require('./scripts/runtime-verification/skills-cli/verify-skills-cli-runtime.cjs')
@@ -130,11 +115,6 @@ const nativeChatVisualsResource = {
   from: 'resources/native-chat-visuals',
   to: 'native-chat-visuals'
 }
-// SSH deploy resolves process.resourcesPath/relay; extraResources keeps bundles on real disk.
-const relayExtraResource = {
-  from: 'out/relay',
-  to: 'relay'
-}
 // Bootstrap verifies/publishes immutable plugin bytes from ordinary directories.
 const bundledPluginResources = {
   from: 'resources/plugins/launch',
@@ -146,16 +126,13 @@ const pluginAuthorTypingsResources = {
   to: 'plugins',
   filter: ['declarative/*.d.ts', 'types/*.d.ts']
 }
-// Packaged main/CLI/SSH/speech paths lack pnpm links; copy runtime closure so bare requires cannot fall through to checkout dependencies.
+// Packaged main/CLI paths lack pnpm links; copy their runtime closure so bare requires cannot fall through to checkout dependencies.
 // Ship only the 166KB emoji dataset used by worktree naming, not all 49MB of emojibase-data.
 const emojiShortcodeDatasetResource = {
   from: 'node_modules/emojibase-data/en/shortcodes/emojibase.json',
   to: 'node_modules/emojibase-data/en/shortcodes/emojibase.json'
 }
 const commonExtraResources = [
-  relayExtraResource,
-  orcadTemplateExtraResource,
-  orcadTemplateNodeModulesExtraResource,
   ...bundledRipgrepExtraResources,
   bundledPluginResources,
   pluginAuthorTypingsResources,
@@ -164,19 +141,6 @@ const commonExtraResources = [
   nativeChatVisualsResource,
   emojiShortcodeDatasetResource
 ]
-// Native speech addons need real disk paths; copy only the artifact target’s variant.
-const macSpeechNativeResource = {
-  from: 'node_modules/sherpa-onnx-darwin-${arch}',
-  to: 'node_modules/sherpa-onnx-darwin-${arch}'
-}
-const linuxSpeechNativeResource = {
-  from: 'node_modules/sherpa-onnx-linux-${arch}',
-  to: 'node_modules/sherpa-onnx-linux-${arch}'
-}
-const winSpeechNativeResource = {
-  from: 'node_modules/sherpa-onnx-win-x64',
-  to: 'node_modules/sherpa-onnx-win-x64'
-}
 // electron-builder replaces these defaults when `depends` is configured; retain
 // Electron's loader requirements alongside Orca's headless-host dependencies.
 const debElectronRuntimeDependencies = [
@@ -267,7 +231,7 @@ module.exports = {
     // Repo inputs already bundled/copied through extraResources would bloat app.asar.
     '!src{,/**/*}',
     '!out/orcad{,/**/*}',
-    // Never in app.asar: the template ships via orcadTemplateExtraResource; prebuilds are build inputs.
+    // Exclude remote orcad deployment templates and their build inputs entirely.
     '!out/orcad-*{,/**/*}',
     '!out/.orcad-*{,/**/*}',
     // Why: the pinned Node a local orcad build references (~120 MB) and its download cache.
@@ -307,9 +271,11 @@ module.exports = {
     '!out/renderer/.vite{,/**/*}',
     // The installed browser serves its allowlisted assets from the unpacked renderer.
     '!out/web{,/**/*}',
+    // Ash is desktop-only: never pack stale mobile-web output from a previous Orca build.
+    '!out/mobile-web{,/**/*}',
     // Local dev Electron.app caches (~270MB/branch) must not enter packaged builds.
     '!out/electron-dev{,/**/*}',
-    // extraResources already ships relay; duplicating it in asar added 14MB and let script-heuristic quarantine gut the whole archive (#20966/#20972).
+    // Exclude the retired SSH relay even when stale output is present from an Orca build.
     '!out/relay{,/**/*}',
     '!electron.vite.config.{js,ts,mjs,cjs}',
     '!{.oxlintrc.json,.oxfmtrc.json,components.json,opencode.json,orca.yaml,pnpm-workspace.yaml,vite.web.config.ts}',
@@ -329,7 +295,7 @@ module.exports = {
   ],
   // Node-mode CLI/daemon/foreign SQLite reader/serve entries cannot read asar; unpack their shared/main dependencies too.
   // Keep out/package.json’s CommonJS boundary and remote CLI WebSocket/E2EE deps. Electron-only workers may stay packed.
-  // Renderer/mobile-web assets need real paths: swept temporary asar extracts are not recreated (#27976).
+  // Desktop renderer assets need real paths: swept temporary asar extracts are not recreated (#27976).
   asarUnpack: [
     'out/package.json',
     'out/cli/**',
@@ -366,7 +332,6 @@ module.exports = {
     'out/main/orcad/orcad-stale-lock-reclaim.js',
     'out/main/chunks/**',
     'out/renderer/**',
-    'out/mobile-web/**',
     'resources/**',
     'node_modules/ws/**',
     'node_modules/tweetnacl/**',
@@ -380,19 +345,12 @@ module.exports = {
   },
   // electron-builder calls this with the context alone. The second parameter is the bundle root,
   // so a test can point the guard at a scratch bundle instead of needing the repo's out/ built.
-  beforePack: (
-    context,
-    mobileWebBundleDir = MOBILE_WEB_BUNDLE_DIR,
-    ensureWaylandClipboard = ensureBundledWaylandClipboard,
-    orcadTemplateDir = join(__dirname, '..', orcadTemplateExtraResource.from)
-  ) => {
-    // The template is the server every SSH host gets, so a dark test template must never ship.
-    assertNotDarkBuild([join(__dirname, '..', 'out', 'main'), mobileWebBundleDir, orcadTemplateDir])
+  beforePack: (context, ensureWaylandClipboard = ensureBundledWaylandClipboard) => {
+    // Only Ash's local desktop runtime is packaged. Do not require excluded mobile or SSH templates.
+    assertNotDarkBuild([join(__dirname, '..', 'out', 'main')])
     assertPackagedNativeVariantsInstalled(context.electronPlatformName, context.arch)
     assertBundledRipgrepInstalled()
     assertProcessHostOutputBuilt()
-    assertOrcadTemplateBuilt()
-    assertMobileWebBundleBuilt(mobileWebBundleDir)
     if (context.electronPlatformName === 'linux') {
       ensureWaylandClipboard(context.arch)
     }
@@ -481,8 +439,6 @@ module.exports = {
     // Validate real electron-builder output so broken extraResources mappings fail before shipping.
     verifyPackagedPluginResources(resourcesDir)
     verifyPackagedPluginTypings(resourcesDir)
-    assertPackagedWebClient(resourcesDir)
-    assertPackagedServeSelectionEntry(resourcesDir)
     finalizePackagedRipgrep(resourcesDir)
     for (const filename of readdirSync(resourcesDir)) {
       if (!filename.startsWith('agent-browser-')) {
@@ -500,11 +456,6 @@ module.exports = {
         )
       }
     }
-    await finalizePackagedOrcadTemplate(resourcesDir, {
-      platform: context.electronPlatformName,
-      signMacBinary: (path) =>
-        signMacStandaloneHelper(path, 'orcad template binary', context.packager)
-    })
     chmodUnixCliLaunchers(resourcesDir, context.electronPlatformName)
     if (context.electronPlatformName === 'darwin') {
       await signMacComputerUseHelper(join(resourcesDir, 'Ash Computer Use.app'), context.packager)
@@ -539,7 +490,6 @@ module.exports = {
     extraResources: [
       ...commonExtraResources,
       ...windowsRuntimeResources,
-      winSpeechNativeResource,
       {
         from: 'resources/win32/bin/ash-ide.cmd',
         to: 'bin/ash-ide.cmd'
@@ -605,8 +555,7 @@ module.exports = {
       : {}),
     signIgnore: [
       ...bundledRipgrepMacSignIgnore,
-      ...orcadTemplateMacSignIgnore,
-      // afterPack signs it before the orcad template hashes it.
+      // afterPack signs the bundled agent-browser binary explicitly.
       '/Contents/Resources/agent-browser-darwin-[^/]+$',
       ...macTerminalHostSignIgnore
     ],
@@ -618,7 +567,6 @@ module.exports = {
     extraResources: [
       ...commonExtraResources,
       ...createPackagedRuntimeNodeModuleResources('darwin'),
-      macSpeechNativeResource,
       {
         from: 'resources/darwin/bin/ash-ide',
         to: 'bin/ash-ide'
@@ -683,7 +631,6 @@ module.exports = {
     extraResources: [
       ...commonExtraResources,
       ...createPackagedRuntimeNodeModuleResources('linux'),
-      linuxSpeechNativeResource,
       {
         from: 'native/wayland-clipboard/.build/${arch}/orca-wayland-clipboard',
         to: 'bin/orca-wayland-clipboard'
@@ -752,7 +699,7 @@ module.exports = {
   beforeBuild: electronBuilderNativeRebuild,
   // Dual-arch builds need target node-pty rebuilds or Intel Macs get arm64 binaries and posix_spawnp failure.
   // beforeBuild performs targeted rebuild then returns false to skip optional cpu-features.
-  npmRebuild: true,
+  npmRebuild: true
 }
 
 // Stamp the effective channel version where node-mode CLI code can read it.

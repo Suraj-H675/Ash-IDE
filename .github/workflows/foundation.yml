@@ -168,3 +168,10 @@ jobs:
         run: ORCA_CLI_BUILD_COMPILER=tsrs node config/scripts/cli-build/build-cli.mjs
       - name: Build the Electron desktop bundle
         run: node config/scripts/desktop-build/execution/run-electron-vite-build.mjs
+      - name: Verify Ash package inputs and standalone local CLI
+        run: |
+          node node_modules/vitest/vitest.mjs run \
+            --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
+            --no-file-parallelism \
+            config/scripts/desktop-distribution/runtime-verification/electron-builder-config.test.mjs
+          node config/scripts/runtime-verification/skills-cli/verify-skills-cli-runtime.cjs out

@@ -5,8 +5,7 @@ import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { promisify } from 'node:util'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { writeMobileWebBundleFixtureTree } from '../../build/mobile-web-app/mobile-web-bundle-fixture-tree.mjs'
+import { describe, expect, it } from 'vitest'
 
 const REPO_ROOT = join(import.meta.dirname, '../../..', '..')
 
@@ -75,7 +74,7 @@ describe('electron-builder config', () => {
 
   // CI never creates ~270MB/branch out/electron-dev caches; only local packages exposed this bloat.
 
-  // Duplicated relay.js added 14MB to asar and AV quarantine gutted the entire archive (#20966); packaged app uses resources/relay.
+  // Ash excludes the remote SSH relay; no relay resource should be shipped.
 
   // Bundled agent-browser answered "No skills found" because only its binary shipped (#17705).
   const hostBuilderPlatform = { darwin: 'mac', linux: 'linux', win32: 'win' }[process.platform]
@@ -115,9 +114,44 @@ describe('electron-builder config', () => {
     }
   )
 
-  // CLI Node mode cannot read asar; packed entry sends orca serve to Electron (#27307).
+  it('packages only the local desktop surface, not retired mobile, SSH or voice resources', () => {
+    const targets = ['linux', 'mac', 'win']
+    for (const platform of targets) {
+      const resources = electronBuilderConfig[platform].extraResources
+      expect(resources).toEqual(expect.arrayContaining([expect.objectContaining({ to: 'skills' })]))
+      for (const resource of resources) {
+        expect(resource.from).not.toMatch(/out\/relay|out\/orcad-template|sherpa-onnx/)
+        expect(resource.to).not.toMatch(/^relay$|^orcad-template|sherpa-onnx/)
+      }
+    }
+    expect(electronBuilderConfig.files).toContain('!out/mobile-web{,/**/*}')
+    expect(electronBuilderConfig.asarUnpack).not.toContain('out/mobile-web/**')
+    const beforePack = electronBuilderConfig.beforePack.toString()
+    expect(beforePack).toContain('assertNotDarkBuild')
+    expect(beforePack).not.toMatch(/assertMobileWebBundleBuilt|assertOrcadTemplateBuilt/)
+    const afterPack = electronBuilderConfig.afterPack.toString()
+    expect(afterPack).not.toMatch(/assertPackagedWebClient|assertPackagedServeSelectionEntry/)
+    expect(afterPack).toContain('verifyPackagedMainRuntimeDeps')
+    expect(afterPack).toContain('verifyPackagedDaemonEntryBoots')
+  })
 
-  // Swept one-time /tmp asar extracts cause web-client 500s and phone bundle failures until restart (#27976).
+  it('runs native desktop and package builds without excluded payloads or altering installed CLI', async () => {
+    const { scripts } = JSON.parse(await readFile(join(REPO_ROOT, 'package.json'), 'utf8'))
+    for (const name of [
+      'build:desktop:assets',
+      'build:release',
+      'build:release:javascript',
+      'build:release:javascript:parallel',
+      'build:release:host',
+      'build:release:parallel'
+    ]) {
+      expect(scripts[name], name).not.toMatch(/build:(?:mobile-web|wsl-guest|web-from-renderer)/)
+    }
+    expect(scripts['build:desktop:assets']).toContain('build:cli:assets')
+    expect(scripts['build:cli:assets']).not.toContain('prepare:cli-output')
+    expect(scripts['build:linux']).toContain('build:native')
+    expect(scripts['build:linux']).toContain('ensure:electron-runtime')
+  })
 
   it('validates each AppImage before electron-builder publishes it', async () => {
     const root = await mkdtemp(join(tmpdir(), 'ash-electron-builder-appimage-'))
@@ -129,6 +163,20 @@ describe('electron-builder config', () => {
       expect(() =>
         electronBuilderConfig.artifactBuildCompleted({ file: appImage, arch: 1 })
       ).toThrow(/ELF header is outside/)
+      expect(() =>
+        electronBuilderConfig.artifactBuildCompleted({ file: appImage, arch: 3 })
+      ).toThrow(/filename targets x64, but electron-builder target is arm64/)
+      const arm64AppImage = join(root, 'ash-ide-linux-arm64.AppImage')
+      await writeFile(arm64AppImage, 'not an ELF')
+      await chmod(arm64AppImage, 0o755)
+      expect(() =>
+        electronBuilderConfig.artifactBuildCompleted({ file: arm64AppImage, arch: 3 })
+      ).toThrow(/ELF header is outside/)
+      const oldOrca = join(root, 'orca-linux.AppImage')
+      await writeFile(oldOrca, 'not an ELF')
+      expect(() =>
+        electronBuilderConfig.artifactBuildCompleted({ file: oldOrca, arch: 1 })
+      ).toThrow(/unsupported artifact name/)
       expect(() =>
         electronBuilderConfig.artifactBuildCompleted({ file: join(root, 'ash-ide.deb') })
       ).not.toThrow()
@@ -142,22 +190,9 @@ describe('arch-aware packaging guard', () => {
   // electron-builder Arch enum: ia32=0, x64=1, armv7l=2, arm64=3.
   const HOST_ARCH = process.arch === 'arm64' ? 3 : 1
 
-  // Native tests need valid mobile bundle for beforePack; use temp build, leaving bundle verification to its own suite.
-  let scratch
-  let bundleDir
-  beforeAll(async () => {
-    scratch = await mkdtemp(join(tmpdir(), 'orca-electron-builder-guard-'))
-    bundleDir = join(scratch, 'mobile-web')
-    await writeMobileWebBundleFixtureTree({ outDir: bundleDir })
-  })
-  afterAll(async () => {
-    await rm(scratch, { recursive: true, force: true })
-  })
-
   const packHost = (arch) =>
     electronBuilderConfig.beforePack(
       { electronPlatformName: process.platform, arch },
-      bundleDir,
       () => undefined
     )
 
@@ -172,24 +207,6 @@ describe('arch-aware packaging guard', () => {
       } else {
         process.env.ORCA_LAYOUT_OWNER = previous
       }
-    }
-  })
-
-  it('refuses to package an orcad template marked by a dark test build', async () => {
-    const templateDir = join(scratch, 'orcad-template')
-    await mkdir(templateDir, { recursive: true })
-    await writeFile(join(templateDir, 'ORCA_LAYOUT_OWNER_MAIN'), 'dark\n')
-    try {
-      expect(() =>
-        electronBuilderConfig.beforePack(
-          { electronPlatformName: process.platform, arch: HOST_ARCH },
-          bundleDir,
-          () => undefined,
-          templateDir
-        )
-      ).toThrow(`${templateDir} holds an ORCA_LAYOUT_OWNER=main build`)
-    } finally {
-      await rm(templateDir, { recursive: true, force: true })
     }
   })
 

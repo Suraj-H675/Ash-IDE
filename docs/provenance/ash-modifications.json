@@ -1828,7 +1828,7 @@
     },
     {
       "path": "config/electron-builder.config.cjs",
-      "sha256": "fd2f12839dad7b55a9aaa878b411a201530ec353c580e32d3c7e60bfb509d308",
+      "sha256": "6dd6fffd26efa3944c5dbb1a994e0f9d82e7937bb0f61067f9e364abe4d091e3",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1847,13 +1847,18 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "config/scripts/desktop-distribution/appimage/static-appimage-package-contract.cjs",
+      "sha256": "cf93746f94767c08300585d6c13a733685932e2b2cdfb56609cb28af30eee2f9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "config/scripts/desktop-distribution/linux/package-linux-formats.test.mjs",
       "sha256": "8fea7f6a1a298df8f6ba3fcf32ca04a34d0057626532487eed0d8b7f6c7ad89f",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "config/scripts/desktop-distribution/runtime-verification/electron-builder-config.test.mjs",
-      "sha256": "abeaa2ec40e33ffad357d6969d58e048de928d750484f5d6201c48c64ce25560",
+      "sha256": "8489a4c243cda771333fbdfdf6107a60600ee168ee552b56fb85489888eb0a7f",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1962,6 +1967,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "config/scripts/runtime-verification/skills-cli/verify-skills-cli-runtime.cjs",
+      "sha256": "0dfe805e7b1e18730864c407ce6a5c47544325971ac2d28114efcdb053d76377",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "resources/linux/packaging/after-install.sh",
       "sha256": "bf8910096f2f8aa611c6a6276d4dabc0df2cc9f0408b561366c605e18c9f13fb",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1993,7 +2003,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "ce97f442a5761e6d3e97f52ce33e024a16a6cfc267016ef2ce7adb6cda990293",
+      "sha256": "c63bf230df072bd54802c3356e9e595e4a2e3c2e47da66adfaefd1070563f56b",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     }
   ]

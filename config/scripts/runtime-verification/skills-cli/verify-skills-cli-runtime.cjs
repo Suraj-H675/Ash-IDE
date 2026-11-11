@@ -1,5 +1,13 @@
-const { existsSync, readFileSync, realpathSync } = require('node:fs')
+const {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  rmSync
+} = require('node:fs')
 const { builtinModules, createRequire, isBuiltin } = require('node:module')
+const { tmpdir } = require('node:os')
 const { dirname, isAbsolute, join, relative, resolve, sep } = require('node:path')
 const { spawnSync } = require('node:child_process')
 const ts = require('typescript-api')
@@ -172,16 +180,40 @@ function collectRuntimeClosure(outDir, artifactRoot = dirname(outDir)) {
 
 function runCli(outDir, args, timeoutMs = CLI_COMMAND_TIMEOUT_MS) {
   const entry = resolve(outDir, 'cli', 'index.js')
-  const env = { ...process.env, NODE_PATH: '' }
-  delete env.ORCA_CLI_CWD
-  const result = spawnSync(process.execPath, [entry, ...args], {
-    cwd: dirname(outDir),
-    encoding: 'utf8',
-    env,
-    killSignal: 'SIGKILL',
-    maxBuffer: 16 * 1024 * 1024,
-    timeout: timeoutMs
-  })
+  // A package preflight must never attach to a running user profile or provider session.
+  const probeRoot = mkdtempSync(join(tmpdir(), 'ash-packaged-cli-smoke-'))
+  const profile = join(probeRoot, 'ash-profile')
+  const runtimeDirectory = join(probeRoot, 'runtime')
+  mkdirSync(runtimeDirectory, { mode: 0o700 })
+  const env = {
+    ...process.env,
+    NODE_PATH: '',
+    HOME: probeRoot,
+    USERPROFILE: probeRoot,
+    XDG_CONFIG_HOME: join(probeRoot, '.config'),
+    XDG_CACHE_HOME: join(probeRoot, '.cache'),
+    XDG_DATA_HOME: join(probeRoot, '.local', 'share'),
+    XDG_RUNTIME_DIR: runtimeDirectory,
+    ASH_USER_DATA_PATH: profile,
+    ASH_DEV_USER_DATA_PATH: profile,
+    ORCA_USER_DATA_PATH: profile
+  }
+  for (const key of ['ORCA_CLI_CWD', 'ASH_APP_EXECUTABLE', 'ORCA_APP_EXECUTABLE']) {
+    delete env[key]
+  }
+  let result
+  try {
+    result = spawnSync(process.execPath, [entry, ...args], {
+      cwd: dirname(outDir),
+      encoding: 'utf8',
+      env,
+      killSignal: 'SIGKILL',
+      maxBuffer: 16 * 1024 * 1024,
+      timeout: timeoutMs
+    })
+  } finally {
+    rmSync(probeRoot, { recursive: true, force: true })
+  }
   if (result.error || result.signal || result.status !== 0) {
     const detail = [
       result.error?.message,
@@ -206,46 +238,51 @@ function parseJson(label, output) {
   }
 }
 
+// Keep the legacy hook export name until all builder callsites move; the contract
+// exercises Ash's standalone local terminal/runtime CLI, never Orca Cloud skills.
 function verifySkillsCliRuntime(outDir, artifactRoot = dirname(outDir), options = {}) {
   const absoluteOutDir = resolve(outDir)
   const closure = collectRuntimeClosure(absoluteOutDir, resolve(artifactRoot))
   if (options.executeCommands === false) {
     return { closureFiles: closure.length, commands: 0 }
   }
-  const list = parseJson('skills list', runCli(absoluteOutDir, ['skills', 'list', '--json']))
-  const topicNames = new Set(list.topics?.map((topic) => topic.name))
-  for (const topic of ['orca-cli', 'orca-computer-use']) {
-    if (!topicNames.has(topic)) {
-      throw new Error(`[verify-skills-cli-runtime] skills list omitted ${topic}`)
-    }
-    const guide = runCli(absoluteOutDir, ['skills', 'get', topic])
-    if (!guide.includes(`name: ${topic}`)) {
-      throw new Error(`[verify-skills-cli-runtime] skills get ${topic} returned the wrong guide`)
-    }
+  const help = runCli(absoluteOutDir, ['--help'])
+  if (
+    !help.includes('Ash IDE') ||
+    !help.includes('terminal create') ||
+    !help.includes('terminal-daemon status') ||
+    !help.includes('runtime stop')
+  ) {
+    throw new Error(
+      '[verify-skills-cli-runtime] packaged Ash local terminal/runtime help is incomplete'
+    )
   }
 
-  const install = parseJson(
-    'skills install --dry-run',
-    runCli(absoluteOutDir, [
-      'skills',
-      'install',
-      '--skill',
-      'orca-cli',
-      '--agent',
-      'codex',
-      '--dry-run',
-      '--json'
-    ])
+  const context = parseJson(
+    'agent-context --json',
+    runCli(absoluteOutDir, ['agent-context', '--json'])
   )
-  const update = parseJson(
-    'skills update --dry-run',
-    runCli(absoluteOutDir, ['skills', 'update', '--skill', 'orca-cli', '--dry-run', '--json'])
-  )
-  if (install.executed !== false || update.executed !== false) {
-    throw new Error('[verify-skills-cli-runtime] a dry-run reported execution')
+  const commands = new Set(context.commands?.map((entry) => entry.command))
+  if (
+    context.schemaVersion !== 1 ||
+    context.commandCount !== context.commands?.length ||
+    !commands.has('terminal create') ||
+    !commands.has('terminal-daemon status') ||
+    !commands.has('runtime stop')
+  ) {
+    throw new Error(
+      '[verify-skills-cli-runtime] packaged Ash local agent command schema is invalid'
+    )
   }
 
-  return { closureFiles: closure.length, commands: 5 }
+  const status = parseJson('status --json', runCli(absoluteOutDir, ['status', '--json']))
+  if (status.ok !== true || status.result?.target?.kind !== 'local') {
+    throw new Error(
+      '[verify-skills-cli-runtime] packaged Ash CLI did not report local runtime status'
+    )
+  }
+
+  return { closureFiles: closure.length, commands: 3 }
 }
 
 if (require.main === module) {
