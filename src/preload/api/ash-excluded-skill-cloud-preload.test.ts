@@ -65,6 +65,21 @@ it('keeps provider-native discovery and skill-deletion IPC boundaries', async ()
   expect(ipc.invoke).toHaveBeenCalledWith('skills:delete', request)
 })
 
+it('routes retained bundled local skills through their trusted desktop IPC channels', async () => {
+  ipc.invoke.mockResolvedValue({ scope: 'global', skills: [] })
+  await skillsApi.bundledPlan({ names: ['orca-cli'] })
+  expect(ipc.invoke).toHaveBeenCalledWith('skills:bundledPlan', { names: ['orca-cli'] })
+
+  const request = { planDigest: 'f'.repeat(64), request: { names: ['orca-cli'] } }
+  await skillsApi.bundledExecute(request)
+  expect(ipc.invoke).toHaveBeenCalledWith('skills:bundledExecute', request)
+
+  await skillsApi.bundledAutoUpdate({ names: ['orca-cli'] })
+  expect(ipc.invoke).toHaveBeenCalledWith('skills:bundledAutoUpdate', {
+    names: ['orca-cli']
+  })
+})
+
 it('does not subscribe to retired vendor Cloud upload or install progress channels', () => {
   const stopShare = skillsApi.onShareProgress()
   const stopInstall = skillsApi.onInstallProgress()

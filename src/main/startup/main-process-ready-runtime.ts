@@ -36,6 +36,7 @@ import { registerGitHubPRRefreshHandlers } from '../ipc/source-control/github-pr
 import { registerRateLimitHandlers } from '../ipc/rate-limits'
 import { registerProviderNativeSkillDiscoveryHandler } from '../ipc/skills'
 import { registerSkillDeleteIpcHandlers } from '../ipc/skill-delete/handlers'
+import { registerLocalBundledSkillIpcHandlers } from '../ipc/bundled-skills'
 import { registerAshUpdaterReadOnlyHandlers } from '../ipc/ash-updater-status'
 
 // Headless serve has no first window; timer fallback must still sweep trash.
@@ -67,6 +68,8 @@ export async function initializeReadyRuntimeServices(): Promise<void> {
   // The desktop Skills page uses the trusted-window preload bridge for local
   // preview/delete. Runtime RPC alone only serves remote/paired targets.
   registerSkillDeleteIpcHandlers(store, runtime)
+  // Local bundled-skill maintenance is retained; Cloud managed installs remain absent.
+  registerLocalBundledSkillIpcHandlers(runtime)
   registerAshUpdaterReadOnlyHandlers()
   installFirstWorkRenameHookSubscription()
   state.agentBrowserBridge = new AgentBrowserBridge(browserManager)

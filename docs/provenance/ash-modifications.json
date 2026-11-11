@@ -898,7 +898,7 @@
     },
     {
       "path": "src/main/startup/main-process-ready-duplicate-pty-repair.test.ts",
-      "sha256": "a8254fce848f8645b609b733ca682b6e4cda04687ab546d8920c584fb38dc4b9",
+      "sha256": "f4e780c622dec6f69c9f234857ab4cd7497cbed9aa4a532460011be8c3c5fba3",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -908,7 +908,7 @@
     },
     {
       "path": "src/main/startup/main-process-ready-runtime.ts",
-      "sha256": "2aa9382d6ab7dcff68f32aa923a3bc492dd6cbb9f78a9b4204e506a9aab1ae25",
+      "sha256": "966f42058dc5df4e39c2cdb8575c884418521c1335e2d7a7e31d422a839a0d00",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

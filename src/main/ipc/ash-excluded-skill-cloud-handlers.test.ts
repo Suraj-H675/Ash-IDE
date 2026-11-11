@@ -24,6 +24,7 @@ it('does not ship the dormant Orca Cloud skill sharing and managed install IPC h
   const startup = source('src/main/startup/main-process-ready-runtime.ts')
   expect(startup).toContain('registerProviderNativeSkillDiscoveryHandler(store, runtime)')
   expect(startup).toContain('registerSkillDeleteIpcHandlers(store, runtime)')
+  expect(startup).toContain('registerLocalBundledSkillIpcHandlers(runtime)')
   expect(startup).not.toContain('registerSkillsHandlers(')
 })
 

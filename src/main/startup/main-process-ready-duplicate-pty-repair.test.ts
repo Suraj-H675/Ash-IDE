@@ -98,6 +98,7 @@ vi.mock('../ipc/source-control/github-pr-refresh-handlers', () => ({
 vi.mock('../ipc/rate-limits', () => ({ registerRateLimitHandlers: vi.fn() }))
 vi.mock('../ipc/skills', () => ({ registerProviderNativeSkillDiscoveryHandler: vi.fn() }))
 vi.mock('../ipc/skill-delete/handlers', () => ({ registerSkillDeleteIpcHandlers: vi.fn() }))
+vi.mock('../ipc/bundled-skills', () => ({ registerLocalBundledSkillIpcHandlers: vi.fn() }))
 vi.mock('../ipc/ash-updater-status', () => ({ registerAshUpdaterReadOnlyHandlers: vi.fn() }))
 vi.mock('./branch-rename-hook', () => ({ installFirstWorkRenameHookSubscription: vi.fn() }))
 vi.mock('./main-process-account-services', () => ({
@@ -122,6 +123,7 @@ import { registerGitHubPRRefreshHandlers } from '../ipc/source-control/github-pr
 import { registerRateLimitHandlers } from '../ipc/rate-limits'
 import { registerProviderNativeSkillDiscoveryHandler } from '../ipc/skills'
 import { registerSkillDeleteIpcHandlers } from '../ipc/skill-delete/handlers'
+import { registerLocalBundledSkillIpcHandlers } from '../ipc/bundled-skills'
 import { registerAshUpdaterReadOnlyHandlers } from '../ipc/ash-updater-status'
 
 const TAB = 'tab-1'
@@ -214,5 +216,6 @@ it('finishes the duplicate-terminal repair before ready services resolve, even b
     fixture.state.runtime
   )
   expect(registerSkillDeleteIpcHandlers).toHaveBeenCalledWith(store, fixture.state.runtime)
+  expect(registerLocalBundledSkillIpcHandlers).toHaveBeenCalledWith(fixture.state.runtime)
   expect(registerAshUpdaterReadOnlyHandlers).toHaveBeenCalledOnce()
 })
