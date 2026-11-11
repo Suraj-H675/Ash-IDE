@@ -76,9 +76,9 @@ describe('live local skill runtime surface', () => {
     expect(existsSync(resolve(process.cwd(), 'src/main/skills/skill-delete/recovery.ts'))).toBe(
       true
     )
-    // No deletion/migration of the historical staging on-disk state is performed here.
+    // Historical upload data remains on disk, but the obsolete staging implementation is detached.
     expect(
       existsSync(resolve(process.cwd(), 'src/main/skills/skill-upload-staging-ownership.ts'))
-    ).toBe(true)
+    ).toBe(false)
   })
 })

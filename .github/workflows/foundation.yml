@@ -147,6 +147,7 @@ jobs:
             src/main/runtime/integrations/skill/ash-excluded-internal-skill-cloud.test.ts \
             src/main/runtime/integrations/skill/ash-retired-cloud-skill-runtime-surface.test.ts \
             src/main/skills/ash-excluded-remote-cloud-skill-transfer.test.ts \
+            src/main/skills/ash-retired-upload-staging-preservation.test.ts \
             src/renderer/src/app-shell/ash-excluded-startup-gates.test.tsx \
             src/renderer/src/app-shell/ash-excluded-automation-entrypoints.test.tsx \
             src/renderer/src/store/app-plugin-host-boundary.test.tsx \

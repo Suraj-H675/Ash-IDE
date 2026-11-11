@@ -19096,6 +19096,41 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/skills/skill-upload-archive-hash.ts",
+      "sourceSha256": "214d5fc0286e7604ee3dccd7ef543c9a6a5f9e778fede57dcebb35e87981ee89",
+      "reason": "Ash M8 exclusion: legacy Cloud upload archive hashing, referenced only by removed upload-session service. Retain on-disk skill-installs/remote-uploads-v2 historical content without automatic migration, inspection or deletion."
+    },
+    {
+      "path": "src/main/skills/skill-upload-operation-lifecycle.ts",
+      "sourceSha256": "cbf48c374f2588f412cbf6f218a682394caa61a37c5abda188585ad42db81a92",
+      "reason": "Ash M8 exclusion: legacy Cloud upload begin/append/commit synchronization, referenced only by removed upload-session service. Retain on-disk skill-installs/remote-uploads-v2 historical content without automatic migration, inspection or deletion."
+    },
+    {
+      "path": "src/main/skills/skill-upload-retained-paths.ts",
+      "sourceSha256": "5567793cdf6cb2578e630405719bb4824c2a223c7a40ab1c1eb640d4f5dccde1",
+      "reason": "Ash M8 exclusion: legacy Cloud upload staged path retention and cleanup, referenced only by removed upload-session service. Retain on-disk skill-installs/remote-uploads-v2 historical content without automatic migration, inspection or deletion."
+    },
+    {
+      "path": "src/main/skills/skill-upload-session-record.ts",
+      "sourceSha256": "4bfc574f369b3c121f830f8075a539425f70d92de6b0c9ee4ef5daea4465e670",
+      "reason": "Ash M8 exclusion: legacy Cloud upload session bookkeeping, referenced only by removed upload-session service. Retain on-disk skill-installs/remote-uploads-v2 historical content without automatic migration, inspection or deletion."
+    },
+    {
+      "path": "src/main/skills/skill-upload-session-service-options.ts",
+      "sourceSha256": "b053ccc06e2dafcdc94987c2c3b344b06d690aa373db758cfb027268cadd07fb",
+      "reason": "Ash M8 exclusion: legacy Cloud upload service configuration, referenced only by removed upload-session service. Retain on-disk skill-installs/remote-uploads-v2 historical content without automatic migration, inspection or deletion."
+    },
+    {
+      "path": "src/main/skills/skill-upload-session-service.ts",
+      "sourceSha256": "ecace9a945e9db067d5436f313283a6b4cd0aea6ce4e10b268a875299578bfd1",
+      "reason": "Ash M8 exclusion: legacy Cloud skill-upload sessions, detached from all supported IPC/RPC and runtime entrypoints. Retain on-disk skill-installs/remote-uploads-v2 historical content without automatic migration, inspection or deletion."
+    },
+    {
+      "path": "src/main/skills/skill-upload-staging-ownership.ts",
+      "sourceSha256": "70768de5bfeffd520653468d7d746873b617840e6fb35d6c2488ea06509a8a4c",
+      "reason": "Ash M8 exclusion: legacy Cloud temporary upload directory ownership and dead-process cleanup, reachable only through removed upload service. Retain on-disk skill-installs/remote-uploads-v2 historical content without automatic migration, inspection or deletion."
+    },
+    {
       "path": "src/main/skills/skill-cloud-grant-installation.ts",
       "sourceSha256": "57eec21a3a80b84a9189244c83add47a08fa6b445a7560aa67ee3bdd303ec2f5",
       "reason": "Ash M8 exclusion: Orphaned Orca Cloud download-grant installer after Cloud publishing and install RPC removal; it has no production callers. Provider-native local skill handling is retained."
