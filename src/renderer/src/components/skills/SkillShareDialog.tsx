@@ -73,8 +73,7 @@ export function SkillShareDialog({
   const generation = useRef(0)
   const cancellationRequested = useRef(false)
   const publishButtonRef = useRef<HTMLButtonElement>(null)
-  const openSettingsPage = useAppStore((state) => state.openSettingsPage)
-  const openSettingsTarget = useAppStore((state) => state.openSettingsTarget)
+  const openSkillsSharedLinks = useAppStore((state) => state.openSkillsSharedLinks)
 
   useEffect(() => {
     if (!open || selectedSkills.length === 0) {
@@ -298,8 +297,7 @@ export function SkillShareDialog({
               packageDigest={preview.packageDigest}
               onCopy={() => void copyLink()}
               onManageLinks={() => {
-                openSettingsTarget({ pane: 'share-skills', repoId: null })
-                openSettingsPage()
+                openSkillsSharedLinks()
                 void close()
               }}
             />

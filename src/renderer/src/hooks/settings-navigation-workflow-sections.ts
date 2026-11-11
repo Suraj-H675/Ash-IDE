@@ -6,12 +6,10 @@ import { getGitProviderApiBudgetSearchEntries } from '@/components/settings/sour
 import { getGitPaneSearchEntries } from '@/components/settings/source-control/git-search'
 import { getMobileEmulatorSearchEntries } from '@/components/settings/mobile/emulator/mobile-emulator-search'
 import { getQuickCommandsPaneSearchEntries } from '@/components/settings/quick-commands/quick-commands-search'
-import { getShareSkillsSettingsSearchEntries } from '@/components/settings/skills/sharing/share-skills-settings-search'
 import { getTasksPaneSearchEntries } from '@/components/settings/tasks/tasks-search'
 import { translate } from '@/i18n/i18n'
 import type { SettingsNavSection } from '@/lib/settings-navigation-types'
 import {
-  BookOpen,
   Files,
   History,
   GitBranch,
@@ -39,19 +37,6 @@ export function buildWorkflowSettingsSections(
       ),
       icon: Files,
       searchEntries: getArtifactsSettingsSearchEntries(),
-      group: 'workflows',
-      badge: translate('auto.hooks.useSettingsNavigationMetadata.40d80bad8a', 'Beta')
-    },
-    {
-      id: 'share-skills',
-      title: translate('auto.hooks.useSettingsNavigationMetadata.shareSkillsTitle', 'Share Skills'),
-      description: translate(
-        'auto.hooks.useSettingsNavigationMetadata.shareSkillsDescription',
-        'Share your skills with an unlisted link. Anyone who has it can install them.'
-      ),
-      // Match the skills sidebar/page icon in its settings entry.
-      icon: BookOpen,
-      searchEntries: getShareSkillsSettingsSearchEntries(),
       group: 'workflows',
       badge: translate('auto.hooks.useSettingsNavigationMetadata.40d80bad8a', 'Beta')
     },

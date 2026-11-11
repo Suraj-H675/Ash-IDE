@@ -18,8 +18,7 @@ import {
   renderSessionHistorySettingsSection,
   renderGeneralSettingsSection,
   renderIntegrationsSettingsSection,
-  renderSetupGuideSettingsSection,
-  renderShareSkillsSettingsSection
+  renderSetupGuideSettingsSection
 } from './settings-setup-workflow-section-renderers'
 import {
   renderGitSettingsSection,
@@ -139,7 +138,6 @@ export function renderSettingsPage(context: SettingsRenderContext): React.JSX.El
                   {renderGeneralSettingsSection(context)}
                   {renderIntegrationsSettingsSection(context)}
                   {renderArtifactsSettingsSection(context)}
-                  {renderShareSkillsSettingsSection(context)}
                   {renderSessionHistorySettingsSection(context)}
                   {renderGitSettingsSection(context)}
                   {renderTasksSettingsSection(context)}

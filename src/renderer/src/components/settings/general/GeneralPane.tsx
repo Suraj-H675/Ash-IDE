@@ -20,6 +20,7 @@ import { SearchableSetting } from '../section-layout/SearchableSetting'
 import { SettingsSubsectionHeader, SettingsSwitchRow } from '../form-controls/SettingsFormControls'
 import { translate } from '@/i18n/i18n'
 import { DefaultWindowsProjectRuntimeSetting } from './project-runtime/DefaultWindowsProjectRuntimeSetting'
+import { ShowSkillsShortcutSetting } from './ShowSkillsShortcutSetting'
 import { defaultScopeHost } from '@/lib/default-creation-host'
 
 type GeneralSearchEntry = ReturnType<typeof getGeneralNavigationSearchEntries>[number]
@@ -115,6 +116,10 @@ export function GeneralPane({
           ctrlTabOrderMode={settings.ctrlTabOrderMode ?? 'mru'}
           keywords={tabOrderKeywords}
           updateSettings={updateSettings}
+        />
+        <ShowSkillsShortcutSetting
+          enabled={settings.showSkillsButton === true}
+          onChange={(enabled) => updateSettings({ showSkillsButton: enabled })}
         />
         <SearchableSetting
           title={translate(

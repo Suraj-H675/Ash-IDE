@@ -121,6 +121,14 @@ export const getGeneralNavigationSearchEntries = createLocalizedCatalog(() => [
     ]
   },
   {
+    title: translate('auto.components.settings.shareSkills.showButton', 'Show Skills button'),
+    description: translate(
+      'auto.components.settings.shareSkills.showButtonDescription',
+      'Show the Skills shortcut in the sidebar.'
+    ),
+    keywords: ['skills', 'sidebar', 'shortcut', 'navigation']
+  },
+  {
     title: translate(
       'auto.components.settings.GeneralPane.editor_preview_tabs',
       'Reuse a preview tab when browsing files'

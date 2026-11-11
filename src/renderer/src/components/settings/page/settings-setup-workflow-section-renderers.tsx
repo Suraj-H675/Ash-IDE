@@ -3,7 +3,6 @@ import { ArtifactsSettingsPane } from '../artifacts/ArtifactsSettingsPane'
 import { GeneralPane } from '../general/GeneralPane'
 import { IntegrationsPane } from '../integrations/IntegrationsPane'
 import { SettingsSetupGuidePane } from '../setup-guide/SettingsSetupGuidePane'
-import { ShareSkillsSettingsPane } from '../skills/sharing/ShareSkillsSettingsPane'
 import { SettingsSection } from '../section-layout/SettingsSection'
 import { translate } from '@/i18n/i18n'
 import type { SettingsRenderContext } from './settings-render-context'
@@ -91,26 +90,6 @@ export function renderArtifactsSettingsSection(context: SettingsRenderContext): 
       {view.isSectionMounted('artifacts') ? (
         <ArtifactsSettingsPane settings={model.settings} updateSettings={model.updateSettings} />
       ) : null}
-    </SettingsSection>
-  )
-}
-
-export function renderShareSkillsSettingsSection(
-  context: SettingsRenderContext
-): React.JSX.Element {
-  const { navigation, view } = context
-  return (
-    <SettingsSection
-      id="share-skills"
-      title={translate('auto.components.settings.shareSkills.title', 'Share Skills')}
-      badge="Beta"
-      description={translate(
-        'auto.components.settings.shareSkills.description',
-        'Share your skills with an unlisted link. Anyone who has it can install them.'
-      )}
-      searchEntries={navigation.getSectionSearchEntries('share-skills')}
-    >
-      {view.isSectionMounted('share-skills') ? <ShareSkillsSettingsPane /> : null}
     </SettingsSection>
   )
 }

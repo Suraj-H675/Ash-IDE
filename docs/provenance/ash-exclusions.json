@@ -28301,6 +28301,16 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/settings/skills/sharing/share-skills-settings-search.ts",
+      "sourceSha256": "dfcf606cb4a169a3b77398f9e1904d9aec972704cccbefe711a82029971175b9",
+      "reason": "Removed search metadata for the excluded vendor Cloud skill sharing Settings pane."
+    },
+    {
+      "path": "src/renderer/src/components/settings/skills/sharing/ShareSkillsSettingsPane.tsx",
+      "sourceSha256": "931236a62992f91d2d9e93cf4c26f94cd98cc6c63097fb9cbb95b1519f8438a9",
+      "reason": "Removed the unsupported Orca Cloud skill publishing Settings pane, which prompted for a vendor account and exposed unusable link publishing; the independent Skills sidebar setting moved to General."
+    },
+    {
       "path": "src/renderer/src/components/settings/source-control/source-control-action-card-layout.test.tsx",
       "sourceSha256": "9207adc4ccf517fce5b35d1bafd414bad34828393d9b95e51f588b82826a5596",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."

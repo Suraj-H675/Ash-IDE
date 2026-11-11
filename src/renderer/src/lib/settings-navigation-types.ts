@@ -42,7 +42,6 @@ const SETTINGS_NAV_TARGETS = [
   'orchestration',
   'artifacts',
   'session-history',
-  'share-skills',
   'automations',
   'linear',
   'setup-guide',
