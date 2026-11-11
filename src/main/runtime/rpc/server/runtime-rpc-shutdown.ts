@@ -41,8 +41,6 @@ export class RuntimeRpcShutdown extends RuntimeRpcPairing {
     }
     this.mobileSocketWiring?.dispose()
     this.mobileSocketWiring = null
-    this.detachPairedServerRows?.()
-    this.detachPairedServerRows = null
     this.detachWebSocketWiring = null
     const stopResults = await Promise.allSettled(
       transports.map(async (transport) => transport.stop())

@@ -4,7 +4,6 @@ import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
 import { OrcaRuntimeService } from '../../orca-runtime'
 import type { RuntimeStore } from '../../runtime-store-contract'
-import { RuntimeRpcPairing } from '../server/runtime-rpc-pairing'
 import { REPO_METHODS } from './repo'
 import { AGENT_HOOK_METHODS } from './agent-hooks'
 import { CLIENT_UI_METHODS } from './client-ui'
@@ -62,22 +61,9 @@ it.each([20, 200])('projects %s repos without launch work', async (n) => {
   }
   const host = new OrcaRuntimeService(partialRuntimeStore(store))
   vi.spyOn(host, 'configureNotificationDismissalStore').mockImplementation(() => {})
-  vi.spyOn(host.pairedServerRows!, 'attach').mockReturnValue(() => {})
-  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: invoking captured label callbacks; only relay retirement subscribes, no transport is used.
-  const relayHosts = { onEnvironmentRetired: () => () => {} } as unknown as NonNullable<
-    Parameters<RuntimeRpcPairing['setMobileDesktopRelayHosts']>[0]
-  >
-  const labels = new RuntimeRpcPairing({
-    runtime: host,
-    userDataPath: '/unused/pr31315',
-    methods: []
-  })
-  labels.setMobileDesktopRelayHosts(relayHosts)
+  // Keep the local host-label projection, but do not initialize or assert
+  // the retired phone-to-remote-desktop catalog.
   expect(host.pairedServerRows?.['options'].hostLabelOverrides().get('runtime:alpha')).toBe('Label')
-  expect(
-    labels['mobileRelayHostCatalog']?.['options'].hostLabelOverrides().get('runtime:alpha')
-  ).toBe('Label')
-  labels.setMobileDesktopRelayHosts(null)
   vi.spyOn(host, 'enrichMissingRepoGitRemoteIdentities').mockResolvedValue(undefined)
   vi.spyOn(host, 'listVisibleRepos').mockReturnValue(
     Array.from({ length: n }, (_, i) => ({

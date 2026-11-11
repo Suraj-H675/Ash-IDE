@@ -597,6 +597,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/rpc/methods/agent-launch-settings-work.test.ts",
+      "sha256": "5b2a7bf5752ac4184dcd227a4d61e33f18fbbe4dc4745a6b8203f4ca97fae6f9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/rpc/methods/agent-launch-target-authorization.ts",
       "sha256": "22591eb10aaf7dad32168234dd2436c3175f3a21cc9d0b5e10abc398ead65e1a",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -677,8 +682,18 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-lifecycle.ts",
+      "sha256": "2e4786710dea8f1b7cff5bb5575449c23951cd1fde8314d00d9a7b0a4ae2472e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/rpc/server/runtime-rpc-mobile-automations.test.ts",
       "sha256": "6044f9fabb574f660df4c0694c00f775bc2d25da8074b8f155bb2b2b49cd9101",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/server/runtime-rpc-mobile-devices.ts",
+      "sha256": "d4b563f054a63247de1ad212055857eed00101b7a6ae04e61bedd13845677c11",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -688,7 +703,7 @@
     },
     {
       "path": "src/main/runtime/rpc/server/runtime-rpc-mobile-method-allowlist.test.ts",
-      "sha256": "6b0d311a05e2c1a06a9c044a2ac3dbe92f541cfce209505464f6a2725ba47b4a",
+      "sha256": "d2d95b3eda73d35a790c123dd76710a2827431e587fa378aeae065e984a7a26f",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -708,22 +723,22 @@
     },
     {
       "path": "src/main/runtime/rpc/server/runtime-rpc-pairing-types.ts",
-      "sha256": "40fbde440eb6eed2641ae50381c8d0394eb1bba2d6d605d485fc4f4313dfcba6",
+      "sha256": "b3346b28f869cfd0db79d6003e664a62891cc290e51c3e4c148303700ad39c9c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/main/runtime/rpc/server/runtime-rpc-pairing.ts",
-      "sha256": "831aa949cb094d71acf8d1d89c5ea264a73cc87055888c6ad52fb9a2cb268039",
+      "sha256": "ffd19f2276937f5f078d982e5f0ed69a6550a128c5526dff8270c770614798d3",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/main/runtime/rpc/server/runtime-rpc-shutdown.ts",
-      "sha256": "03bfd1005af29e94b478c20fdb9b20e822a03291cc3843373a0f4e3afdf39efc",
+      "sha256": "76b99ef23fc2129cf21facf63cd7e377a3f09232d846b9b4e955d2ce8b3d9b3d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/main/runtime/rpc/server/runtime-rpc-state.ts",
-      "sha256": "2102bb26b7dbabb03f81e5cb672d917a35e2c86852f2bc08d1fa0bc8e502438e",
+      "sha256": "1ea7e7aab193f5175e74c10e2998a0c011d4bbe72db6d420f31ed264f9bfce2e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

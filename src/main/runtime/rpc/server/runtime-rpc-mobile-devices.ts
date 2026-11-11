@@ -1,7 +1,4 @@
-import type {
-  RelayDeviceBinding,
-  RelayRevokeOutboxItem
-} from '../../mobile-cloud-relay/relay-revoke-outbox'
+import type { RelayDeviceBinding } from '../../mobile-cloud-relay/relay-revoke-outbox'
 import type {
   DelegatedPhone,
   DelegatedMobileDeviceSyncResult
@@ -15,11 +12,7 @@ export class RuntimeRpcMobileDevices extends RuntimeRpcRequestAdmission {
 
   async revokeMobileDevice(deviceId: string): Promise<boolean> {
     const device = this.deviceRegistry?.getDevice(deviceId)
-    const revoked = device?.scope === 'mobile' && this.revokeDevicesNow([device])
-    if (revoked) {
-      this.mobileDesktopRelay?.phonesChanged()
-    }
-    return revoked
+    return device?.scope === 'mobile' && this.revokeDevicesNow([device])
   }
 
   revokeRuntimeAccess(deviceId: string): boolean {
@@ -59,9 +52,6 @@ export class RuntimeRpcMobileDevices extends RuntimeRpcRequestAdmission {
         this.queuePushUnregister(deviceId, device.pushRegistration?.registrationId)
       }
       registry.removeDevice(deviceId)
-      if (device.scope === 'mobile') {
-        this.mobileRelayPairingProvider?.onDemandStateChanged?.()
-      }
       this.runtime.forgetClientNavigationState(deviceId)
       this.mobileSocketWiring?.terminateDeviceConnections(deviceId)
     }
@@ -122,17 +112,13 @@ export class RuntimeRpcMobileDevices extends RuntimeRpcRequestAdmission {
   }
 
   protected queueRelayDeviceRevoke(binding: RelayDeviceBinding): boolean {
-    let item: RelayRevokeOutboxItem
     try {
-      item = this.relayRevokeOutbox.enqueue(binding)
+      // Preserve durable cleanup for pre-Ash phone credentials even though Ash
+      // no longer installs a vendor relay worker or mints new mobile bindings.
+      this.relayRevokeOutbox.enqueue(binding)
     } catch (error) {
       console.error('[runtime] Failed to persist Relay device cleanup:', error)
       return false
-    }
-    try {
-      this.mobileRelayPairingProvider?.onDeviceRevokeQueued(item)
-    } catch (error) {
-      console.warn('[runtime] Failed to notify Relay cleanup worker:', error)
     }
     return true
   }

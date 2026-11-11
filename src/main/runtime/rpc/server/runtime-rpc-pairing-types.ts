@@ -3,18 +3,7 @@ import type { RpcAnyMethodDeclaration } from '../core'
 import type { DeviceRegistry } from './pairing/device-registry'
 import type { E2EEKeypair } from '../../e2ee-keypair'
 import type { MobileSocketTransportMetadata } from '../mobile-socket-wiring'
-import type { PairingRelay } from '../../../../shared/remote-runtime/pairing/mobile-relay-pairing-offer'
 import type { MobileRelayMintFailure } from '../../../../shared/remote-runtime/relay/mobile-relay-mint-failure'
-import type {
-  DeviceCredentialInstalled,
-  PairingGetEndpointsParams,
-  PairingGetEndpointsResult,
-  PairingProvisionRelayParams
-} from '../../../../shared/remote-runtime/relay/mobile-relay-credential-contract'
-import type {
-  RelayDeviceBinding,
-  RelayRevokeOutboxItem
-} from '../../mobile-cloud-relay/relay-revoke-outbox'
 
 export const DEFAULT_WS_PORT = 6768
 
@@ -85,22 +74,7 @@ export const DEVICE_REGISTRY_UNAVAILABLE_GUIDANCE =
 export const E2EE_KEY_UNAVAILABLE_GUIDANCE =
   'The E2EE identity is unavailable. Verify that the Orca data directory is writable.'
 
-export type MobileRelayPairingProvider = {
-  createPairingRelay(
-    relayDeviceId: string
-  ): Promise<{ relay: PairingRelay; binding: RelayDeviceBinding }>
-  onDeviceRevokeQueued(item: RelayRevokeOutboxItem): void
-  onDemandStateChanged?(): void
-  getEndpoints(
-    context: MobilePairingConnectionContext,
-    params: PairingGetEndpointsParams
-  ): Promise<PairingGetEndpointsResult>
-  provisionRelay(
-    context: MobilePairingConnectionContext,
-    params: PairingProvisionRelayParams
-  ): Promise<DeviceCredentialInstalled>
-}
-
+/** Legacy transport context used only by dormant relay source awaiting M8 removal. */
 export type MobilePairingConnectionContext = Readonly<{
   deviceId: string
   connectionId: string

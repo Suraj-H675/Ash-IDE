@@ -10,8 +10,6 @@ import type { E2EEKeypair } from '../../e2ee-keypair'
 import type { RuntimeHostDescriptor } from '../../../../shared/remote-runtime/host-status/runtime-host-descriptor'
 import type { UnpairedDeviceAuthThrottle } from '../unpaired-device-auth-throttle'
 import type { MobileSocketWiring } from '../mobile-socket-wiring'
-import type { MobileDesktopRelay } from '../../mobile-desktop-relay/mobile-desktop-relay'
-import type { MobileRelayHostCatalog } from '../../mobile-desktop-relay/mobile-relay-host-catalog'
 import { RelayRevokeOutbox } from '../../mobile-cloud-relay/relay-revoke-outbox'
 import { PushUnregisterOutbox } from '../../push/push-unregister-outbox'
 import { RuntimeBinaryMessageRouter } from '../../runtime-binary-message-router'
@@ -29,7 +27,6 @@ import {
 } from './runtime-rpc-long-poll'
 
 import {
-  type MobileRelayPairingProvider,
   type OrcaRuntimeRpcServerOptions,
   type PairingOfferUnavailable,
   DEFAULT_WS_PORT
@@ -75,11 +72,6 @@ export class RuntimeRpcState {
   protected mobileSocketWiring: MobileSocketWiring | null = null
   // Rebind swaps transports inside session wiring so captured relay sockets remain attached.
   protected detachWebSocketWiring: (() => void) | null = null
-  protected mobileRelayPairingProvider: MobileRelayPairingProvider | null = null
-  // Why nullable: launch sets both for every runtime process; in-process test servers may not.
-  protected mobileDesktopRelay: MobileDesktopRelay | null = null
-  protected mobileRelayHostCatalog: MobileRelayHostCatalog | null = null
-  protected detachPairedServerRows: (() => void) | null = null
   protected readonly declaredDesktopClients = new DeclaredDesktopClients()
   protected onUnpairedDeviceAuthFailure: (() => void) | null = null
   protected unpairedDeviceAuthThrottle: UnpairedDeviceAuthThrottle | null = null

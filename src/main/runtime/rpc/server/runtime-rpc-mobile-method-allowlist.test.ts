@@ -5,7 +5,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { OrcaRuntimeService } from '../../orca-runtime'
 import { DeviceRegistry } from './pairing/device-registry'
 import { OrcaRuntimeRpcServer } from './runtime-rpc'
-import type { MobileDesktopRelay } from '../../mobile-desktop-relay/mobile-desktop-relay'
 
 function localRpcFixture() {
   const userDataPath = mkdtempSync(join(tmpdir(), 'ash-excluded-mobile-rpc-'))
@@ -57,19 +56,11 @@ describe('Ash no-mobile RPC admission after relay forwarding removal', () => {
 
   it('retains local browser RPC even when untrusted request fields mention a remote host', async () => {
     const { server, browser, dispatch } = localRpcFixture()
-    const relayCalls = {
-      forward: vi.fn(),
-      localRequestFor: vi.fn(),
-      forwardClientCapabilities: vi.fn()
-    }
-    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: a spy object is installed only to prove that excluded forwarding methods are not called.
-    server['mobileDesktopRelay'] = relayCalls as unknown as MobileDesktopRelay
+    expect('mobileDesktopRelay' in server).toBe(false)
+    expect('setMobileDesktopRelayHosts' in server).toBe(false)
     expect(await dispatch(browser.token, 'status.get', 'host:foreign-machine')).toMatchObject({
       ok: true
     })
-    expect(relayCalls.forward).not.toHaveBeenCalled()
-    expect(relayCalls.localRequestFor).not.toHaveBeenCalled()
-    expect(relayCalls.forwardClientCapabilities).not.toHaveBeenCalled()
   })
 
   it('keeps a revoked local browser credential unauthorized', async () => {
