@@ -1437,6 +1437,61 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/i18n/locales/de.json",
+      "sha256": "88fdb6c0055a99948b07b8e31a862e964eba594b6c1db42dc168f9eef509f795",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/i18n/locales/en.json",
+      "sha256": "8f5781538776dd24f747829adc20187c5681097f1cf1b8a0d3f6da6aa89985f3",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/i18n/locales/es.json",
+      "sha256": "544ece80c002b95d08aa644da6727fc611a9364fcbf40bfe9d08eec859f52454",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/i18n/locales/fr.json",
+      "sha256": "2d41a6a6eab18c964533d92128c99358bf858cfa17e3576d42b9baf128be2f55",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/i18n/locales/ja.json",
+      "sha256": "65e8389b2662bf9fd5fa1530adc1c9811eec94f587b3c944eeeec268ec2e7ea5",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/i18n/locales/ko.json",
+      "sha256": "960bfb1ffa5903cd44d609de67e187d5e89dfd6c7e35a626aeafa4ec1e325841",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/i18n/locales/pt.json",
+      "sha256": "925696f6c51c8bdbec279294d49a99e7abee1465249dbadfd1325e9abca39224",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/i18n/locales/ru.json",
+      "sha256": "59898554d973b3b0f1f37e19d8a901eabe49e5c6e12958ce2373daa9201a253b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/i18n/locales/tr.json",
+      "sha256": "b21349f09734c2251edc43b5348f42801f8104dd8edb8b0418339713aeafc299",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/i18n/locales/zh-Hant.json",
+      "sha256": "48fc928f951eaedd795ee4731bef461dd345333e13863385c88ceed47c013d51",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/i18n/locales/zh.json",
+      "sha256": "5f9676ce81de8c23d3452d72d9d36d15a49b1c1671a1149d8ceb9e07e75e1b53",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/lib/agent-catalog-entries-primary.ts",
       "sha256": "d2b63d5579eaf9cf41905610f1c13a2af07668dd2ae26df6f197f38325e16996",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1704,6 +1759,16 @@
     {
       "path": "config/scripts/development/setup/install-dev-cli.mjs",
       "sha256": "b06a96b0e05a50f8e3dffa2f85cc8113b14c4da85e1dcef7350b15b14f324003",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/locale-catalog/locale-key-overrides.mjs",
+      "sha256": "f5010e7bfff0377565addc75ee3fb8ebedccd16827400d1ca752ebc6c9f753fc",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/locale-catalog/locale-ko-key-overrides.json",
+      "sha256": "6ab82a16bec58b841b74374b2f33c14b80f2458c9ed4c7be715cf0de6037d497",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

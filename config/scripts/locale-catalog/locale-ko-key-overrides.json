@@ -1193,39 +1193,6 @@
   "auto.components.linear.scope.selector.89f6580dbf": {
     "ko": "팀 검색..."
   },
-  "auto.components.mobile.MobilePage.e17393c6a3": {
-    "ko": "휴대폰 미리보기"
-  },
-  "auto.components.mobile.PhoneCarousel.93217b41c1": {
-    "ko": "워크트리 목록"
-  },
-  "auto.components.mobile.slides.TerminalSlide.2defc05141": {
-    "ko": "dev@mac"
-  },
-  "auto.components.mobile.slides.TerminalSlide.53ff909568": {
-    "ko": "Tab"
-  },
-  "auto.components.mobile.slides.TerminalSlide.58a9ee6003": {
-    "ko": "도구 호출 형식. 다음으로 diff를 추가할까요?"
-  },
-  "auto.components.mobile.slides.TerminalSlide.80cc356591": {
-    "ko": "읽기"
-  },
-  "auto.components.mobile.slides.TerminalSlide.8d6516312d": {
-    "ko": "terminals 2개 · claude 활성"
-  },
-  "auto.components.mobile.slides.TerminalSlide.a6e7cdc688": {
-    "ko": "pnpm test --filter mobile"
-  },
-  "auto.components.mobile.slides.TerminalSlide.e0f98be657": {
-    "ko": "orca/feat-mobile-page"
-  },
-  "auto.components.mobile.slides.TerminalSlide.e4befee569": {
-    "ko": "셸"
-  },
-  "auto.components.mobile.slides.WorktreeListSlide.17f9e0d226": {
-    "ko": "최근"
-  },
   "auto.components.new.workspace.ProjectCombobox.empty": {
     "ko": "검색과 일치하는 프로젝트가 없습니다."
   },
@@ -2764,51 +2731,6 @@
   },
   "auto.components.settings.mobile.emulator.search.ea1f51b980": {
     "ko": "Xcode, simctl, serve-sim 및 에뮬레이터 장치가 준비되었는지 확인하세요."
-  },
-  "auto.components.settings.mobile.pane.search.16bff559a0": {
-    "ko": "tailnet"
-  },
-  "auto.components.settings.mobile.pane.search.1f70d63998": {
-    "ko": "IP"
-  },
-  "auto.components.settings.mobile.pane.search.2128a21096": {
-    "ko": "스캔"
-  },
-  "auto.components.settings.mobile.pane.search.3a5e31e84b": {
-    "ko": "나가기"
-  },
-  "auto.components.settings.mobile.pane.search.4a0c826f3d": {
-    "ko": "코드"
-  },
-  "auto.components.settings.mobile.pane.search.5e8fda4d7f": {
-    "ko": "페어링됨"
-  },
-  "auto.components.settings.mobile.pane.search.70f505f3c3": {
-    "ko": "LAN"
-  },
-  "auto.components.settings.mobile.pane.search.7b37c2e557": {
-    "ko": "네트워크"
-  },
-  "auto.components.settings.mobile.pane.search.8015fd9523": {
-    "ko": "유지"
-  },
-  "auto.components.settings.mobile.pane.search.d0c89bc4a9": {
-    "ko": "오버레이"
-  },
-  "auto.components.settings.mobile.pane.search.e518cbd61c": {
-    "ko": "페어링"
-  },
-  "auto.components.settings.mobile.pane.search.fadcbfdd99": {
-    "ko": "맞춤"
-  },
-  "auto.components.settings.mobile.settings.search.0b7e585cb9": {
-    "ko": "스캔"
-  },
-  "auto.components.settings.mobile.settings.search.59b1d75fd1": {
-    "ko": "코드"
-  },
-  "auto.components.settings.mobile.settings.search.cf2c93b479": {
-    "ko": "페어링"
   },
   "auto.components.settings.notifications.search.3014ad1b8f": {
     "ko": "딩"
@@ -5450,20 +5372,8 @@
   "auto.components.skills.SkillFreshnessStatusPill.needsAttention": {
     "ko": "스킬 검토"
   },
-  "auto.components.settings.MobilePane.2e3dd0bc29": {
-    "ko": "기기의 연결 권한을 해제했습니다."
-  },
-  "auto.components.settings.MobilePane.5e2c7a1f84": {
-    "ko": "휴대폰에서 터미널을 사용하는 동안 Orca는 휴대폰 화면에 맞게 터미널을 축소합니다. 앱을 닫거나 다른 앱으로 전환할 때, 휴대폰 화면 크기를 유지할지(대화형 CLI 도구의 레이아웃 재배치 방지) 아니면 데스크톱 크기로 다시 조정할지 제어합니다. 배너에서 언제든지 '복원' 또는 '모두 복원'을 사용해 수동으로 크기를 조정할 수 있습니다."
-  },
   "auto.components.settings.Settings.c6c01ac209": {
     "ko": "휴대폰에서 터미널과 에이전트를 제어하세요."
-  },
-  "auto.components.settings.MobileRelayBetaNotice.notice": {
-    "ko": "Orca Relay는 베타 버전입니다."
-  },
-  "auto.components.settings.MobilePairingConnectionOptions.relaySignInDetail": {
-    "ko": "이 데스크톱에서 Orca에 로그인하고 휴대폰 연결을 Orca 서버를 통해 전달합니다. LAN 연결에는 계정이 필요하지 않습니다."
   },
   "auto.components.settings.SshPassphraseDialog.ce4fdf7914": {
     "ko": "다음 연결 대상에 사용할 SSH 키의 암호 문구를 입력하세요:"
@@ -5491,9 +5401,6 @@
   },
   "auto.components.right.sidebar.GitHubPRStackMap.838aadf512": {
     "ko": "검사 실패"
-  },
-  "auto.components.mobile.NetworkInterfacePicker.custom-section": {
-    "ko": "사용자 지정"
   },
   "auto.components.settings.EphemeralVmRuntimesSection.failed": {
     "ko": "실패"

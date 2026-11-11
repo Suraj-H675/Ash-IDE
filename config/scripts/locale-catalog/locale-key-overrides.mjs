@@ -310,11 +310,6 @@ const BASE_LOCALE_KEY_OVERRIDES = {
     zh: '显示当前工作区的 Kimi 订阅使用情况。',
     ja: 'アクティブなワークスペースの Kimi サブスクリプション使用状況を表示します。'
   },
-  'auto.components.mobile.MobileHero.cd4e5e816f': {
-    ko: '주머니 속의 워크스페이스.',
-    zh: '您的工作区就在您的口袋里。',
-    ja: 'ワークスペースをポケットに。'
-  },
   'auto.components.GitHubItemDialog.dbe5e2448e': {
     ko: 'PR이 병합되었습니다',
     zh: '拉取请求已合并',
@@ -460,11 +455,6 @@ const BASE_LOCALE_KEY_OVERRIDES = {
     zh: '查看议题',
     ja: 'イシューを表示'
   },
-  'auto.components.mobile.MobilePage.e17393c6a3': {
-    ko: '전화 미리보기',
-    zh: '手机预览',
-    ja: 'スマートフォンプレビュー'
-  },
   'auto.components.editor.EditorContent.e4b074749d': {
     ko: '머리말',
     zh: '前言',
@@ -504,11 +494,6 @@ const BASE_LOCALE_KEY_OVERRIDES = {
     ko: '예: feature',
     zh: '例如 feature',
     ja: '例: feature'
-  },
-  'auto.components.mobile.slides.TerminalSlide.985373052e': {
-    ko: '휴대폰 모드로 전환',
-    zh: '切换到手机模式',
-    ja: 'スマートフォンモードに切り替え'
   },
   'auto.components.GitHubItemDialog.a341343303': {
     ko: '리뷰 댓글이 추가되었습니다.',
