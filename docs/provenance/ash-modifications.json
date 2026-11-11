@@ -463,7 +463,7 @@
     },
     {
       "path": "src/main/ipc/skills.ts",
-      "sha256": "3a3e4576efa96d384465c897e17e9be6c59156833ac5c4b193c5a7698d5e44e1",
+      "sha256": "470e1a761fc436e0cb6472a7693a429e64512d6899dd5a1c7bcae9a47bb69087",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

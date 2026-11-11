@@ -11,7 +11,6 @@ const mocks = vi.hoisted(() => ({
   })),
   discover: vi.fn(async () => ({ skills: [], sources: [], scannedAt: 123 })),
   rootOverrides: vi.fn(async () => ({})),
-  cloud: vi.fn(),
   stoppedWslGate: vi.fn(async (run: () => Promise<unknown>) => run())
 }))
 
@@ -32,13 +31,6 @@ vi.mock('../skills/skill-discovery-target', () => ({
 vi.mock('../skills/skill-discovery-stopped-wsl-roots', () => ({
   unavailableWhileWslDistroStopped: mocks.stoppedWslGate
 }))
-vi.mock('../wsl/filesystem/wsl-unc-access-gate', () => ({
-  runAsWslUserAct: vi.fn(),
-  wslDistroForPath: vi.fn()
-}))
-vi.mock('./skill-cloud-ipc-handlers', () => ({
-  registerSkillCloudIpcHandlers: mocks.cloud
-}))
 
 beforeEach(() => {
   mocks.handlers.clear()
@@ -55,7 +47,6 @@ it('registers only trusted provider-native discovery and retains provider roots 
   registerProviderNativeSkillDiscoveryHandler(store as never, runtime as never)
 
   expect([...mocks.handlers.keys()]).toEqual(['skills:discover'])
-  expect(mocks.cloud).not.toHaveBeenCalled()
   const handler = mocks.handlers.get('skills:discover')!
   const target = { cwd: '/disposable/workspace', sourceKinds: ['repo'], refresh: true }
   const response = await handler({ sender: mocks.trustedSender }, target)

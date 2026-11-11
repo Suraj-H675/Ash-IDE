@@ -6,31 +6,20 @@ import {
   type SkillDiscoveryTarget
 } from '../../shared/skills'
 import {
-  BundledSkillAutoUpdateRequestSchema,
-  LocalBundledSkillExecuteRequestSchema,
-  LocalBundledSkillPlanRequestSchema,
-  type BundledSkillInstallResult,
-  type BundledSkillPlan
-} from '../../shared/bundled-skill-plan'
-import {
   discoverSkillsOnTarget,
   resolveSkillDiscoveryTarget
 } from '../skills/skill-discovery-target'
 import { unavailableWhileWslDistroStopped } from '../skills/skill-discovery-stopped-wsl-roots'
-import { runAsWslUserAct, wslDistroForPath } from '../wsl/filesystem/wsl-unc-access-gate'
-import { registerSkillCloudIpcHandlers } from './skill-cloud-ipc-handlers'
 import { handleMainWindowSkillIpc } from './skill-ipc-main-window'
 
 function createDiscoverResolved(store: Store, runtime?: OrcaRuntimeService) {
   return async (
     resolvedTarget: Awaited<ReturnType<typeof resolveSkillDiscoveryTarget>>,
-    refresh: boolean,
-    readStoppedWslRootsFor?: 'all' | readonly string[]
+    refresh: boolean
   ): Promise<SkillDiscoveryResult> =>
     discoverSkillsOnTarget(resolvedTarget, store.getRepos(), {
       providerRootOverrides: await runtime?.resolveSkillDiscoveryProviderRoots(resolvedTarget),
-      refresh,
-      ...(readStoppedWslRootsFor ? { readStoppedWslRootsFor } : {})
+      refresh
     })
 }
 
@@ -54,50 +43,5 @@ export function registerProviderNativeSkillDiscoveryHandler(
   handleMainWindowSkillIpc(
     'skills:discover',
     async (_event, target?: SkillDiscoveryTarget): Promise<SkillDiscoveryResult> => discover(target)
-  )
-}
-
-export function registerSkillsHandlers(store: Store, runtime?: OrcaRuntimeService): void {
-  registerProviderNativeSkillDiscoveryHandler(store, runtime)
-  const discoverResolved = createDiscoverResolved(store, runtime)
-  // Share is a click on named skills: it may start their distro, as any user act may.
-  const discoverForUserAct = async (
-    target?: SkillDiscoveryTarget,
-    skillDirectories?: readonly string[]
-  ): Promise<SkillDiscoveryResult> => {
-    const parsedTarget = target ? SkillDiscoveryTargetSchema.parse(target) : undefined
-    const resolvedTarget = await resolveSkillDiscoveryTarget(parsedTarget)
-    const distro =
-      resolvedTarget.kind === 'wsl'
-        ? resolvedTarget.distro
-        : resolvedTarget.cwd
-          ? wslDistroForPath(resolvedTarget.cwd)
-          : null
-    return runAsWslUserAct(distro, () =>
-      // Only the chosen skills' roots may start a stopped distro; without folders, any may.
-      discoverResolved(resolvedTarget, parsedTarget?.refresh === true, skillDirectories ?? 'all')
-    )
-  }
-
-  if (!runtime) {
-    return
-  }
-  registerSkillCloudIpcHandlers(runtime, discoverForUserAct)
-
-  // Local host only; paired hosts plan Orca's skills over RPC.
-  handleMainWindowSkillIpc(
-    'skills:bundledPlan',
-    async (_event, value: unknown): Promise<BundledSkillPlan> =>
-      runtime.planLocalBundledSkills(LocalBundledSkillPlanRequestSchema.parse(value ?? {}))
-  )
-  handleMainWindowSkillIpc(
-    'skills:bundledExecute',
-    async (_event, value: unknown): Promise<BundledSkillInstallResult> =>
-      runtime.executeLocalBundledSkills(LocalBundledSkillExecuteRequestSchema.parse(value))
-  )
-  handleMainWindowSkillIpc(
-    'skills:bundledAutoUpdate',
-    async (_event, value: unknown): Promise<BundledSkillInstallResult> =>
-      runtime.autoUpdateLocalBundledSkills(BundledSkillAutoUpdateRequestSchema.parse(value))
   )
 }

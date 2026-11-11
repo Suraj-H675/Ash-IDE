@@ -42004,6 +42004,31 @@
       "path": "src/renderer/src/components/orca-profiles/OrcaProfileSignOutConfirmDialog.tsx",
       "sourceSha256": "e9e3358ad41e56db0790fa5689617e259867c77946ef387b92ff1d961429ee84",
       "reason": "Ash M8 exclusion: orphaned Orca Cloud sign-out confirmation after removal of the sole account Settings caller; no local profile or provider-auth sign-out UI depends on this component."
+    },
+    {
+      "path": "src/main/ipc/skill-cloud-ipc-handlers.ts",
+      "sourceSha256": "1d6a31fac38d992aabb4ecac7869f4ce9e91a6a44a341823d9c3f0ff1e13f42b",
+      "reason": "Ash M8 exclusion: removed the unregistered upstream Orca Cloud skill-sharing and managed-install IPC backend. The actual Ash startup registers only provider-native skills:discover; local provider skills and credentials remain untouched."
+    },
+    {
+      "path": "src/main/ipc/skill-install-management-ipc-handlers.ts",
+      "sourceSha256": "44c0295b8a941ac86cd9a6845bc9ad5d291221cdb0fd9d4d32d7c64c93601797",
+      "reason": "Ash M8 exclusion: orphaned first-party skill package install-management IPC, reachable only from the unused cloud skill IPC registrar; provider-native discovery is preserved."
+    },
+    {
+      "path": "src/main/ipc/skill-install-progress-ipc.ts",
+      "sourceSha256": "02320cbe4f2ebacd4454157da8e52807c86f049deed9bbd35a957cd43f10fddd",
+      "reason": "Ash M8 exclusion: orphaned vendor skill package installation and upload progress broadcasts used only by the removed cloud skill registrar."
+    },
+    {
+      "path": "src/main/ipc/skill-cloud-install-ipc-schemas.ts",
+      "sourceSha256": "85d16c5167a92cc5746ee654ee8ecd9e125cf30356e2664e27adca63394996d4",
+      "reason": "Ash M8 exclusion: removed orphan Orca Cloud grant/install IPC request validation used only by the removed cloud skill registrar."
+    },
+    {
+      "path": "src/main/ipc/skill-share-publishing-ipc-schemas.ts",
+      "sourceSha256": "592a44678eb263f127ed1737c89d72be4a3befc342a49db96dc059605bb44a6a",
+      "reason": "Ash M8 exclusion: removed orphan upstream cloud skill-share publish IPC validation used only by the removed cloud skill registrar."
     }
   ]
 }
