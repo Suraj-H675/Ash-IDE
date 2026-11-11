@@ -15401,6 +15401,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-auth-context.ts",
+      "sourceSha256": "d6b028be50ef459bbaaab948353bf73a671bfa4c0608b067c98f34aff8a29dc6",
+      "reason": "Retired unreachable Orca vendor relay auth and session-broker implementation; Ash has no cloud relay provider or mobile pairing startup."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-auth-coordinator-readiness.test.ts",
       "sourceSha256": "c74ef1cc467e04022775bc41769e6777e9cf1fee3497b2160c4bab778bf1aaa9",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
@@ -15416,9 +15421,24 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-auth-coordinator.ts",
+      "sourceSha256": "ebea304ca045b48f6ca48e55675c3ecda99c9528fca31088008b2bdb536f5db3",
+      "reason": "Retired unreachable Orca vendor relay auth and session-broker implementation; Ash has no cloud relay provider or mobile pairing startup."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-auth-host-close-reason.test.ts",
       "sourceSha256": "e2ad5d66ab10baa35055614e9a1b0983af54e068a07cde06dac0d825dabe0a18",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-auth-identity.ts",
+      "sourceSha256": "295718becba062e953a61db791bc5068dd3eea38e2fd298d42fd7a202eaafbe4",
+      "reason": "Retired unreachable Orca vendor relay auth and session-broker implementation; Ash has no cloud relay provider or mobile pairing startup."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-control-client-options.ts",
+      "sourceSha256": "f6b1c8c808831859da5f38e903d2fc7d66257bb2d870d740e168f4b8741724c8",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
     },
     {
       "path": "src/main/runtime/mobile-cloud-relay/relay-control-client.test.ts",
@@ -15426,9 +15446,24 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-control-client.ts",
+      "sourceSha256": "c2088c00d8749fc4459080dcc53453395cc503ec9da0844a5153694229d29ea0",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-control-close-reason.test.ts",
       "sourceSha256": "aa070bcfe07f73a0a7eb355ab9f6b1a495ee2d4a350913bce3bd61b540dff7e2",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-control-liveness.ts",
+      "sourceSha256": "6784380a5428f15144c5d1f65e8abcc4e66a144278457a951034e91158cdb387",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-control-origin-options.ts",
+      "sourceSha256": "71be71d917fb9552429000184fcbfde120dc15995ab85c38fbd59f5eb8e63554",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
     },
     {
       "path": "src/main/runtime/mobile-cloud-relay/relay-control-origin.test.ts",
@@ -15436,9 +15471,39 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-control-origin.ts",
+      "sourceSha256": "faa41ba54ea86c63189bde96d37c19239cecb5db68d0bf97c1c26d3261d2b1c5",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-control-protocol.ts",
+      "sourceSha256": "99ac06e77578fe3c857c07ee98d3e8a28457fe79b51ee2fdf4ef71a3fa8c9dec",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-control-request-retirement.test.ts",
       "sourceSha256": "512537fec51c282fe8918c06033ae43ce865f8ee352a12a631bc050a6844aa6c",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-control-requests.ts",
+      "sourceSha256": "126a5fd99aa3b7ff4ae74cd116bae2c5c8b2c3dff31a183bff3967d0b8958e9e",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-control-rotation.ts",
+      "sourceSha256": "b11feda21749d639f1e2ab966c12337fa486ba938158186ac881bd32f09bd574",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-control-socket-close.ts",
+      "sourceSha256": "d70696f814c057a0fe90649ded06ec5e624d46e4bc5bb60ac0a4805862eae9f8",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-control-url.ts",
+      "sourceSha256": "5cbc9e41f9ac704ad7b40fc4e21d7758cbbd42794e928ac70e35e3d544ed5e5c",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
     },
     {
       "path": "src/main/runtime/mobile-cloud-relay/relay-demand-ledger.test.ts",
@@ -15446,9 +15511,19 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-demand-ledger.ts",
+      "sourceSha256": "7a14733531b3892c61b3b3ac9b34e735f1f5410dddc11d0be427b2a8c5e028ba",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-host-proof.test.ts",
       "sourceSha256": "5bf4688eb96a336e1d7332c34a7ca2ddd82c82aa82bbabf980b4b9c7a3b480a8",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-host-proof.ts",
+      "sourceSha256": "a687d54e3c43609c95fb23ace76851cb50b2cd84cfa8ec845c023b8147393cfc",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
     },
     {
       "path": "src/main/runtime/mobile-cloud-relay/relay-http-client.test.ts",
@@ -15456,14 +15531,49 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-linger-timer.ts",
+      "sourceSha256": "bfa761ddb1d3409f3f7cbd24a87fc0b61e96e75e4779686d2f0a62e5f6ee8576",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-origin-pool-options.ts",
+      "sourceSha256": "ad770e80db7468feef7ded080d60afc3c0dcc287e99d944b5bcb17b9953cb5d3",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-origin-pool.ts",
+      "sourceSha256": "560c2938c03951a1ffd6751c619884fde0341d4a41096d38853e5878581f46f2",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-origin-retirement.ts",
+      "sourceSha256": "fe86644a522297340f136d5281900746495bcf197d3213dbe4baac2eda20ac9d",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-pairing-authorization.ts",
+      "sourceSha256": "5704188f03bab2e572dc972bbd809f0967e3d2d9b94976e5a6b845fa4be29fa2",
+      "reason": "Retired unreachable Orca vendor relay auth and session-broker implementation; Ash has no cloud relay provider or mobile pairing startup."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-readiness-retention.test.ts",
       "sourceSha256": "e289b09ced1e821e7a0370cce159c4fd7a3a0756eb61873b79b9cd0b0223a3e3",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-readiness.ts",
+      "sourceSha256": "81be252c409248c648b34300b857a84ac6a1440a98eddecb5b9ec4e8f4ac5581",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-region-correction.test.ts",
       "sourceSha256": "cec4568779d86d0ed95821998fde5c7d76863873a3d1a15bbd103b8b6433568f",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-region-preference-reader.ts",
+      "sourceSha256": "ca35db2ecea26cbf6048435c7c1511daabd1712a6914b75e0b25793cdc8e0bad",
+      "reason": "Retired unused vendor relay region-selection, refresh or protocol helper; retained only dependencies still imported by profile cleanup and legacy push fingerprint."
     },
     {
       "path": "src/main/runtime/mobile-cloud-relay/relay-region-preference.test.ts",
@@ -15481,9 +15591,24 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-region-refresh.ts",
+      "sourceSha256": "cd7fe603c49c8000dc0f12e35b85e98d8538801ef962111a8aca474008618a86",
+      "reason": "Retired unused vendor relay region-selection, refresh or protocol helper; retained only dependencies still imported by profile cleanup and legacy push fingerprint."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-renewal-jitter.test.ts",
       "sourceSha256": "2269da032edb3162e63873d0328640591f9b1ea5e8c5c853b9a3588acd2ae3c7",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-renewal-jitter.ts",
+      "sourceSha256": "b2015edfda74fc74f371347c22946293e213d3eaaf32c7bca7df7a19f2983016",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-retry-schedule.ts",
+      "sourceSha256": "2f1c478e17704276552e03bc0af67938311829f9e046f26c09873f33dd0368cc",
+      "reason": "Retired unused vendor cloud relay control socket, origin pooling, readiness, retry or device demand pipeline. Ash retains local E2EE browser RPC and durable historical credential outbox."
     },
     {
       "path": "src/main/runtime/mobile-cloud-relay/relay-revoke-outbox.test.ts",
@@ -15491,9 +15616,19 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-session-broker-contract.ts",
+      "sourceSha256": "dfdc57c84bf7c5c297cac3d47a3147594924e66bac81933888008fa8fcbc5235",
+      "reason": "Retired unreachable Orca vendor relay auth and session-broker implementation; Ash has no cloud relay provider or mobile pairing startup."
+    },
+    {
       "path": "src/main/runtime/mobile-cloud-relay/relay-session-broker.test.ts",
       "sourceSha256": "60735df412927082f502d88694adac502cc9b0a23fbe50ba9006b91c23440c92",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/runtime/mobile-cloud-relay/relay-session-broker.ts",
+      "sourceSha256": "a8949f674b4924c3865fe34539f753ae2ecc8fb78a8358ffc7057cd82c590b46",
+      "reason": "Retired unreachable Orca vendor relay auth and session-broker implementation; Ash has no cloud relay provider or mobile pairing startup."
     },
     {
       "path": "src/main/runtime/mobile-desktop-relay/delegated-phone-grant-cache.ts",
