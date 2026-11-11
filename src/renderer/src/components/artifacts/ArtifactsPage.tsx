@@ -9,9 +9,9 @@ import { ArtifactCollection } from './ArtifactCollection'
 import { ArtifactDetailDrawer } from './ArtifactDetailDrawer'
 import { ArtifactsPageSkeleton } from './ArtifactsPageSkeleton'
 import {
-  ArtifactsPageAuthState,
   ArtifactsPageEmptyState,
-  ArtifactsPageErrorBanner
+  ArtifactsPageErrorBanner,
+  ArtifactsPageUnavailableState
 } from './ArtifactsPageStates'
 import { artifactAccountIdentity, useArtifactPagination } from './useArtifactPagination'
 
@@ -31,11 +31,6 @@ export default function ArtifactsPage(): React.JSX.Element {
   const [deleting, setDeleting] = useState<{ identity: string; slug: string } | null>(null)
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null)
   const signedIn = authStatus?.state === 'connected'
-  const needsReconnect = authStatus?.state === 'reconnect-required'
-  const openAccountSettings = (): void => {
-    openSettingsTarget({ pane: 'orca-account', repoId: null })
-    openSettingsPage()
-  }
   const {
     accountIdentity,
     artifacts,
@@ -188,11 +183,7 @@ export default function ArtifactsPage(): React.JSX.Element {
         />
       ) : null}
       {!signedIn ? (
-        <ArtifactsPageAuthState
-          needsReconnect={needsReconnect}
-          configured={authStatus?.configured === true}
-          onOpenAccountSettings={openAccountSettings}
-        />
+        <ArtifactsPageUnavailableState />
       ) : loading && artifacts.length === 0 ? (
         <ArtifactsPageSkeleton />
       ) : artifacts.length === 0 ? (

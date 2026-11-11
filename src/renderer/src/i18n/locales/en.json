@@ -18590,6 +18590,8 @@
           "deleteFailed": "Could not delete the artifact.",
           "title": "Artifacts",
           "refresh": "Refresh",
+          "cloudUnavailableHeading": "Cloud artifact sharing is unavailable in Ash IDE.",
+          "cloudUnavailableCopy": "Ash IDE does not provide Orca cloud sign-in or public artifact publishing. You can still preview HTML and Markdown files locally.",
           "shareSignInHeading": "Sign in to share artifacts",
           "shareSignInCopy": "Use your Orca account to upload artifacts and manage their public links.",
           "signIn": "Sign in to Orca",

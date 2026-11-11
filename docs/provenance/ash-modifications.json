@@ -1187,6 +1187,16 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/artifacts/ArtifactsPage.tsx",
+      "sha256": "3b5d725e1613e92ac9df01a65252b497938aed0c8c50ee73a29695ef7feefcb1",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/artifacts/ArtifactsPageStates.tsx",
+      "sha256": "285a10a7863f789741f08759367bbce95355f269862f3db606a0a52ae35feb06",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/automations/external-automation-scope-client.ts",
       "sha256": "feed4b9384ca8b7b6ff82ad1c52027ddea94bc5269563b7198402f65580ac02a",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1234,6 +1244,11 @@
     {
       "path": "src/renderer/src/components/onboarding/use-onboarding-flow-persistence.ts",
       "sha256": "53292295297c4daec6207ec5a2346f7b97af5438a196caadcccfc16634bf44c4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/settings/advanced/DevToolsPane.tsx",
+      "sha256": "202b6dde163b196e97394961f96b8cad37a2a6147a5879c25eef97b443ac1a17",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1288,7 +1303,7 @@
     },
     {
       "path": "src/renderer/src/components/settings/page/settings-page-renderer.tsx",
-      "sha256": "3fd7a06d628062835776885cbd33a20e48e2fe9a2f4a84586dc170653c013bf6",
+      "sha256": "15d3d45a94a2dd0d3457833460b06b7d0c68db4ae356b9f3ab0c2ee33a6119b6",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1298,7 +1313,7 @@
     },
     {
       "path": "src/renderer/src/components/settings/page/settings-setup-workflow-section-renderers.tsx",
-      "sha256": "31c23f23e6cb31c4bcad736d62d0acbb3e4b3eaa6839af11264f3b71e4feeaf0",
+      "sha256": "ccde3ca548ed4b661144a21a9b66dc54e5fbcea6756d0254b133280a0a2540b7",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1428,7 +1443,7 @@
     },
     {
       "path": "src/renderer/src/hooks/settings-navigation-capability-sections.ts",
-      "sha256": "1cd07516ad8e51a5f96f1970e3b259036133fff8c78bb8900942d8011097652a",
+      "sha256": "c22a0251b636460d8c1c038c488bdd897efc486fff07262c2dcabc90aac91743",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1458,7 +1473,7 @@
     },
     {
       "path": "src/renderer/src/i18n/locales/en.json",
-      "sha256": "8f5781538776dd24f747829adc20187c5681097f1cf1b8a0d3f6da6aa89985f3",
+      "sha256": "a47520ee9971b2fdc15bc2038ed3c19ceeaf13f2924b8a453fb287170727e38c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1518,7 +1533,7 @@
     },
     {
       "path": "src/renderer/src/lib/settings-navigation-types.ts",
-      "sha256": "ac622e0336db4467fac8b922c6bbb741a00eb049d863ad19db6519aa0c59150b",
+      "sha256": "359ff546b5d9f9a90283ce364bb9682b820986f26226de9b822dec81bc83c84e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

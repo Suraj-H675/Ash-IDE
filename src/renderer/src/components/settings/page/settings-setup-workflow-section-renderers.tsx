@@ -2,31 +2,11 @@ import { SessionHistorySettingsPane } from '../session-history/SessionHistorySet
 import { ArtifactsSettingsPane } from '../artifacts/ArtifactsSettingsPane'
 import { GeneralPane } from '../general/GeneralPane'
 import { IntegrationsPane } from '../integrations/IntegrationsPane'
-import { OrcaAccountSettingsPane } from '../accounts/orca/OrcaAccountSettingsPane'
 import { SettingsSetupGuidePane } from '../setup-guide/SettingsSetupGuidePane'
 import { ShareSkillsSettingsPane } from '../skills/sharing/ShareSkillsSettingsPane'
 import { SettingsSection } from '../section-layout/SettingsSection'
 import { translate } from '@/i18n/i18n'
 import type { SettingsRenderContext } from './settings-render-context'
-
-export function renderOrcaAccountSettingsSection(
-  context: SettingsRenderContext
-): React.JSX.Element | null {
-  const { model, navigation, view } = context
-  return model.showDesktopOnlySettings ? (
-    <SettingsSection
-      id="orca-account"
-      title={translate('auto.components.settings.orcaAccount.title', 'Orca Account')}
-      description={translate(
-        'auto.components.settings.orcaAccount.description',
-        'Share work instantly and reach your desktop from Orca Mobile wherever you are.'
-      )}
-      searchEntries={navigation.getSectionSearchEntries('orca-account')}
-    >
-      {view.isSectionMounted('orca-account') ? <OrcaAccountSettingsPane /> : null}
-    </SettingsSection>
-  ) : null
-}
 
 export function renderSetupGuideSettingsSection(context: SettingsRenderContext): React.JSX.Element {
   const { navigation, view } = context

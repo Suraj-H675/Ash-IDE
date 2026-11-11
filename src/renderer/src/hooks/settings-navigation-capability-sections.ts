@@ -5,20 +5,11 @@ import { getComputerUsePaneSearchEntries } from '@/components/settings/computer-
 import { getGeneralPaneSearchEntries } from '@/components/settings/general/general-search'
 import { getIntegrationsPaneSearchEntries } from '@/components/settings/integrations/integrations-search'
 import { getLinearAgentSkillPaneSearchEntries } from '@/components/settings/skills/linear/linear-agent-skill-search'
-import { getOrcaAccountSettingsSearchEntries } from '@/components/settings/accounts/orca/orca-account-settings-search'
 import { OrcaLogoSettingsIcon } from '@/components/settings/page/orca-logo-settings-icon'
 import { getOrchestrationPaneSearchEntries } from '@/components/settings/orchestration/orchestration-search'
 import { translate } from '@/i18n/i18n'
 import type { SettingsNavSection } from '@/lib/settings-navigation-types'
-import {
-  Blocks,
-  Bot,
-  CircleUserRound,
-  MousePointerClick,
-  Network,
-  SlidersHorizontal,
-  UserCog
-} from 'lucide-react'
+import { Blocks, Bot, MousePointerClick, Network, SlidersHorizontal, UserCog } from 'lucide-react'
 import type { SettingsNavigationBuildOptions } from './settings-navigation-build-options'
 
 export function buildCapabilitySettingsSections({
@@ -108,26 +99,9 @@ export function buildCapabilitySettingsSections({
 }
 
 export function buildSetupSettingsSections({
-  isLocalWindowsHost,
-  isWebClient
+  isLocalWindowsHost
 }: SettingsNavigationBuildOptions): SettingsNavSection[] {
-  const showDesktopOnlySettings = !isWebClient
   return [
-    ...(showDesktopOnlySettings
-      ? [
-          {
-            id: 'orca-account',
-            title: translate('auto.components.settings.orcaAccount.title', 'Orca Account'),
-            description: translate(
-              'auto.components.settings.orcaAccount.description',
-              'Share work instantly and reach your desktop from Orca Mobile wherever you are.'
-            ),
-            icon: CircleUserRound,
-            searchEntries: getOrcaAccountSettingsSearchEntries(),
-            group: 'setup'
-          }
-        ]
-      : []),
     {
       id: 'setup-guide',
       title: translate(

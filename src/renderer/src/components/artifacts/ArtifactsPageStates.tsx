@@ -1,7 +1,6 @@
-import { ArrowRight, Files, Loader2 } from 'lucide-react'
+import { Files, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { translate } from '@/i18n/i18n'
-import { OrcaSignInButton, OrcaSignInWaitNotice } from '../OrcaSignInProgress'
 
 export function ArtifactsPageErrorBanner({
   error,
@@ -22,71 +21,24 @@ export function ArtifactsPageErrorBanner({
   )
 }
 
-export function ArtifactsPageAuthState({
-  needsReconnect,
-  configured,
-  onOpenAccountSettings
-}: {
-  needsReconnect: boolean
-  configured: boolean
-  onOpenAccountSettings: () => void
-}): React.JSX.Element {
+export function ArtifactsPageUnavailableState(): React.JSX.Element {
   return (
     <div className="flex min-h-72 flex-1 flex-col items-center justify-center gap-3 px-5 py-5 text-center md:px-8">
       <Files className="size-8 text-muted-foreground" />
       <div className="space-y-1">
         <h2 className="text-sm font-semibold">
-          {needsReconnect
-            ? translate(
-                'auto.components.artifacts.ArtifactsPage.reconnectHeading',
-                'Sign in to Orca again'
-              )
-            : translate(
-                'auto.components.artifacts.ArtifactsPage.shareSignInHeading',
-                'Sign in to share artifacts'
-              )}
+          {translate(
+            'auto.components.artifacts.ArtifactsPage.cloudUnavailableHeading',
+            'Cloud artifact sharing is unavailable in Ash IDE.'
+          )}
         </h2>
         <p className="max-w-sm text-xs leading-5 text-muted-foreground">
-          {needsReconnect
-            ? translate(
-                'auto.components.artifacts.ArtifactsPage.reconnectCopy',
-                'Sign in again to view and manage the artifacts shared through your account.'
-              )
-            : translate(
-                'auto.components.artifacts.ArtifactsPage.shareSignInCopy',
-                'Use your Orca account to upload artifacts and manage their public links.'
-              )}
+          {translate(
+            'auto.components.artifacts.ArtifactsPage.cloudUnavailableCopy',
+            'Ash IDE does not provide Orca cloud sign-in or public artifact publishing. You can still preview HTML and Markdown files locally.'
+          )}
         </p>
       </div>
-      {configured ? (
-        <>
-          <OrcaSignInButton size="sm">
-            {needsReconnect
-              ? translate(
-                  'auto.components.artifacts.ArtifactsPage.signInAgainAction',
-                  'Sign in again'
-                )
-              : translate('auto.components.artifacts.ArtifactsPage.signIn', 'Sign in to Orca')}
-          </OrcaSignInButton>
-          <OrcaSignInWaitNotice className="justify-center" />
-        </>
-      ) : (
-        <div className="flex flex-col items-center gap-2">
-          <p className="max-w-sm text-xs leading-5 text-muted-foreground">
-            {translate(
-              'auto.components.artifacts.ArtifactsPage.unconfiguredCopy',
-              'Orca account sign-in is not configured on this machine yet.'
-            )}
-          </p>
-          <Button variant="outline" size="sm" onClick={onOpenAccountSettings}>
-            {translate(
-              'auto.components.artifacts.ArtifactsPage.openAccountSettings',
-              'Open account settings'
-            )}
-            <ArrowRight />
-          </Button>
-        </div>
-      )}
     </div>
   )
 }

@@ -41989,6 +41989,21 @@
       "path": "src/renderer/src/components/sidebar/sidebar-feedback/use-sidebar-feedback-images.ts",
       "sourceSha256": "11086f9eeb5bb8a35e621311fdee7560cc05f3a98f850645f7eedf420db8e636",
       "reason": "Ash M8 exclusion: removed unmounted upstream vendor-feedback submission UI/attachment helper or unsafe preload submit bridge. Ash retains local diagnostic review and user-directed crash copy; source is recoverable from the pinned Orca snapshot."
+    },
+    {
+      "path": "src/renderer/src/components/settings/accounts/orca/OrcaAccountSettingsPane.tsx",
+      "sourceSha256": "c24df4d0b8a6113e34f249b739c1b622fbd4e39fb4c17a3eee02957ec487fa63",
+      "reason": "Ash M8 exclusion: retired Orca Cloud account Settings controls and their search catalog; local profile management remains in the shared profile store."
+    },
+    {
+      "path": "src/renderer/src/components/settings/accounts/orca/orca-account-settings-search.ts",
+      "sourceSha256": "617e325c7e98b114779866a5976c66ea509b506a4b5e82110e5dcfe6dff270f6",
+      "reason": "Ash M8 exclusion: retired Orca Cloud account Settings controls and their search catalog; local profile management remains in the shared profile store."
+    },
+    {
+      "path": "src/renderer/src/components/orca-profiles/OrcaProfileSignOutConfirmDialog.tsx",
+      "sourceSha256": "e9e3358ad41e56db0790fa5689617e259867c77946ef387b92ff1d961429ee84",
+      "reason": "Ash M8 exclusion: orphaned Orca Cloud sign-out confirmation after removal of the sole account Settings caller; no local profile or provider-auth sign-out UI depends on this component."
     }
   ]
 }
