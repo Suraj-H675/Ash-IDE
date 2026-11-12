@@ -323,11 +323,7 @@ export function ShortcutsPane(): React.JSX.Element {
                 'Customize shortcuts visually or edit'
               )}{' '}
               <span className="font-mono text-[11px]">
-                {keybindingSnapshot?.path ??
-                  translate(
-                    'auto.components.settings.ShortcutsPane.d8c988dab4',
-                    '~/.orca/keybindings.json'
-                  )}
+                {keybindingSnapshot?.path ?? 'Ash profile/keybindings.json'}
               </span>{' '}
               {translate('auto.components.settings.ShortcutsPane.4b7ae34062', 'directly.')}
             </>

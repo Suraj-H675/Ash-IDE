@@ -1,5 +1,10 @@
-import { existsSync } from 'node:fs'
+import { existsSync, lstatSync } from 'node:fs'
+import { homedir } from 'node:os'
 import { join } from 'node:path'
+import {
+  assertAshOwnedChildPath,
+  assertAshUserDataPathIsIndependent
+} from '../orcad/orcad-app-paths'
 import {
   findKeybindingConflicts,
   formatKeybindingList,
@@ -25,8 +30,22 @@ import {
   type JsonObject
 } from './keybinding-file-parser'
 
-export function getUserKeybindingsPath(homePath: string): string {
-  return join(homePath, '.orca', 'keybindings.json')
+/** Never read/harden/save shortcuts under another application's profile. */
+export function getUserKeybindingsPath(userDataPath: string, homePath: string = homedir()): string {
+  assertAshUserDataPathIsIndependent(userDataPath, { homeDir: homePath })
+  const path = join(userDataPath, 'keybindings.json')
+  assertAshOwnedChildPath(userDataPath, path)
+  try {
+    const record = lstatSync(path)
+    if (!record.isFile() || record.nlink !== 1) {
+      throw new Error('ash_keybindings_file_not_private — linked or non-file shortcuts refused')
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      throw error
+    }
+  }
+  return path
 }
 
 export function readKeybindingFile(

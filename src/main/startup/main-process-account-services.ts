@@ -76,6 +76,7 @@ export function initializeMainProcessAccountServices(): void {
     save: saveOpenCodeGoApiKey
   })
   state.keybindings = new KeybindingService({
+    userDataPath: app.getPath('userData'),
     homePath: app.getPath('home'),
     getLegacyOverrides: () => store.getSettings().keybindings,
     legacyTabSwitchSeed: {

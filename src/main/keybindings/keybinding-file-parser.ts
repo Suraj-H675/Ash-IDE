@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import {
@@ -69,10 +70,15 @@ export function readJsonDocument(path: string): {
 }
 
 export function writeJsonDocument(path: string, document: JsonObject): void {
-  mkdirSync(dirname(path), { recursive: true })
-  const tempPath = `${path}.tmp`
+  mkdirSync(dirname(path), { recursive: true, mode: 0o700 })
+  // Exclusive, unpredictable staging avoids following a planted .tmp link.
+  const tempPath = `${path}.${randomUUID()}.tmp`
   try {
-    writeFileSync(tempPath, `${JSON.stringify(document, null, 2)}\n`, 'utf8')
+    writeFileSync(tempPath, `${JSON.stringify(document, null, 2)}\n`, {
+      encoding: 'utf8',
+      flag: 'wx',
+      mode: 0o600
+    })
     renameSync(tempPath, path)
   } catch (error) {
     try {

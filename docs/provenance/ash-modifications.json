@@ -532,6 +532,21 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/keybindings/keybinding-file-parser.ts",
+      "sha256": "47c6c481d07248df130195fdadf55e09ffdc2c14024d0e36352942c63d888dfa",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/keybindings/keybinding-file.ts",
+      "sha256": "1bce09324db5dd4461c08719ef7305a1865aab3068d1d1ccdc5c00d87fbeb0da",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/keybindings/keybinding-service.ts",
+      "sha256": "f268d03d9e731865820385885550f66b55c5210135191b689ab4f96c66ca693c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/local-builds/local-build-candidate.test.ts",
       "sha256": "041354df0e1fb8795049c7d6d50afb3a2c3288328422562675abb877dca1f01d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -999,6 +1014,11 @@
     {
       "path": "src/main/startup/dev-education-suppression.ts",
       "sha256": "dbc13dab4f1ac3f071a4648638f0222769ceaa180c87b7a6e72089a1edb24290",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-process-account-services.ts",
+      "sha256": "53a59e50b43a4387a692bcd765a6dd98c8d0fd146aaf0a3c44711becc46e1c71",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1552,6 +1572,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/settings/shortcuts/ShortcutsPane.tsx",
+      "sha256": "42215519c72ccf30e2572be51778c20d3c901660ab6da04c21277069b9f30086",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/settings/updates/GeneralUpdateSettingsSection.tsx",
       "sha256": "31b4c174e4b7ed8061cf058980671aeabf1f0603653aa21c8d28317412984dd4",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1964,6 +1989,11 @@
     {
       "path": "src/shared/claude-shell-function.ts",
       "sha256": "4308f148486089f3f9794919c7eb6aca7a9a005e4b920ae8256968befc97aa4d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/global-settings-types.ts",
+      "sha256": "dd59238b7ea99d447d84380cda962f3cd1205352fba330cef1e3362b60af981e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

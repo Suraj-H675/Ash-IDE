@@ -14,7 +14,8 @@ import {
 } from './keybinding-file'
 
 export type KeybindingServiceOptions = {
-  homePath: string
+  userDataPath: string
+  homePath?: string
   platform?: NodeJS.Platform
   getLegacyOverrides?: () => KeybindingOverrides | undefined
   /** Seed once for pre-existing installs; markSeeded completes the persisted cohort. */
@@ -26,11 +27,15 @@ export type KeybindingServiceOptions = {
 
 export class KeybindingService {
   private readonly configPath: string
+  private readonly userDataPath: string
+  private readonly homePath: string | undefined
   private readonly platform: NodeJS.Platform
   private snapshot: KeybindingFileSnapshot | null = null
 
   constructor(options: KeybindingServiceOptions) {
-    this.configPath = getUserKeybindingsPath(options.homePath)
+    this.userDataPath = options.userDataPath
+    this.homePath = options.homePath
+    this.configPath = getUserKeybindingsPath(this.userDataPath, this.homePath)
     this.platform = options.platform ?? process.platform
     // A keybindings file supersedes shortcuts stored in legacy global settings.
     migrateLegacyKeybindings(this.configPath, this.platform, options.getLegacyOverrides?.())
@@ -51,10 +56,18 @@ export class KeybindingService {
   }
 
   getPath(): string {
+    this.ensureSafePath()
     return this.configPath
   }
 
+  private ensureSafePath(): void {
+    // A once-safe profile or keybindings file could have become a symlink
+    // since startup; validate before every cached read or mutation.
+    getUserKeybindingsPath(this.userDataPath, this.homePath)
+  }
+
   getSnapshot(): KeybindingFileSnapshot {
+    this.ensureSafePath()
     if (!this.snapshot) {
       this.snapshot = readKeybindingFile(this.configPath, this.platform)
     }
@@ -62,6 +75,7 @@ export class KeybindingService {
   }
 
   reload(): KeybindingFileSnapshot {
+    this.ensureSafePath()
     this.snapshot = readKeybindingFile(this.configPath, this.platform)
     return this.snapshot
   }
@@ -71,6 +85,7 @@ export class KeybindingService {
   }
 
   ensureFile(): KeybindingFileSnapshot {
+    this.ensureSafePath()
     ensureKeybindingFile(this.configPath)
     return this.reload()
   }
@@ -79,6 +94,7 @@ export class KeybindingService {
     actionId: KeybindingActionId,
     bindings: string[] | null
   ): KeybindingFileSnapshot {
+    this.ensureSafePath()
     this.snapshot = writeKeybindingOverride(this.configPath, this.platform, actionId, bindings)
     return this.snapshot
   }
