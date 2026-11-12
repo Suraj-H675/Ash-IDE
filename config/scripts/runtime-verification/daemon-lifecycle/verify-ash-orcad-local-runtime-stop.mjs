@@ -73,10 +73,19 @@ const orcaHome = join(home, '.orca')
 mkdirSync(orcaHome, { mode: 0o700 })
 const foreignSentinel = join(orcaHome, 'linear-token.enc')
 writeFileSync(foreignSentinel, 'synthetic foreign credential; never migrate')
+const foreignPolicyDir = join(orcaHome, 'host-settings', 'foreign')
+mkdirSync(foreignPolicyDir, { recursive: true, mode: 0o700 })
+const foreignPolicySentinel = join(foreignPolicyDir, 'terminals.json')
+writeFileSync(foreignPolicySentinel, 'synthetic foreign terminal policy; never migrate')
 mkdirSync(join(existingAshProfile, 'profiles'), { mode: 0o700 })
 function assertForeignProfileUntouched() {
-  assert.deepEqual(readdirSync(orcaHome), ['linear-token.enc'])
+  assert.deepEqual(readdirSync(orcaHome).sort(), ['host-settings', 'linear-token.enc'])
+  assert.deepEqual(readdirSync(join(orcaHome, 'host-settings')), ['foreign'])
   assert.equal(readFileSync(foreignSentinel, 'utf8'), 'synthetic foreign credential; never migrate')
+  assert.equal(
+    readFileSync(foreignPolicySentinel, 'utf8'),
+    'synthetic foreign terminal policy; never migrate'
+  )
 }
 // No provider secrets, account selectors, proxy credentials, or real user
 // configuration cross into the disposable host/PTY subprocesses.

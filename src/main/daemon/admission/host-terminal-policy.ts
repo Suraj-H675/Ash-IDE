@@ -15,6 +15,10 @@ import { isSafeOwnedDirectory } from '../../../shared/owned-private-directory'
 import { awaitDaemonValueWithinCallerDeadline } from '../launch/daemon-request-deadline'
 import { DEFAULT_MAX_HOST_TERMINALS, resolveMaxHostTerminals } from './host-terminal-ledger'
 import { SystemPtyLimit } from './system-pty-limit'
+import {
+  assertAshOwnedChildPath,
+  assertAshUserDataPathIsIndependent
+} from '../../orcad/orcad-app-paths'
 
 export function hostTerminalPolicyPath(home: string, machine: string | null): string | null {
   if (!machine) {
@@ -24,7 +28,12 @@ export function hostTerminalPolicyPath(home: string, machine: string | null): st
     .update(`${process.platform}:${machine}`)
     .digest('hex')
     .slice(0, 16)
-  return join(home, '.orca', 'host-settings', key, 'terminals.json')
+  const ashRoot = join(home, '.ash-ide')
+  const path = join(ashRoot, 'host-settings', key, 'terminals.json')
+  // Check against the supplied home, including in detached daemon processes.
+  assertAshUserDataPathIsIndependent(ashRoot, { homeDir: home })
+  assertAshOwnedChildPath(ashRoot, path)
+  return path
 }
 
 async function readSavedMaximum(path: string): Promise<number | null> {

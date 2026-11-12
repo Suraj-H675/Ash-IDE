@@ -1,5 +1,5 @@
 import type * as FileSystem from 'node:fs/promises'
-import { mkdtemp, readdir, rename, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, mkdir, readdir, readFile, rename, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -64,6 +64,30 @@ async function home(): Promise<string> {
 }
 
 describe('host terminal policy', () => {
+  it('persists machine terminal limits under Ash, not the existing Orca host policy', async () => {
+    const root = await home()
+    const foreign = join(root, '.orca', 'host-settings', 'foreign')
+    await mkdir(foreign, { recursive: true })
+    await writeFile(join(foreign, 'terminals.json'), 'unrelated-app-sentinel')
+    const path = hostTerminalPolicyPath(root, 'machine-a')
+    expect(path).toContain(join(root, '.ash-ide', 'host-settings'))
+    const policy = createPolicy(path, {}, system())
+    await policy.start()
+    await policy.save(4, () => true)
+    expect(await readFile(join(foreign, 'terminals.json'), 'utf8')).toBe('unrelated-app-sentinel')
+  })
+  it('refuses a symlink into the Orca-owned terminal-policy directory', async () => {
+    const root = await home()
+    const foreign = join(root, '.orca')
+    await mkdir(foreign)
+    await writeFile(join(foreign, 'foreign-policy-sentinel'), 'untouched')
+    await symlink(foreign, join(root, '.ash-ide'), 'dir')
+    expect(() => hostTerminalPolicyPath(root, 'machine-a')).toThrow(
+      'ash_data_root_conflicts_with_orca'
+    )
+    expect(await readFile(join(foreign, 'foreign-policy-sentinel'), 'utf8')).toBe('untouched')
+  })
+
   it('shares live raises and decreases across daemons and retains the policy after reconstruction', async () => {
     const root = await home()
     const path = hostTerminalPolicyPath(root, 'machine-a')

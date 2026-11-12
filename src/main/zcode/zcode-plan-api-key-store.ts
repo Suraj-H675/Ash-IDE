@@ -1,13 +1,13 @@
 import { getSecretStore } from '../../shared/secret-store'
 import { existsSync, readFileSync, rmSync } from 'node:fs'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
 import { hardenExistingSecureFile, writeSecureFile } from '../../shared/secure-file'
 import type { SecretAtRestProtection } from '../../shared/secret-at-rest-protection'
+import { ashProviderApiKeyPath } from '../credentials/ash-provider-api-key-path'
 
 const ZCODE_PLAN_API_KEY_FILE = 'zcode-plan-api-key.enc'
 export const API_KEY_ENVELOPE_PREFIX = 'orca-zcode-plan-api-key:v1:'
 let cachedZcodePlanApiKey: string | null = null
+let cachedZcodePlanApiKeyPath: string | null = null
 let warnedZcodePlanApiKeyStatusHardenFailure = false
 
 type ZcodePlanApiKeyEnvelope = {
@@ -16,7 +16,7 @@ type ZcodePlanApiKeyEnvelope = {
 }
 
 export function getZcodePlanApiKeyPath(): string {
-  return join(homedir(), '.orca', ZCODE_PLAN_API_KEY_FILE)
+  return ashProviderApiKeyPath(ZCODE_PLAN_API_KEY_FILE)
 }
 
 function encodeApiKeyEnvelope(kind: ZcodePlanApiKeyEnvelope['kind'], payload: Buffer): string {
@@ -116,6 +116,7 @@ function rollbackPlaintextEnvelope(
 }
 
 export function saveZcodePlanApiKey(key: string): void {
+  const keyPath = getZcodePlanApiKeyPath()
   const trimmed = key.trim()
   if (!trimmed) {
     throw new Error('GLM Coding Plan API key is required')
@@ -125,16 +126,16 @@ export function saveZcodePlanApiKey(key: string): void {
   }
   if (getSecretStore().isEncryptionAvailable()) {
     writeSecureFile(
-      getZcodePlanApiKeyPath(),
+      keyPath,
       encodeApiKeyEnvelope('encrypted', getSecretStore().encryptString(trimmed))
     )
     cachedZcodePlanApiKey = trimmed
+    cachedZcodePlanApiKeyPath = keyPath
     return
   }
   console.warn(
     '[zcode] safeStorage encryption unavailable — storing GLM Coding Plan API key in plaintext'
   )
-  const keyPath = getZcodePlanApiKeyPath()
   // Capture old bytes before secure publication can replace them yet report restriction failure; rollback must preserve the working key.
   let previousEnvelope: Buffer | null = null
   if (existsSync(keyPath)) {
@@ -152,13 +153,14 @@ export function saveZcodePlanApiKey(key: string): void {
     throw new Error('GLM Coding Plan API key could not be stored securely on this device')
   }
   cachedZcodePlanApiKey = trimmed
+  cachedZcodePlanApiKeyPath = keyPath
 }
 
 export function readZcodePlanApiKey(): string | null {
-  if (cachedZcodePlanApiKey !== null) {
+  const keyPath = getZcodePlanApiKeyPath()
+  if (cachedZcodePlanApiKey !== null && cachedZcodePlanApiKeyPath === keyPath) {
     return cachedZcodePlanApiKey
   }
-  const keyPath = getZcodePlanApiKeyPath()
   if (!existsSync(keyPath)) {
     return null
   }
@@ -172,6 +174,7 @@ export function readZcodePlanApiKey(): string | null {
     const raw = readFileSync(keyPath)
     const envelope = decodeApiKeyEnvelope(raw)
     cachedZcodePlanApiKey = readEnvelope(envelope)
+    cachedZcodePlanApiKeyPath = keyPath
     return cachedZcodePlanApiKey
   } catch (error) {
     console.error('[zcode] failed to decode/decrypt GLM Coding Plan API key', error)
@@ -181,5 +184,6 @@ export function readZcodePlanApiKey(): string | null {
 
 export function clearZcodePlanApiKey(): void {
   cachedZcodePlanApiKey = null
+  cachedZcodePlanApiKeyPath = null
   rmSync(getZcodePlanApiKeyPath(), { force: true })
 }

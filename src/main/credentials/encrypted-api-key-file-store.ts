@@ -1,7 +1,5 @@
 import { getSecretStore } from '../../shared/secret-store'
 import { existsSync, readFileSync, rmSync } from 'node:fs'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
 import {
   hardenExistingSecureFile,
   isUnreadableError,
@@ -9,6 +7,7 @@ import {
 } from '../../shared/secure-file'
 import type { SecretAtRestProtection } from '../../shared/secret-at-rest-protection'
 import { ApiKeyFileUnreadableError } from './api-key-file-unreadable-error'
+import { ashProviderApiKeyPath } from './ash-provider-api-key-path'
 
 type EncryptedApiKeyFileStore = {
   /** Envelope location and prefix used by orcad's plaintext migration. */
@@ -32,6 +31,7 @@ export function createEncryptedApiKeyFileStore({
   logScope: string
 }): EncryptedApiKeyFileStore {
   let cachedApiKey: string | null = null
+  let cachedApiKeyPath: string | null = null
   let warnedStatusHardenFailure = false
 
   type ApiKeyEnvelope = {
@@ -39,12 +39,8 @@ export function createEncryptedApiKeyFileStore({
     payload: Buffer
   }
 
-  function getOrcaDir(): string {
-    return join(homedir(), '.orca')
-  }
-
   function getApiKeyPath(): string {
-    return join(getOrcaDir(), fileName)
+    return ashProviderApiKeyPath(fileName)
   }
 
   function encodeApiKeyEnvelope(kind: ApiKeyEnvelope['kind'], payload: Buffer): string {
@@ -113,35 +109,36 @@ export function createEncryptedApiKeyFileStore({
   }
 
   function save(key: string): void {
+    const keyPath = getApiKeyPath()
     const trimmed = key.trim()
     if (!trimmed) {
       throw new Error(`${providerLabel} API key is required`)
     }
     if (getSecretStore().isEncryptionAvailable()) {
       writeSecureFile(
-        getApiKeyPath(),
+        keyPath,
         encodeApiKeyEnvelope('encrypted', getSecretStore().encryptString(trimmed)),
         { durable: true }
       )
       cachedApiKey = trimmed
+      cachedApiKeyPath = keyPath
       return
     }
     console.warn(
       `[${logScope}] safeStorage encryption unavailable — storing ${providerLabel} API key in plaintext`
     )
-    writeSecureFile(
-      getApiKeyPath(),
-      encodeApiKeyEnvelope('plaintext', Buffer.from(trimmed, 'utf8')),
-      { durable: true }
-    )
+    writeSecureFile(keyPath, encodeApiKeyEnvelope('plaintext', Buffer.from(trimmed, 'utf8')), {
+      durable: true
+    })
     cachedApiKey = trimmed
+    cachedApiKeyPath = keyPath
   }
 
   function read(): string | null {
-    if (cachedApiKey !== null) {
+    const keyPath = getApiKeyPath()
+    if (cachedApiKey !== null && cachedApiKeyPath === keyPath) {
       return cachedApiKey
     }
-    const keyPath = getApiKeyPath()
     if (!existsSync(keyPath)) {
       return null
     }
@@ -159,6 +156,7 @@ export function createEncryptedApiKeyFileStore({
       raw = readFileSync(keyPath)
       const envelope = decodeApiKeyEnvelope(raw)
       cachedApiKey = readEnvelope(envelope)
+      cachedApiKeyPath = keyPath
       return cachedApiKey
     } catch (error) {
       if (raw === null && isUnreadableError(error)) {
@@ -172,6 +170,7 @@ export function createEncryptedApiKeyFileStore({
 
   function clear(): void {
     cachedApiKey = null
+    cachedApiKeyPath = null
     rmSync(getApiKeyPath(), { force: true })
   }
 

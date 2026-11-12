@@ -367,6 +367,21 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/credentials/encrypted-api-key-file-store.ts",
+      "sha256": "0b409d303cad1558673daa46d659bdd91a5c962d24c1703912024fc6f37f0c83",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/daemon/admission/host-terminal-policy.ts",
+      "sha256": "8ea344ae4d7cebd838e0112828122e132ae653bc62bfc8d7c5c677f996aa0afd",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/daemon/admission/testing/host-terminal-policy.test.ts",
+      "sha256": "5819652786a9abb35b9ce4ac76adff065e457a43383b0e641bf7bc30866bbf43",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/daemon/executable-host/macos/macos-daemon-bundle.ts",
       "sha256": "9a2d239be1c35ddf864a91edf2c98ea09173673b8d2eea0ce9d7e12e9a4a789e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -809,6 +824,11 @@
     {
       "path": "src/main/runtime/rpc/methods/terminal-daemon.ts",
       "sha256": "18951e034ef696163e6df0f457c1768b3eee61ecf182eae308d181b25ca0aa9b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/usage-credentials.test.ts",
+      "sha256": "656f42bf24e268ee2a78fe72c8b16f2983103df67326cc7960fe5f2bf418e207",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1259,6 +1279,11 @@
     {
       "path": "src/main/window/desktop-integration/macos-press-and-hold-default.ts",
       "sha256": "f5a1c5491d6c53110ac66ecb0da45a73d2465a1b2b20094bf8114adb8f9ba06f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/zcode/zcode-plan-api-key-store.ts",
+      "sha256": "8eb2e92a2865dca5f19575bfdf8b11080fc285e0eda61f50bbd59ae65664238d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
