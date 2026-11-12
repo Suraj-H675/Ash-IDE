@@ -1,7 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   mkdtempSync,
   chmodSync,
+  existsSync,
+  linkSync,
   mkdirSync,
   readFileSync,
   rmSync,
@@ -38,6 +40,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.unstubAllEnvs()
   if (tmp) {
     rmSync(tmp, { force: true, recursive: true })
   }
@@ -49,6 +52,44 @@ const writeProvider = (config: Record<string, unknown>) =>
   writeFileSync(providerConfig, `${JSON.stringify(config, null, 2)}\n`, { mode: 0o600 })
 
 describe('private Ash ownership records with disposable provider config files', () => {
+  it('refuses an Orca-owned profile root before reading or creating ownership files', async () => {
+    vi.stubEnv('HOME', tmp)
+    const foreign = join(tmp, '.orca')
+    mkdirSync(foreign, { mode: 0o700 })
+    const sentinel = join(foreign, 'foreign-app-state')
+    writeFileSync(sentinel, 'do-not-inspect-or-change', { mode: 0o600 })
+    await expect(readAshHookOwnershipLedger(foreign)).rejects.toThrow(
+      'ash_data_root_conflicts_with_orca'
+    )
+    await expect(
+      saveAshHookOwnershipLedger(foreign, emptyAshHookOwnershipLedger(), null)
+    ).rejects.toThrow('ash_data_root_conflicts_with_orca')
+    expect(existsSync(join(foreign, 'provider-hook-ownership'))).toBe(false)
+    expect(readFileSync(sentinel, 'utf8')).toBe('do-not-inspect-or-change')
+  })
+
+  it('inspects a fresh Ash profile without creating a private ledger directory', async () => {
+    const dir = join(userData, 'provider-hook-ownership')
+    expect(existsSync(dir)).toBe(false)
+    const snapshot = await readAshHookOwnershipLedger(userData)
+    expect(snapshot).toEqual({ ledger: emptyAshHookOwnershipLedger(), revision: null })
+    expect(existsSync(dir)).toBe(false)
+    // Only an intentional write may initialize the private ledger directory.
+    await saveAshHookOwnershipLedger(userData, snapshot.ledger, snapshot.revision)
+    expect(existsSync(dir)).toBe(true)
+  })
+
+  it('does not open a hard-linked foreign ledger, even when the record itself is valid', async () => {
+    const directory = join(userData, 'provider-hook-ownership')
+    mkdirSync(directory, { mode: 0o700 })
+    const foreign = join(tmp, 'foreign-claims.json')
+    const original = `${JSON.stringify(emptyAshHookOwnershipLedger())}\n`
+    writeFileSync(foreign, original, { mode: 0o600 })
+    linkSync(foreign, join(directory, 'claims.v1.json'))
+    await expect(readAshHookOwnershipLedger(userData)).rejects.toThrow('linked')
+    expect(readFileSync(foreign, 'utf8')).toBe(original)
+    expect(statSync(foreign).nlink).toBe(2)
+  })
   it('persists prepared -> observed -> installed -> selectively removed, preserving foreign edits', async () => {
     const empty = await readAshHookOwnershipLedger(userData)
     expect(empty.ledger).toEqual(emptyAshHookOwnershipLedger())
@@ -108,7 +149,7 @@ describe('private Ash ownership records with disposable provider config files', 
   })
 
   it('refuses concurrent/stale writer locks and preserves the provider config', async () => {
-    await readAshHookOwnershipLedger(userData)
+    mkdirSync(join(userData, 'provider-hook-ownership'), { mode: 0o700 })
     const lock = join(userData, 'provider-hook-ownership', 'claims.lock')
     writeFileSync(lock, 'another writer', { flag: 'wx', mode: 0o600 })
     await expect(
@@ -124,14 +165,14 @@ describe('private Ash ownership records with disposable provider config files', 
     symlinkSync(target, join(userData, 'provider-hook-ownership'), 'dir')
     await expect(readAshHookOwnershipLedger(userData)).rejects.toThrow('not a real directory')
     rmSync(join(userData, 'provider-hook-ownership'))
-    await readAshHookOwnershipLedger(userData)
+    mkdirSync(join(userData, 'provider-hook-ownership'), { mode: 0o700 })
     symlinkSync(providerConfig, join(userData, 'provider-hook-ownership', 'claims.v1.json'))
     await expect(readAshHookOwnershipLedger(userData)).rejects.toThrow()
     expect(readProvider()).toEqual(source)
   })
 
   it('refuses malformed/corrupt on-disk records rather than resetting ownership', async () => {
-    await readAshHookOwnershipLedger(userData)
+    mkdirSync(join(userData, 'provider-hook-ownership'), { mode: 0o700 })
     const file = join(userData, 'provider-hook-ownership', 'claims.v1.json')
     writeFileSync(file, '{broken', { mode: 0o600 })
     await expect(readAshHookOwnershipLedger(userData)).rejects.toThrow('unreadable JSON')
@@ -140,7 +181,7 @@ describe('private Ash ownership records with disposable provider config files', 
   })
 
   it('refuses world-readable ledger file and keeps its contents unchanged', async () => {
-    await readAshHookOwnershipLedger(userData)
+    mkdirSync(join(userData, 'provider-hook-ownership'), { mode: 0o700 })
     const file = join(userData, 'provider-hook-ownership', 'claims.v1.json')
     const raw = `${JSON.stringify(emptyAshHookOwnershipLedger())}\n`
     writeFileSync(file, raw, { mode: 0o644 })

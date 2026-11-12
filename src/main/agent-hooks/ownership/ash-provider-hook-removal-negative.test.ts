@@ -72,6 +72,9 @@ async function fixture(trackClaim: boolean) {
 describe.skipIf(process.platform === 'win32')('SEC-04 invalid journaled removal recovery', () => {
   it('must not restore a held provider file when no installed Ash claim exists', async () => {
     const { claim, beforeRaw, afterRaw } = await fixture(false)
+    // A read-only ledger lookup no longer creates this directory. This test
+    // deliberately forges a receipt without a claim to exercise recovery.
+    mkdirSync(join(ashUserData, 'provider-hook-ownership'), { mode: 0o700 })
     const operationId = randomUUID()
     const held = heldPathForAshProviderSwap(configPath, operationId)
     renameSync(configPath, held)
