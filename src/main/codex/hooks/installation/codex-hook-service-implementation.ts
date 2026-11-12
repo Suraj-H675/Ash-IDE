@@ -18,6 +18,7 @@ import {
   removeCodexHooksExclusively
 } from './codex-hook-local-maintenance'
 import { installCodexHooksRemote } from './codex-hook-remote-install'
+import { blockedCodexAmbientHookMutation } from './codex-ambient-hook-policy'
 import { getManagedScript } from '../definitions/codex-hook-script'
 import {
   readCodexHookHomeStatus,
@@ -58,7 +59,9 @@ function launchPrepKey(
 
 export class CodexHookService {
   async refreshManagedScripts(): Promise<void> {
-    await refreshManagedScriptIfPresent(getManagedScriptPath(), getManagedScript())
+    if (!blockedCodexAmbientHookMutation()) {
+      await refreshManagedScriptIfPresent(getManagedScriptPath(), getManagedScript())
+    }
   }
 
   private readonly wslReconciliationGeneration = new Map<string, number>()
@@ -223,6 +226,10 @@ export class CodexHookService {
 
   /** App start and explicit enablement may convert older builds' real-home entries. */
   async reconcileHooks(): Promise<AgentHookInstallStatus> {
+    const blocked = blockedCodexAmbientHookMutation()
+    if (blocked) {
+      return blocked
+    }
     try {
       writeManagedScript(getManagedScriptPath(), getManagedScript())
     } catch (error) {
@@ -289,7 +296,8 @@ export class CodexHookService {
     remoteHome: string,
     options?: { codexHomeDir?: string; deferTrustUntilConfigToml?: boolean }
   ): Promise<AgentHookInstallStatus> {
-    return installCodexHooksRemote(sftp, remoteHome, options)
+    const blocked = blockedCodexAmbientHookMutation()
+    return blocked ? Promise.resolve(blocked) : installCodexHooksRemote(sftp, remoteHome, options)
   }
 
   refreshRuntimeUserHooks(
