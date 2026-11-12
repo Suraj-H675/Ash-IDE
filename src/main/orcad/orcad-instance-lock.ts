@@ -218,7 +218,7 @@ export function acquireOrcadInstanceLock(
       'orcad_instance_lock_foreign_identity',
       `The orcad data root ${dataRoot} is locked by identity ${existing.identity} (pid ` +
         `${existing.pid}); this process runs as ${identity}. Two identities sharing one data ` +
-        'root corrupts it. Give each its own ORCA_USER_DATA.'
+        'root corrupts it. Give each its own ASH_USER_DATA_PATH.'
     )
   }
   const holder = orcadLockPeer(existing, lockPath)
@@ -251,7 +251,7 @@ export function acquireOrcadInstanceLock(
       'orcad_instance_lock_held',
       `${describeLockHolder(existing)} (pid ${existing.pid}, started ` +
         `${existing.acquiredAt || 'unknown'}) already owns the data root ${dataRoot}. Stop it ` +
-        'before starting another, or use a different ORCA_USER_DATA.'
+        'before starting another, or use a different ASH_USER_DATA_PATH.'
     )
   }
   reclaimAndPublish(lockPath, dataRoot, existingContents, publish, recoveryOwner)
@@ -272,7 +272,7 @@ function possiblyReusedPidError(
       `${existing.acquiredAt}, does not record which boot it came from, so Orca cannot tell ` +
       `whether that process is still ${holder} or an unrelated program that reused the PID. ` +
       `If you are sure ${holder} is not running for this data root, delete ${lockPath} and ` +
-      'try again, or use a different ORCA_USER_DATA.'
+      'try again, or use a different ASH_USER_DATA_PATH.'
   )
 }
 

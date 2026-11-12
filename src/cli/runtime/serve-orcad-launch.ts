@@ -81,6 +81,7 @@ export function serveWithOrcad(
     env: {
       ...baseEnv,
       // The desktop's profile: its instance lock makes the two refuse each other.
+      ASH_USER_DATA_PATH: userDataPath,
       ORCA_USER_DATA: userDataPath,
       ORCA_VERSION: selection.version,
       // Always set: a value inherited from an Orca terminal would name another install's copy.

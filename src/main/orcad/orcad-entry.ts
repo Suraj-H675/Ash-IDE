@@ -4,7 +4,7 @@ import { getAppEnvironment } from '../../shared/app-environment'
 import { resolveUserDataPath } from './orcad-app-paths'
 import { prepareOrcadCliLauncher } from './orcad-cli-launcher'
 import { installOrcadHostAdapters, runOrcadQuitHandlers } from './orcad-host-adapters'
-import { prepareOrcadSecretStoreAndMigrate } from './orcad-secret-store-startup'
+import { prepareAshHeadlessSecretStore } from './orcad-secret-store-startup'
 import {
   assertOrcadLocalOnlyOptions,
   describeOrcadBindExposure,
@@ -136,7 +136,7 @@ async function startOrcadRuntime(
   const { applyOrcadSessionScannerIdleTimeout } = await import('./orcad-session-scanner-idle')
   await applyOrcadSessionScannerIdleTimeout()
   // Initialize sealing before Store load unseals protected settings.
-  await timed('secret-store', () => prepareOrcadSecretStoreAndMigrate(runtimeUserDataPath))
+  await timed('secret-store', () => prepareAshHeadlessSecretStore(runtimeUserDataPath))
   const { store: profileStore, authority: profileStateAuthority } = await timed('profile', () =>
     createOrcadProfileStateStartup(runtimeUserDataPath)
   )

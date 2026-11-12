@@ -42549,6 +42549,11 @@
       "path": "src/main/ipc/linear/team-handlers.ts",
       "sourceSha256": "35e98c87b1f7b1e74236a30c9b82dc332dda28747c94786a9711d4767d8e72f8",
       "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
+    },
+    {
+      "path": "src/main/orcad/orcad-plaintext-credential-migration.ts",
+      "sourceSha256": "658931ae9803d64ac110aa09e4d4fb6d0f2c27cb37483210bac5ddd45442a80d",
+      "reason": "Ash M8 secret isolation: retire unreachable legacy Orca plaintext credential re-sealing/migration implementation. Ash runtime must not enumerate or rewrite ~/.orca credentials on startup. Retain source-compatible read-only legacy path helpers for an explicitly user-approved future import."
     }
   ]
 }

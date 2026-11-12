@@ -46,6 +46,10 @@ export type OrcadSecretStorePrepareOptions = {
   legacyKeyring?: OrcadLegacyKeyringReader | null
   machineIdentity?: () => string | null
   isTemporaryKeyDir?: (keyDir: string) => boolean
+  /** Existing Ash profiles without an Ash-owned key cannot safely mint a new key. */
+  allowNewKey?: boolean
+  /** Ash must never import from, rewrite, or mint a replacement for an old OS-keyring record. */
+  allowLegacyKeyringMigration?: boolean
 }
 
 type Context = {
@@ -185,6 +189,15 @@ export async function resolveState(
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const existing = readStoredRecord(statePath)
     if (existing.kind === 'record') {
+      if (
+        existing.stored.backend === 'os-keyring' &&
+        options.allowLegacyKeyringMigration === false
+      ) {
+        return context.unavailable(
+          'an OS-keyring record requires explicit, read-only user-approved migration; ' +
+            'Ash will not read provider keychain accounts or replace the old key automatically'
+        )
+      }
       const loaded = await loadStoredRecord(existing.stored, context)
       if (loaded !== 'reload') {
         return loaded
@@ -193,6 +206,16 @@ export async function resolveState(
     }
     if (existing.kind === 'unreadable') {
       return context.unavailable(existing.reason)
+    }
+    if (options.allowNewKey === false) {
+      return {
+        kind: 'unavailable',
+        message:
+          'ash_headless_secret_transition_required — existing Ash profile data may contain ' +
+          'ciphertext protected by a historical key. No replacement key was created and saved ' +
+          'ciphertext is retained. Protected settings remain unavailable until an explicitly ' +
+          'approved, read-only legacy-key import is provided.'
+      }
     }
     const record = newFileRecord(machineId)
     // A key that never reaches disk would lose every sealed credential on restart.

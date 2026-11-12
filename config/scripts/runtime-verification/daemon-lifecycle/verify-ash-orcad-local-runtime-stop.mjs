@@ -3,9 +3,17 @@
 // PTY across a graceful stop/restart. No remote pairing or real user profile.
 import assert from 'node:assert/strict'
 import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs'
 import { createRequire } from 'node:module'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { packagedNodeRuntimePath } from '../../orcad-distribution/prebuilds/build-orcad-node.mjs'
 import { currentTarget } from '../../orcad-distribution/prebuilds/server-build-target.mjs'
@@ -39,6 +47,12 @@ const profile = join(fixture, 'profile')
 const project = join(fixture, 'project')
 const home = join(fixture, 'home')
 const runtimeDir = join(fixture, 'run')
+const defaultAshProfile = join(home, '.config', 'ash-ide')
+// This one is physically outside /tmp so it tests a persisted profile, not
+// the disposable-key shortcut. Its short path also fits Unix socket limits.
+// The unique fixture beside (not inside) the worktree is deleted
+// only after the exact test-owned server and daemon have exited successfully.
+const existingAshProfile = mkdtempSync(join(dirname(root), '.ak-'))
 for (const folder of [
   profile,
   project,
@@ -52,6 +66,17 @@ for (const folder of [
   join(home, '.claude')
 ]) {
   mkdirSync(folder, { recursive: true, mode: 0o700 })
+}
+// A foreign Orca home is present on purpose. Ash must not create a key beside
+// it, enumerate a credential to re-seal, or mutate any other Orca-owned state.
+const orcaHome = join(home, '.orca')
+mkdirSync(orcaHome, { mode: 0o700 })
+const foreignSentinel = join(orcaHome, 'linear-token.enc')
+writeFileSync(foreignSentinel, 'synthetic foreign credential; never migrate')
+mkdirSync(join(existingAshProfile, 'profiles'), { mode: 0o700 })
+function assertForeignProfileUntouched() {
+  assert.deepEqual(readdirSync(orcaHome), ['linear-token.enc'])
+  assert.equal(readFileSync(foreignSentinel, 'utf8'), 'synthetic foreign credential; never migrate')
 }
 // No provider secrets, account selectors, proxy credentials, or real user
 // configuration cross into the disposable host/PTY subprocesses.
@@ -93,10 +118,10 @@ function processStartTicks(pid) {
   }
 }
 
-function runCli(args, cwd = project) {
+function runCli(args, cwd = project, environment = childEnv) {
   const launched = spawnSync(runtimeNode, [cliEntry, ...args, '--json'], {
     cwd,
-    env: childEnv,
+    env: environment,
     encoding: 'utf8',
     timeout: 15_000
   })
@@ -110,10 +135,10 @@ function runCli(args, cwd = project) {
   return reply.result
 }
 
-function launchServer(label) {
+function launchServer(label, environment = childEnv) {
   const child = spawn(runtimeNode, [serverEntry, '--port', '0', '--bind', '127.0.0.1', '--json'], {
     cwd: project,
-    env: childEnv,
+    env: environment,
     stdio: ['ignore', 'pipe', 'pipe']
   })
   servers.push(child)
@@ -228,8 +253,8 @@ async function stopServer(child) {
   }
 }
 
-function stopVerifiedFixtureDaemon() {
-  const recordFile = join(profile, 'daemon', 'daemon-v55.pid')
+function stopVerifiedFixtureDaemon(userDataPath = profile) {
+  const recordFile = join(userDataPath, 'daemon', 'daemon-v55.pid')
   if (!existsSync(recordFile)) {
     return
   }
@@ -286,6 +311,7 @@ async function main() {
 
     const second = launchServer('second')
     const secondReady = await second.ready
+    assertForeignProfileUntouched()
     assert.ok(secondReady.runtimeId)
     assert.notEqual(secondReady.runtimeId, firstReady.runtimeId, 'a fresh runtime ID is required')
     assert.equal(
@@ -306,17 +332,66 @@ async function main() {
     daemonStopped = true
     await waitForProcessExit(firstReady.health.terminalDaemon.pid)
     await waitForProcessExit(terminalPid)
+    assertForeignProfileUntouched()
     assert.equal(runCli(['runtime', 'stop', '--yes']).status, 'stopping')
     await waitExit(second.child)
     assert.equal(second.child.exitCode, 0)
     assert.equal(processStartTicks(first.child.pid), null)
     assert.equal(processStartTicks(second.child.pid), null)
+
+    // A raw standalone Node launch with an inherited Orca profile variable
+    // must still select Ash's own default userData root, not ~/.orca.
+    const defaultServerEnv = { ...childEnv, ORCA_USER_DATA: orcaHome }
+    delete defaultServerEnv.ASH_USER_DATA_PATH
+    const defaultCliEnv = { ...childEnv, ASH_USER_DATA_PATH: defaultAshProfile }
+    const third = launchServer('default-ash', defaultServerEnv)
+    const thirdReady = await third.ready
+    assert.ok(thirdReady.runtimeId)
+    assert.ok(existsSync(join(defaultAshProfile, 'ash-runtime.json')))
+    assert.equal(runCli(['status'], project, defaultCliEnv).runtime.runtimeId, thirdReady.runtimeId)
+    assertForeignProfileUntouched()
+    const defaultDaemonStop = runCli(['terminal-daemon', 'stop', '--yes'], project, defaultCliEnv)
+    assert.equal(defaultDaemonStop.status, 'stopped')
+    await waitForProcessExit(thirdReady.health.terminalDaemon.pid)
+    assert.equal(runCli(['runtime', 'stop', '--yes'], project, defaultCliEnv).status, 'stopping')
+    await waitExit(third.child)
+    assert.equal(third.child.exitCode, 0)
+    assertForeignProfileUntouched()
+
+    // An existing persistent Ash profile without its own key must remain
+    // usable for local sessions, but must not silently mint a replacement key.
+    const existingEnv = {
+      ...childEnv,
+      ASH_USER_DATA_PATH: existingAshProfile,
+      ORCA_USER_DATA: orcaHome
+    }
+    const fourth = launchServer('old-ash-no-key', existingEnv)
+    const fourthReady = await fourth.ready
+    assert.ok(fourthReady.runtimeId)
+    assert.equal(runCli(['status'], project, existingEnv).runtime.runtimeId, fourthReady.runtimeId)
+    assert.equal(
+      existsSync(join(existingAshProfile, 'ash-headless-secret-keys')),
+      false,
+      'an older Ash profile must not acquire a replacement encryption key'
+    )
+    assertForeignProfileUntouched()
+    assert.equal(
+      runCli(['terminal-daemon', 'stop', '--yes'], project, existingEnv).status,
+      'stopped'
+    )
+    await waitForProcessExit(fourthReady.health.terminalDaemon.pid)
+    assert.equal(runCli(['runtime', 'stop', '--yes'], project, existingEnv).status, 'stopping')
+    await waitExit(fourth.child)
+    assert.equal(fourth.child.exitCode, 0)
+    assertForeignProfileUntouched()
     passed = true
     console.log(
       JSON.stringify({
         status: 'PASS',
         firstRuntimeId: firstReady.runtimeId,
         secondRuntimeId: secondReady.runtimeId,
+        defaultRuntimeId: thirdReady.runtimeId,
+        existingProfileRuntimeId: fourthReady.runtimeId,
         terminalHandle: handle,
         terminalPid,
         fixture
@@ -336,12 +411,15 @@ async function main() {
       await stopServer(child)
     }
     stopVerifiedFixtureDaemon()
+    stopVerifiedFixtureDaemon(defaultAshProfile)
+    stopVerifiedFixtureDaemon(existingAshProfile)
     if (passed) {
       // Keep only runtime readiness/diagnostic evidence. The disposable profile
       // contains a local RPC token and must not persist after successful QA.
       for (const folder of [profile, project, home, runtimeDir]) {
         rmSync(folder, { recursive: true, force: true })
       }
+      rmSync(existingAshProfile, { recursive: true, force: true })
     }
   }
 }

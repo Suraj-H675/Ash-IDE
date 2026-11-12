@@ -20,13 +20,15 @@ describe('Ash desktop excludes Jira/Linear application IPC handlers', () => {
     expect(source).toContain('registerSessionHandlers(store, runtime)')
   })
 
-  it('retains credential path migration without reviving the connector UI', () => {
-    const migration = readFileSync(
-      resolve(process.cwd(), 'src/main/orcad/orcad-plaintext-credential-migration.ts'),
+  it('keeps legacy credential path metadata without any automatic Orca migration', () => {
+    const startup = readFileSync(
+      resolve(process.cwd(), 'src/main/orcad/orcad-secret-store-startup.ts'),
       'utf8'
     )
-    expect(migration).toContain("from '../linear/linear-credential-paths'")
-    expect(migration).toContain("from '../jira/site-credential-store'")
+    expect(startup).not.toContain('migratePlaintextCredentials')
+    expect(
+      existsSync(resolve(process.cwd(), 'src/main/orcad/orcad-plaintext-credential-migration.ts'))
+    ).toBe(false)
     expect(existsSync(resolve(process.cwd(), 'src/main/linear/linear-credential-paths.ts'))).toBe(
       true
     )

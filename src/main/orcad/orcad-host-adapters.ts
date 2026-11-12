@@ -65,12 +65,13 @@ let orcadSecretStore: OrcadSecretStore | null = null
 
 export async function prepareOrcadSecretStore(
   keyDir: string,
-  userDataPath: string
+  userDataPath: string,
+  options: { allowNewKey?: boolean; allowLegacyKeyringMigration?: boolean } = {}
 ): Promise<boolean> {
   if (!orcadSecretStore) {
     throw new Error('orcad_secret_store_not_installed — call installOrcadHostAdapters() first')
   }
-  return orcadSecretStore.prepare({ keyDir, userDataPath })
+  return orcadSecretStore.prepare({ keyDir, userDataPath, ...options })
 }
 
 /** Stamp the bundle’s own release so inherited desktop versions cannot misidentify this server. */

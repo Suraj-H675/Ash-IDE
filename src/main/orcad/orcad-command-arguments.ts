@@ -27,7 +27,7 @@ Options:
                            an earlier boot, nothing answering) and, with --yes, clear it.
 
 Environment:
-  ORCA_USER_DATA           Data directory for this instance's profile and state.
+  ASH_USER_DATA_PATH      Independent Ash-owned profile and state directory.
 `
 
 type OrcadCommandArguments = OrcadOptions & { help?: boolean }
