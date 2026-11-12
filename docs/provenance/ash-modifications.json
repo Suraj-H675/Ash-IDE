@@ -297,6 +297,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/bitbucket/credential-store.ts",
+      "sha256": "fe312ae9495096e394daa079bc60354a68fd9b27c05b8787a64f09ba894f1fea",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/browser/cdp/screencast/browser-screencast-live-frame-allocation.test.ts",
       "sha256": "9af3f383ea707086e925570e60d567fed735ecfb8e791e107abbfe24cd3470f1",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -559,6 +564,11 @@
     {
       "path": "src/main/menu/register-app-menu.ts",
       "sha256": "e474ef007e98f6962ef6e91a9960d8b06d88508bde5b8b8a30fff9faed3a6520",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/minimax/minimax-cookie-store.ts",
+      "sha256": "2153c2bd6fd36b978efcbc32245bbabc22d56825ad7bd210871204ee7ab89ecc",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

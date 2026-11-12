@@ -1,6 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, unlinkSync } from 'node:fs'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { dirname } from 'node:path'
 import {
   CredentialDecryptionError,
   credentialFileHasContent,
@@ -11,6 +10,10 @@ import {
 import type { BitbucketAuthMode } from '../../shared/bitbucket-credentials'
 import { readCredentialFileProtection } from '../credentials/credential-file-protection'
 import type { SecretAtRestProtection } from '../../shared/secret-at-rest-protection'
+import {
+  ashProviderApiKeyPath,
+  ashProviderMetadataPath
+} from '../credentials/ash-provider-api-key-path'
 
 // Plaintext display metadata lets status reads avoid keychain prompts.
 export type BitbucketStoredMetadata = {
@@ -44,23 +47,35 @@ let cachedMetadata: BitbucketStoredMetadata | null = null
 let metadataLoadedFromDisk = false
 let cachedSecret: BitbucketStoredSecret | null = null
 let credentialError: string | null = null
+let cachedPaths: { metadata: string; secret: string } | null = null
 
-function getOrcaDir(): string {
-  return join(homedir(), '.orca')
+function resetCachedCredential(): void {
+  cachedMetadata = null
+  metadataLoadedFromDisk = false
+  cachedSecret = null
+  credentialError = null
 }
 
-function getMetadataPath(): string {
-  return join(getOrcaDir(), 'bitbucket-credential.json')
+/** Resolve both files before any read/write/delete so one unsafe link cannot
+ * allow a partial update of a separate valid record. */
+function credentialPaths(): { metadata: string; secret: string } {
+  const metadata = ashProviderMetadataPath('bitbucket-credential.json')
+  const secret = ashProviderApiKeyPath('bitbucket-credential.enc')
+  if (cachedPaths?.metadata !== metadata || cachedPaths.secret !== secret) {
+    resetCachedCredential()
+    cachedPaths = { metadata, secret }
+  }
+  return { metadata, secret }
 }
 
 export function getSecretPath(): string {
-  return join(getOrcaDir(), 'bitbucket-credential.enc')
+  return credentialPaths().secret
 }
 
-function ensureOrcaDir(): void {
-  const dir = getOrcaDir()
+function ensureAshCredentialDir(path: string): void {
+  const dir = dirname(path)
   if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true })
+    mkdirSync(dir, { recursive: true, mode: 0o700 })
   }
 }
 
@@ -69,7 +84,7 @@ function asOptionalString(value: unknown): string | null {
 }
 
 function readMetadataFromDisk(): BitbucketStoredMetadata | null {
-  const path = getMetadataPath()
+  const path = credentialPaths().metadata
   if (!existsSync(path)) {
     return null
   }
@@ -92,6 +107,7 @@ function readMetadataFromDisk(): BitbucketStoredMetadata | null {
 }
 
 export function getStoredBitbucketMetadata(): BitbucketStoredMetadata | null {
+  credentialPaths()
   if (!metadataLoadedFromDisk) {
     cachedMetadata = readMetadataFromDisk()
     metadataLoadedFromDisk = true
@@ -105,6 +121,7 @@ export function hasStoredBitbucketCredential(): boolean {
 }
 
 export function getStoredBitbucketCredentialError(): string | null {
+  credentialPaths()
   return credentialError
 }
 
@@ -112,6 +129,7 @@ export function getStoredBitbucketCredentialError(): string | null {
 export function loadStoredBitbucketSecret(
   options: { force?: boolean } = {}
 ): BitbucketStoredSecret | null {
+  credentialPaths()
   if (cachedSecret !== null) {
     return cachedSecret
   }
@@ -153,7 +171,8 @@ export function getBitbucketCredentialProtection(): SecretAtRestProtection | nul
 }
 
 export function saveBitbucketCredential(input: BitbucketCredentialSaveInput): void {
-  ensureOrcaDir()
+  const paths = credentialPaths()
+  ensureAshCredentialDir(paths.secret)
   const secret: BitbucketStoredSecret = {
     accessToken: input.accessToken,
     apiToken: input.apiToken,
@@ -161,7 +180,7 @@ export function saveBitbucketCredential(input: BitbucketCredentialSaveInput): vo
     email: input.email,
     baseUrl: input.baseUrl
   }
-  writeEncryptedCredential('Bitbucket', getSecretPath(), JSON.stringify(secret))
+  writeEncryptedCredential('Bitbucket', paths.secret, JSON.stringify(secret))
   const metadata: BitbucketStoredMetadata = {
     version: 1,
     authMode: input.authMode,
@@ -170,10 +189,7 @@ export function saveBitbucketCredential(input: BitbucketCredentialSaveInput): vo
     account: input.account,
     updatedAt: new Date().toISOString()
   }
-  writeCredentialFileAtomic(
-    getMetadataPath(),
-    Buffer.from(JSON.stringify(metadata, null, 2), 'utf-8')
-  )
+  writeCredentialFileAtomic(paths.metadata, Buffer.from(JSON.stringify(metadata, null, 2), 'utf-8'))
   cachedMetadata = metadata
   metadataLoadedFromDisk = true
   cachedSecret = secret
@@ -182,8 +198,9 @@ export function saveBitbucketCredential(input: BitbucketCredentialSaveInput): vo
 
 // Surface failed deletes so credentials cannot silently reappear on relaunch.
 export function clearStoredBitbucketCredential(): void {
+  const paths = credentialPaths()
   try {
-    for (const path of [getSecretPath(), getMetadataPath()]) {
+    for (const path of [paths.secret, paths.metadata]) {
       try {
         unlinkSync(path)
       } catch (error) {
@@ -203,8 +220,6 @@ export function clearStoredBitbucketCredential(): void {
 
 /** @internal - tests need a clean in-memory cache between cases. */
 export function _resetBitbucketCredentialCache(): void {
-  cachedMetadata = null
-  metadataLoadedFromDisk = false
-  cachedSecret = null
-  credentialError = null
+  resetCachedCredential()
+  cachedPaths = null
 }

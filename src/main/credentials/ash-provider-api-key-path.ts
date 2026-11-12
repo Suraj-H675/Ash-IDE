@@ -6,9 +6,13 @@ import {
   assertAshUserDataPathIsIndependent
 } from '../orcad/orcad-app-paths'
 
-/** Retained provider keys belong to the active Ash profile, never ~/.orca. */
-export function ashProviderApiKeyPath(fileName: string): string {
-  if (!/^[a-z0-9][a-z0-9-]*\.enc$/.test(fileName)) {
+/** Retained provider credentials belong to the active Ash profile, never ~/.orca. */
+function ashProviderCredentialPath(fileName: string, suffix: 'enc' | 'json'): string {
+  const valid =
+    suffix === 'enc'
+      ? /^[a-z0-9][a-z0-9-]*\.enc$/.test(fileName)
+      : /^[a-z0-9][a-z0-9-]*\.json$/.test(fileName)
+  if (!valid) {
     throw new Error('ash_provider_api_key_filename_invalid')
   }
   const environment = getAppEnvironment()
@@ -28,4 +32,14 @@ export function ashProviderApiKeyPath(fileName: string): string {
     }
   }
   return target
+}
+
+/** Guard the key envelope, including status checks and clear operations. */
+export function ashProviderApiKeyPath(fileName: string): string {
+  return ashProviderCredentialPath(fileName, 'enc')
+}
+
+/** Bitbucket's non-secret metadata must have the same ownership boundary. */
+export function ashProviderMetadataPath(fileName: string): string {
+  return ashProviderCredentialPath(fileName, 'json')
 }

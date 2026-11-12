@@ -1,13 +1,13 @@
 import { getSecretStore } from '../../shared/secret-store'
 import { existsSync, readFileSync, rmSync } from 'node:fs'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
 import { hardenExistingSecureFile, writeSecureFile } from '../../shared/secure-file'
 import type { SecretAtRestProtection } from '../../shared/secret-at-rest-protection'
+import { ashProviderApiKeyPath } from '../credentials/ash-provider-api-key-path'
 
 const MINIMAX_COOKIE_FILE = 'minimax-session-cookie.enc'
 export const COOKIE_ENVELOPE_PREFIX = 'orca-minimax-cookie:v1:'
 let cachedMiniMaxCookie: string | null = null
+let cachedMiniMaxCookiePath: string | null = null
 let warnedMiniMaxCookieStatusHardenFailure = false
 
 type MiniMaxCookieEnvelope = {
@@ -15,12 +15,8 @@ type MiniMaxCookieEnvelope = {
   payload: Buffer
 }
 
-function getOrcaDir(): string {
-  return join(homedir(), '.orca')
-}
-
 export function getMiniMaxCookiePath(): string {
-  return join(getOrcaDir(), MINIMAX_COOKIE_FILE)
+  return ashProviderApiKeyPath(MINIMAX_COOKIE_FILE)
 }
 
 function encodeCookieEnvelope(kind: MiniMaxCookieEnvelope['kind'], payload: Buffer): string {
@@ -130,31 +126,31 @@ export function hasMiniMaxSessionCookie(): boolean {
 }
 
 export function saveMiniMaxSessionCookie(cookie: string): void {
+  const cookiePath = getMiniMaxCookiePath()
   const trimmed = cookie.trim()
   if (!trimmed) {
     throw new Error('MiniMax session cookie is required')
   }
   if (getSecretStore().isEncryptionAvailable()) {
     writeSecureFile(
-      getMiniMaxCookiePath(),
+      cookiePath,
       encodeCookieEnvelope('encrypted', getSecretStore().encryptString(trimmed))
     )
     cachedMiniMaxCookie = trimmed
+    cachedMiniMaxCookiePath = cookiePath
     return
   }
   console.warn('[minimax] safeStorage encryption unavailable — storing MiniMax cookie in plaintext')
-  writeSecureFile(
-    getMiniMaxCookiePath(),
-    encodeCookieEnvelope('plaintext', Buffer.from(trimmed, 'utf8'))
-  )
+  writeSecureFile(cookiePath, encodeCookieEnvelope('plaintext', Buffer.from(trimmed, 'utf8')))
   cachedMiniMaxCookie = trimmed
+  cachedMiniMaxCookiePath = cookiePath
 }
 
 export function readMiniMaxSessionCookie(): string | null {
-  if (cachedMiniMaxCookie !== null) {
+  const keyPath = getMiniMaxCookiePath()
+  if (cachedMiniMaxCookie !== null && cachedMiniMaxCookiePath === keyPath) {
     return cachedMiniMaxCookie
   }
-  const keyPath = getMiniMaxCookiePath()
   if (!existsSync(keyPath)) {
     return null
   }
@@ -168,6 +164,7 @@ export function readMiniMaxSessionCookie(): string | null {
     const raw = readFileSync(keyPath)
     const envelope = decodeCookieEnvelope(raw)
     cachedMiniMaxCookie = envelope ? readEnvelope(envelope) : readLegacyCookie(raw)
+    cachedMiniMaxCookiePath = keyPath
     return cachedMiniMaxCookie
   } catch (error) {
     console.error('[minimax] failed to decode/decrypt session cookie', error)
@@ -176,6 +173,8 @@ export function readMiniMaxSessionCookie(): string | null {
 }
 
 export function clearMiniMaxSessionCookie(): void {
+  const path = getMiniMaxCookiePath()
   cachedMiniMaxCookie = null
-  rmSync(getMiniMaxCookiePath(), { force: true })
+  cachedMiniMaxCookiePath = null
+  rmSync(path, { force: true })
 }

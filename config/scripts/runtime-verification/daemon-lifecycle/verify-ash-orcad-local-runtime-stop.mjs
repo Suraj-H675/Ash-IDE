@@ -73,15 +73,32 @@ const orcaHome = join(home, '.orca')
 mkdirSync(orcaHome, { mode: 0o700 })
 const foreignSentinel = join(orcaHome, 'linear-token.enc')
 writeFileSync(foreignSentinel, 'synthetic foreign credential; never migrate')
+const foreignRetainedCredentialFiles = [
+  'bitbucket-credential.enc',
+  'bitbucket-credential.json',
+  'minimax-session-cookie.enc'
+]
+for (const name of foreignRetainedCredentialFiles) {
+  writeFileSync(join(orcaHome, name), 'synthetic foreign credential; never import')
+}
 const foreignPolicyDir = join(orcaHome, 'host-settings', 'foreign')
 mkdirSync(foreignPolicyDir, { recursive: true, mode: 0o700 })
 const foreignPolicySentinel = join(foreignPolicyDir, 'terminals.json')
 writeFileSync(foreignPolicySentinel, 'synthetic foreign terminal policy; never migrate')
 mkdirSync(join(existingAshProfile, 'profiles'), { mode: 0o700 })
 function assertForeignProfileUntouched() {
-  assert.deepEqual(readdirSync(orcaHome).sort(), ['host-settings', 'linear-token.enc'])
+  assert.deepEqual(
+    readdirSync(orcaHome).sort(),
+    [...foreignRetainedCredentialFiles, 'host-settings', 'linear-token.enc'].sort()
+  )
   assert.deepEqual(readdirSync(join(orcaHome, 'host-settings')), ['foreign'])
   assert.equal(readFileSync(foreignSentinel, 'utf8'), 'synthetic foreign credential; never migrate')
+  for (const name of foreignRetainedCredentialFiles) {
+    assert.equal(
+      readFileSync(join(orcaHome, name), 'utf8'),
+      'synthetic foreign credential; never import'
+    )
+  }
   assert.equal(
     readFileSync(foreignPolicySentinel, 'utf8'),
     'synthetic foreign terminal policy; never migrate'
