@@ -1,3 +1,4 @@
+import { requireLegacyJiraApi } from './legacy-task-tracker-preload'
 import {
   parseJiraFavouriteFilterList,
   type JiraFavouriteFilterList
@@ -17,7 +18,7 @@ export async function jiraListFavouriteFiltersForTarget(
   siteId: string
 ): Promise<JiraFavouriteFiltersResult> {
   const args = JiraFavouriteFilterParams.parse({ siteId })
-  if (target.kind === 'local' && !window.api.jira.listFavouriteFilters) {
+  if (target.kind === 'local' && !requireLegacyJiraApi().listFavouriteFilters) {
     return UNSUPPORTED_FAVOURITE_FILTERS
   }
   let value: unknown
@@ -27,7 +28,7 @@ export async function jiraListFavouriteFiltersForTarget(
         ? await callRuntimeRpc<unknown>(target, 'jira.listFavouriteFilters', args, {
             timeoutMs: 30_000
           })
-        : await window.api.jira.listFavouriteFilters(args)
+        : await requireLegacyJiraApi().listFavouriteFilters(args)
   } catch (error) {
     if (
       error &&

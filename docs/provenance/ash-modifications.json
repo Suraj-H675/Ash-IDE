@@ -1218,12 +1218,12 @@
     },
     {
       "path": "src/preload/api-types.ts",
-      "sha256": "e3ae6861eb6989f322714a9b89cb4bad9d50a37352572f1b04e0ea09079858d7",
+      "sha256": "daf7d2a6e208ff1131321002d77335e1e36c58dd97ec91fdf102038e8486b0b3",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/preload/index.ts",
-      "sha256": "67086357a1fc2059b9643cc23bd858a08afcf4d7ab03329e368adef4b3dc35c4",
+      "sha256": "f692561bd196e7dcfb8a15b40ed873e1da0adb75f18b15d44b27acae125843bc",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1692,13 +1692,58 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/runtime/local-jira-search-cancellation.ts",
+      "sha256": "93ce0ed380b51cefaa824c87b919f6dc184c26914156f2dda88a5a254d7d8df5",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/runtime/runtime-jira-client.ts",
+      "sha256": "ae5e00069d98bfc5ebf78f35e9710465f1653c708be0eb7c0cfaec23dcfa9d04",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/runtime/runtime-jira-detail-client.ts",
+      "sha256": "3ea588cb205631a732f63b9467f7285a08680629f2e2f3310cc8e11a9029b33c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/runtime/runtime-jira-favourite-filters-client.ts",
+      "sha256": "f3f3f345dfa4d0276b942077977f28acbf73d166b8ce48464c5b9cf19e189098",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/runtime/runtime-jira-project-client.ts",
-      "sha256": "38ea040e12cb4b38b426771dde0dc89212ab9662a01cb5a74cfca594a193d527",
+      "sha256": "8c096f053f6f5899e8d469af03090995599f748f270e762908739d66ffb8c28b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/runtime/runtime-jira-summary-client.ts",
+      "sha256": "b9610d2352232869257a7c0a70f9f308077bd6d2cb650bb96d0aceeed722dc57",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/runtime/runtime-jira-summary-generation-client.ts",
+      "sha256": "45d100ee77eed5daaeb3dbb8dde214fe497e5826382abf4105a215316e74dfe6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/runtime/runtime-jira-user-fields-client.ts",
+      "sha256": "71cde6cf85010615dc5752e94bb05e8d3a134f133566ca8e5a25fbe057639427",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/renderer/src/runtime/runtime-linear-client.ts",
-      "sha256": "5b2763a7e6924d5ac86eca1193d576c9df5be7a138f1a16567d057c8fdfb4cc4",
+      "sha256": "5b601fd921c232900a8ad5acf80eb9608008789e9855668025727457f3a67596",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/runtime/runtime-linear-issue-mutations.ts",
+      "sha256": "de9572bb7bb41610cce82841700cdc0889f7e7cd641d927776e3a4dbdcc937fc",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/runtime/runtime-linear-project-client.ts",
+      "sha256": "829fd2d8c90df3eff4588b6f1a936c6e55b34e3b07fbb8978d6d98986ab813d7",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1757,6 +1802,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/web/preload-api/web-fallback-api.ts",
+      "sha256": "4f1bfde3bf2897922a1b0a3e4b417a41bfb70ab2c985bafce9464530291d2078",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/web/preload-api/web-host-capability-api.ts",
       "sha256": "7bf973d2a04157c635dfe5a9adada06c5df59f1179795d96c33bc0a6ef546989",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1769,6 +1819,11 @@
     {
       "path": "src/renderer/src/web/preload-api/web-telemetry-api.ts",
       "sha256": "d10304e7386c2f796876b661ab2d995db3c6ceb9c3c6417161a7327c212c9df5",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/web/web-preload-api.ts",
+      "sha256": "0ffda3e998346cd930db41730b1bf6cefecf9539b9cc03998b32e8335b7d4f9e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

@@ -1,3 +1,4 @@
+import { requireLegacyLinearApi } from './legacy-task-tracker-preload'
 import type { LinearIssue } from '../../../shared/linear/issue-types'
 import type { LinearProjectDetail } from '../../../shared/linear/project-types'
 import type {
@@ -93,7 +94,7 @@ export async function linearStatusForTarget(
     ? callRuntimeRpc<LinearConnectionStatus>(target, 'linear.status', undefined, {
         timeoutMs: 15_000
       })
-    : window.api.linear.status()
+    : requireLegacyLinearApi().status()
 }
 
 export async function linearTestConnection(
@@ -110,7 +111,7 @@ export async function linearTestConnection(
           timeoutMs: 30_000
         }
       )
-    : window.api.linear.testConnection(workspaceId ? { workspaceId } : undefined)
+    : requireLegacyLinearApi().testConnection(workspaceId ? { workspaceId } : undefined)
 }
 
 export async function linearConnect(
@@ -125,7 +126,7 @@ export async function linearConnect(
         { apiKey },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.connect({ apiKey })
+    : requireLegacyLinearApi().connect({ apiKey })
 }
 
 export async function linearDisconnect(settings: RuntimeLinearSettings): Promise<void> {
@@ -148,7 +149,7 @@ export async function linearDisconnectWorkspace(
     )
     return
   }
-  await window.api.linear.disconnect(workspaceId ? { workspaceId } : undefined)
+  await requireLegacyLinearApi().disconnect(workspaceId ? { workspaceId } : undefined)
 }
 
 export async function linearSelectWorkspace(
@@ -163,7 +164,7 @@ export async function linearSelectWorkspace(
         { workspaceId },
         { timeoutMs: 15_000 }
       )
-    : window.api.linear.selectWorkspace({ workspaceId })
+    : requireLegacyLinearApi().selectWorkspace({ workspaceId })
 }
 
 export async function linearSearchIssues(
@@ -191,7 +192,7 @@ export async function linearSearchIssuesForTarget(
         { query, limit, workspaceId: workspaceId ?? undefined },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.searchIssues({ query, limit, workspaceId: workspaceId ?? undefined })
+    : requireLegacyLinearApi().searchIssues({ query, limit, workspaceId: workspaceId ?? undefined })
 }
 
 export async function linearListIssues(
@@ -229,6 +230,6 @@ export async function linearListIssues(
       ? await callRuntimeRpc<unknown>(target, 'linear.listIssues', payload, {
           timeoutMs: 30_000
         })
-      : await window.api.linear.listIssues(payload)
+      : await requireLegacyLinearApi().listIssues(payload)
   return normalizeLinearIssueCollectionResult(result)
 }

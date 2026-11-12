@@ -1,3 +1,4 @@
+import { requireLegacyLinearApi } from './legacy-task-tracker-preload'
 import type { LinearIssue } from '../../../shared/linear/issue-types'
 import type {
   LinearCustomViewModel,
@@ -35,7 +36,7 @@ export async function linearListTeams(
         workspaceId ? { workspaceId } : undefined,
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.listTeams(workspaceId ? { workspaceId } : undefined)
+    : requireLegacyLinearApi().listTeams(workspaceId ? { workspaceId } : undefined)
 }
 
 export async function linearListProjects(
@@ -56,8 +57,8 @@ export async function linearListProjects(
         { query, limit, workspaceId: workspaceId ?? undefined, ...linearReadForce(options) },
         { timeoutMs: 30_000 }
       )
-    : typeof window.api.linear.listProjects === 'function'
-      ? window.api.linear.listProjects({
+    : typeof requireLegacyLinearApi().listProjects === 'function'
+      ? requireLegacyLinearApi().listProjects({
           query,
           limit,
           workspaceId: workspaceId ?? undefined,
@@ -87,7 +88,7 @@ export async function linearCreateProject(
     ? callRuntimeRpc<LinearCreateProjectResult>(target, 'linear.createProject', args, {
         timeoutMs: 30_000
       })
-    : window.api.linear.createProject(args)
+    : requireLegacyLinearApi().createProject(args)
 }
 
 export async function linearGetProject(
@@ -104,7 +105,7 @@ export async function linearGetProject(
         { id, workspaceId, ...linearReadForce(options) },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.getProject({ id, workspaceId, ...linearReadForce(options) })
+    : requireLegacyLinearApi().getProject({ id, workspaceId, ...linearReadForce(options) })
 }
 
 export async function linearListProjectIssues(
@@ -122,7 +123,7 @@ export async function linearListProjectIssues(
         { projectId, limit, workspaceId, ...linearReadForce(options) },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.listProjectIssues({
+    : requireLegacyLinearApi().listProjectIssues({
         projectId,
         limit,
         workspaceId,
@@ -145,7 +146,7 @@ export async function linearListCustomViews(
         { model, limit, workspaceId: workspaceId ?? undefined, ...linearReadForce(options) },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.listCustomViews({
+    : requireLegacyLinearApi().listCustomViews({
         model,
         limit,
         workspaceId: workspaceId ?? undefined,
@@ -168,7 +169,12 @@ export async function linearGetCustomView(
         { viewId, model, workspaceId, ...linearReadForce(options) },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.getCustomView({ viewId, model, workspaceId, ...linearReadForce(options) })
+    : requireLegacyLinearApi().getCustomView({
+        viewId,
+        model,
+        workspaceId,
+        ...linearReadForce(options)
+      })
 }
 
 export async function linearListCustomViewIssues(
@@ -186,7 +192,7 @@ export async function linearListCustomViewIssues(
         { viewId, limit, workspaceId, ...linearReadForce(options) },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.listCustomViewIssues({
+    : requireLegacyLinearApi().listCustomViewIssues({
         viewId,
         limit,
         workspaceId,
@@ -209,7 +215,7 @@ export async function linearListCustomViewProjects(
         { viewId, limit, workspaceId, ...linearReadForce(options) },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.listCustomViewProjects({
+    : requireLegacyLinearApi().listCustomViewProjects({
         viewId,
         limit,
         workspaceId,
@@ -230,7 +236,7 @@ export async function linearTeamStates(
         { teamId, workspaceId: workspaceId ?? undefined },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.teamStates({ teamId, workspaceId: workspaceId ?? undefined })
+    : requireLegacyLinearApi().teamStates({ teamId, workspaceId: workspaceId ?? undefined })
 }
 
 export async function linearTeamLabels(
@@ -246,7 +252,7 @@ export async function linearTeamLabels(
         { teamId, workspaceId: workspaceId ?? undefined },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.teamLabels({ teamId, workspaceId: workspaceId ?? undefined })
+    : requireLegacyLinearApi().teamLabels({ teamId, workspaceId: workspaceId ?? undefined })
 }
 
 export async function linearTeamMembers(
@@ -262,5 +268,5 @@ export async function linearTeamMembers(
         { teamId, workspaceId: workspaceId ?? undefined },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.teamMembers({ teamId, workspaceId: workspaceId ?? undefined })
+    : requireLegacyLinearApi().teamMembers({ teamId, workspaceId: workspaceId ?? undefined })
 }

@@ -1,3 +1,4 @@
+import { requireLegacyJiraApi } from './legacy-task-tracker-preload'
 import type { RuntimeClientTarget } from '../../../shared/runtime-client-target'
 import type {
   JiraCreateIssueArgs,
@@ -31,7 +32,7 @@ export async function jiraCreateIssue(
   }
   return target.kind === 'environment'
     ? callRuntimeRpc<JiraCreateIssueResult>(target, 'jira.createIssue', args, { timeoutMs: 30_000 })
-    : window.api.jira.createIssue(args)
+    : requireLegacyJiraApi().createIssue(args)
 }
 
 export async function jiraListAssignableUsers(
@@ -55,7 +56,7 @@ export async function jiraListAssignableUsersForTarget(
   const args = { key, query, siteId: siteId ?? undefined }
   return target.kind === 'environment'
     ? callRuntimeRpc<JiraUser[]>(target, 'jira.listAssignableUsers', args, { timeoutMs: 30_000 })
-    : window.api.jira.listAssignableUsers(args)
+    : requireLegacyJiraApi().listAssignableUsers(args)
 }
 
 // Remote hosts lack project search; use their capability-gated site search.
@@ -72,7 +73,7 @@ export async function jiraListAssignableUsersForProject(
   if (target.kind === 'environment') {
     return jiraSearchUsers(settings, query, siteId)
   }
-  return window.api.jira.listAssignableUsersForProject({
+  return requireLegacyJiraApi().listAssignableUsersForProject({
     projectIdOrKey,
     query,
     siteId: siteId ?? undefined
@@ -101,5 +102,5 @@ export async function jiraSearchUsers(
   const args = { query, siteId: siteId ?? undefined }
   return target.kind === 'environment'
     ? callRuntimeRpc<JiraUser[]>(target, 'jira.searchUsers', args, { timeoutMs: 30_000 })
-    : window.api.jira.searchUsers(args)
+    : requireLegacyJiraApi().searchUsers(args)
 }

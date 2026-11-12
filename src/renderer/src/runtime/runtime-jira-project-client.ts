@@ -1,3 +1,4 @@
+import { requireLegacyJiraApi } from './legacy-task-tracker-preload'
 import type {
   JiraConnectionStatus,
   JiraProject,
@@ -17,7 +18,7 @@ export async function jiraStatusForTarget(
   return parseJiraConnectionStatus(
     target.kind === 'environment'
       ? await callRuntimeRpc<unknown>(target, 'jira.status', undefined, { timeoutMs: 15_000 })
-      : await window.api.jira.status()
+      : await requireLegacyJiraApi().status()
   )
 }
 
@@ -29,5 +30,5 @@ export async function jiraListProjectsForTarget(
     ? callRuntimeRpc<JiraProject[]>(target, 'jira.listProjects', siteId ? { siteId } : undefined, {
         timeoutMs: 30_000
       })
-    : window.api.jira.listProjects(siteId ? { siteId } : undefined)
+    : requireLegacyJiraApi().listProjects(siteId ? { siteId } : undefined)
 }

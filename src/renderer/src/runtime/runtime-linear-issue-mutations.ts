@@ -1,3 +1,4 @@
+import { requireLegacyLinearApi } from './legacy-task-tracker-preload'
 import type { LinearIssueUpdate } from '../../../shared/issue-mutation-types'
 import type { LinearComment, LinearIssue } from '../../../shared/linear/issue-types'
 import { callRuntimeRpc } from './runtime-rpc-client'
@@ -29,7 +30,7 @@ export async function linearCreateIssue(
     ? callRuntimeRpc<LinearCreateIssueResult>(target, 'linear.createIssue', args, {
         timeoutMs: 30_000
       })
-    : window.api.linear.createIssue(args)
+    : requireLegacyLinearApi().createIssue(args)
 }
 
 export async function linearCreateSubIssue(
@@ -59,7 +60,7 @@ export async function linearGetIssue(
         { id, workspaceId: workspaceId ?? undefined },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.getIssue({ id, workspaceId: workspaceId ?? undefined })
+    : requireLegacyLinearApi().getIssue({ id, workspaceId: workspaceId ?? undefined })
 }
 
 export async function linearUpdateIssue(
@@ -76,7 +77,7 @@ export async function linearUpdateIssue(
         { id, updates, workspaceId: workspaceId ?? undefined },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.updateIssue({ id, updates, workspaceId: workspaceId ?? undefined })
+    : requireLegacyLinearApi().updateIssue({ id, updates, workspaceId: workspaceId ?? undefined })
 }
 
 export async function linearAddIssueComment(
@@ -93,7 +94,11 @@ export async function linearAddIssueComment(
         { issueId, body, workspaceId: workspaceId ?? undefined },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.addIssueComment({ issueId, body, workspaceId: workspaceId ?? undefined })
+    : requireLegacyLinearApi().addIssueComment({
+        issueId,
+        body,
+        workspaceId: workspaceId ?? undefined
+      })
 }
 
 export async function linearIssueComments(
@@ -109,5 +114,5 @@ export async function linearIssueComments(
         { issueId, workspaceId: workspaceId ?? undefined },
         { timeoutMs: 30_000 }
       )
-    : window.api.linear.issueComments({ issueId, workspaceId: workspaceId ?? undefined })
+    : requireLegacyLinearApi().issueComments({ issueId, workspaceId: workspaceId ?? undefined })
 }

@@ -1,3 +1,4 @@
+import { requireLegacyJiraApi } from './legacy-task-tracker-preload'
 import { JIRA_IMAGE_CAPABILITY } from '../../../shared/jira/jira-attachment-image'
 import { migrateLegacyJiraImages } from './runtime-jira-image-cache'
 import type {
@@ -62,7 +63,7 @@ export async function jiraGetIssueForTarget(
             'jira.getIssue',
             args
           )
-      : await window.api.jira.getIssue(args)
+      : await requireLegacyJiraApi().getIssue(args)
   return issue
     ? { ...issue, description: migrateLegacyJiraImages(issue.description ?? '', target) }
     : null
@@ -87,7 +88,7 @@ export async function jiraUpdateIssueForTarget(
   const args = { key, updates, siteId: siteId ?? undefined }
   return target.kind === 'environment'
     ? callRuntimeRpc<JiraMutationResult>(target, 'jira.updateIssue', args, { timeoutMs: 30_000 })
-    : window.api.jira.updateIssue(args)
+    : requireLegacyJiraApi().updateIssue(args)
 }
 
 export async function jiraAddIssueCommentForTarget(
@@ -101,7 +102,7 @@ export async function jiraAddIssueCommentForTarget(
     ? callRuntimeRpc<JiraCommentResult>(target, 'jira.addIssueComment', args, {
         timeoutMs: 30_000
       })
-    : window.api.jira.addIssueComment(args)
+    : requireLegacyJiraApi().addIssueComment(args)
 }
 
 export async function jiraIssueCommentsForTarget(
@@ -129,7 +130,7 @@ export async function jiraIssueCommentsForTarget(
             'jira.issueComments',
             args
           )
-      : await window.api.jira.issueComments(args)
+      : await requireLegacyJiraApi().issueComments(args)
   return comments.map((comment) => ({
     ...comment,
     body: migrateLegacyJiraImages(comment.body, target)
@@ -147,7 +148,7 @@ export async function jiraListPrioritiesForTarget(
         siteId ? { siteId } : undefined,
         { timeoutMs: 30_000 }
       )
-    : window.api.jira.listPriorities(siteId ? { siteId } : undefined)
+    : requireLegacyJiraApi().listPriorities(siteId ? { siteId } : undefined)
 }
 
 export async function jiraListTransitionsForTarget(
@@ -158,5 +159,5 @@ export async function jiraListTransitionsForTarget(
   const args = { key, siteId: siteId ?? undefined, strict: true }
   return target.kind === 'environment'
     ? callRuntimeRpc<JiraTransition[]>(target, 'jira.listTransitions', args, { timeoutMs: 30_000 })
-    : window.api.jira.listTransitions(args)
+    : requireLegacyJiraApi().listTransitions(args)
 }

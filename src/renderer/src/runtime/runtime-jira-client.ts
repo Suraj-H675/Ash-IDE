@@ -1,3 +1,4 @@
+import { requireLegacyJiraApi } from './legacy-task-tracker-preload'
 import {
   JIRA_STATUS_FILTER_RUNTIME_CAPABILITY,
   JIRA_STATUS_FILTER_UPDATE_REQUIRED
@@ -73,7 +74,7 @@ export async function jiraConnect(
   const target = getJiraRuntimeTarget(settings)
   return target.kind === 'environment'
     ? callRuntimeRpc<JiraConnectResult>(target, 'jira.connect', args, { timeoutMs: 30_000 })
-    : window.api.jira.connect(args)
+    : requireLegacyJiraApi().connect(args)
 }
 
 export async function jiraDisconnect(
@@ -88,7 +89,7 @@ export async function jiraDisconnect(
     })
     return
   }
-  await window.api.jira.disconnect(siteId ? { siteId } : undefined)
+  await requireLegacyJiraApi().disconnect(siteId ? { siteId } : undefined)
 }
 
 export async function jiraSelectSite(
@@ -99,7 +100,7 @@ export async function jiraSelectSite(
   return parseJiraConnectionStatus(
     target.kind === 'environment'
       ? await callRuntimeRpc<unknown>(target, 'jira.selectSite', { siteId }, { timeoutMs: 15_000 })
-      : await window.api.jira.selectSite({ siteId })
+      : await requireLegacyJiraApi().selectSite({ siteId })
   )
 }
 
@@ -115,7 +116,7 @@ export async function jiraTestConnection(
         siteId ? { siteId } : undefined,
         { timeoutMs: 30_000 }
       )
-    : window.api.jira.testConnection(siteId ? { siteId } : undefined)
+    : requireLegacyJiraApi().testConnection(siteId ? { siteId } : undefined)
 }
 
 export async function jiraSearchIssues(
@@ -145,7 +146,7 @@ export async function jiraSearchIssuesForTarget(
       signal
     })
   }
-  return signal ? searchLocalJiraIssues(args, signal) : window.api.jira.searchIssues(args)
+  return signal ? searchLocalJiraIssues(args, signal) : requireLegacyJiraApi().searchIssues(args)
 }
 
 export async function jiraListIssues(
@@ -184,7 +185,7 @@ export async function jiraListIssuesForTarget(
     }
     return callRuntimeRpc<JiraIssue[]>(target, 'jira.listIssues', args, { timeoutMs: 30_000 })
   }
-  return window.api.jira.listIssues(args)
+  return requireLegacyJiraApi().listIssues(args)
 }
 
 export async function jiraGetIssue(
@@ -237,7 +238,7 @@ export async function jiraListIssueTypes(
   const args = { projectIdOrKey, siteId: siteId ?? undefined }
   return target.kind === 'environment'
     ? callRuntimeRpc<JiraIssueType[]>(target, 'jira.listIssueTypes', args, { timeoutMs: 30_000 })
-    : window.api.jira.listIssueTypes(args)
+    : requireLegacyJiraApi().listIssueTypes(args)
 }
 
 export async function jiraListCreateFields(
@@ -252,7 +253,7 @@ export async function jiraListCreateFields(
     ? callRuntimeRpc<JiraCreateField[]>(target, 'jira.listCreateFields', args, {
         timeoutMs: 30_000
       })
-    : window.api.jira.listCreateFields(args)
+    : requireLegacyJiraApi().listCreateFields(args)
 }
 
 export async function jiraListPriorities(
@@ -281,5 +282,5 @@ export async function jiraGetProjectStatusOrder(
     ? callRuntimeRpc<JiraProjectStatusOrder>(target, 'jira.getProjectStatusOrder', args, {
         timeoutMs: 30_000
       })
-    : window.api.jira.getProjectStatusOrder(args)
+    : requireLegacyJiraApi().getProjectStatusOrder(args)
 }

@@ -1,3 +1,4 @@
+import { requireLegacyJiraApi } from './legacy-task-tracker-preload'
 import { translate } from '@/i18n/i18n'
 import { localizeTextGenerationResult } from '@/lib/text-generation-error-copy'
 import type {
@@ -54,7 +55,7 @@ export async function generateRuntimeJiraIssueSummary(
       canceled: true
     }
   }
-  return localizeTextGenerationResult(await window.api.jira.generateIssueSummary(args))
+  return localizeTextGenerationResult(await requireLegacyJiraApi().generateIssueSummary(args))
 }
 
 export async function cancelRuntimeJiraIssueSummary(
@@ -63,5 +64,5 @@ export async function cancelRuntimeJiraIssueSummary(
 ): Promise<void> {
   await (target.kind === 'environment'
     ? callRuntimeRpc(target, 'jira.cancelGenerateIssueSummary', args, { timeoutMs: 5_000 })
-    : window.api.jira.cancelGenerateIssueSummary(args))
+    : requireLegacyJiraApi().cancelGenerateIssueSummary(args))
 }

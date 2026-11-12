@@ -42409,6 +42409,21 @@
       "path": "config/scripts/orcad-distribution/server-bundle/orcad-mobile-web-bundle.mjs",
       "sourceSha256": "5b238a9e8f35d8f1919bb8b205779dfd5a8ef9c91ae287f2e8bb3115dfcb8fbc",
       "reason": "Ash M8 exclusion: remove paired-phone web bundle staging from the local server artifact and template; the desktop-only server does not require mobile page assets."
+    },
+    {
+      "path": "src/preload/api/jira-bridge.ts",
+      "sourceSha256": "61bb9e822ae78cdc4a44bb19db8ad50cf880c8c87dd7e0bfe292de4ce447f1ae",
+      "reason": "Ash M8 exclusion: removed the dormant Jira/Linear application connector IPC preload bridge. No Jira/Linear connector is published to the trusted desktop renderer; retained legacy renderer call paths fail closed without accessing removed main-process channels."
+    },
+    {
+      "path": "src/preload/api/linear-bridge.ts",
+      "sourceSha256": "2b81aa1223ad5a370885c2339f08ddcf86a3f4d49bc61e785211915a6cceea74",
+      "reason": "Ash M8 exclusion: removed the dormant Jira/Linear application connector IPC preload bridge. No Jira/Linear connector is published to the trusted desktop renderer; retained legacy renderer call paths fail closed without accessing removed main-process channels."
+    },
+    {
+      "path": "src/renderer/src/web/preload-api/web-jira-api.ts",
+      "sourceSha256": "a2ec057404f37ae9793c79ff7133f5cf196645edda99db2946bf1989954d41e7",
+      "reason": "Ash M8 exclusion: remove archived web-client Jira connector adapter because Jira application RPC and preload namespaces are unsupported. Kept local Git-provider API adapters and browser capability intact."
     }
   ]
 }

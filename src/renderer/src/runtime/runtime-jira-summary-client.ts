@@ -1,3 +1,4 @@
+import { requireLegacyJiraApi } from './legacy-task-tracker-preload'
 import type { JiraConnectionStatus, JiraIssue } from '../../../shared/jira/jira-types'
 import { createBrowserUuid } from '@/lib/browser-uuid'
 import { callRuntimeRpc } from './runtime-rpc-client'
@@ -9,7 +10,7 @@ export async function jiraReadStatus(settings: RuntimeJiraSettings): Promise<Jir
   return parseJiraConnectionStatus(
     target.kind === 'environment'
       ? await callRuntimeRpc<unknown>(target, 'jira.readStatus', undefined, { timeoutMs: 15_000 })
-      : await window.api.jira.readStatus()
+      : await requireLegacyJiraApi().readStatus()
   )
 }
 
@@ -32,11 +33,13 @@ export async function jiraLookupIssueSummary(
   }
   const requestId = createBrowserUuid()
   const handleAbort = (): void => {
-    void window.api.jira.cancelIssueSummary({ requestId }).catch(() => {})
+    void requireLegacyJiraApi()
+      .cancelIssueSummary({ requestId })
+      .catch(() => {})
   }
   signal?.addEventListener('abort', handleAbort, { once: true })
   try {
-    return await window.api.jira.lookupIssueSummary({ ...args, requestId })
+    return await requireLegacyJiraApi().lookupIssueSummary({ ...args, requestId })
   } finally {
     signal?.removeEventListener('abort', handleAbort)
   }

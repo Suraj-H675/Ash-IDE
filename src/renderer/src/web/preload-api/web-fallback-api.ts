@@ -11,6 +11,11 @@ export function withFallback<T extends object>(target: T, path: string[]): T {
         }
         return value
       }
+      // The archived web client must not fabricate a working-looking Jira or
+      // Linear connector when Ash has intentionally removed both namespaces.
+      if (path.length === 0 && (property === 'jira' || property === 'linear')) {
+        return undefined
+      }
       return createFallbackProxy([...path, String(property)])
     }
   })
