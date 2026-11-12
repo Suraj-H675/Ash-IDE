@@ -60,6 +60,9 @@ const {
   verifyStaticAppImagePackage
 } = require('./scripts/desktop-distribution/appimage/static-appimage-package-contract.cjs')
 const {
+  verifyAshPackagedAsarHygiene
+} = require('./scripts/desktop-distribution/runtime-verification/verify-ash-packaged-asar-hygiene.cjs')
+const {
   appImageNodeRuntimeFpmArgs,
   placeAppImageNodeRuntime,
   verifyAppImageNodeRuntimeServesPty
@@ -242,8 +245,13 @@ module.exports = {
     '!cloud{,/**/*}',
     // Release archives and other build staging are not runtime resources.
     '!.build{,/**/*}',
-    // Worktree-local Vite dependency caches are development inputs.
-    '!.cache/vite{,.lock}{,/**/*}',
+    // Repository-local caches, private QA traces, credentials and temporary
+    // state are never release resources, even if they are gitignored.
+    '!.cache{,/**/*}',
+    '!.audit{,/**/*}',
+    '!.tmp{,/**/*}',
+    '!dist{,/**/*}',
+    '!release{,/**/*}',
     '!docs{,/**/*}',
     '!mobile{,/**/*}',
     '!native{,/**/*}',
@@ -368,6 +376,9 @@ module.exports = {
     if (!existsSync(resourcesDir)) {
       throw new Error(`Missing packaged resources directory: ${resourcesDir}`)
     }
+    // Fail closed if a future glob accidentally ships ignored/private checkout
+    // content. The source gitignore is not an electron-builder security boundary.
+    verifyAshPackagedAsarHygiene(resourcesDir)
     // FpmTarget replaces this with deb/rpm while building those artifacts from the shared app tree.
     if (context.electronPlatformName === 'linux') {
       writeFileSync(join(resourcesDir, 'package-type'), 'AppImage')

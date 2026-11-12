@@ -96,6 +96,8 @@ vi.mock('../ipc/source-control/github-pr-refresh-handlers', () => ({
   registerGitHubPRRefreshHandlers: vi.fn()
 }))
 vi.mock('../ipc/rate-limits', () => ({ registerRateLimitHandlers: vi.fn() }))
+vi.mock('../ipc/codex-accounts', () => ({ registerCodexAccountHandlers: vi.fn() }))
+vi.mock('../ipc/claude-accounts', () => ({ registerClaudeAccountHandlers: vi.fn() }))
 vi.mock('../ipc/skills', () => ({ registerProviderNativeSkillDiscoveryHandler: vi.fn() }))
 vi.mock('../ipc/skill-delete/handlers', () => ({ registerSkillDeleteIpcHandlers: vi.fn() }))
 vi.mock('../ipc/bundled-skills', () => ({ registerLocalBundledSkillIpcHandlers: vi.fn() }))
@@ -121,6 +123,8 @@ vi.mock('../orcad/orcad-artifact-cache-retention', () => ({
 import { initializeReadyRuntimeServices } from './main-process-ready-runtime'
 import { registerGitHubPRRefreshHandlers } from '../ipc/source-control/github-pr-refresh-handlers'
 import { registerRateLimitHandlers } from '../ipc/rate-limits'
+import { registerCodexAccountHandlers } from '../ipc/codex-accounts'
+import { registerClaudeAccountHandlers } from '../ipc/claude-accounts'
 import { registerProviderNativeSkillDiscoveryHandler } from '../ipc/skills'
 import { registerSkillDeleteIpcHandlers } from '../ipc/skill-delete/handlers'
 import { registerLocalBundledSkillIpcHandlers } from '../ipc/bundled-skills'
@@ -211,6 +215,11 @@ it('finishes the duplicate-terminal repair before ready services resolve, even b
     fixture.state.rateLimits,
     fixture.state.codexAccounts
   )
+  expect(registerCodexAccountHandlers).toHaveBeenCalledWith(
+    fixture.state.codexAccounts,
+    expect.any(Function)
+  )
+  expect(registerClaudeAccountHandlers).toHaveBeenCalledWith(fixture.state.claudeAccounts)
   expect(registerProviderNativeSkillDiscoveryHandler).toHaveBeenCalledWith(
     store,
     fixture.state.runtime

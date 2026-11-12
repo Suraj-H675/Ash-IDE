@@ -1,31 +1,33 @@
-import { ipcMain } from 'electron'
 import type { ClaudeAccountService } from '../claude-accounts/service'
-import type { ClaudeAccountSelectionTarget } from '../claude-accounts/runtime-selection'
-import { openAccountSignInLink } from './account-sign-in-link-opener'
+import {
+  AccountIdRequestSchema,
+  ClaudeAddRequestSchema,
+  ClaudeReauthenticationSchema,
+  handleAshNativeAccountIpc,
+  HostAccountSelectionSchema
+} from './provider-accounts/ash-native-account-ipc'
 
 export function registerClaudeAccountHandlers(claudeAccounts: ClaudeAccountService): void {
-  claudeAccounts.setWslSignInLinkOpener((signInLink) => openAccountSignInLink('claude', signInLink))
-  ipcMain.handle('claudeAccounts:list', () => claudeAccounts.listAccounts())
-  ipcMain.handle(
-    'claudeAccounts:add',
-    (_event, args?: ClaudeAccountSelectionTarget & { copyLink?: boolean }) =>
-      claudeAccounts.addAccount(args, args?.copyLink)
+  handleAshNativeAccountIpc('claudeAccounts:list', () => claudeAccounts.listAccounts())
+  handleAshNativeAccountIpc('claudeAccounts:add', (_event, value?: unknown) => {
+    const args = ClaudeAddRequestSchema.parse(value ?? {})
+    return claudeAccounts.addAccount(args, args.copyLink)
+  })
+  handleAshNativeAccountIpc('claudeAccounts:cancelPendingLogin', () =>
+    claudeAccounts.cancelPendingLogin()
   )
-  ipcMain.handle('claudeAccounts:cancelPendingLogin', () => claudeAccounts.cancelPendingLogin())
-  ipcMain.handle(
-    'claudeAccounts:reauthenticate',
-    (_event, args: { accountId: string; copyLink?: boolean }) =>
-      claudeAccounts.reauthenticateAccount(args.accountId, args.copyLink)
+  handleAshNativeAccountIpc('claudeAccounts:reauthenticate', (_event, value: unknown) => {
+    const args = ClaudeReauthenticationSchema.parse(value)
+    return claudeAccounts.reauthenticateAccount(args.accountId, args.copyLink)
+  })
+  handleAshNativeAccountIpc('claudeAccounts:waitForSignInLink', () =>
+    claudeAccounts.waitForSignInLink()
   )
-  ipcMain.handle('claudeAccounts:waitForSignInLink', () => claudeAccounts.waitForSignInLink())
-  ipcMain.handle('claudeAccounts:remove', (_event, args: { accountId: string }) =>
-    claudeAccounts.removeAccount(args.accountId)
+  handleAshNativeAccountIpc('claudeAccounts:remove', (_event, value: unknown) =>
+    claudeAccounts.removeAccount(AccountIdRequestSchema.parse(value).accountId)
   )
-  ipcMain.handle(
-    'claudeAccounts:select',
-    (_event, args: { accountId: string | null } & ClaudeAccountSelectionTarget) =>
-      args.runtime
-        ? claudeAccounts.selectAccountForTarget(args.accountId, args)
-        : claudeAccounts.selectAccount(args.accountId)
-  )
+  handleAshNativeAccountIpc('claudeAccounts:select', (_event, value: unknown) => {
+    const args = HostAccountSelectionSchema.parse(value)
+    return claudeAccounts.selectAccountForTarget(args.accountId, { runtime: 'host' })
+  })
 }

@@ -96,6 +96,7 @@ jobs:
             src/main/ipc/provider-native-skill-discovery.test.ts \
             src/main/ipc/skill-delete/ash-native-delete-ipc-transaction.test.ts \
             src/main/ipc/ash-local-bundled-skills-ipc.test.ts \
+            src/main/ipc/provider-accounts/ash-native-provider-account-ipc.test.ts \
             src/main/ipc/ash-excluded-skill-cloud-handlers.test.ts \
             src/main/startup/main-process-ready-duplicate-pty-repair.test.ts \
             src/main/ipc/ash-updater-status.test.ts \
@@ -174,5 +175,6 @@ jobs:
           node node_modules/vitest/vitest.mjs run \
             --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
             --no-file-parallelism \
-            config/scripts/desktop-distribution/runtime-verification/electron-builder-config.test.mjs
+            config/scripts/desktop-distribution/runtime-verification/electron-builder-config.test.mjs \
+            config/scripts/desktop-distribution/runtime-verification/verify-ash-packaged-asar-hygiene.test.mjs
           node config/scripts/runtime-verification/skills-cli/verify-skills-cli-runtime.cjs out

@@ -407,6 +407,21 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/ipc/claude-accounts.ts",
+      "sha256": "b4e13333259a0761df1e2c2a36b9631a50abb73889ec03e1540afa59b33bef37",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/codex-accounts.ts",
+      "sha256": "4bbd573e10f68b6a9b68938dddb031fdcb6fd53ac7aca9a07c62298e6ee98a38",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/codex-pending-login-url-broadcast.ts",
+      "sha256": "50361909ee460556d52837bdc146b0a73ebecdf0d29a7bb254a50388e6050960",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/ipc/crash-reporting/crash-reporting.ts",
       "sha256": "1784f4b248b8c1c00af3ad01aa808c5da02adfaef8846036d97e4c654e3d38d8",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -898,7 +913,7 @@
     },
     {
       "path": "src/main/startup/main-process-ready-duplicate-pty-repair.test.ts",
-      "sha256": "f4e780c622dec6f69c9f234857ab4cd7497cbed9aa4a532460011be8c3c5fba3",
+      "sha256": "a6548628e8e59a907e18ffccf0989c933d1517e61f5777330a07a8201a475343",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -908,7 +923,7 @@
     },
     {
       "path": "src/main/startup/main-process-ready-runtime.ts",
-      "sha256": "966f42058dc5df4e39c2cdb8575c884418521c1335e2d7a7e31d422a839a0d00",
+      "sha256": "22f9deb88024294c5cc5eb4c9daf759a773b3b829efc7ff60502ac8323895021",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1828,7 +1843,7 @@
     },
     {
       "path": "config/electron-builder.config.cjs",
-      "sha256": "6dd6fffd26efa3944c5dbb1a994e0f9d82e7937bb0f61067f9e364abe4d091e3",
+      "sha256": "b8eddd97db420c7c5b451d25bf687028de3fab76270b8d3abbad6f83d0afd860",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1858,7 +1873,7 @@
     },
     {
       "path": "config/scripts/desktop-distribution/runtime-verification/electron-builder-config.test.mjs",
-      "sha256": "8489a4c243cda771333fbdfdf6107a60600ee168ee552b56fb85489888eb0a7f",
+      "sha256": "b92d8f59545103881c880201bf689389a5a1d33c61a629537ddc0f1f03f4aef7",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

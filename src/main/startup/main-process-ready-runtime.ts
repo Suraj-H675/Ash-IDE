@@ -37,6 +37,8 @@ import { registerRateLimitHandlers } from '../ipc/rate-limits'
 import { registerProviderNativeSkillDiscoveryHandler } from '../ipc/skills'
 import { registerSkillDeleteIpcHandlers } from '../ipc/skill-delete/handlers'
 import { registerLocalBundledSkillIpcHandlers } from '../ipc/bundled-skills'
+import { registerCodexAccountHandlers } from '../ipc/codex-accounts'
+import { registerClaudeAccountHandlers } from '../ipc/claude-accounts'
 import { registerAshUpdaterReadOnlyHandlers } from '../ipc/ash-updater-status'
 
 // Headless serve has no first window; timer fallback must still sweep trash.
@@ -58,10 +60,14 @@ export async function initializeReadyRuntimeServices(): Promise<void> {
   }
   registerGitHubPRRefreshHandlers(store, stats)
   initializeMainProcessAccountServices()
-  if (!state.rateLimits || !state.codexAccounts) {
-    throw new Error('Rate limit services must be initialized before ready handlers')
+  if (!state.rateLimits || !state.codexAccounts || !state.claudeAccounts) {
+    throw new Error('Provider account and rate limit services must be initialized before handlers')
   }
   registerRateLimitHandlers(state.rateLimits, state.codexAccounts)
+  // Native provider account management is retained. These Ash-only IPC
+  // registrars accept just the trusted desktop renderer and host-local lanes.
+  registerCodexAccountHandlers(state.codexAccounts, () => store.getSettings())
+  registerClaudeAccountHandlers(state.claudeAccounts)
   const runtime = initializeMainProcessRuntime()
   configureRuntimeServices(runtime)
   registerProviderNativeSkillDiscoveryHandler(store, runtime)

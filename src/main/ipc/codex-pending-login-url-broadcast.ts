@@ -1,15 +1,8 @@
-import { BrowserWindow } from 'electron'
 import { CODEX_PENDING_LOGIN_URL_CHANGED_CHANNEL } from '../../shared/codex-auth-errors'
+import { sendToTrustedUIRenderer } from './ui'
 
 export function broadcastCodexPendingLoginUrl(url: string | null): void {
-  for (const window of BrowserWindow.getAllWindows()) {
-    if (window.isDestroyed()) {
-      continue
-    }
-    try {
-      window.webContents.send(CODEX_PENDING_LOGIN_URL_CHANGED_CHANNEL, url)
-    } catch {
-      // A renderer can disappear between isDestroyed() and send().
-    }
-  }
+  // OAuth state can appear in provider sign-in URLs. Never broadcast to an
+  // arbitrary browser, plugin iframe, or unrelated Electron popout window.
+  sendToTrustedUIRenderer(CODEX_PENDING_LOGIN_URL_CHANGED_CHANNEL, url)
 }

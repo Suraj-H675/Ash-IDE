@@ -14,6 +14,49 @@ const electronBuilderConfig = require('../../../electron-builder.config.cjs')
 const { copyFiles, FileMatcher } = require('app-builder-lib/out/fileMatcher')
 
 describe('electron-builder config', () => {
+  it('never selects gitignored private profile/cache/audit or prior package output', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'ash-package-private-inputs-'))
+    const source = join(root, 'app')
+    const destination = join(root, 'selected')
+    const included = ['package.json', 'out/main/index.js', 'out/renderer/index.html']
+    const forbidden = [
+      '.cache/ash-profile/ash-runtime.json',
+      '.cache/appimage-test-home/.config/provider-token.json',
+      '.audit/qa-private-fixture.json',
+      '.tmp/profile-state-recovery.json',
+      'dist/ash-ide-linux.AppImage',
+      'release/archive.tar.gz'
+    ]
+    try {
+      for (const relativePath of [...included, ...forbidden]) {
+        const file = join(source, relativePath)
+        await mkdir(dirname(file), { recursive: true })
+        await writeFile(file, 'disposable test fixture, no real credentials\n')
+      }
+      const matcher = new FileMatcher(
+        source,
+        destination,
+        (value) => value,
+        electronBuilderConfig.files
+      )
+      await copyFiles([matcher])
+      for (const relativePath of included) {
+        expect(existsSync(join(destination, relativePath)), relativePath).toBe(true)
+      }
+      for (const relativePath of forbidden) {
+        expect(
+          matcher.createFilter()(
+            join(source, relativePath),
+            await lstat(join(source, relativePath))
+          ),
+          relativePath
+        ).toBe(false)
+        expect(existsSync(join(destination, relativePath)), relativePath).toBe(false)
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  })
   it.each(['file', 'directory'])('keeps a root notes %s out of app.asar', async (kind) => {
     const root = await mkdtemp(join(tmpdir(), 'orca-packaging-notes-'))
     const source = join(root, 'app')

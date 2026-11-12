@@ -1,70 +1,66 @@
-import { ipcMain } from 'electron'
-import type { CodexAccountAddTarget, CodexAccountService } from '../codex-accounts/service'
-import type { CodexAccountSelectionTarget } from '../codex-accounts/runtime-selection'
+import type { CodexAccountService } from '../codex-accounts/service'
 import { broadcastCodexPendingLoginUrl } from './codex-pending-login-url-broadcast'
-import { openAccountSignInLink } from './account-sign-in-link-opener'
 import { listRecordedCodexPaneLanes } from '../codex/configuration/homes/codex-pane-account-registry'
 import {
   forgetStaleCodexPanes,
   listStaleCodexPanes
 } from '../codex/configuration/homes/codex-stale-pane-accounts'
 import type { GlobalSettings } from '../../shared/global-settings-types'
+import {
+  AccountIdRequestSchema,
+  CodexReauthenticationSchema,
+  handleAshNativeAccountIpc,
+  HostAccountSelectionSchema,
+  HostAccountTargetSchema,
+  PaneIdsRequestSchema
+} from './provider-accounts/ash-native-account-ipc'
 
 export function registerCodexAccountHandlers(
   codexAccounts: CodexAccountService,
   getSettings?: () => GlobalSettings
 ): void {
-  ipcMain.handle('codexAccounts:listStalePanes', (_event, args: { ptyIds?: unknown }) => {
+  handleAshNativeAccountIpc('codexAccounts:listStalePanes', (_event, value: unknown) => {
+    const { ptyIds } = PaneIdsRequestSchema.parse(value)
     const settings = getSettings?.()
-    if (!settings || !Array.isArray(args?.ptyIds)) {
+    if (!settings) {
       return []
     }
     return listStaleCodexPanes({
-      ptyIds: args.ptyIds.filter((ptyId): ptyId is string => typeof ptyId === 'string'),
+      ptyIds,
       settings
     })
   })
-  ipcMain.handle('codexAccounts:listRecordedPaneLanes', (_event, args: { ptyIds?: unknown }) => {
-    if (!Array.isArray(args?.ptyIds)) {
-      return {}
-    }
-    return listRecordedCodexPaneLanes(
-      args.ptyIds.filter((ptyId): ptyId is string => typeof ptyId === 'string')
-    )
+  handleAshNativeAccountIpc('codexAccounts:listRecordedPaneLanes', (_event, value: unknown) => {
+    return listRecordedCodexPaneLanes(PaneIdsRequestSchema.parse(value).ptyIds)
   })
-  ipcMain.handle('codexAccounts:forgetStalePanes', (_event, args: { ptyIds?: unknown }) => {
-    if (!Array.isArray(args?.ptyIds)) {
-      return
-    }
-    forgetStaleCodexPanes(args.ptyIds.filter((ptyId): ptyId is string => typeof ptyId === 'string'))
+  handleAshNativeAccountIpc('codexAccounts:forgetStalePanes', (_event, value: unknown) => {
+    forgetStaleCodexPanes(PaneIdsRequestSchema.parse(value).ptyIds)
   })
-  ipcMain.handle('codexAccounts:list', () => codexAccounts.listAccounts())
-  ipcMain.handle('codexAccounts:add', (_event, args?: CodexAccountAddTarget) =>
-    codexAccounts.addAccount(args)
+  handleAshNativeAccountIpc('codexAccounts:list', () => codexAccounts.listAccounts())
+  handleAshNativeAccountIpc('codexAccounts:add', (_event, value?: unknown) =>
+    codexAccounts.addAccount(HostAccountTargetSchema.parse(value ?? {}))
   )
-  ipcMain.handle('codexAccounts:cancelPendingLogin', () => codexAccounts.cancelPendingLogin())
-  ipcMain.handle('codexAccounts:pendingLoginUrl', () => codexAccounts.getPendingLoginUrl())
+  handleAshNativeAccountIpc('codexAccounts:cancelPendingLogin', () =>
+    codexAccounts.cancelPendingLogin()
+  )
+  handleAshNativeAccountIpc('codexAccounts:pendingLoginUrl', () =>
+    codexAccounts.getPendingLoginUrl()
+  )
   // Settings reads the current link on mount; broadcasts carry later changes.
   codexAccounts.onPendingLoginUrlChanged(broadcastCodexPendingLoginUrl)
-  codexAccounts.setWslLoginUrlOpener((url) => openAccountSignInLink('codex', url))
-  ipcMain.handle(
-    'codexAccounts:reauthenticate',
-    (_event, args: { accountId: string; activateIfSelectionWasEmpty?: boolean }) =>
-      codexAccounts.reauthenticateAccount(args.accountId, {
-        activateIfSelectionWasEmpty: args.activateIfSelectionWasEmpty === true
-      })
+  handleAshNativeAccountIpc('codexAccounts:reauthenticate', (_event, value: unknown) => {
+    const args = CodexReauthenticationSchema.parse(value)
+    return codexAccounts.reauthenticateAccount(args.accountId, {
+      activateIfSelectionWasEmpty: args.activateIfSelectionWasEmpty === true
+    })
+  })
+  handleAshNativeAccountIpc('codexAccounts:remove', (_event, value: unknown) =>
+    codexAccounts.removeAccount(AccountIdRequestSchema.parse(value).accountId)
   )
-  ipcMain.handle('codexAccounts:remove', (_event, args: { accountId: string }) =>
-    codexAccounts.removeAccount(args.accountId)
-  )
-  ipcMain.handle(
-    'codexAccounts:select',
-    (_event, args: { accountId: string | null } & CodexAccountSelectionTarget) => {
-      if (!args.runtime) {
-        // Legacy renderers omit runtime; infer it from the account so valid WSL selection still works.
-        return codexAccounts.selectAccount(args.accountId)
-      }
-      return codexAccounts.selectAccountForTarget(args.accountId, args)
-    }
-  )
+  handleAshNativeAccountIpc('codexAccounts:select', (_event, value: unknown) => {
+    const args = HostAccountSelectionSchema.parse(value)
+    // Older renderers omit the target; never infer a removed WSL lane
+    // from a managed account ID at this host-local desktop boundary.
+    return codexAccounts.selectAccountForTarget(args.accountId, { runtime: 'host' })
+  })
 }
