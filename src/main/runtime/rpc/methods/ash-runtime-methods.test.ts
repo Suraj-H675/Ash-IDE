@@ -67,6 +67,15 @@ describe('Ash authenticated RPC surface', () => {
     expect(methodNames.has('orchestration.run')).toBe(true)
   })
 
+  it('does not even import excluded Jira or Linear methods into the broad server manifest', () => {
+    for (const name of [...allMethodNames, ...methodNames]) {
+      expect(name.startsWith('jira.'), `${name} must not enter server RPC manifests`).toBe(false)
+      expect(name.startsWith('linear.'), `${name} must not enter server RPC manifests`).toBe(false)
+    }
+    expect(allMethodNames.has('git.status')).toBe(true)
+    expect(allMethodNames.has('orchestration.run')).toBe(true)
+  })
+
   it('requires explicit confirmation for runtime shutdown RPC', () => {
     const stopMethod = ASH_RUNTIME_CONTROL_METHODS[0]!
     expect(
