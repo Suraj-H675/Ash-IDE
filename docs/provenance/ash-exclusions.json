@@ -42399,6 +42399,16 @@
       "path": "src/main/ipc/skill-share-publishing-ipc-schemas.ts",
       "sourceSha256": "592a44678eb263f127ed1737c89d72be4a3befc342a49db96dc059605bb44a6a",
       "reason": "Ash M8 exclusion: removed orphan upstream cloud skill-share publish IPC validation used only by the removed cloud skill registrar."
+    },
+    {
+      "path": "config/scripts/orcad-distribution/server-bundle/orcad-linear-sdk-package.mjs",
+      "sourceSha256": "beb9c6a720b0e9b70a320ff0db883cfa4de4992a4c0b8fc29226363b0462611e",
+      "reason": "Ash M8 exclusion: no server artifact stages the removed app-level Linear connector SDK; generated orcad package and template inventories exclude it."
+    },
+    {
+      "path": "config/scripts/orcad-distribution/server-bundle/orcad-mobile-web-bundle.mjs",
+      "sourceSha256": "5b238a9e8f35d8f1919bb8b205779dfd5a8ef9c91ae287f2e8bb3115dfcb8fbc",
+      "reason": "Ash M8 exclusion: remove paired-phone web bundle staging from the local server artifact and template; the desktop-only server does not require mobile page assets."
     }
   ]
 }

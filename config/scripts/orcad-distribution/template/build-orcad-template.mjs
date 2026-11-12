@@ -37,7 +37,6 @@ import {
 } from '../prebuilds/orcad-prebuild-slot-contents.mjs'
 import { runProcessSync } from '@orca/process-host'
 import { verifyPackagedOrcadTemplate } from './verify-packaged-orcad-template.cjs'
-import { readOrcadMobileWebAssetFilenames } from '../server-bundle/orcad-mobile-web-bundle.mjs'
 import { assertNotDarkBuild, darkBuildMarkers } from '../../../dark-build-switches.cjs'
 
 const root = resolve(import.meta.dirname, '../../../..')
@@ -193,10 +192,8 @@ async function main() {
   rmSync(outputDir, { recursive: true, force: true })
   mkdirSync(outputDir, { recursive: true })
   const [firstTarget] = templateTargets
-  // Every package carries the same page: its manifest is a common file, checked byte for byte below.
-  const commonArtifacts = orcadTemplateCommonFilenames(
-    readOrcadMobileWebAssetFilenames(packages[firstTarget])
-  )
+  // The template keeps one verified copy of shared server assets for all targets.
+  const commonArtifacts = orcadTemplateCommonFilenames()
   for (const filename of commonArtifacts) {
     const source = join(packages[firstTarget], ...filename.split('/'))
     // Why check every target: the template keeps one copy, so a per-target difference would ship wrong bytes.

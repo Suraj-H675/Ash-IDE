@@ -522,6 +522,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/managed-server/install/remote-install-model.ts",
+      "sha256": "1ac9424e55719f7d9a392f92b04d512ceceb6373bfbffe577431d4172d906a73",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/menu/app-menu-quit-item.ts",
       "sha256": "00dd3a4974b223679c8fd93f4ab22f106bd32660a0a32461d83123e40741c975",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -539,6 +544,16 @@
     {
       "path": "src/main/orca-profiles/profile-cloud-service.ts",
       "sha256": "883270ff0ed0fa9304af68d00fe9d2e6f0e0ad204fbb4480b75ee56f25b573e7",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/orcad/orcad-artifact-identity.ts",
+      "sha256": "42302aa5135e4e76a067c233b7cfa2c751eec9db7e2fc6fffbb8190c5842389f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/orcad/orcad-artifact-materializer.ts",
+      "sha256": "8a27e2d446f3e06f51ff5491b551ed190ed541b22fdc4ffcc45b17ae977e27b5",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -693,7 +708,7 @@
     },
     {
       "path": "src/main/runtime/rpc/methods/mobile-web-bundle.test.ts",
-      "sha256": "ec18d7d0bffb5a834a2338748fa815f3f83f71e6c8f0710b15fb8e7483baa1da",
+      "sha256": "d0c6bf1a1adfc3ccbd76d943fdaf4397c5db31a5495474a6d6c1989a107d8ae5",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1802,6 +1817,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/shared/orcad-artifacts.ts",
+      "sha256": "fb24d2fdd1675d62c5faf7d42848d0d224500bba9ed494aa0dd8294d71cea690",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/shared/orcad-serve-argv.ts",
       "sha256": "921038bdaea0e0ddbd6e838501e0c1eb168c05232141eecd5f8dc0e0d6adeb7e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1974,6 +1994,31 @@
     {
       "path": "config/scripts/orcad-distribution/qualification/orcad-terminal-smoke-change-scope.mjs",
       "sha256": "acc81e26ac80157fb11a1585f3ef4467fa61eaac85aefb8289561fd4ff03196a",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/orcad-distribution/server-bundle/build-orcad.mjs",
+      "sha256": "68abc56833dba9b84c91bef49954760756a00a941c20d3e1d2142980d8dff9e1",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/orcad-distribution/server-bundle/orcad-artifact-version.mjs",
+      "sha256": "0a3a46a7def3241eb367f87bdb96bb09136f606a7db3f1ce6692fab15ace5aa0",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/orcad-distribution/template/build-orcad-template.mjs",
+      "sha256": "7b1b6daedb9997f0b33e632720b9a94ab1ffa234fb30c6663caad8c772465372",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/orcad-distribution/template/orcad-template-test-fixture.mjs",
+      "sha256": "c41cc6c0f127fedf6f0c9ef46faedebebfd8f255bef2503ba99c8b6da1512fad",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/orcad-distribution/template/verify-packaged-orcad-template.cjs",
+      "sha256": "a3426f69a389306b71c5e19b676d6bfcfa9f8b4d2dc9d0389362d175e2e85136",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

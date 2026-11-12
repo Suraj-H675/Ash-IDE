@@ -5,15 +5,11 @@ import { dirname, join } from 'node:path'
 import { getAppEnvironment } from '../../shared/app-environment'
 import { waitForPromiseWithSignal } from '../../shared/abort-signal-reason'
 import {
-  ORCAD_MOBILE_WEB_DIR,
-  ORCAD_MOBILE_WEB_MANIFEST,
   ORCAD_NODE_RUNTIME_MARKER_FILENAME,
   ORCAD_SERVER_TARGET_FILENAME,
   ORCAD_TEMPLATE_MANIFEST_FILENAME,
   ORCAD_TEMPLATE_TARGETS_DIR,
   ORCAD_VERSION_FILENAME,
-  compareCodeUnits,
-  isOrcadMobileWebAssetPath,
   orcadArtifactFilenames,
   orcadTemplateCommonFilenames,
   orcadTemplatePackagedRipgrep,
@@ -90,9 +86,8 @@ export async function assembleOrcadArtifact(args: {
 }): Promise<string> {
   const trust = args.trustVerificationRecord === true
   const manifest = args.manifest ?? (await readTemplateManifest(args.templateDir))
-  const mobileWebAssets = templateMobileWebAssets(manifest)
-  const sources = artifactSources(args.templateDir, args.target, manifest, mobileWebAssets)
-  const expected = expectedTemplateSha256(args.target, manifest, mobileWebAssets)
+  const sources = artifactSources(args.templateDir, args.target, manifest)
+  const expected = expectedTemplateSha256(args.target, manifest)
   const targetRoot = join(args.cacheRoot, args.target)
   const nowMs = (args.now ?? Date.now)()
   const record = trust ? await readOrcadArtifactVerificationRecord(targetRoot) : null
@@ -163,8 +158,7 @@ function isExecutableArtifact(filename: string): boolean {
 function artifactSources(
   templateDir: string,
   target: NodeRuntimeTarget,
-  manifest: OrcadTemplateManifest,
-  mobileWebAssets: readonly string[]
+  manifest: OrcadTemplateManifest
 ): ArtifactSource[] {
   const targetDir = join(templateDir, ORCAD_TEMPLATE_TARGETS_DIR, target)
   const targetManifest = manifest.targets[target]
@@ -177,7 +171,7 @@ function artifactSources(
     targetManifest.packagedRipgrep
   )
   const targetFiles = new Set(orcadTemplateTargetFilenames(target))
-  const required = orcadArtifactFilenames(target, mobileWebAssets).map((filename) => ({
+  const required = orcadArtifactFilenames(target).map((filename) => ({
     filename,
     path: join(
       filename === packagedRipgrep
@@ -207,15 +201,14 @@ function artifactSources(
 
 function expectedTemplateSha256(
   target: NodeRuntimeTarget,
-  manifest: OrcadTemplateManifest,
-  mobileWebAssets: readonly string[]
+  manifest: OrcadTemplateManifest
 ): Map<string, ExpectedSha256> {
   const targetManifest = manifest.targets[target]
   if (!targetManifest) {
     throw new OrcadHostUnsupportedError(`Packaged orcad template does not support ${target}`)
   }
   const expected = new Map<string, ExpectedSha256>()
-  for (const filename of orcadTemplateCommonFilenames(mobileWebAssets)) {
+  for (const filename of orcadTemplateCommonFilenames()) {
     const sha256 = manifest.commonSha256[filename]
     if (!sha256) {
       throw new Error(`Packaged orcad template manifest omits ${filename}`)
@@ -240,22 +233,6 @@ function expectedTemplateSha256(
     })
   }
   return expected
-}
-
-/** Read asset names from the verified template manifest without extra WSL-wake file reads. */
-function templateMobileWebAssets(manifest: OrcadTemplateManifest): string[] {
-  const prefix = `${ORCAD_MOBILE_WEB_DIR}/`
-  const assets = Object.keys(manifest.commonSha256).filter(
-    (filename) => filename.startsWith(prefix) && filename !== ORCAD_MOBILE_WEB_MANIFEST
-  )
-  // Asset names become slot copy destinations; reject paths that escape.
-  const unsafe = assets.find(
-    (filename) => !isOrcadMobileWebAssetPath(filename.slice(prefix.length))
-  )
-  if (unsafe) {
-    throw new Error(`Packaged orcad template names an unsafe page asset: ${unsafe}`)
-  }
-  return assets.sort(compareCodeUnits)
 }
 
 async function readTemplateManifest(templateDir: string): Promise<OrcadTemplateManifest> {

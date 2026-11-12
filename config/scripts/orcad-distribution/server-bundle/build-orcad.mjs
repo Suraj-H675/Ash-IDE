@@ -35,8 +35,6 @@ import { materializeWatcherPackage } from './orcad-watcher-package.mjs'
 import { stageOrcadWindowsProcessTree } from './orcad-windows-process-tree.mjs'
 import { stageOrcadWindowsCliLauncher } from './orcad-windows-cli-launcher.mjs'
 import { stageOrcadWindowsSecurity } from './orcad-windows-security.mjs'
-import { stageOrcadLinearSdk } from './orcad-linear-sdk-package.mjs'
-import { stageOrcadMobileWebBundle } from './orcad-mobile-web-bundle.mjs'
 import {
   ORCAD_EMOJI_SHORTCODE_DATASET,
   ORCAD_CLI_ENTRY_FILENAME,
@@ -183,7 +181,6 @@ copyFileSync(
   createRequire(import.meta.url).resolve('emojibase-data/en/shortcodes/emojibase.json'),
   emojiDatasetOutput
 )
-await stageOrcadLinearSdk(ROOT, OUT_DIR)
 // The desktop template omits it: ~10 MB per target, and orcad already treats it as optional.
 if (existsSync(AGENT_BROWSER_SOURCE) && process.env.ORCAD_OMIT_AGENT_BROWSER !== '1') {
   copyFileSync(AGENT_BROWSER_SOURCE, AGENT_BROWSER_OUTPUT)
@@ -214,8 +211,6 @@ for (const artifact of ORCAD_COMPUTER_USE_RUNTIME_ARTIFACTS) {
   mkdirSync(dirname(join(OUT_DIR, artifact)), { recursive: true })
   copyFileSync(join(ROOT, 'native', ...artifact.split('/')), join(OUT_DIR, ...artifact.split('/')))
 }
-stageOrcadMobileWebBundle(OUT_DIR)
-
 // Build children individually to land flat beside orcad.js; multi-entry outdir mirrors source directories and breaks runtime resolution.
 function buildForkedChild(entryPoint, outfile) {
   return build({

@@ -4,11 +4,9 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { z } from 'zod'
 import {
-  ORCAD_MOBILE_WEB_MANIFEST,
   ORCAD_SERVER_TARGET_FILENAME,
   ORCAD_VERSION,
-  orcadArtifactFilenames,
-  orcadMobileWebAssetFilenames
+  orcadArtifactFilenames
 } from '../../shared/orcad-artifacts'
 import { COMPAT_SERVER_TARGETS, SERVER_TARGETS } from '../../shared/node-runtime-pin'
 import { orcadAgentBrowserNativeName } from '../../shared/orcad-agent-browser-name'
@@ -39,10 +37,7 @@ export async function listOrcadArtifactFilenames(directory: string): Promise<str
     target.split('-')[1] ?? '',
     target.endsWith('-musl') ? 'musl' : 'glibc'
   )
-  const filenames = orcadArtifactFilenames(
-    target,
-    orcadMobileWebAssetFilenames(await readFile(join(directory, ORCAD_MOBILE_WEB_MANIFEST), 'utf8'))
-  )
+  const filenames = orcadArtifactFilenames(target)
   if (existsSync(join(directory, browser))) {
     filenames.push(browser)
   }

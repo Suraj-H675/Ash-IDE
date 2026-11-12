@@ -2,12 +2,10 @@ const { createHash } = require('node:crypto')
 const { lstatSync, readFileSync, readdirSync } = require('node:fs')
 const { basename, join, relative, sep } = require('node:path')
 const {
-  ORCAD_MOBILE_WEB_MANIFEST,
   ORCAD_NODE_RUNTIME_MARKER_FILENAME,
   ORCAD_SERVER_TARGET_FILENAME,
   ORCAD_TEMPLATE_MANIFEST_FILENAME,
   ORCAD_TEMPLATE_TARGETS_DIR,
-  orcadMobileWebAssetFilenames,
   orcadTemplateCommonFilenames,
   orcadTemplatePackagedRipgrep,
   orcadTemplateTargetFilenames
@@ -166,16 +164,14 @@ function verifyPackagedOrcadTemplate(resourcesDir, targets = ORCAD_TEMPLATE_TARG
     )
   }
   const commonSha256 = requireRecord(manifest.commonSha256, 'commonSha256')
-  const pageManifest = join(templateDir, ...ORCAD_MOBILE_WEB_MANIFEST.split('/'))
-  verifyFile(
-    pageManifest,
-    requireSha256(commonSha256[ORCAD_MOBILE_WEB_MANIFEST], `${ORCAD_MOBILE_WEB_MANIFEST} checksum`),
-    ORCAD_MOBILE_WEB_MANIFEST
-  )
-  const commonFilenames = orcadTemplateCommonFilenames(
-    orcadMobileWebAssetFilenames(readFileSync(pageManifest, 'utf8'))
-  )
+  const commonFilenames = orcadTemplateCommonFilenames()
   requireExactNames(Object.keys(commonSha256), commonFilenames, 'common manifest inventory')
+  const actualCommonFiles = listFiles(templateDir).filter(
+    (filename) =>
+      filename !== ORCAD_TEMPLATE_MANIFEST_FILENAME &&
+      !filename.startsWith(`${ORCAD_TEMPLATE_TARGETS_DIR}/`)
+  )
+  requireExactNames(actualCommonFiles, commonFilenames, 'common file inventory')
   for (const filename of commonFilenames) {
     verifyFile(
       join(templateDir, ...filename.split('/')),
