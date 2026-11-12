@@ -47,6 +47,9 @@ const profile = join(fixture, 'profile')
 const project = join(fixture, 'project')
 const home = join(fixture, 'home')
 const runtimeDir = join(fixture, 'run')
+// Keep SQLite, native PTY and Node temporary files inside the test-owned
+// fixture; /tmp has a separate quota on some Linux developer machines.
+const privateTempDir = join(fixture, 'tmp')
 const defaultAshProfile = join(home, '.config', 'ash-ide')
 // This one is physically outside /tmp so it tests a persisted profile, not
 // the disposable-key shortcut. Its short path also fits Unix socket limits.
@@ -58,6 +61,7 @@ for (const folder of [
   project,
   home,
   runtimeDir,
+  privateTempDir,
   join(home, '.config'),
   join(home, '.cache'),
   join(home, '.local', 'share'),
@@ -128,6 +132,9 @@ function assertForeignProfileUntouched() {
 const childEnv = {
   PATH: process.env.PATH ?? '/usr/bin:/bin',
   LANG: process.env.LANG ?? 'C.UTF-8',
+  TMPDIR: privateTempDir,
+  TMP: privateTempDir,
+  TEMP: privateTempDir,
   HOME: home,
   XDG_RUNTIME_DIR: runtimeDir,
   XDG_CONFIG_HOME: join(home, '.config'),

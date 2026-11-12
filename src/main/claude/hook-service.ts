@@ -6,10 +6,7 @@ import {
 } from '../claude-accounts/claude-profile-homes'
 import type { AgentHookSource } from '../../shared/agent-hook-listener/transport/agent-hook-relay'
 import type { SFTPWrapper } from 'ssh2'
-import type {
-  AgentHookInstallState,
-  AgentHookInstallStatus
-} from '../../shared/agent-hook-listener/configuration/agent-hook-types'
+import type { AgentHookInstallStatus } from '../../shared/agent-hook-listener/configuration/agent-hook-types'
 import {
   buildManagedCommandHook,
   readHooksJson,
@@ -29,8 +26,6 @@ import {
   removeClaudeAgentView
 } from './agent-view/agent-view-install'
 import {
-  getWindowsClaudeHookExecutablePath,
-  getWindowsClaudeHookFileStatus,
   installWindowsClaudeHookExecutable,
   installWindowsClaudeHookFiles,
   refreshWindowsClaudeHookFiles
@@ -53,12 +48,13 @@ import {
   getStatusLineInstallMarkerPath,
   getStatusLineScriptFileName,
   getStatusLineScriptPath,
-  findManagedEventHookForms,
   removeManagedHooks,
   removeManagedStatusLine,
   type ClaudeCompatibleHookSettings
 } from './hook-settings'
 import { claudeAcceptsExecFormHooks } from './claude-hook-event-versions'
+import { blockedClaudeCompatibleHookMutation } from './claude-hook-mutation-policy'
+import { readClaudeCompatibleHookStatus } from './claude-hook-status-reader'
 import {
   getClaudeManagedHookPlan,
   OPENCLAUDE_MANAGED_HOOK_PLAN,
@@ -116,53 +112,19 @@ export class ClaudeHookService {
   }
 
   getStatus(options: ClaudeHookTargetOptions = {}): AgentHookInstallStatus {
-    const refused = refuseProfileAtDefaultHome(this.options, options.configDir)
-    if (refused) {
-      return refused
-    }
-    const configPath = getConfigPath(this.options.settings, options.configDir)
-    const scriptPath = getManagedScriptPath(this.options.settings)
-    const config = readHooksJson(configPath)
-    if (!config) {
-      return {
-        agent: this.options.agent,
-        state: 'error',
-        configPath,
-        managedHooksPresent: false,
-        detail: `Could not parse ${this.options.displayName} settings.json`
-      }
-    }
-
-    // Count either Windows launcher form: installation falls back to .cmd when the exe cannot be placed.
-    const exePath = this.usesWindowsEntry ? getWindowsClaudeHookExecutablePath(scriptPath) : null
-    const events = this.managedHookPlan(options).install.map((event) => event.eventName)
-    const { missing, matchedForms } = findManagedEventHookForms(config, events, (eventName) =>
-      [null, exePath].map((path) =>
-        // An installed exec form proves its CLI accepted it, whatever the probe now reports.
-        getManagedEventHook(eventName, scriptPath, this.options.settings, path, { execForm: true })
-      )
-    )
-    const presentCount = matchedForms.length
-    const managedHooksPresent = presentCount > 0
-    let state: AgentHookInstallState
-    let detail: string | null
-    if (missing.length === 0) {
-      state = 'installed'
-      detail = null
-    } else if (presentCount === 0) {
-      state = 'not_installed'
-      detail = null
-    } else {
-      state = 'partial'
-      detail = `Managed hook missing for events: ${missing.join(', ')}`
-    }
-    const status = { agent: this.options.agent, state, configPath, managedHooksPresent, detail }
-    return this.usesWindowsEntry
-      ? getWindowsClaudeHookFileStatus(status, scriptPath, matchedForms.includes(1))
-      : status
+    return readClaudeCompatibleHookStatus({
+      agent: this.options.agent,
+      displayName: this.options.displayName,
+      settings: this.options.settings,
+      configDir: options.configDir,
+      plan: this.managedHookPlan(options)
+    })
   }
 
   async refreshManagedScripts(): Promise<void> {
+    if (blockedClaudeCompatibleHookMutation(this.options.agent)) {
+      return
+    }
     if (this.options.agent === 'claude') {
       const profiles = await listClaudeProfileHomesAsync(getAppEnvironment().getPath('userData'))
       for (const configDir of [undefined, ...profiles]) {
@@ -186,6 +148,10 @@ export class ClaudeHookService {
   }
 
   install(options: ClaudeHookTargetOptions = {}): AgentHookInstallStatus {
+    const blocked = blockedClaudeCompatibleHookMutation(this.options.agent)
+    if (blocked) {
+      return blocked
+    }
     const refused = refuseProfileAtDefaultHome(this.options, options.configDir)
     if (refused) {
       return refused
@@ -234,6 +200,10 @@ export class ClaudeHookService {
     remoteHome: string,
     options: ClaudeHookInstallOptions = {}
   ): Promise<AgentHookInstallStatus> {
+    const blocked = blockedClaudeCompatibleHookMutation(this.options.agent)
+    if (blocked) {
+      return blocked
+    }
     // Remote hook installation targets POSIX hosts regardless of the client platform.
     const remoteConfigPath = getRemoteConfigPath(remoteHome, this.options.settings)
     const remoteScriptFileName = getPosixManagedScriptFileName(this.options.settings)
@@ -288,6 +258,10 @@ export class ClaudeHookService {
   }
 
   remove(): AgentHookInstallStatus {
+    const blocked = blockedClaudeCompatibleHookMutation(this.options.agent)
+    if (blocked) {
+      return blocked
+    }
     const configPath = getConfigPath(this.options.settings)
     const config = readHooksJson(configPath)
     if (!config) {

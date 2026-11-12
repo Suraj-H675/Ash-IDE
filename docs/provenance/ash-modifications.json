@@ -312,6 +312,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/claude/hook-service.ts",
+      "sha256": "a5db76fbe63d4e891377e9f59b978cf3c52943779319105fa2dc9ce3e4776587",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/claude-accounts/claude-profile-router.ts",
       "sha256": "f48f1a66085b28cfa6b80f6615d3b19b281b067c2ed725874e03fb9cb9b980c4",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
