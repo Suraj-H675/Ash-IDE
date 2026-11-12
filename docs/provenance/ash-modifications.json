@@ -643,7 +643,12 @@
     },
     {
       "path": "src/main/runtime/construction/runtime-construction.ts",
-      "sha256": "4aa81a4afc051287328acc35b447cf1d8ab5476b39f9f72a281db44948a3ccc5",
+      "sha256": "ae7609b54e6529537b8493624ffb4b069b7ae775887edb7acb1288e4cffae4cc",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/construction/runtime-installed-command-surfaces.ts",
+      "sha256": "8acc44824df2244a4b3d552c1ae990d654e1d614b0118872e2e70dbbdc6993ad",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -664,6 +669,11 @@
     {
       "path": "src/main/runtime/orca-runtime-tests/orca-runtime-terminal-persistence-status.test.ts",
       "sha256": "4cad101ea9baf1433a66868fa6610c9eb69f38084f211c84edc134cec3fc3a81",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/orca-runtime.ts",
+      "sha256": "07d830a9a8829e9c711c61ff7ee2a06ea9f22d39dfa113c3fc774e5810165346",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -867,6 +877,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/runtime-edge-command-controller.ts",
+      "sha256": "fcf18b55d7ae652c151321e0b46984098c4428f731eeb4ee92b581e134410bdf",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/runtime-service-command-surface.ts",
       "sha256": "50a2efdc6c71191408bfce6a8314341ae6dac8655ac8f56d719d299eca41714b",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -874,6 +889,11 @@
     {
       "path": "src/main/runtime/sidebar-inputs/paired-server-rows-producer.ts",
       "sha256": "845136ae3cf13f6daf302e8351a7367392fa1c2e05f5de219c8805712cff6a22",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/terminal/driver/terminal-driver-resources.ts",
+      "sha256": "afa3fb907adc8005019ce2a9637752168db8a970724bb0c8e23781351ee466f0",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

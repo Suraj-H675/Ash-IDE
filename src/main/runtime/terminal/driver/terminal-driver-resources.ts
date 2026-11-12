@@ -178,10 +178,6 @@ export abstract class OrcaRuntimeWithTerminalDrivers extends OrcaRuntimeWithFitO
   }
 
   protected readonly edgeCommands = new RuntimeEdgeCommandController({
-    jiraHost: {
-      getSettings: () => this.requireStore().getSettings(),
-      getAgentEnvironment: () => this.accounts.getCommitMessageAgentEnvironment()
-    },
     browserHost: {
       getRuntimeId: () => this.getRuntimeId(),
       getAgentBrowserBridge: () => this.agentBrowserBridge,

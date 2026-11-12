@@ -42424,6 +42424,71 @@
       "path": "src/renderer/src/web/preload-api/web-jira-api.ts",
       "sourceSha256": "a2ec057404f37ae9793c79ff7133f5cf196645edda99db2946bf1989954d41e7",
       "reason": "Ash M8 exclusion: remove archived web-client Jira connector adapter because Jira application RPC and preload namespaces are unsupported. Kept local Git-provider API adapters and browser capability intact."
+    },
+    {
+      "path": "src/main/runtime/integrations/jira/runtime-jira-commands.ts",
+      "sourceSha256": "7485c075aea595c73f5f6e6e77f66e5eac78865923ba93d8696804beeb96d0b0",
+      "reason": "Ash M8 exclusion: removed unreachable Jira/Linear application connector RPC implementation or runtime facade, after removing registry and preload exposure; retained historical workspace data, metadata migrations and ordinary Git-provider capability."
+    },
+    {
+      "path": "src/main/runtime/integrations/linear/linear-commands.ts",
+      "sourceSha256": "971f5c8de2044d61c82a5667cdd73c908ae8a53d8c27321075f62f1fdfeb9afd",
+      "reason": "Ash M8 exclusion: removed unreachable Jira/Linear application connector RPC implementation or runtime facade, after removing registry and preload exposure; retained historical workspace data, metadata migrations and ordinary Git-provider capability."
+    },
+    {
+      "path": "src/main/runtime/integrations/linear/runtime-linear-command-surface.ts",
+      "sourceSha256": "8958791a704e15df47912515a521cb0f7d8cea934dd3cc2baa129f22f519177f",
+      "reason": "Ash M8 exclusion: removed unreachable Jira/Linear application connector RPC implementation or runtime facade, after removing registry and preload exposure; retained historical workspace data, metadata migrations and ordinary Git-provider capability."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/jira-favourite-filters.test.ts",
+      "sourceSha256": "6468a6a1628134d3127dc898629fe4d2b1ff12485ab4490150f66ac7af94ae3b",
+      "reason": "Ash M8 exclusion: retired obsolete Jira/Linear application connector RPC tests after removing the unreachable connector command handlers; replaced with negative active-runtime facade and RPC registration tests. Historical persisted UI state tests remain."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/jira.test.ts",
+      "sourceSha256": "f1f1c812ee56986b2ce1e0c788b8f4ec849d5e585b070ab6305ed1d296a82ef2",
+      "reason": "Ash M8 exclusion: retired obsolete Jira/Linear application connector RPC tests after removing the unreachable connector command handlers; replaced with negative active-runtime facade and RPC registration tests. Historical persisted UI state tests remain."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/jira.ts",
+      "sourceSha256": "8fa96920c4f757ed0a523b325e7f5df3d8a0d9a52a6dc1782f987d46e7c0d080",
+      "reason": "Ash M8 exclusion: removed unreachable Jira/Linear application connector RPC implementation or runtime facade, after removing registry and preload exposure; retained historical workspace data, metadata migrations and ordinary Git-provider capability."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/linear-agent-access.test.ts",
+      "sourceSha256": "ad5e039c892b0b16ce75b7fcaa5b01756a1086d449b8ffc2cec14f634a4f4e79",
+      "reason": "Ash M8 exclusion: retired obsolete Jira/Linear application connector RPC tests after removing the unreachable connector command handlers; replaced with negative active-runtime facade and RPC registration tests. Historical persisted UI state tests remain."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/linear-agent-access.ts",
+      "sourceSha256": "86804295c91d130598afa013727f54b7cc6cb61fb9f79ac7dbce30cc453ff956",
+      "reason": "Ash M8 exclusion: removed unreachable Jira/Linear application connector RPC implementation or runtime facade, after removing registry and preload exposure; retained historical workspace data, metadata migrations and ordinary Git-provider capability."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/linear-agent-project-access.spec.ts",
+      "sourceSha256": "a977cc28d6bf22a972e25a6abcd571dac0c2e56e9939de5e5ada1650a4d60c3a",
+      "reason": "Ash M8 exclusion: retired obsolete Jira/Linear application connector RPC tests after removing the unreachable connector command handlers; replaced with negative active-runtime facade and RPC registration tests. Historical persisted UI state tests remain."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/linear-issue-list-method.ts",
+      "sourceSha256": "40bc185aeddf6e8403c12ccd2ed03b5e22158188d7f3125727b4f48e50f8cdac",
+      "reason": "Ash M8 exclusion: removed unreachable Jira/Linear application connector RPC implementation or runtime facade, after removing registry and preload exposure; retained historical workspace data, metadata migrations and ordinary Git-provider capability."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/linear-project-create.ts",
+      "sourceSha256": "017cf7fd27470f7dc667cc044f673d3f1f6a7ae0f31bf57b517d075ec30d00fb",
+      "reason": "Ash M8 exclusion: removed unreachable Jira/Linear application connector RPC implementation or runtime facade, after removing registry and preload exposure; retained historical workspace data, metadata migrations and ordinary Git-provider capability."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/linear.test.ts",
+      "sourceSha256": "56be7c69eda2d192e0cf6099972216e7e599d4cc8bf862d498cc499f819deda8",
+      "reason": "Ash M8 exclusion: retired obsolete Jira/Linear application connector RPC tests after removing the unreachable connector command handlers; replaced with negative active-runtime facade and RPC registration tests. Historical persisted UI state tests remain."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/linear.ts",
+      "sourceSha256": "de6d225985686100935aaedcf3423e5a0d793bea6a23f8666e4ec730023e75b8",
+      "reason": "Ash M8 exclusion: removed unreachable Jira/Linear application connector RPC implementation or runtime facade, after removing registry and preload exposure; retained historical workspace data, metadata migrations and ordinary Git-provider capability."
     }
   ]
 }
