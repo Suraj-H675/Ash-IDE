@@ -1,3 +1,4 @@
+const { existsSync } = require('node:fs')
 const { join } = require('node:path')
 const { listPackage } = require('@electron/asar')
 
@@ -12,6 +13,15 @@ const ALLOWED_ASAR_ROOTS = new Set([
   'node_modules',
   'scripts'
 ])
+
+// Retired app-level Jira/Linear connectors and product analytics must not be
+// distributed even if their old sources remain for an independent removal.
+const EXCLUDED_VENDOR_NODE_MODULES = [
+  '@linear/sdk',
+  '@posthog/core',
+  '@posthog/types',
+  'posthog-node'
+]
 
 function verifyAshPackagedAsarHygiene(resourcesDir) {
   const archivePath = join(resourcesDir, 'app.asar')
@@ -39,6 +49,19 @@ function verifyAshPackagedAsarHygiene(resourcesDir) {
   }
   if (!roots.has('out') || !roots.has('package.json')) {
     throw new Error('[ash-package-hygiene] packaged runtime entry roots are incomplete')
+  }
+  for (const packageName of EXCLUDED_VENDOR_NODE_MODULES) {
+    const relativePath = `node_modules/${packageName}`
+    if (
+      entries.some((entry) => {
+        const normalized = entry.replace(/\\/g, '/').replace(/^\/+/, '')
+        return normalized === relativePath || normalized.startsWith(`${relativePath}/`)
+      }) ||
+      existsSync(join(resourcesDir, 'node_modules', ...packageName.split('/'))) ||
+      existsSync(join(resourcesDir, 'app.asar.unpacked', 'node_modules', ...packageName.split('/')))
+    ) {
+      throw new Error(`[ash-package-hygiene] excluded app vendor SDK was packaged: ${packageName}`)
+    }
   }
   console.log(`[ash-package-hygiene] OK — ${entries.length} archive entries in reviewed roots`)
   return { entries: entries.length, roots: [...roots].sort() }

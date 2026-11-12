@@ -7,6 +7,10 @@ import { afterEach, expect, it } from 'vitest'
 const require = createRequire(import.meta.url)
 const { createPackage } = require('@electron/asar')
 const { verifyAshPackagedAsarHygiene } = require('./verify-ash-packaged-asar-hygiene.cjs')
+const {
+  PACKAGED_RUNTIME_PACKAGE_ROOTS,
+  createPackagedRuntimeNodeModuleResources
+} = require('../../../packaged-runtime-node-modules.cjs')
 
 const fixtures = []
 
@@ -28,6 +32,23 @@ async function makeArchive(files) {
 afterEach(async () => {
   for (const root of fixtures.splice(0)) {
     await rm(root, { recursive: true, force: true })
+  }
+})
+
+it('does not select retired Linear/telemetry SDKs in Linux or macOS runtime dependency closure', () => {
+  const excluded = ['@linear/sdk', '@posthog/core', '@posthog/types', 'posthog-node']
+  expect(PACKAGED_RUNTIME_PACKAGE_ROOTS).not.toEqual(
+    expect.arrayContaining(['@linear/sdk', 'posthog-node'])
+  )
+  for (const platform of ['linux', 'darwin']) {
+    const resources = createPackagedRuntimeNodeModuleResources(platform)
+    const names = resources.map(({ to }) => to.replace(/^node_modules\//, ''))
+    for (const packageName of excluded) {
+      expect(names, platform).not.toContain(packageName)
+    }
+    for (const required of ['node-pty', '@orca/process-host', '@anthropic-ai/claude-agent-sdk']) {
+      expect(names, platform).toContain(required)
+    }
   }
 })
 
@@ -64,5 +85,29 @@ it('refuses a package lacking the compiled runtime entry', async () => {
   const resources = await makeArchive(['package.json', 'resources/icon.png'])
   expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
     '[ash-package-hygiene] packaged runtime entry roots are incomplete'
+  )
+})
+
+it.each(['@linear/sdk', '@posthog/core', '@posthog/types', 'posthog-node'])(
+  'refuses the retired vendor dependency %s in packaged node_modules',
+  async (packageName) => {
+    const resources = await makeArchive(['package.json', 'out/main/index.js'])
+    const path = join(resources, 'node_modules', ...packageName.split('/'), 'package.json')
+    await mkdir(dirname(path), { recursive: true })
+    await writeFile(path, 'synthetic vendor fixture\n')
+    expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+      `[ash-package-hygiene] excluded app vendor SDK was packaged: ${packageName}`
+    )
+  }
+)
+
+it('refuses a retired vendor dependency packed inside app.asar', async () => {
+  const resources = await makeArchive([
+    'package.json',
+    'out/main/index.js',
+    'node_modules/posthog-node/package.json'
+  ])
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    '[ash-package-hygiene] excluded app vendor SDK was packaged: posthog-node'
   )
 })

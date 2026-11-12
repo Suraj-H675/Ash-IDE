@@ -25,14 +25,12 @@ const requireFromProject = createRequire(join(projectDir, 'package.json'))
 
 const PACKAGED_RUNTIME_PACKAGE_ROOTS = [
   '@anthropic-ai/claude-agent-sdk',
-  '@linear/sdk',
   '@orca/process-host',
   '@parcel/watcher',
   'electron-updater',
   'i18next',
   'jsonc-parser',
   'node-pty',
-  'posthog-node',
   'proper-lockfile',
   'qrcode',
   'smol-toml',

@@ -1847,6 +1847,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "config/packaged-runtime-node-modules.cjs",
+      "sha256": "801c6dcd97842304488d95b38c1ebf16f8050184581707e521e9f0b47d7b7693",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "config/scripts/ci/sharding/ci-shard-timings.json",
       "sha256": "dbfdf73d04f34a52c0c844f8b14eb4d76cf3459a0b7a9df2de3d9552f95b376c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
