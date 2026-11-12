@@ -625,6 +625,9 @@ module.exports = {
     artifactName: 'ash-ide-macos-${arch}.${ext}'
   },
   linux: {
+    // The desktop entry, Wayland app_id and X11 WM_CLASS must all match the
+    // already-pinned Ash application ID, independently of the CLI executable.
+    syncDesktopName: true,
     // shared-mime-info already maps md/markdown: advertise handler only, leaving mimeapps.list defaults intact.
     // Omit mdx because Ubuntu 24.04 maps it to application/x-genesis-32x-rom; claiming it would need a glob override.
     mimeTypes: ['text/markdown', 'text/csv', 'text/tab-separated-values'],
@@ -634,9 +637,7 @@ module.exports = {
     icon: 'resources/ash-build/icon.icns',
     desktop: {
       entry: {
-        // Why: Electron reports WM_CLASS=orca for the visible Linux window;
-        // GNOME docks group the Ash window by its own class.
-        StartupWMClass: 'AshIDE'
+        StartupWMClass: appId
       }
     },
     extraResources: [

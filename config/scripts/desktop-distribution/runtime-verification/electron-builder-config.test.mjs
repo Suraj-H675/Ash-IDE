@@ -14,6 +14,17 @@ const electronBuilderConfig = require('../../../electron-builder.config.cjs')
 const { copyFiles, FileMatcher } = require('app-builder-lib/out/fileMatcher')
 
 describe('electron-builder config', () => {
+  it('keeps Linux Wayland app_id, desktop entry and window association on Ash identity', async () => {
+    const manifest = JSON.parse(await readFile(join(REPO_ROOT, 'package.json'), 'utf8'))
+    const desktopName = manifest.desktopName
+    expect(electronBuilderConfig.appId).toBe('com.ashide.desktop')
+    expect(desktopName).toBe(`${electronBuilderConfig.appId}.desktop`)
+    expect(electronBuilderConfig.linux.syncDesktopName).toBe(true)
+    expect(electronBuilderConfig.linux.desktop.entry.StartupWMClass).toBe(
+      electronBuilderConfig.appId
+    )
+    expect(electronBuilderConfig.linux.executableName).toBe('ash-ide')
+  })
   it('never selects gitignored private profile/cache/audit or prior package output', async () => {
     const root = await mkdtemp(join(tmpdir(), 'ash-package-private-inputs-'))
     const source = join(root, 'app')
