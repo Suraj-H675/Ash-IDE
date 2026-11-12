@@ -206,6 +206,21 @@ export async function removeManagedAgentHooks(
   options: RemoveOptions = {}
 ): Promise<AgentHookInstallStatus[]> {
   const allowed = options.agents ? new Set(options.agents) : null
+  if (!canAshWriteProviderGlobalHooks()) {
+    // The inherited removers match Orca's shared command patterns, not an
+    // Ash-owned per-entry provenance ledger. Even an explicit uninstall must
+    // not delete another application's provider hooks. This branch performs
+    // no read, probe, refresh, or filesystem mutation.
+    return MANAGED_AGENT_HOOK_REMOVERS.filter(
+      ([agent]) => allowed === null || allowed.has(agent)
+    ).map(([agent]) =>
+      skippedStatus(
+        agent,
+        'ash_ownership_unavailable',
+        'Ash has no verified ownership of provider-global hooks; removal skipped and entries left unchanged.'
+      )
+    )
+  }
   const results: AgentHookInstallStatus[] = []
   for (const [agent, remove] of MANAGED_AGENT_HOOK_REMOVERS) {
     if (allowed !== null && !allowed.has(agent)) {
@@ -224,6 +239,19 @@ export async function removeManagedAgentHooksAsync(
   options: RemoveOptions = {}
 ): Promise<AgentHookInstallStatus[]> {
   const allowed = options.agents ? new Set(options.agents) : null
+  if (!canAshWriteProviderGlobalHooks()) {
+    // Grok's async cleanup also mutates a provider-global file. Do not run its
+    // owner-pruning or cleanup pipeline without an Ash ownership claim.
+    return MANAGED_AGENT_HOOK_ASYNC_REMOVERS.filter(
+      ([agent]) => allowed === null || allowed.has(agent)
+    ).map(([agent]) =>
+      skippedStatus(
+        agent,
+        'ash_ownership_unavailable',
+        'Ash has no verified ownership of provider-global hooks; removal skipped and entries left unchanged.'
+      )
+    )
+  }
   return await Promise.all(
     MANAGED_AGENT_HOOK_ASYNC_REMOVERS.filter(
       ([agent]) => allowed === null || allowed.has(agent)

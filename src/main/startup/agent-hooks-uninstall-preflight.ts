@@ -4,7 +4,7 @@ import { setAppEnvironment } from '../../shared/app-environment'
 import { ElectronAppEnvironment } from '../host/electron-app-environment'
 import { ensureWindowsAppDataPath } from './windows-app-data-path'
 
-/** The NSIS uninstaller's flag (config/nsis/orca-installer-hooks.nsh); keep the two in sync. */
+/** Legacy Orca-only NSIS flag; Ash's installer never invokes this inherited preflight. */
 export const AGENT_HOOKS_UNINSTALL_FLAG = '--orca-uninstall-remove-agent-hooks'
 
 // Uninstall must finish even if an agent's config never answers.
@@ -16,12 +16,17 @@ export async function removeAgentHooksForUninstall(
 ): Promise<number> {
   try {
     const statuses = await removeHooks()
-    const failed = statuses.filter((status) => status.state === 'error')
+    const failed = statuses.filter(
+      (status) => status.state === 'error' || status.state === 'skipped'
+    )
     for (const status of failed) {
       console.warn(
         `[agent-hooks] uninstall left ${status.agent} hooks: ${status.detail ?? 'error'}`
       )
     }
+    // A skipped removal is not a successful uninstall. Preserving the
+    // foreign hooks is correct, but never report cleanup succeeded when it
+    // was blocked by Ash's ownership gate.
     return failed.length === 0 ? 0 : 1
   } catch (error) {
     console.warn('[agent-hooks] uninstall could not remove managed agent hooks:', error)

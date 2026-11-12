@@ -293,7 +293,7 @@
     },
     {
       "path": "src/main/agent-hooks/managed-agent-hook-controls.ts",
-      "sha256": "f4c0173099f978ca642ee650790daf9265e73d49b8d4c522a14218c6ad0eaf61",
+      "sha256": "1e8f357d04fd71177832eaf3838e71fc2951df50cc03bde1291fd8017b79a86c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1004,6 +1004,16 @@
     {
       "path": "src/main/server/serve-readiness.ts",
       "sha256": "491068d9c572ebff3df0324520c7e1982d305d25a463c1684523580a224d1325",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/agent-hooks-uninstall-preflight-real-removers.test.ts",
+      "sha256": "f854aa15209202a52814e4e0354b40aba2432943380d061f48e1aed5a9ea58be",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/agent-hooks-uninstall-preflight.ts",
+      "sha256": "ecd501243cd6d7ae31ccc73c0b7557ab0fc0618284e7efd8fa5deae482e6e697",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

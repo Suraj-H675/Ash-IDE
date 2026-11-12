@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
@@ -49,37 +49,24 @@ afterEach(() => {
   rmSync(fixture.userData, { recursive: true, force: true })
 })
 
-it("runs every agent's real remover, including Claude's agent view and status-line marker", async () => {
-  const { installClaudeAgentView } = await import('../claude/agent-view/agent-view-install')
-  const { markerName } = await import('../claude/agent-view/agent-view-binding-plan')
-  const { CLAUDE_AGENT_VIEW_COMMAND } = await import('../../shared/claude-agent-view')
-  const { getStatusLineInstallMarkerPath } = await import('../claude/hook-settings')
+it('refuses inherited uninstall removal without populating provider-hook directories', async () => {
   const claudeDir = join(fixture.home, '.claude')
+  const orcaHookDir = join(fixture.home, '.orca', 'agent-hooks')
   mkdirSync(claudeDir, { recursive: true })
-  expect(installClaudeAgentView(join(claudeDir, 'settings.json'))).toBe(true)
-  expect(readFileSync(join(claudeDir, 'keybindings.json'), 'utf8')).toContain(
-    `command:${CLAUDE_AGENT_VIEW_COMMAND}`
-  )
-  const statusLineMarker = getStatusLineInstallMarkerPath()
-  mkdirSync(join(statusLineMarker, '..'), { recursive: true })
-  writeFileSync(statusLineMarker, '')
+  mkdirSync(orcaHookDir, { recursive: true })
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-  const { AGENT_HOOKS_UNINSTALL_FLAG, runAgentHooksUninstallPreflight } =
-    await import('./agent-hooks-uninstall-preflight')
-  expect(runAgentHooksUninstallPreflight(['Orca.exe', AGENT_HOOKS_UNINSTALL_FLAG])).toBe(true)
+  try {
+    const { AGENT_HOOKS_UNINSTALL_FLAG, runAgentHooksUninstallPreflight } =
+      await import('./agent-hooks-uninstall-preflight')
+    expect(runAgentHooksUninstallPreflight(['Orca.exe', AGENT_HOOKS_UNINSTALL_FLAG])).toBe(true)
 
-  await vi.waitFor(() => expect(fixture.exit).toHaveBeenCalled(), { timeout: 20_000 })
-  // No remover failed, so none hit an uninitialised singleton.
-  expect(warn).not.toHaveBeenCalled()
-  expect(fixture.exit).toHaveBeenCalledExactlyOnceWith(0)
-  // The keybinding goes; the marker stays, recording that Orca disabled it.
-  expect(readFileSync(join(claudeDir, 'keybindings.json'), 'utf8')).not.toContain(
-    `command:${CLAUDE_AGENT_VIEW_COMMAND}`
-  )
-  expect(JSON.parse(readFileSync(join(claudeDir, markerName), 'utf8'))).toMatchObject({
-    setup: 'pending',
-    cleanupPending: false
-  })
-  expect(existsSync(statusLineMarker)).toBe(false)
+    await vi.waitFor(() => expect(fixture.exit).toHaveBeenCalled(), { timeout: 20_000 })
+    expect(fixture.exit).toHaveBeenCalledExactlyOnceWith(1)
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('uninstall left claude hooks'))
+    expect(readdirSync(claudeDir)).toEqual([])
+    expect(readdirSync(orcaHookDir)).toEqual([])
+  } finally {
+    warn.mockRestore()
+  }
 })
