@@ -1,11 +1,10 @@
 import { lstatSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname } from 'node:path'
 import type { SFTPWrapper } from 'ssh2'
 import type {
   AgentHookInstallState,
   AgentHookInstallStatus
 } from '../../shared/agent-hook-listener/configuration/agent-hook-types'
-import { resolveGrokHomeDir } from '../../shared/grok-session-paths'
 import {
   readHooksJson,
   readHooksJsonWithRaw,
@@ -43,14 +42,15 @@ import {
   matchesRecordedGrokSymlinkCleanup,
   recordGrokSymlinkCleanup
 } from './grok-hook-symlink-cleanup-marker'
+import { canAshWriteProviderGlobalHooks } from '../agent-hooks/ash-hook-ownership-policy'
+import {
+  ashGrokMutationUnavailable,
+  getConfigPath,
+  notInstalledStatus
+} from './grok-hook-status-factories'
 
 export function getGrokToolEventMatcherForTests(): string {
   return GROK_TOOL_EVENT_MATCHER
-}
-
-function getConfigPath(): string {
-  // Use Grok's selected home and a dedicated managed file so unrelated user hook files stay untouched.
-  return join(resolveGrokHomeDir(), 'hooks', 'orca-status.json')
 }
 
 export function getManagedCommandForTests(scriptPath: string): string {
@@ -76,21 +76,11 @@ function readGrokHookConfigRawSync(configPath: string): string | null {
   }
 }
 
-function notInstalledStatus(
-  configPath: string,
-  detail: string | null = null
-): AgentHookInstallStatus {
-  return {
-    agent: 'grok',
-    state: detail ? 'error' : 'not_installed',
-    configPath,
-    managedHooksPresent: false,
-    detail
-  }
-}
-
 export class GrokHookService {
   async refreshManagedScripts(): Promise<void> {
+    if (!canAshWriteProviderGlobalHooks()) {
+      return
+    }
     await refreshManagedScriptIfPresent(getGrokManagedScriptPath(), getGrokManagedScript())
   }
 
@@ -142,6 +132,9 @@ export class GrokHookService {
   }
 
   install(options?: { userInitiated?: boolean }): AgentHookInstallStatus {
+    if (!canAshWriteProviderGlobalHooks()) {
+      return ashGrokMutationUnavailable()
+    }
     const configPath = getConfigPath()
     const scriptPath = getGrokManagedScriptPath()
     const snapshot = readHooksJsonWithRaw(configPath)
@@ -204,6 +197,9 @@ export class GrokHookService {
     remoteHome: string,
     remoteGrokHome?: string
   ): Promise<AgentHookInstallStatus> {
+    if (!canAshWriteProviderGlobalHooks()) {
+      return ashGrokMutationUnavailable()
+    }
     return await installRemoteGrokHook(
       sftp,
       remoteHome,
@@ -213,6 +209,9 @@ export class GrokHookService {
   }
 
   remove(): AgentHookInstallStatus {
+    if (!canAshWriteProviderGlobalHooks()) {
+      return ashGrokMutationUnavailable()
+    }
     const configPath = getConfigPath()
     if (process.platform === 'win32') {
       unregisterGrokHookOwnerSync()
@@ -244,6 +243,9 @@ export class GrokHookService {
   }
 
   async removeAsync(): Promise<AgentHookInstallStatus> {
+    if (!canAshWriteProviderGlobalHooks()) {
+      return ashGrokMutationUnavailable()
+    }
     const configPath = getConfigPath()
     const ownsWindowsHook = process.platform === 'win32'
     let peerOwnsWindowsHook = false

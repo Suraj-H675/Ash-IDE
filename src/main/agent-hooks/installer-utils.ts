@@ -8,7 +8,6 @@ import {
   renameSync,
   unlinkSync
 } from 'node:fs'
-import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import type { AgentHookSource } from '../../shared/agent-hook-listener/transport/agent-hook-relay'
@@ -21,6 +20,7 @@ import {
   getWindowsNativeHookAgent,
   WINDOWS_NATIVE_HOOK_EXECUTABLE_NAME
 } from './windows-native-hook-executable'
+import { getAshManagedHookArtifactPath } from './ash-managed-hook-artifact-path'
 
 export type HookCommandConfig = {
   type: 'command'
@@ -109,9 +109,9 @@ function decodePowerShellEncodedCommand(command: string): string | null {
   }
 }
 
-// Parallel Orca instances must share one user-wide script path.
+// Ash windows and its local runtime share Ash-owned scripts, never ~/.orca.
 export function getSharedManagedScriptPath(scriptFileName: string): string {
-  return join(homedir(), '.orca', 'agent-hooks', scriptFileName)
+  return getAshManagedHookArtifactPath(scriptFileName)
 }
 
 export { wrapPosixHookCommand } from './posix-hook-command'

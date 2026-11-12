@@ -85,13 +85,32 @@ const foreignPolicyDir = join(orcaHome, 'host-settings', 'foreign')
 mkdirSync(foreignPolicyDir, { recursive: true, mode: 0o700 })
 const foreignPolicySentinel = join(foreignPolicyDir, 'terminals.json')
 writeFileSync(foreignPolicySentinel, 'synthetic foreign terminal policy; never migrate')
+const foreignHookDir = join(orcaHome, 'agent-hooks')
+const foreignOwnerDir = join(foreignHookDir, 'grok-owners')
+mkdirSync(foreignOwnerDir, { recursive: true, mode: 0o700 })
+const foreignHookSentinel = join(foreignHookDir, 'grok-hook.sh')
+const foreignOwnerSentinel = join(
+  foreignOwnerDir,
+  'owner-11111111-1111-4111-8111-111111111111.json'
+)
+writeFileSync(foreignHookSentinel, '# synthetic Orca-managed hook; never refresh\n')
+writeFileSync(foreignOwnerSentinel, '{"owner":"synthetic Orca"}\n')
 mkdirSync(join(existingAshProfile, 'profiles'), { mode: 0o700 })
 function assertForeignProfileUntouched() {
   assert.deepEqual(
     readdirSync(orcaHome).sort(),
-    [...foreignRetainedCredentialFiles, 'host-settings', 'linear-token.enc'].sort()
+    [...foreignRetainedCredentialFiles, 'agent-hooks', 'host-settings', 'linear-token.enc'].sort()
   )
   assert.deepEqual(readdirSync(join(orcaHome, 'host-settings')), ['foreign'])
+  assert.deepEqual(readdirSync(foreignHookDir).sort(), ['grok-hook.sh', 'grok-owners'])
+  assert.deepEqual(readdirSync(foreignOwnerDir), [
+    'owner-11111111-1111-4111-8111-111111111111.json'
+  ])
+  assert.equal(
+    readFileSync(foreignHookSentinel, 'utf8'),
+    '# synthetic Orca-managed hook; never refresh\n'
+  )
+  assert.equal(readFileSync(foreignOwnerSentinel, 'utf8'), '{"owner":"synthetic Orca"}\n')
   assert.equal(readFileSync(foreignSentinel, 'utf8'), 'synthetic foreign credential; never migrate')
   for (const name of foreignRetainedCredentialFiles) {
     assert.equal(

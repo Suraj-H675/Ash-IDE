@@ -292,6 +292,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/agent-hooks/installer-utils.ts",
+      "sha256": "a1fa633a520bdd7cf563e5cac5605f7bc7b933463252a877c24be4c70c45973e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/agent-hooks/managed-agent-hook-controls.ts",
       "sha256": "1e8f357d04fd71177832eaf3838e71fc2951df50cc03bde1291fd8017b79a86c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -424,6 +429,16 @@
     {
       "path": "src/main/daemon/server/daemon-request-router.ts",
       "sha256": "84d40b1c03cb7faa8d8d8f0a676ce8b8c716da083dc7ad90e344927daeaad03b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/grok/grok-hook-owners.ts",
+      "sha256": "52a05294178d8b453ee622c6777322f93813d84e97a9a3a09cce98c411e9d359",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/grok/hook-service.ts",
+      "sha256": "2a422c4d5ffe36806d899caa1782655e4019e20222e055485d25e4032efd79ed",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
