@@ -42489,6 +42489,66 @@
       "path": "src/main/runtime/rpc/methods/linear.ts",
       "sourceSha256": "de6d225985686100935aaedcf3423e5a0d793bea6a23f8666e4ec730023e75b8",
       "reason": "Ash M8 exclusion: removed unreachable Jira/Linear application connector RPC implementation or runtime facade, after removing registry and preload exposure; retained historical workspace data, metadata migrations and ordinary Git-provider capability."
+    },
+    {
+      "path": "src/main/ipc/jira/cancellable-requests.ts",
+      "sourceSha256": "7788b01ff202246f3cb9861947d21d731905ac3be216e19ab3b45098aa460177",
+      "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
+    },
+    {
+      "path": "src/main/ipc/jira/ipc-params.ts",
+      "sourceSha256": "d24282f4628fd10017d0d9be52c60ed35cef071d00dcc38022ae3d8c22e96c0b",
+      "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
+    },
+    {
+      "path": "src/main/ipc/jira/issue-summary-generation.ts",
+      "sourceSha256": "dca52ed15b4b9d0613f57d7b83a4dec9e300388366c17a967b6d893ddf84357d",
+      "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
+    },
+    {
+      "path": "src/main/ipc/jira/project-metadata.ts",
+      "sourceSha256": "8f5cda17375ae1e9045ad75fa59d432aa689a00e27deab4292a06b0ace8b898d",
+      "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
+    },
+    {
+      "path": "src/main/ipc/jira/register-handlers.ts",
+      "sourceSha256": "4072234dd06ed55588bca79ca763e0bc2cf837c5b6cf8e2f2158334ca989920e",
+      "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
+    },
+    {
+      "path": "src/main/ipc/jira/user-search.ts",
+      "sourceSha256": "f750a4e2e1d0d27d769191ee6796c3dbf135ffd692f03f148b0bf867cd8420fa",
+      "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
+    },
+    {
+      "path": "src/main/ipc/linear/custom-view-handlers.ts",
+      "sourceSha256": "5b422686649943814adb846a1262c181a06303920ca9ab93e371a1d428c941a2",
+      "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
+    },
+    {
+      "path": "src/main/ipc/linear/ipc-args.ts",
+      "sourceSha256": "66cb4c9799581ee266109b86df7cd96e02ce5e3192176a520d7e515e057633c7",
+      "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
+    },
+    {
+      "path": "src/main/ipc/linear/issue-handlers.ts",
+      "sourceSha256": "5f1da87501562a1a7ae1845e9000a22e194b7699626dbaa4581f16517223c536",
+      "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
+    },
+    {
+      "path": "src/main/ipc/linear/project-handlers.ts",
+      "sourceSha256": "22e6cf41821d9a04d6260a07c44fc1df063108a899492b07f8d6cad57caf2d5a",
+      "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
+    },
+    {
+      "path": "src/main/ipc/linear/register-handlers.ts",
+      "sourceSha256": "05e864eea6cb5259fe26c94dc5f04a84c071a2a06ffada0ae409bcad593e3d2b",
+      "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
+    },
+    {
+      "path": "src/main/ipc/linear/team-handlers.ts",
+      "sourceSha256": "35e98c87b1f7b1e74236a30c9b82dc332dda28747c94786a9711d4767d8e72f8",
+      "reason": "Ash M8 exclusion: remove unregistered Jira/Linear Electron main-process application IPC handlers. Preload, RPC and runtime connector surfaces were already retired. Keep the separate legacy credential sealing/migration helpers and the retained Git/runtime/PTY/browser IPC handlers."
     }
   ]
 }
