@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { getAppEnvironment } from '../../../../shared/app-environment'
 import { defineMethod } from '../core'
 
 export const ASH_RUNTIME_CONTROL_METHODS = [
@@ -15,14 +16,10 @@ export const ASH_RUNTIME_CONTROL_METHODS = [
       if (runtimeId !== expectedRuntimeId) {
         return { status: 'replaced' as const }
       }
-      const { app } = await import('electron')
-      setImmediate(() => {
-        if (mode === 'force') {
-          app.exit(0)
-        } else {
-          app.quit()
-        }
-      })
+      const accepted = getAppEnvironment().requestRuntimeStop?.(mode)
+      if (!accepted) {
+        throw new Error('runtime_stop_host_unavailable')
+      }
       return { status: 'stopping' as const, mode, runtimeId }
     }
   })

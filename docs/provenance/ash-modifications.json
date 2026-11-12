@@ -402,6 +402,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/host/electron-app-environment.ts",
+      "sha256": "71a60d454a1a29c5e05b9386a35b8d88f6cbb7b89871079c5ecbf49a63f09717",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/index.ts",
       "sha256": "b20b330f2fc8fe356dca788f5a516ab0f6dd2892b3d33e5ac17a0f5de9cb8f33",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -574,6 +579,11 @@
     {
       "path": "src/main/orcad/orcad-entry.ts",
       "sha256": "e0ab81294d9010cc7b435da4bc5afafa2d5c54cc231e7c5af74e837f30f51adb",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/orcad/orcad-host-adapters.ts",
+      "sha256": "75c254dfe6e7b2c33e159660745ab8e8697a2a735d9f5fbbaa143c8f10727c52",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1784,6 +1794,11 @@
     {
       "path": "src/shared/agent-launch/startup/tui-agent-launch-command.ts",
       "sha256": "b1d927cd8507bf35bbed8c098e4da373eb1938d7aff9a0c8473a663732e7d296",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/app-environment.ts",
+      "sha256": "7e7cb608ea1d0dde681a2ad0efb6cc304ae1ba24fc8c5fb8762d46ac257e0da5",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

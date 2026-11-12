@@ -42,6 +42,21 @@ function createNodeAppEnvironment(): AppEnvironment {
     getCliLauncherPath: getOrcadCliLauncherPath,
     onWillQuit: (handler) => quitHandlers.push(handler),
     exit: (code = 0) => process.exit(code),
+    requestRuntimeStop: (mode) => {
+      // Reuse the Node host's owned, bounded SIGTERM cleanup instead of importing Electron
+      // or killing the terminal daemon. Refuse a graceful stop before signal installation.
+      if (mode === 'graceful' && process.listenerCount('SIGTERM') === 0) {
+        return false
+      }
+      setImmediate(() => {
+        if (mode === 'force') {
+          process.exit(0)
+        } else {
+          process.emit('SIGTERM')
+        }
+      })
+      return true
+    },
     getAppMetrics: () => []
   }
 }

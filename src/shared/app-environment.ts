@@ -14,6 +14,8 @@ export type AppEnvironment = {
   /** Shutdown hook: electron `will-quit`, or SIGTERM/SIGINT on a Node host. */
   onWillQuit(handler: () => void): void
   exit(code?: number): void
+  /** Optional host-owned stop admission: return false when no graceful shutdown handler exists. Scheduling must leave time for the authenticated RPC reply. */
+  requestRuntimeStop?(mode: 'graceful' | 'force'): boolean
   /** Return no Chromium metrics on Node. Keep this on the port because its sole consumer, memory/collector.ts, reads at module scope. */
   getAppMetrics(): AppProcessMetric[]
 }

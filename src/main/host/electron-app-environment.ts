@@ -26,6 +26,18 @@ export class ElectronAppEnvironment implements AppEnvironment {
     app.exit(code)
   }
 
+  requestRuntimeStop(mode: 'graceful' | 'force'): boolean {
+    // Do not terminate inside the RPC handler: the client must receive its stop receipt first.
+    setImmediate(() => {
+      if (mode === 'force') {
+        app.exit(0)
+      } else {
+        app.quit()
+      }
+    })
+    return true
+  }
+
   getAppMetrics(): AppProcessMetric[] {
     // Electron's ProcessMetric is structurally compatible with the loose mirror
     // (pid plus optional cpu/memory); the nominal types differ, hence the cast.
