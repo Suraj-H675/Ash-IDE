@@ -6,6 +6,8 @@ out/
 # Do not publish host-generated Makefiles, absolute-path config.gypi, or binaries.
 /native/**/build/
 /native/**/target/
+# Docker-built Wayland clipboard helper and fingerprint are local packaging outputs.
+/native/wayland-clipboard/.build/
 dist/
 # Only the top-level output directory is a release artifact. Nested
 # config/scripts/release/ contains source and must be included in provenance.
