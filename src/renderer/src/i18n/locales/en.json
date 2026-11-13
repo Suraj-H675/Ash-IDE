@@ -7754,6 +7754,7 @@
           "codexConfigSyncMissingSource": "Codex is still using the settings it last synced because {{value0}} is missing. Restore that file to resume syncing.",
           "codexConfigSyncBlankSource": "Codex is still using the settings it last synced because {{value0}} is empty. That is expected while a synced folder finishes downloading.",
           "codexConfigSyncManagedHomeUnavailable": "Orca could not read this account’s Codex files just now, so settings may not be syncing. This usually clears on its own — antivirus or a backup tool briefly locks them.",
+          "codexConfigSyncProviderWritebackRefused": "Ash kept pending settings in its runtime home because it cannot write to provider settings at {{value0}}.",
           "codexConfigSyncUnreadableSource": "Codex is still using the settings it last synced because {{value0}} could not be read. Check that file's permissions.",
           "codexLoginLinkPending": "Codex opened this sign-in link in your browser. Copy it to finish signing in somewhere else — a private window, or another profile.",
           "codexLoginLinkCopied": "Copied",

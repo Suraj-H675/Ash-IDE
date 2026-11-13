@@ -16,6 +16,11 @@ vi.mock('../shared-server/codex-daemon-socket-path-guard', async (importOriginal
   applyCodexDaemonSocketGuard: (config: string) => config
 }))
 
+vi.mock('../../../agent-hooks/ash-hook-ownership-policy', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  canAshWriteProviderGlobalSettings: () => true
+}))
+
 import { syncSystemConfigIntoManagedCodexHome } from './codex-config-mirror'
 import {
   promoteCodexRuntimeSettingsToSystem,

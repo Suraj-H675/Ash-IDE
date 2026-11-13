@@ -7107,6 +7107,7 @@
           "codexConfigSyncMissingSource": "Codex todavía usa la configuración que sincronizó por última vez porque falta {{value0}}. Restaure ese archivo para reanudar la sincronización.",
           "codexConfigSyncBlankSource": "Codex todavía usa la configuración que sincronizó por última vez porque {{value0}} está vacío. Esto es de esperar mientras termina de descargarse una carpeta sincronizada.",
           "codexConfigSyncManagedHomeUnavailable": "Orca no pudo leer los archivos de Codex de esta cuenta en este momento, por lo que es posible que la configuración no se esté sincronizando. Normalmente se resuelve solo: un antivirus o una herramienta de copia de seguridad puede bloquearlos brevemente.",
+          "codexConfigSyncProviderWritebackRefused": "Ash conservó los cambios de configuración pendientes en su directorio de ejecución porque no puede escribir en la configuración del proveedor en {{value0}}.",
           "codexConfigSyncUnreadableSource": "Codex todavía usa la configuración que sincronizó por última vez porque no se pudo leer {{value0}}. Verifique los permisos de ese archivo.",
           "opencodeGo": {
             "apiKey": {

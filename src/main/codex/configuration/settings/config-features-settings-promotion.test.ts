@@ -17,6 +17,11 @@ vi.mock('node:os', async (importOriginal) => ({
   homedir: homedirMock
 }))
 
+vi.mock('../../../agent-hooks/ash-hook-ownership-policy', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  canAshWriteProviderGlobalSettings: () => true
+}))
+
 import { syncSystemConfigIntoManagedCodexHome } from './codex-config-mirror'
 import { upsertTableSettingsInContent } from './codex-config-settings-upsert'
 import { CODEX_DAEMON_OVERRIDE_MARKER } from '../shared-server/codex-daemon-socket-path-guard'

@@ -26,6 +26,7 @@ import {
   readCodexRegistrationBaseline
 } from './config-plugin-registration-promotion'
 import { hasCodexRegistrationEntries } from '../toml/config-toml-plugin-registration-tables'
+import { canAshWriteProviderGlobalSettings } from '../../../agent-hooks/ash-hook-ownership-policy'
 
 export type CodexSettingsBaselineSnapshotOptions = {
   conflicts?: ReadonlyMap<string, CodexSettingsConflict>
@@ -83,6 +84,7 @@ export type CodexSettingsPromotionHomes = {
 export type CodexSettingsPromotionPlan = {
   conflicts: ReadonlyMap<string, CodexSettingsConflict>
   runtimeValuesToPreserve: ReadonlyMap<string, string | null>
+  writeBackState: 'not-needed' | 'written' | 'refused'
   /** MCP names the previous mirror copied from the canonical source. */
   mirroredMcpServers: ReadonlySet<string>
   mirroredMcpServerRoot: boolean
@@ -149,14 +151,15 @@ function promoteCodexRuntimeSettingsToSystemUnsafe(
   }
   // Registrations can promote before the first mirror because untracked tables are additions.
   if (updates.size === 0 && !hasCodexRegistrationEntries(runtimeTomlObservation.value)) {
-    return { conflicts, runtimeValuesToPreserve, mirroredMcpServers, mirroredMcpServerRoot }
+    return {
+      conflicts,
+      runtimeValuesToPreserve,
+      mirroredMcpServers,
+      mirroredMcpServerRoot,
+      writeBackState: 'not-needed'
+    }
   }
-  // A new home may later hold auth.json, so create it owner-only.
-  mkdirSync(systemHomePath, { recursive: true, mode: 0o700 })
   const writeTarget = resolvePromotionWriteTarget(systemTomlPath)
-  // Dangling dotfile links may target a parent directory that does not exist yet.
-  mkdirSync(dirname(writeTarget.path), { recursive: true, mode: 0o700 })
-  // Read the target before reconstructing it; registration promotion can run without a baseline.
   const writeTargetObservation = observeAgentStateFile(writeTarget.path)
   if (writeTargetObservation.kind === 'indeterminate') {
     throw writeTargetObservation.error
@@ -178,17 +181,48 @@ function promoteCodexRuntimeSettingsToSystemUnsafe(
     )
   )
   if (nextContent === systemContent) {
-    return { conflicts, runtimeValuesToPreserve, mirroredMcpServers, mirroredMcpServerRoot }
+    return {
+      conflicts,
+      runtimeValuesToPreserve,
+      mirroredMcpServers,
+      mirroredMcpServerRoot,
+      writeBackState: 'not-needed'
+    }
   }
+  if (!canAshWriteProviderGlobalSettings()) {
+    return {
+      conflicts,
+      runtimeValuesToPreserve,
+      mirroredMcpServers,
+      mirroredMcpServerRoot,
+      writeBackState: 'refused'
+    }
+  }
+  // A new home may later hold auth.json, so create it owner-only only after authorization.
+  mkdirSync(systemHomePath, { recursive: true, mode: 0o700 })
+  // Dangling dotfile links may target a parent directory that does not exist yet.
+  mkdirSync(dirname(writeTarget.path), { recursive: true, mode: 0o700 })
   if (targetExists && parseWslUncPath(writeTarget.path)) {
     // WSL 9P symlink metadata is unreliable; write through to preserve the guest inode.
     writeFileSync(writeTarget.path, nextContent, 'utf-8')
-    return { conflicts, runtimeValuesToPreserve, mirroredMcpServers, mirroredMcpServerRoot }
+    return {
+      conflicts,
+      runtimeValuesToPreserve,
+      mirroredMcpServers,
+      mirroredMcpServerRoot,
+      writeBackState: 'written'
+    }
   }
   writeFileAtomically(writeTarget.path, nextContent, {
     mode: writeTarget.mode
   })
-  return { conflicts, runtimeValuesToPreserve, mirroredMcpServers, mirroredMcpServerRoot }
+  return {
+    conflicts,
+    runtimeValuesToPreserve,
+    mirroredMcpServers,
+    mirroredMcpServerRoot,
+    writeBackState: 'written'
+  }
 }
 
 type PromotionCollectionContext = {
@@ -243,6 +277,7 @@ function emptyPromotionPlan(): CodexSettingsPromotionPlan {
   return {
     conflicts: new Map(),
     runtimeValuesToPreserve: new Map(),
+    writeBackState: 'not-needed',
     mirroredMcpServers: new Set(),
     mirroredMcpServerRoot: false
   }

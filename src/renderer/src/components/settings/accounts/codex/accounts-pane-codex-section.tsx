@@ -109,28 +109,34 @@ export function renderCodexAccountsSection(model: AccountsPaneSectionModel): Rea
           <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive">
             <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
             <span>
-              {codexConfigSyncWarning === 'managed-home-unavailable'
+              {codexConfigSyncWarning === 'provider-writeback-refused'
                 ? translate(
-                    'auto.components.settings.AccountsPane.codexConfigSyncManagedHomeUnavailable',
-                    'Orca could not read this account’s Codex files just now, so settings may not be syncing. This usually clears on its own — antivirus or a backup tool briefly locks them.'
+                    'auto.components.settings.AccountsPane.codexConfigSyncProviderWritebackRefused',
+                    'Ash kept pending settings in its runtime home because it cannot write to provider settings at {{value0}}.',
+                    { value0: codexConfigSync?.systemConfigPath ?? '' }
                   )
-                : codexConfigSyncWarning === 'missing-source'
+                : codexConfigSyncWarning === 'managed-home-unavailable'
                   ? translate(
-                      'auto.components.settings.AccountsPane.codexConfigSyncMissingSource',
-                      'Codex is still using the settings it last synced because {{value0}} is missing. Restore that file to resume syncing.',
-                      { value0: codexConfigSync?.systemConfigPath ?? '' }
+                      'auto.components.settings.AccountsPane.codexConfigSyncManagedHomeUnavailable',
+                      'Orca could not read this account’s Codex files just now, so settings may not be syncing. This usually clears on its own — antivirus or a backup tool briefly locks them.'
                     )
-                  : codexConfigSyncWarning === 'blank-source'
+                  : codexConfigSyncWarning === 'missing-source'
                     ? translate(
-                        'auto.components.settings.AccountsPane.codexConfigSyncBlankSource',
-                        'Codex is still using the settings it last synced because {{value0}} is empty. That is expected while a synced folder finishes downloading.',
+                        'auto.components.settings.AccountsPane.codexConfigSyncMissingSource',
+                        'Codex is still using the settings it last synced because {{value0}} is missing. Restore that file to resume syncing.',
                         { value0: codexConfigSync?.systemConfigPath ?? '' }
                       )
-                    : translate(
-                        'auto.components.settings.AccountsPane.codexConfigSyncUnreadableSource',
-                        "Codex is still using the settings it last synced because {{value0}} could not be read. Check that file's permissions.",
-                        { value0: codexConfigSync?.systemConfigPath ?? '' }
-                      )}
+                    : codexConfigSyncWarning === 'blank-source'
+                      ? translate(
+                          'auto.components.settings.AccountsPane.codexConfigSyncBlankSource',
+                          'Codex is still using the settings it last synced because {{value0}} is empty. That is expected while a synced folder finishes downloading.',
+                          { value0: codexConfigSync?.systemConfigPath ?? '' }
+                        )
+                      : translate(
+                          'auto.components.settings.AccountsPane.codexConfigSyncUnreadableSource',
+                          "Codex is still using the settings it last synced because {{value0}} could not be read. Check that file's permissions.",
+                          { value0: codexConfigSync?.systemConfigPath ?? '' }
+                        )}
             </span>
           </div>
         ) : null}

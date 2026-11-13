@@ -4152,6 +4152,7 @@
           "codexConfigSyncMissingSource": "O Codex ainda está usando as configurações da última sincronização porque {{value0}} está ausente. Restaure esse arquivo para retomar a sincronização.",
           "codexConfigSyncBlankSource": "O Codex ainda está usando as configurações da última sincronização porque {{value0}} está vazio. Isso é esperado enquanto uma pasta sincronizada termina de ser baixada.",
           "codexConfigSyncManagedHomeUnavailable": "O Orca não conseguiu ler os arquivos do Codex desta conta agora, então as configurações podem não estar sincronizando. Isso normalmente se resolve por conta própria — um antivírus ou ferramenta de backup os bloqueia brevemente.",
+          "codexConfigSyncProviderWritebackRefused": "O Ash manteve as configurações pendentes no diretório de execução porque não pode gravar nas configurações do provedor em {{value0}}.",
           "codexConfigSyncUnreadableSource": "O Codex ainda está usando as configurações da última sincronização porque {{value0}} não pôde ser lido. Verifique as permissões desse arquivo.",
           "codexLoginLinkPending": "O Codex abriu este link de login no seu navegador. Copie-o para concluir o login em outro lugar — uma janela privada, ou outro perfil.",
           "codexLoginLinkCopied": "Copiado",

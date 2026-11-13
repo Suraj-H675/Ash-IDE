@@ -7331,6 +7331,7 @@
           "codexConfigSyncMissingSource": "Codex utilise toujours les derniers paramètres synchronisés car {{value0}} est absent. Restaurez ce fichier pour reprendre la synchronisation.",
           "codexConfigSyncBlankSource": "Codex utilise toujours les derniers paramètres synchronisés car {{value0}} est vide. C'est attendu tant qu'un dossier synchronisé finit de se télécharger.",
           "codexConfigSyncManagedHomeUnavailable": "Orca n'a pas réussi à lire les fichiers Codex de ce compte à l'instant ; les paramètres peuvent donc ne plus se synchroniser. Cela se résout généralement tout seul — un antivirus ou un outil de sauvegarde les verrouille brièvement.",
+          "codexConfigSyncProviderWritebackRefused": "Ash a conservé les paramètres en attente dans son répertoire d’exécution, car il ne peut pas écrire dans les paramètres du fournisseur à {{value0}}.",
           "codexConfigSyncUnreadableSource": "Codex utilise toujours les derniers paramètres synchronisés car {{value0}} n'a pas pu être lu. Vérifiez les permissions de ce fichier.",
           "d5267cce63": "). Le cookie d'authentification couvre toujours la découverte de l'espace de travail ; l'authentification seule n'est pas suffisante pour l'utilisation. L'authentification OpenCode Go est basée sur le Web et partagée sur les terminaux Windows et WSL.",
           "62ab430f94": "Collez l'en-tête Cookie complet depuis DevTools → Réseau → toute requête opencode.ai, y compris __Host-console_session (par ex.",

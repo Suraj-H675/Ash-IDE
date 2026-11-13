@@ -6815,6 +6815,7 @@
           "codexConfigSyncMissingSource": "{{value0}} が見つからないため、Codex は最後に同期した設定を使い続けています。同期を再開するには、そのファイルを復元してください。",
           "codexConfigSyncBlankSource": "{{value0}} が空のため、Codex は最後に同期した設定を使い続けています。同期フォルダーのダウンロードが完了するまでは正常な状態です。",
           "codexConfigSyncManagedHomeUnavailable": "Orca は現在このアカウントの Codex ファイルを読み取れないため、設定が同期されていない可能性があります。ウイルス対策ソフトやバックアップツールによる一時的なロックが原因で、通常は自動的に解消されます。",
+          "codexConfigSyncProviderWritebackRefused": "Ash は保留中の設定を実行用ホームに保持しました。プロバイダー設定 {{value0}} には書き込めません。",
           "codexConfigSyncUnreadableSource": "{{value0}} を読み取れなかったため、Codex は最後に同期した設定を使い続けています。そのファイルの権限を確認してください。",
           "d5267cce63": "）。認証 Cookie は引き続きワークスペースの検出をカバーします。認証だけでは使用するには不十分です。 OpenCode Go 認証は Web ベースであり、Windows および WSL ターミナル間で共有されます。",
           "62ab430f94": "ブラウザの DevTools → Network → __Host-console_session を含む任意の opencode.ai リクエストから完全な Cookie ヘッダーを貼り付けます (例:",

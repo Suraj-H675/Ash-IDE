@@ -7288,6 +7288,7 @@
           "codexConfigSyncMissingSource": "由於缺少 {{value0}}，Codex 仍在使用上次同步的設定。請恢復該檔案以恢復同步。",
           "codexConfigSyncBlankSource": "由於 {{value0}} 為空，Codex 仍在使用上次同步的設定。同步資料夾完成下載前出現這種情況是正常的。",
           "codexConfigSyncManagedHomeUnavailable": "Orca 剛才無法讀取此帳戶的 Codex 檔案，因此設定可能無法同步。這種情況通常會自行恢復——防毒軟體或備份工具可能只是短暫鎖定了這些檔案。",
+          "codexConfigSyncProviderWritebackRefused": "Ash 將待處理設定保留在自己的執行時主目錄中，因為它無法寫入 {{value0}} 的提供者設定。",
           "codexConfigSyncUnreadableSource": "由於無法讀取 {{value0}}，Codex 仍在使用上次同步的設定。請檢查該檔案的權限。",
           "codexLoginLinkPending": "Codex 在您的瀏覽器中開啟了此登入連結。複製它以在其他地方（私人視窗或其他設定檔）完成登入。",
           "codexLoginLinkCopied": "已複製",

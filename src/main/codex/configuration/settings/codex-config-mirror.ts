@@ -25,6 +25,7 @@ import { preserveRuntimeConflictValues } from './codex-config-settings-preservat
 import { applyCodexDaemonSocketGuard } from '../shared-server/codex-daemon-socket-path-guard'
 import { stripRuntimeOwnedTomlSections } from '../toml/config-toml-runtime-owned-sections'
 import { mergeSystemCodexConfigIntoRuntime } from './codex-config-mirror-merge'
+import { reportRefusedCodexWriteBack } from './codex-native-project-revocation-sync'
 
 // Mirrored MCP environment tokens require owner-only writes.
 const RUNTIME_CONFIG_WRITE = { mode: 0o600 } as const
@@ -53,11 +54,14 @@ function mirrorSystemConfigIntoManagedCodexHome(homes: CodexSettingsPromotionHom
     }
     return false
   }
+  if (promotionPlan.writeBackState === 'refused') {
+    reportRefusedCodexWriteBack(homes)
+    return false
+  }
   let mirrorResult: CodexConfigMirrorResult
   try {
     mirrorResult = syncSystemConfigIntoManagedCodexHomeUnsafe(homes, promotionPlan)
   } catch (error) {
-    // Latch mirror failures too, so the user sees their cause without repeated generic logging.
     reportCodexConfigSyncOutcome(homes.runtimeHomePath, getCodexConfigSyncStatus(homes), error)
     return false
   }
@@ -70,7 +74,11 @@ function mirrorSystemConfigIntoManagedCodexHome(homes: CodexSettingsPromotionHom
     )
     return false
   }
-  reportCodexConfigSyncOutcome(homes.runtimeHomePath, getCodexConfigSyncStatus(homes))
+  // This pass did not refuse write-back, so an older refusal is no longer the current sync state.
+  reportCodexConfigSyncOutcome(
+    homes.runtimeHomePath,
+    getCodexConfigSyncStatus(homes, { ignorePreviousWriteBackRefusal: true })
+  )
   if (mirrorResult.status === 'skipped-missing-source') {
     // Bootstrap seeded homes only; advancing an existing baseline would strand unmirrored changes.
     if (!readCodexSettingsBaseline(homes.runtimeHomePath)) {

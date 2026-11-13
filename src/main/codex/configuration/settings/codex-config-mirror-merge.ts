@@ -71,3 +71,55 @@ export function mergeSystemCodexConfigIntoRuntime(
       .map((section) => section.block)
   ])
 }
+
+/** Apply native project distrust even when unrelated Ash-home edits cannot be promoted. */
+export function applyNativeProjectRevocationsToRuntime(
+  runtimeConfig: string,
+  systemConfig: string
+): string {
+  const systemProjects = deduplicateProjectTomlSections(getTomlSections(systemConfig)).filter(
+    (section) => isRuntimeProjectTomlSection(section.header)
+  )
+  const revoked = new Map(
+    systemProjects
+      .filter((section) => getProjectTrustLevel(section.block) === 'untrusted')
+      .map((section) => [getRevocationTomlSectionHeaderKey(section.header), section])
+  )
+  if (revoked.size === 0) {
+    return runtimeConfig
+  }
+  const explicitlyTrusted = new Set(
+    systemProjects
+      .filter((section) => getProjectTrustLevel(section.block) === 'trusted')
+      .map((section) => getTomlSectionHeaderKey(section.header))
+  )
+  const sections = getTomlSections(runtimeConfig)
+  const lines = runtimeConfig.split('\n')
+  const edits: { start: number; end: number; replacement: string[] }[] = []
+  const applied = new Set<string>()
+  for (let index = 0; index < sections.length; index += 1) {
+    const section = sections[index]!
+    if (!isRuntimeProjectTomlSection(section.header)) {
+      continue
+    }
+    const key = getRevocationTomlSectionHeaderKey(section.header)
+    const nativeRevocation = revoked.get(key)
+    if (!nativeRevocation || explicitlyTrusted.has(getTomlSectionHeaderKey(section.header))) {
+      continue
+    }
+    if (getProjectTrustLevel(section.block) === 'untrusted' && !applied.has(key)) {
+      applied.add(key)
+      continue
+    }
+    edits.push({
+      start: section.start,
+      end: sections[index + 1]?.start ?? lines.length,
+      replacement: applied.has(key) ? [] : nativeRevocation.block.split('\n')
+    })
+    applied.add(key)
+  }
+  for (const edit of edits.toReversed()) {
+    lines.splice(edit.start, edit.end - edit.start, ...edit.replacement)
+  }
+  return edits.length === 0 ? runtimeConfig : lines.join('\n')
+}

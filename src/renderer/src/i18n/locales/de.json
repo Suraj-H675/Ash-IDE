@@ -7465,6 +7465,7 @@
           "codexConfigSyncMissingSource": "Codex verwendet weiterhin die zuletzt synchronisierten Einstellungen, da {{value0}} fehlt. Diese Datei wiederherstellen, um die Synchronisierung fortzusetzen.",
           "codexConfigSyncBlankSource": "Codex verwendet weiterhin die zuletzt synchronisierten Einstellungen, da {{value0}} leer ist. Das ist normal, solange der Download eines synchronisierten Ordners noch läuft.",
           "codexConfigSyncManagedHomeUnavailable": "Orca konnte die Codex-Dateien dieses Kontos gerade nicht lesen, daher werden die Einstellungen möglicherweise nicht synchronisiert. Dies behebt sich meist von selbst — ein Antiviren- oder Sicherungsprogramm sperrt die Dateien kurzzeitig.",
+          "codexConfigSyncProviderWritebackRefused": "Ash hat ausstehende Einstellungen in seinem Laufzeitverzeichnis behalten, da es die Anbietereinstellungen unter {{value0}} nicht ändern kann.",
           "codexConfigSyncUnreadableSource": "Codex verwendet weiterhin die zuletzt synchronisierten Einstellungen, da {{value0}} nicht gelesen werden konnte. Die Berechtigungen dieser Datei prüfen.",
           "codexLoginLinkPending": "Codex hat diesen Anmeldelink im Browser geöffnet. Den Link kopieren, um die Anmeldung anderswo abzuschließen — in einem privaten Fenster oder einem anderen Profil.",
           "codexLoginLinkCopied": "Kopiert",

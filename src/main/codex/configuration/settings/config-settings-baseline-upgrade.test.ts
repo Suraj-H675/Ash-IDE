@@ -13,6 +13,11 @@ vi.mock('node:os', async (importOriginal) => {
   return { ...actual, homedir: homedirMock }
 })
 
+vi.mock('../../../agent-hooks/ash-hook-ownership-policy', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  canAshWriteProviderGlobalSettings: () => true
+}))
+
 import { syncSystemConfigIntoManagedCodexHome } from './codex-config-mirror'
 
 let tmpHome: string

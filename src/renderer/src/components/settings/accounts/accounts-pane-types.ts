@@ -8,7 +8,10 @@ import type {
   ProviderRateLimits,
   RateLimitRuntimeTarget
 } from '../../../../../shared/rate-limit-types'
-import type { CodexConfigSyncStatus } from '../../../../../shared/codex-config-sync-types'
+import type {
+  CodexConfigSyncStallReason,
+  CodexConfigSyncStatus
+} from '../../../../../shared/codex-config-sync-types'
 import type { FeatureInteractionId } from '../../../../../shared/feature-interaction-catalog'
 import type { ProviderAccountRuntimeView } from '../../provider-accounts/provider-account-visibility'
 import type { RuntimeClientTarget } from '../../../../../shared/runtime-client-target'
@@ -105,12 +108,7 @@ export type AccountsPaneSectionModel = {
   activeCodexAuthWarning: 'missing-sign-in' | 'stale-sign-in' | null
   activeCodexAccountId: string | null
   codexConfigSync: CodexConfigSyncStatus | null
-  codexConfigSyncWarning:
-    | 'managed-home-unavailable'
-    | 'missing-source'
-    | 'blank-source'
-    | 'unreadable-source'
-    | null
+  codexConfigSyncWarning: CodexConfigSyncStallReason | null
   codexRateLimits: ProviderRateLimits | null
   codexRateLimitTarget: RateLimitRuntimeTarget
   setRemoveCodexTarget: Dispatch<SetStateAction<RemoveAccountTarget | null>>

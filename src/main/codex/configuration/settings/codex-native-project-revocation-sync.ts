@@ -1,0 +1,39 @@
+import { join } from 'node:path'
+import { observeAgentStateFile } from '../codex-path-observation'
+import { writeFileAtomicallyIfUnchanged } from '../../../codex-accounts/fs-utils'
+import type { CodexSettingsPromotionHomes } from './config-settings-promotion'
+import { applyNativeProjectRevocationsToRuntime } from './codex-config-mirror-merge'
+import { reportCodexConfigSyncOutcome } from './config-sync-stall'
+
+/** Degrade write-back without dropping local changes or provider-side distrust. */
+export function reportRefusedCodexWriteBack(homes: CodexSettingsPromotionHomes): void {
+  syncNativeProjectRevocationsDuringRefusedWriteBack(homes)
+  reportCodexConfigSyncOutcome(homes.runtimeHomePath, {
+    state: 'stalled',
+    reason: 'provider-writeback-refused',
+    systemConfigPath: join(homes.systemHomePath, 'config.toml')
+  })
+}
+
+/** Preserve pending Ash runtime edits while honoring explicit provider-side project distrust. */
+export function syncNativeProjectRevocationsDuringRefusedWriteBack(
+  homes: CodexSettingsPromotionHomes
+): void {
+  try {
+    const native = observeAgentStateFile(join(homes.systemHomePath, 'config.toml'))
+    const runtimePath = join(homes.runtimeHomePath, 'config.toml')
+    const runtime = observeAgentStateFile(runtimePath)
+    if (native.kind !== 'present' || runtime.kind !== 'present') {
+      return
+    }
+    const next = applyNativeProjectRevocationsToRuntime(runtime.value, native.value)
+    if (
+      next !== runtime.value &&
+      !writeFileAtomicallyIfUnchanged(runtimePath, runtime.value, next, { mode: 0o600 })
+    ) {
+      throw new Error('Ash runtime config changed while applying provider project revocations')
+    }
+  } catch (error) {
+    console.warn('[codex-config] Failed to apply native project trust revocations:', error)
+  }
+}

@@ -6815,6 +6815,7 @@
           "codexConfigSyncMissingSource": "由于缺少 {{value0}}，Codex 仍在使用上次同步的设置。请恢复该文件以恢复同步。",
           "codexConfigSyncBlankSource": "由于 {{value0}} 为空，Codex 仍在使用上次同步的设置。同步文件夹完成下载前出现这种情况是正常的。",
           "codexConfigSyncManagedHomeUnavailable": "Orca 暂时无法读取此账户的 Codex 文件，因此设置可能尚未同步。这通常会自行恢复——防病毒软件或备份工具可能只是短暂锁定了这些文件。",
+          "codexConfigSyncProviderWritebackRefused": "Ash 将待处理设置保留在自己的运行时主目录中，因为它无法写入 {{value0}} 处的提供方设置。",
           "codexConfigSyncUnreadableSource": "由于无法读取 {{value0}}，Codex 仍在使用上次同步的设置。请检查该文件的权限。",
           "d6f1b9b6a2": "请填写 MiniMax API 密钥。",
           "7c5d8a4e1b": "MiniMax API 密钥未保存。",

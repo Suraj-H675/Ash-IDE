@@ -7451,6 +7451,7 @@
           "codexConfigSyncMissingSource": "{{value0}} eksik olduğu için Codex hâlâ son senkronize ettiği ayarları kullanıyor. Senkronizasyonu sürdürmek için o dosyayı geri yükleyin.",
           "codexConfigSyncBlankSource": "{{value0}} boş olduğu için Codex hâlâ son senkronize ettiği ayarları kullanıyor. Senkronize edilen bir klasörün indirmesi tamamlanana kadar bu beklenen bir durumdur.",
           "codexConfigSyncManagedHomeUnavailable": "Orca, bu hesabın Codex dosyalarını şu anda okuyamadı, bu yüzden ayarlar senkronize olmuyor olabilir. Bu genellikle kendiliğinden düzelir, bir antivirüs veya yedekleme aracı dosyaları kısa süreliğine kilitliyor olabilir.",
+          "codexConfigSyncProviderWritebackRefused": "Ash, bekleyen ayarları çalışma dizininde tuttu çünkü {{value0}} konumundaki sağlayıcı ayarlarına yazamaz.",
           "codexConfigSyncUnreadableSource": "{{value0}} okunamadığı için Codex hâlâ son senkronize ettiği ayarları kullanıyor. O dosyanın izinlerini kontrol edin.",
           "codexLoginLinkPending": "Codex bu giriş bağlantısını tarayıcınızda açtı. Başka bir yerde girişi tamamlamak için kopyalayın: gizli bir pencere veya başka bir profil.",
           "codexLoginLinkCopied": "Kopyalandı",

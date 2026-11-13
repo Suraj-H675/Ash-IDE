@@ -24,7 +24,11 @@ vi.mock('../shared-server/codex-daemon-socket-path-guard', async (importOriginal
 
 const { homedirMock, promotionTestState } = vi.hoisted(() => ({
   homedirMock: vi.fn<() => string>(),
-  promotionTestState: { failAtomicWrite: false, atomicWritePaths: [] as string[] }
+  promotionTestState: {
+    failAtomicWrite: false,
+    allowNativeSettingsWrite: false,
+    atomicWritePaths: [] as string[]
+  }
 }))
 
 vi.mock('node:os', async (importOriginal) => {
@@ -49,7 +53,14 @@ vi.mock('../../../codex-accounts/fs-utils', async (importOriginal) => {
   }
 })
 
+vi.mock('../../../agent-hooks/ash-hook-ownership-policy', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  canAshWriteProviderGlobalSettings: () => promotionTestState.allowNativeSettingsWrite
+}))
+
 import { syncSystemConfigIntoManagedCodexHome } from './codex-config-mirror'
+import { getCodexConfigSyncStatus } from './config-sync-stall'
+import { promoteCodexRuntimeSettingsToSystem } from './config-settings-promotion'
 
 let tmpHome: string
 let userDataDir: string
@@ -62,6 +73,7 @@ beforeEach(() => {
   process.env.ORCA_USER_DATA_PATH = userDataDir
   homedirMock.mockReturnValue(tmpHome)
   promotionTestState.failAtomicWrite = false
+  promotionTestState.allowNativeSettingsWrite = false
   promotionTestState.atomicWritePaths.length = 0
   if (homedir() !== tmpHome) {
     throw new Error('node:os homedir mock is not active; refusing to touch the real ~/.codex')
@@ -120,7 +132,144 @@ function simulateCodexSettingWrite(key: string, rawValue: string): void {
 }
 
 describe('codex settings write-back promotion', () => {
+  it('refuses a direct exported write-back call when provider settings ownership is unavailable', () => {
+    writeSystemConfig('model = "gpt-5"\n')
+    syncSystemConfigIntoManagedCodexHome()
+    expect(readRuntimeConfig()).toContain('model = "gpt-5"')
+    simulateCodexSettingWrite('model', '"o4"')
+
+    const result = promoteCodexRuntimeSettingsToSystem({
+      runtimeHomePath: runtimeHomeDir(),
+      systemHomePath: join(tmpHome, '.codex')
+    })
+
+    expect(result).toMatchObject({ writeBackState: 'refused' })
+    expect(readSystemConfig()).toBe('model = "gpt-5"\n')
+    expect(readRuntimeConfig()).toContain('model = "o4"')
+  })
+
+  it('keeps pending scalar edits and reports degraded sync when write-back is refused', () => {
+    writeSystemConfig('model = "gpt-5"\n')
+    syncSystemConfigIntoManagedCodexHome()
+    const baselineBeforeEdit = readFileSync(baselinePath(), 'utf-8')
+    simulateCodexSettingWrite('model', '"o4"')
+
+    syncSystemConfigIntoManagedCodexHome()
+
+    expect(readSystemConfig()).toBe('model = "gpt-5"\n')
+    expect(readRuntimeConfig()).toContain('model = "o4"')
+    expect(readFileSync(baselinePath(), 'utf-8')).toBe(baselineBeforeEdit)
+    expect(getCodexConfigSyncStatus()).toMatchObject({
+      state: 'stalled',
+      reason: 'provider-writeback-refused'
+    })
+  })
+
+  it('clears the refused write-back warning once the pending runtime edit is undone', () => {
+    writeSystemConfig('model = "gpt-5"\n')
+    syncSystemConfigIntoManagedCodexHome()
+    simulateCodexSettingWrite('model', '"o4"')
+    syncSystemConfigIntoManagedCodexHome()
+    expect(getCodexConfigSyncStatus().reason).toBe('provider-writeback-refused')
+
+    simulateCodexSettingWrite('model', '"gpt-5"')
+    syncSystemConfigIntoManagedCodexHome()
+
+    expect(readSystemConfig()).toBe('model = "gpt-5"\n')
+    expect(getCodexConfigSyncStatus()).toMatchObject({ state: 'synced', reason: null })
+  })
+
+  it('honors a native project trust revocation while keeping a pending local model edit', () => {
+    writeSystemConfig('model = "gpt-5"\n')
+    syncSystemConfigIntoManagedCodexHome()
+    simulateCodexSettingWrite('model', '"o4"')
+    writeFileSync(
+      runtimeConfigPath(),
+      `${readRuntimeConfig()}\n[projects."/tmp/revoked-workspace"]\ntrust_level = "trusted"\n`,
+      'utf-8'
+    )
+    const nativeConfig =
+      'model = "gpt-5"\n\n[projects."/tmp/revoked-workspace"]\ntrust_level = "untrusted"\n'
+    writeSystemConfig(nativeConfig)
+
+    syncSystemConfigIntoManagedCodexHome()
+
+    expect(readSystemConfig()).toBe(nativeConfig)
+    expect(readRuntimeConfig()).toContain('model = "o4"')
+    expect(readRuntimeConfig()).toContain('trust_level = "untrusted"')
+    expect(readRuntimeConfig()).not.toContain('trust_level = "trusted"')
+    expect(getCodexConfigSyncStatus().reason).toBe('provider-writeback-refused')
+  })
+
+  it('does not create a native config when a pending setting cannot be written back', () => {
+    writeSystemConfig(' \n')
+    syncSystemConfigIntoManagedCodexHome()
+    const baselineBeforeEdit = readFileSync(baselinePath(), 'utf-8')
+    rmSync(join(tmpHome, '.codex'), { recursive: true, force: true })
+    simulateCodexSettingWrite('model', '"o4"')
+
+    syncSystemConfigIntoManagedCodexHome()
+
+    expect(existsSync(systemConfigPath())).toBe(false)
+    expect(existsSync(join(tmpHome, '.codex'))).toBe(false)
+    expect(readRuntimeConfig()).toContain('model = "o4"')
+    expect(readFileSync(baselinePath(), 'utf-8')).toBe(baselineBeforeEdit)
+    expect(getCodexConfigSyncStatus()).toMatchObject({
+      state: 'stalled',
+      reason: 'provider-writeback-refused'
+    })
+  })
+
+  it('keeps plugin and MCP registrations when native settings write-back is refused', () => {
+    writeSystemConfig('model = "gpt-5"\n')
+    syncSystemConfigIntoManagedCodexHome()
+    const baselineBeforeEdit = readFileSync(baselinePath(), 'utf-8')
+    const runtimeConfig = [
+      '[marketplaces.ponytail]',
+      'source_type = "git"',
+      'source = "https://example.invalid/ponytail.git"',
+      '',
+      '[plugins."ponytail@ponytail"]',
+      'enabled = true',
+      '',
+      '[mcp_servers.local]',
+      'command = "local-mcp"',
+      ''
+    ].join('\n')
+    writeFileSync(runtimeConfigPath(), `${readRuntimeConfig()}\n${runtimeConfig}`, 'utf-8')
+
+    syncSystemConfigIntoManagedCodexHome()
+
+    expect(readSystemConfig()).toBe('model = "gpt-5"\n')
+    expect(readFileSync(runtimeConfigPath(), 'utf-8')).toContain('[plugins."ponytail@ponytail"]')
+    expect(readFileSync(runtimeConfigPath(), 'utf-8')).toContain('[mcp_servers.local]')
+    expect(readFileSync(baselinePath(), 'utf-8')).toBe(baselineBeforeEdit)
+    expect(getCodexConfigSyncStatus()).toMatchObject({
+      state: 'stalled',
+      reason: 'provider-writeback-refused'
+    })
+  })
+
+  it.skipIf(process.platform === 'win32')(
+    'leaves the native config and symlink target unchanged when write-back is refused',
+    () => {
+      mkdirSync(join(tmpHome, '.codex'), { recursive: true })
+      const realConfigPath = join(tmpHome, 'dotfiles-config.toml')
+      writeFileSync(realConfigPath, 'model = "gpt-5"\n', 'utf-8')
+      symlinkSync(realConfigPath, systemConfigPath())
+      syncSystemConfigIntoManagedCodexHome()
+      simulateCodexSettingWrite('model', '"o4"')
+
+      syncSystemConfigIntoManagedCodexHome()
+
+      expect(lstatSync(systemConfigPath()).isSymbolicLink()).toBe(true)
+      expect(readFileSync(realConfigPath, 'utf-8')).toBe('model = "gpt-5"\n')
+      expect(readRuntimeConfig()).toContain('model = "o4"')
+    }
+  )
+
   it('retries a runtime change after a missing system config returns', () => {
+    promotionTestState.allowNativeSettingsWrite = true
     writeSystemConfig('model = "gpt-5"\n')
     syncSystemConfigIntoManagedCodexHome()
     const baselineBeforeSourceLoss = readFileSync(baselinePath(), 'utf-8')
@@ -143,6 +292,7 @@ describe('codex settings write-back promotion', () => {
   it.skipIf(process.platform === 'win32')(
     'preserves a restrictive mode on the existing ~/.codex/config.toml',
     () => {
+      promotionTestState.allowNativeSettingsWrite = true
       writeSystemConfig('model = "gpt-5"\n')
       chmodSync(systemConfigPath(), 0o600)
       syncSystemConfigIntoManagedCodexHome()
@@ -158,6 +308,7 @@ describe('codex settings write-back promotion', () => {
   it.skipIf(process.platform === 'win32')(
     'creates a new ~/.codex/config.toml with owner-only permissions',
     () => {
+      promotionTestState.allowNativeSettingsWrite = true
       syncSystemConfigIntoManagedCodexHome()
 
       simulateCodexSettingWrite('model', '"o4"')
@@ -172,6 +323,7 @@ describe('codex settings write-back promotion', () => {
   it.skipIf(process.platform === 'win32')(
     'writes through a symlinked config.toml without replacing the link',
     () => {
+      promotionTestState.allowNativeSettingsWrite = true
       mkdirSync(join(tmpHome, '.codex'), { recursive: true })
       const realConfigPath = join(tmpHome, 'dotfiles-config.toml')
       writeFileSync(realConfigPath, 'model = "gpt-5"\n', 'utf-8')
@@ -189,6 +341,7 @@ describe('codex settings write-back promotion', () => {
   it.skipIf(process.platform === 'win32')(
     'preserves a dangling config.toml symlink and creates its target',
     () => {
+      promotionTestState.allowNativeSettingsWrite = true
       mkdirSync(join(tmpHome, '.codex'), { recursive: true })
       const realConfigPath = join(tmpHome, 'dotfiles', 'config.toml')
       symlinkSync(realConfigPath, systemConfigPath())
@@ -203,6 +356,7 @@ describe('codex settings write-back promotion', () => {
   )
 
   it('keeps the old baseline and retries after a transient promotion failure', () => {
+    promotionTestState.allowNativeSettingsWrite = true
     writeSystemConfig('model = "gpt-5"\n')
     syncSystemConfigIntoManagedCodexHome()
     const baselineBeforeFailure = readFileSync(baselinePath(), 'utf-8')

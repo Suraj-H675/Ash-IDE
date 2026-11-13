@@ -17,7 +17,8 @@ export function getCodexConfigSyncStatus(
   homes: CodexSettingsPromotionHomes = {
     runtimeHomePath: getOrcaManagedCodexHomePath(),
     systemHomePath: getSystemCodexHomePath()
-  }
+  },
+  options: { ignorePreviousWriteBackRefusal?: boolean } = {}
 ): CodexConfigSyncStatus {
   const systemConfigPath = join(homes.systemHomePath, 'config.toml')
   const runtimeConfigPath = join(homes.runtimeHomePath, 'config.toml')
@@ -46,6 +47,16 @@ export function getCodexConfigSyncStatus(
       reason: 'managed-home-unavailable',
       systemConfigPath,
       managedStatePath: getCodexSettingsBaselinePath(homes.runtimeHomePath)
+    }
+  }
+  if (
+    !options.ignorePreviousWriteBackRefusal &&
+    stalledHomes.get(homes.runtimeHomePath) === 'provider-writeback-refused'
+  ) {
+    return {
+      state: 'stalled',
+      reason: 'provider-writeback-refused',
+      systemConfigPath
     }
   }
   const systemConfigObservation = observeAgentStateFile(systemConfigPath)
@@ -94,6 +105,12 @@ export function reportCodexConfigSyncOutcome(
     const managedStatePath = status.managedStatePath ?? join(runtimeHomePath, 'config.toml')
     console.warn(
       `[codex-config] Config sync stalled (${status.reason}): ${managedStatePath} is unusable, so ${runtimeHomePath} keeps its last synced settings. The managed state must be readable before settings can sync.`
+    )
+    return
+  }
+  if (status.reason === 'provider-writeback-refused') {
+    console.warn(
+      `[codex-config] Config sync degraded (${status.reason}): Ash kept pending edits in ${runtimeHomePath}; it cannot write provider settings in ${status.systemConfigPath}.`
     )
     return
   }

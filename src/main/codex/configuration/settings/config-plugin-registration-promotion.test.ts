@@ -7,7 +7,7 @@ import type * as CodexFsUtils from '../../../codex-accounts/fs-utils'
 
 const { homedirMock, registrationTestState } = vi.hoisted(() => ({
   homedirMock: vi.fn<() => string>(),
-  registrationTestState: { failAtomicWrite: false }
+  registrationTestState: { failAtomicWrite: false, allowNativeSettingsWrite: true }
 }))
 
 vi.mock('node:os', async (importOriginal) => {
@@ -30,6 +30,11 @@ vi.mock('../../../codex-accounts/fs-utils', async (importOriginal) => {
     }
   }
 })
+
+vi.mock('../../../agent-hooks/ash-hook-ownership-policy', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  canAshWriteProviderGlobalSettings: () => registrationTestState.allowNativeSettingsWrite
+}))
 
 import { syncSystemConfigIntoManagedCodexHome } from './codex-config-mirror'
 
@@ -58,6 +63,7 @@ beforeEach(() => {
   process.env.ORCA_USER_DATA_PATH = userDataDir
   homedirMock.mockReturnValue(tmpHome)
   registrationTestState.failAtomicWrite = false
+  registrationTestState.allowNativeSettingsWrite = true
   if (homedir() !== tmpHome) {
     throw new Error('node:os homedir mock is not active; refusing to touch the real ~/.codex')
   }

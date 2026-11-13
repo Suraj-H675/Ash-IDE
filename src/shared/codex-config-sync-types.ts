@@ -4,6 +4,7 @@ export type CodexConfigSyncStallReason =
   | 'blank-source'
   | 'unreadable-source'
   | 'managed-home-unavailable'
+  | 'provider-writeback-refused'
 
 export type CodexConfigSyncStatus =
   | { state: 'synced'; reason: null; systemConfigPath: string }
