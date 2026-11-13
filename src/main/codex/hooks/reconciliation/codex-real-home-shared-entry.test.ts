@@ -1,3 +1,4 @@
+import { exerciseLegacyCodexRemovalInDisposableFixture } from '../installation/codex-legacy-removal.test-support'
 import { describe, expect, it, vi } from 'vitest'
 import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import type * as Os from 'node:os'
@@ -132,7 +133,7 @@ describe('the shared real-home Codex entry', () => {
   it("is removed, with Orca's trust, only by the user's explicit opt-out", async () => {
     seedSharedEntry()
 
-    await new CodexHookService().remove()
+    await exerciseLegacyCodexRemovalInDisposableFixture()
 
     const hooks = JSON.parse(readFileSync(join(systemCodexHome(), 'hooks.json'), 'utf-8'))
     expect(hooks.hooks.Stop).toEqual([{ hooks: [USER_HOOK] }])

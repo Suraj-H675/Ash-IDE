@@ -317,13 +317,12 @@ export class CodexHookService {
   }
 
   remove(): Promise<AgentHookInstallStatus> {
-    return runExclusivelyForRuntimeAndSystemTrustConfig(getOrcaManagedCodexHomePath(), () =>
-      this.removeExclusively()
-    )
-  }
-
-  private removeExclusively(): Promise<AgentHookInstallStatus> {
-    // Include older Codex versions' hashes still held by the mirror.
-    return removeCodexHooksExclusively(readEveryKnownCodexHookHashes(), () => this.getStatus())
+    const blocked = blockedCodexAmbientHookMutation()
+    return blocked
+      ? Promise.resolve(blocked)
+      : runExclusivelyForRuntimeAndSystemTrustConfig(getOrcaManagedCodexHomePath(), () =>
+          // A later owned-removal flow must not strip unknown provider entries.
+          removeCodexHooksExclusively(readEveryKnownCodexHookHashes(), () => this.getStatus())
+        )
   }
 }

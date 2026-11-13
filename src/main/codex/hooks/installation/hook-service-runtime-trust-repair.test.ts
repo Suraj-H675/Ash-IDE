@@ -1,3 +1,4 @@
+import { exerciseLegacyCodexRemovalInDisposableFixture } from './codex-legacy-removal.test-support'
 import { describe, expect, it, vi } from 'vitest'
 import { mkdirSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
 import type * as Os from 'node:os'
@@ -52,7 +53,7 @@ describe('CodexHookService', () => {
     let runtimeToml = readFileSync(join(linkedManagedCodexHome, 'config.toml'), 'utf-8')
     expect(runtimeToml).toContain(hookTrustHeader(`${linkedHooksPath}:permission_request:0:0`))
 
-    const status = await service.remove()
+    const status = await exerciseLegacyCodexRemovalInDisposableFixture()
 
     expect(status.state).toBe('not_installed')
     runtimeToml = readFileSync(join(linkedManagedCodexHome, 'config.toml'), 'utf-8')

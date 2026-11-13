@@ -1,3 +1,4 @@
+import { exerciseLegacyCodexRemovalInDisposableFixture } from './codex-legacy-removal.test-support'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import type * as Os from 'node:os'
@@ -189,7 +190,7 @@ describe('managed-home Codex hook approval', () => {
       hashes: { stop: 'sha256:codex-0.160-stop' }
     })
 
-    await new CodexHookService().remove()
+    await exerciseLegacyCodexRemovalInDisposableFixture()
 
     const trust = readHookTrustEntries(join(managedHome(), 'config.toml'))
     expect(trust.get(managedKey('stop', 0))).toBeUndefined()
@@ -239,7 +240,7 @@ describe('managed-home Codex hook approval', () => {
     await vi.waitFor(() => expect(codex.deriveCodexHookHashes).toHaveBeenCalledTimes(2))
 
     enabled = false
-    await service.remove()
+    await exerciseLegacyCodexRemovalInDisposableFixture()
     answer({ kind: 'hashes', codexVersion: 'codex-cli 0.131.0', hashes: CODEX_HASHES })
     await launch
 
@@ -263,7 +264,7 @@ describe('managed-home Codex hook approval', () => {
     const userHash = readHookTrustEntries(join(managedHome(), 'config.toml')).get(userKey(1))
     expect(userHash?.trustedHash).toBeDefined()
 
-    await service.remove()
+    await exerciseLegacyCodexRemovalInDisposableFixture()
 
     const trust = readHookTrustEntries(join(managedHome(), 'config.toml'))
     expect(trust.get(userKey(0))?.trustedHash).toBe(userHash?.trustedHash)

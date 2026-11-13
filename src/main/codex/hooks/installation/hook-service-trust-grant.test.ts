@@ -1,3 +1,4 @@
+import { exerciseLegacyCodexRemovalInDisposableFixture } from './codex-legacy-removal.test-support'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   chmodSync,
@@ -44,7 +45,6 @@ vi.mock('os', async (importOriginal) => {
 vi.mock('../../../codex-cli/command', () => ({ resolveCodexCommand: resolveCodexCommandMock }))
 
 import './hook-service'
-import { CodexHookService } from './codex-hook-service-implementation'
 import { getCodexManagedHookInstallMaterial } from '../definitions/codex-hook-definition'
 
 let tmpHome: string
@@ -133,7 +133,7 @@ describe('CodexHookService opt-out of the real-home entry', () => {
     })
     const grantSession = forbidGrantSessions()
 
-    await new CodexHookService().remove()
+    await exerciseLegacyCodexRemovalInDisposableFixture()
 
     expect(grantSession).not.toHaveBeenCalled()
 
@@ -169,7 +169,7 @@ describe('CodexHookService opt-out of the real-home entry', () => {
       symlinkSync(targetPath, hooksPath)
       const grantSession = forbidGrantSessions()
 
-      await new CodexHookService().remove()
+      await exerciseLegacyCodexRemovalInDisposableFixture()
 
       expect(grantSession).not.toHaveBeenCalled()
 
@@ -193,7 +193,7 @@ describe('CodexHookService opt-out of the real-home entry', () => {
       chmodSync(hooksPath, 0o600)
       const grantSession = forbidGrantSessions()
 
-      await new CodexHookService().remove()
+      await exerciseLegacyCodexRemovalInDisposableFixture()
 
       expect(grantSession).not.toHaveBeenCalled()
 

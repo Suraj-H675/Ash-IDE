@@ -1,3 +1,4 @@
+import { exerciseLegacyCodexRemovalInDisposableFixture } from './codex-legacy-removal.test-support'
 import { describe, expect, it, vi } from 'vitest'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import type * as Os from 'node:os'
@@ -189,7 +190,7 @@ describe('CodexHookService', () => {
     )
     writeFileSync(profilePath, LEGACY_ORCA_PROFILE_LINES.join('\n'), 'utf-8')
 
-    const status = await new CodexHookService().remove()
+    const status = await exerciseLegacyCodexRemovalInDisposableFixture()
 
     expect(status.state).toBe('error')
     expect(status.detail).toBe('Could not parse Codex hooks.json')

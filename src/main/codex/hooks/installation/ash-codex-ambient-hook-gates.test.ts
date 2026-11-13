@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SFTPWrapper } from 'ssh2'
 import { CodexHookService } from './codex-hook-service-implementation'
+import { exerciseLegacyCodexRemovalInDisposableFixture } from './codex-legacy-removal.test-support'
 
 let fixture = ''
 let ownScript = ''
@@ -66,6 +67,46 @@ describe.skipIf(process.platform === 'win32')('direct Codex ambient/global hook 
       skipReason: 'ash_ownership_unavailable'
     })
     expectNoMutation()
+  })
+
+  it('refuses direct broad-match removal before creating or changing a Codex home', async () => {
+    await expect(new CodexHookService().remove()).resolves.toMatchObject({
+      agent: 'codex',
+      state: 'skipped',
+      skipReason: 'ash_ownership_unavailable'
+    })
+    expectNoMutation()
+  })
+
+  it('preserves unknown and name-matched hooks when direct removal is requested', async () => {
+    const runtimeHome = join(fixture, 'ash-profile', 'codex-runtime-home', 'home')
+    mkdirSync(runtimeHome, { recursive: true, mode: 0o700 })
+    const hooks = join(runtimeHome, 'hooks.json')
+    const raw = `${JSON.stringify({
+      hooks: {
+        Stop: [
+          { hooks: [{ type: 'command', command: '/other-app/agent-hooks/codex-hook.sh' }] },
+          { hooks: [{ type: 'command', command: '/unknown/foreign-hook.sh' }] }
+        ]
+      }
+    })}\n`
+    writeFileSync(hooks, raw, { mode: 0o600 })
+    await expect(new CodexHookService().remove()).resolves.toMatchObject({
+      state: 'skipped',
+      skipReason: 'ash_ownership_unavailable'
+    })
+    expect(readFileSync(hooks, 'utf8')).toBe(raw)
+    expect(readFileSync(foreignCodexHooks, 'utf8')).toContain('foreign.sh')
+    expect(readFileSync(foreignCodexConfig, 'utf8')).toBe('model = "foreign-preserved"\n')
+    expect(readFileSync(foreignScript, 'utf8')).toBe('# Orca script - do not inspect or rewrite\n')
+  })
+
+  it('refuses to run historical cleanup against a non-disposable data root', () => {
+    vi.stubEnv('ORCA_USER_DATA_PATH', '/not-a-disposable-Ash-test-root')
+    expect(() => exerciseLegacyCodexRemovalInDisposableFixture()).toThrow(
+      'legacy_codex_removal_test_requires_disposable_data_root'
+    )
+    expect(readFileSync(foreignCodexConfig, 'utf8')).toBe('model = "foreign-preserved"\n')
   })
 
   it('refuses remote Codex hook installation without calling any SFTP method', async () => {

@@ -1,3 +1,4 @@
+import { exerciseLegacyCodexRemovalInDisposableFixture } from '../installation/codex-legacy-removal.test-support'
 import { describe, expect, it, vi } from 'vitest'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import type * as Os from 'node:os'
@@ -26,7 +27,6 @@ vi.mock('os', async (importOriginal) => {
 })
 
 import '../installation/hook-service'
-import { CodexHookService } from '../installation/codex-hook-service-implementation'
 
 const homes = setupCodexHookHomes(homedirMock, getPathMock)
 
@@ -66,7 +66,7 @@ describe('Codex turned off per agent', () => {
   it('removes the Orca entry from the real ~/.codex and keeps user hooks', async () => {
     const systemHooksPath = seedRealHomeHooks()
 
-    await new CodexHookService().remove()
+    await exerciseLegacyCodexRemovalInDisposableFixture()
 
     expect(realHomeStopHooks(systemHooksPath)).toEqual([
       { hooks: [{ type: 'command', command: 'user-hook' }] }

@@ -1,3 +1,4 @@
+import { exerciseLegacyCodexRemovalInDisposableFixture } from '../installation/codex-legacy-removal.test-support'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   mkdirSync,
@@ -28,7 +29,6 @@ vi.mock('node:os', async () => {
 
 import { removeRealHomeCodexHookForOptOut } from './codex-real-home-hook-install'
 import '../installation/hook-service'
-import { CodexHookService } from '../installation/codex-hook-service-implementation'
 import { getCodexManagedHookInstallMaterial } from '../definitions/codex-hook-definition'
 import { memoizeCodexHookAnswer } from '../../trust/hooks/codex-hook-trust-memo'
 import {
@@ -195,7 +195,7 @@ describe('turning hooks off', () => {
       { ...orcaStopAt(resolvedHooksPath), trustedHash: 'sha256:codex-old-stop' }
     ])
 
-    await new CodexHookService().remove()
+    await exerciseLegacyCodexRemovalInDisposableFixture()
 
     expect(readHooks().hooks?.Stop).toBeUndefined()
     const trust = readHookTrustEntries(configTomlPath())
