@@ -21,7 +21,6 @@ import { useTaskPageJiraListProjection } from './jira/use-task-page-jira-list-pr
 import { useTaskPageLinearCreationState } from './linear/use-task-page-linear-creation-state'
 import { useTaskPageGitHubMutationState } from './github/use-task-page-github-mutation-state'
 import { useTaskPageJiraCreationState } from './jira/use-task-page-jira-creation-state'
-import { useTaskPageJiraCreationMetadata } from './jira/use-task-page-jira-creation-metadata'
 import { useTaskPageGitHubListProjection } from './github/use-task-page-github-list-projection'
 import { useTaskPageGitHubSearchPagination } from './github/use-task-page-github-search-pagination'
 import { useTaskPageGitHubLandingRefresh } from './github/use-task-page-github-landing-refresh'
@@ -34,10 +33,6 @@ import { useTaskPageLinearIssueCreation } from './linear/use-task-page-linear-is
 import { useTaskPageJiraIssueCreation } from './jira/use-task-page-jira-issue-creation'
 import { useTaskPageJiraSummaryGeneration } from './jira/use-task-page-jira-summary-generation'
 import { useTaskPageGlobalEffects } from './use-task-page-global-effects'
-import { useTaskPageLinearListEffects } from './linear/use-task-page-linear-list-effects'
-import { useTaskPageLinearInOrcaEffects } from './linear/use-task-page-linear-in-orca-effects'
-import { useTaskPageLinearCollectionEffects } from './linear/use-task-page-linear-collection-effects'
-import { useTaskPageJiraListEffects } from './jira/use-task-page-jira-list-effects'
 import { useTaskPageComposerActions } from './use-task-page-composer-actions'
 import { TaskPageSurface } from './Surface'
 
@@ -64,23 +59,18 @@ export default function TaskPage(): React.JSX.Element {
   const stage20 = useTaskPageLinearCreationState(stage19)
   const stage21 = useTaskPageGitHubMutationState(stage20)
   const stage22 = useTaskPageJiraCreationState(stage21)
-  const stage23 = useTaskPageJiraCreationMetadata(stage22)
-  const stage24 = useTaskPageGitHubListProjection(stage23)
-  const stage25 = useTaskPageGitHubSearchPagination(stage24)
-  const stage26 = useTaskPageGitHubLandingRefresh(stage25)
-  const stage27 = useTaskPageGitHubQuietRefresh(stage26)
-  const stage28 = useTaskPageSearchActions(stage27)
-  const stage29 = useTaskPageWorkspaceActions(stage28)
-  const stage30 = useTaskPageGitHubIssueCreation(stage29)
-  const stage31 = useTaskPageLinearProjectCreation(stage30)
-  const stage32 = useTaskPageLinearIssueCreation(stage31)
-  const stage33 = useTaskPageJiraIssueCreation(stage32)
-  const stage34 = useTaskPageJiraSummaryGeneration(stage33)
-  const stage35 = useTaskPageGlobalEffects(stage34)
-  const stage36 = useTaskPageLinearListEffects(stage35)
-  const stage37 = useTaskPageLinearInOrcaEffects(stage36)
-  const stage38 = useTaskPageLinearCollectionEffects(stage37)
-  const stage39 = useTaskPageJiraListEffects(stage38)
-  const stage40 = useTaskPageComposerActions(stage39)
-  return <TaskPageSurface model={stage40} />
+  const stage23 = useTaskPageGitHubListProjection(stage22)
+  const stage24 = useTaskPageGitHubSearchPagination(stage23)
+  const stage25 = useTaskPageGitHubLandingRefresh(stage24)
+  const stage26 = useTaskPageGitHubQuietRefresh(stage25)
+  const stage27 = useTaskPageSearchActions(stage26)
+  const stage28 = useTaskPageWorkspaceActions(stage27)
+  const stage29 = useTaskPageGitHubIssueCreation(stage28)
+  const stage30 = useTaskPageLinearProjectCreation(stage29)
+  const stage31 = useTaskPageLinearIssueCreation(stage30)
+  const stage32 = useTaskPageJiraIssueCreation(stage31)
+  const stage33 = useTaskPageJiraSummaryGeneration(stage32)
+  const stage34 = useTaskPageGlobalEffects(stage33)
+  const stage35 = useTaskPageComposerActions(stage34)
+  return <TaskPageSurface model={stage35} />
 }

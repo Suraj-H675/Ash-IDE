@@ -1,9 +1,9 @@
 import { useAppStore } from '@/store/index'
-import type { TaskPageJiraCreationMetadataModel } from '../jira/use-task-page-jira-creation-metadata'
+import type { TaskPageJiraCreationStateModel } from '../jira/use-task-page-jira-creation-state'
 
 // Why the list projection's input model: the landing run's later-stage model carries these same fields.
 type LandingRequestInput = Pick<
-  TaskPageJiraCreationMetadataModel,
+  TaskPageJiraCreationStateModel,
   'selectedReposKey' | 'appliedTaskSearch' | 'taskRefreshNonce' | 'workItemsInvalidationNonce'
 >
 
@@ -26,7 +26,7 @@ export function taskPageGitHubLandingRequestKey(input: LandingRequestInput): str
 export function useTaskPageGitHubListPending(
   model: LandingRequestInput &
     Pick<
-      TaskPageJiraCreationMetadataModel,
+      TaskPageJiraCreationStateModel,
       | 'selectedRepos'
       | 'taskSource'
       | 'githubMode'

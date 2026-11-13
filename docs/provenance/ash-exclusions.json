@@ -30371,6 +30371,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/task-page/jira/use-task-page-jira-creation-metadata.ts",
+      "sourceSha256": "f7e4239dd1e84656b28bf4db28744e01d6ab655693a0ff125b23e389e9290621",
+      "reason": "Ash M8 exclusion: removed the Jira Tasks issue-type and create-field metadata fetch stage after the Jira application connector and Tasks creation UI were retired. Historical task state and saved user data remain untouched."
+    },
+    {
       "path": "src/renderer/src/components/task-page/jira/use-task-page-jira-list-effects.test.ts",
       "sourceSha256": "3a01784a221412c9824da974428d28a579cd7c69bbf749954a5e5a514a23ccc9",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."

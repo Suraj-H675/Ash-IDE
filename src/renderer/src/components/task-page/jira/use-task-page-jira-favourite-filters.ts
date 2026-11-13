@@ -7,6 +7,7 @@ import {
 import type { JiraFavouriteFilter } from '../../../../../shared/jira/jira-favourite-filters'
 import type { TaskPageLinearViewStateModel } from '../linear/use-task-page-linear-view-state'
 import { translate } from '@/i18n/i18n'
+import { isAshTaskPageProviderVisible } from '../ash-task-page-source-policy'
 
 const EMPTY_FAVOURITES: readonly JiraFavouriteFilter[] = []
 type FavouriteModel = Pick<
@@ -16,6 +17,7 @@ type FavouriteModel = Pick<
   | 'accountBackedTaskSourceHostId'
   | 'taskResumeApplied'
   | 'taskSource'
+  | 'visibleTaskProviders'
   | 'selectedJiraSiteId'
   | 'jiraConnected'
 >
@@ -39,6 +41,7 @@ export function useTaskPageJiraFavouriteFilters(model: FavouriteModel) {
   const target = useMemo(() => ipcOrRuntimeTargetForHostId(ownerKey), [ownerKey])
   const siteId = model.selectedJiraSiteId
   const enabled = Boolean(
+    isAshTaskPageProviderVisible('jira', model.visibleTaskProviders) &&
     model.taskResumeApplied &&
     model.taskSource === 'jira' &&
     model.jiraConnected &&

@@ -4,26 +4,17 @@ import { resolveVisibleTaskProvider } from '../../../../shared/task-providers'
 import { normalizeGitHubTaskPreset } from '../../../../shared/task-github-search'
 import { getTaskPresetQuery } from '../../../../shared/task-preset-query'
 import { loadLinearIssueView } from '../linear-issue-view-storage'
-import { translate } from '@/i18n/i18n'
 export function useTaskPageResumeRestoration(model: TaskPageJiraListStateModel) {
   const {
     settings,
     persistedUIReady,
     taskResumeState,
-    setTaskResumeState,
     pageData,
-    fetchLinearProject,
-    listLinearCustomViews,
-    fetchLinearCustomView,
-    linearConnected,
     resolvedInitialSelection,
     setRepoSelection,
     visibleTaskProviders,
-    taskSource,
     setTaskSource,
-    linearTaskSourceContext,
     taskResumeAppliedRef,
-    taskResumeApplied,
     setTaskResumeApplied,
     setGithubMode,
     setTaskSearchInput,
@@ -38,14 +29,6 @@ export function useTaskPageResumeRestoration(model: TaskPageJiraListStateModel) 
     setLinearOrderBy,
     setLinearDisplayProperties,
     setLinearTeamPropertyTouched,
-    setLinearProjectsError,
-    setSelectedLinearProject,
-    setSelectedLinearProjectDetail,
-    setLinearCustomViewsLoading,
-    setLinearCustomViewsError,
-    setSelectedLinearCustomView,
-    setLinearProjectParentView,
-    linearContextResumeAttemptedRef,
     setJiraSearchInput,
     setAppliedJiraSearch,
     setActiveJiraPreset
@@ -124,137 +107,6 @@ export function useTaskPageResumeRestoration(model: TaskPageJiraListStateModel) 
     setLinearGroupBy,
     setLinearViewMode
   ])
-  useEffect(() => {
-    const context = taskResumeState?.linearContext
-    if (
-      linearContextResumeAttemptedRef.current ||
-      !taskResumeApplied ||
-      taskSource !== 'linear' ||
-      !linearConnected ||
-      !context
-    ) {
-      return
-    }
-    linearContextResumeAttemptedRef.current = true
-    let cancelled = false
-    if (context.kind === 'project') {
-      void fetchLinearProject(context.id, context.workspaceId, {
-        force: true,
-        sourceContext: linearTaskSourceContext
-      })
-        .then((project) => {
-          if (cancelled) {
-            return
-          }
-          if (!project) {
-            setSelectedLinearProject(null)
-            setSelectedLinearProjectDetail(null)
-            setLinearProjectParentView(null)
-            setLinearProjectsError(
-              translate(
-                'auto.components.TaskPage.resumeRestoration.linearProjectNotFound',
-                'Saved Linear project was not found.'
-              )
-            )
-            setTaskResumeState({
-              linearContext: undefined
-            })
-            return
-          }
-          setSelectedLinearProject(project)
-          setSelectedLinearProjectDetail(project)
-          setLinearMode('projects')
-        })
-        .catch(() => {
-          if (!cancelled) {
-            setSelectedLinearProject(null)
-            setSelectedLinearProjectDetail(null)
-            setLinearProjectParentView(null)
-            setLinearProjectsError(
-              translate(
-                'auto.components.TaskPage.resumeRestoration.linearProjectRestoreFailed',
-                'Failed to restore saved Linear project.'
-              )
-            )
-            setTaskResumeState({
-              linearContext: undefined
-            })
-          }
-        })
-      return () => {
-        cancelled = true
-      }
-    }
-    if (context.kind === 'view' && context.model) {
-      setLinearMode('views')
-      setLinearCustomViewsLoading(true)
-      setLinearCustomViewsError(null)
-      void fetchLinearCustomView(context.id, context.workspaceId, context.model, {
-        force: true,
-        sourceContext: linearTaskSourceContext
-      })
-        .then((restoredView) => {
-          if (cancelled) {
-            return
-          }
-          setLinearCustomViewsLoading(false)
-          if (!restoredView) {
-            setSelectedLinearCustomView(null)
-            setLinearCustomViewsError(
-              translate(
-                'auto.components.TaskPage.resumeRestoration.linearViewNotFound',
-                'Saved Linear view was not found.'
-              )
-            )
-            setTaskResumeState({
-              linearContext: undefined
-            })
-            return
-          }
-          setSelectedLinearCustomView(restoredView)
-        })
-        .catch(() => {
-          if (!cancelled) {
-            setSelectedLinearCustomView(null)
-            setLinearCustomViewsLoading(false)
-            setLinearCustomViewsError(
-              translate(
-                'auto.components.TaskPage.resumeRestoration.linearViewRestoreFailed',
-                'Failed to restore saved Linear view.'
-              )
-            )
-            setTaskResumeState({
-              linearContext: undefined
-            })
-          }
-        })
-      return () => {
-        cancelled = true
-      }
-    }
-    return undefined
-  }, [
-    fetchLinearCustomView,
-    fetchLinearProject,
-    listLinearCustomViews,
-    linearConnected,
-    linearTaskSourceContext,
-    setTaskResumeState,
-    taskResumeApplied,
-    taskResumeState?.linearContext,
-    taskSource,
-    setSelectedLinearCustomView,
-    setLinearCustomViewsError,
-    setSelectedLinearProject,
-    linearContextResumeAttemptedRef,
-    setLinearProjectParentView,
-    setLinearProjectsError,
-    setLinearMode,
-    setSelectedLinearProjectDetail,
-    setLinearCustomViewsLoading
-  ])
-
-  // Fetch all teams; the current issue window may contain only a subset.
   return model
 }
 export type TaskPageResumeRestorationModel = ReturnType<typeof useTaskPageResumeRestoration>

@@ -12,12 +12,17 @@ import type {
 } from '../../../../../shared/jira/jira-saved-filters'
 import type { TaskPageLinearViewStateModel } from '../linear/use-task-page-linear-view-state'
 import { translate } from '@/i18n/i18n'
+import { isAshTaskPageProviderVisible } from '../ash-task-page-source-policy'
 
 const EMPTY_SAVED_FILTER_STATE: JiraSavedFilterState = { filters: [], activeFilterId: null }
 
 type JiraSavedFilterModel = Pick<
   TaskPageLinearViewStateModel,
-  'jiraTaskSourceContext' | 'accountBackedTaskSourceHostId' | 'taskResumeApplied' | 'taskSource'
+  | 'jiraTaskSourceContext'
+  | 'accountBackedTaskSourceHostId'
+  | 'taskResumeApplied'
+  | 'taskSource'
+  | 'visibleTaskProviders'
 >
 
 type JiraSavedFilterOwner = { ownerKey: string; enabled: boolean }
@@ -46,7 +51,10 @@ export function useTaskPageJiraSavedFilters(
   const [error, setError] = useState<string | null>(null)
   const [refresh, setRefresh] = useState(0)
   const loadedOwnerRef = useRef<string | null>(null)
-  const enabled = model.taskResumeApplied && model.taskSource === 'jira'
+  const enabled =
+    isAshTaskPageProviderVisible('jira', model.visibleTaskProviders) &&
+    model.taskResumeApplied &&
+    model.taskSource === 'jira'
   const owner = useMemo(() => ({ ownerKey, enabled }), [ownerKey, enabled])
   const lifetimeRef = useRef<JiraSavedFilterLifetime | null>(null)
   const pending = pendingLifetime?.owner === owner

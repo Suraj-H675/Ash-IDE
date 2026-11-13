@@ -1,4 +1,4 @@
-import type { TaskPageJiraListEffectsModel } from './jira/use-task-page-jira-list-effects'
+import type { TaskPageGlobalEffectsModel } from './use-task-page-global-effects'
 import { useCallback } from 'react'
 import type { LinearIssue } from '../../../../shared/linear/issue-types'
 import type { LinearWorkspaceSelection } from '../../../../shared/linear/workspace-types'
@@ -15,7 +15,7 @@ import { shouldHideTaskPageListChrome } from './task-page-list-chrome-visibility
 import { getJiraIssueWorkspaceSeed } from './task-page-source-context'
 import { findJiraIssueDefaultRepo } from '../../../../shared/jira/jira-project-reference'
 import { getRepoWorkspaceCreationTargetHint } from '@/lib/project-host-workspace-target'
-export function useTaskPageComposerActions(model: TaskPageJiraListEffectsModel) {
+export function useTaskPageComposerActions(model: TaskPageGlobalEffectsModel) {
   const {
     setTaskResumeState,
     openModal,

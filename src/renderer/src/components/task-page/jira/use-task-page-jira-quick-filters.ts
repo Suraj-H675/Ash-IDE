@@ -10,11 +10,16 @@ import {
 } from '../../../../../shared/jira/jira-quick-filters'
 import type { TaskPageLinearViewStateModel } from '../linear/use-task-page-linear-view-state'
 import { translate } from '@/i18n/i18n'
+import { isAshTaskPageProviderVisible } from '../ash-task-page-source-policy'
 
 const EMPTY_QUICK_FILTER_STATE: JiraQuickFilterState = { statuses: [] }
 type JiraQuickFilterModel = Pick<
   TaskPageLinearViewStateModel,
-  'jiraTaskSourceContext' | 'accountBackedTaskSourceHostId' | 'taskResumeApplied' | 'taskSource'
+  | 'jiraTaskSourceContext'
+  | 'accountBackedTaskSourceHostId'
+  | 'taskResumeApplied'
+  | 'taskSource'
+  | 'visibleTaskProviders'
 >
 
 export function useTaskPageJiraQuickFilters(model: JiraQuickFilterModel) {
@@ -40,7 +45,11 @@ export function useTaskPageJiraQuickFilters(model: JiraQuickFilterModel) {
   const ready = target !== null && snapshot.ownerKey === ownerKey
   const state = ready ? snapshot.state : EMPTY_QUICK_FILTER_STATE
   useEffect(() => {
-    if (!model.taskResumeApplied || model.taskSource !== 'jira') {
+    if (
+      !isAshTaskPageProviderVisible('jira', model.visibleTaskProviders) ||
+      !model.taskResumeApplied ||
+      model.taskSource !== 'jira'
+    ) {
       return
     }
     let cancelled = false
@@ -73,11 +82,19 @@ export function useTaskPageJiraQuickFilters(model: JiraQuickFilterModel) {
     return () => {
       cancelled = true
     }
-  }, [ownerKey, target, model.taskResumeApplied, model.taskSource, refresh])
+  }, [
+    ownerKey,
+    target,
+    model.taskResumeApplied,
+    model.taskSource,
+    model.visibleTaskProviders,
+    refresh
+  ])
 
   const select = async (statuses: string[]): Promise<void> => {
     if (
       !ready ||
+      !isAshTaskPageProviderVisible('jira', model.visibleTaskProviders) ||
       loading ||
       writePendingRef.current === lifetime ||
       !target ||

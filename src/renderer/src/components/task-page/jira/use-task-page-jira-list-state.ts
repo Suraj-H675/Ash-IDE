@@ -36,6 +36,7 @@ import {
 import { getEnvironmentRuntimeContextKey } from '@/lib/provider-runtime-context'
 import { getTaskSourceCacheScope } from '../../../../../shared/task-source-context'
 import { useTaskPageJiraProjectScope } from './use-task-page-jira-project-scope'
+import { isAshTaskPageProviderVisible } from '../ash-task-page-source-policy'
 const EMPTY_JIRA_PRIORITIES: JiraPrioritiesBySite = new Map()
 
 export function useTaskPageJiraListState(model: TaskPageLinearViewStateModel) {
@@ -161,7 +162,11 @@ export function useTaskPageJiraListState(model: TaskPageLinearViewStateModel) {
     jiraTaskSourceContext ? getTaskSourceCacheScope(jiraTaskSourceContext) : null,
     jiraPrioritySiteIdsKey
   ])
-  const prioritiesEnabled = taskSource === 'jira' && jiraConnected && jiraOrderBy === 'priority'
+  const prioritiesEnabled =
+    isAshTaskPageProviderVisible('jira', model.visibleTaskProviders) &&
+    taskSource === 'jira' &&
+    jiraConnected &&
+    jiraOrderBy === 'priority'
   const jiraPrioritiesBySite: JiraPrioritiesBySite =
     prioritiesEnabled && owner && prioritySnapshot?.scopeKey === priorityScopeKey
       ? prioritySnapshot.priorities

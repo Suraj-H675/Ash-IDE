@@ -1942,8 +1942,53 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/task-page/TaskPage.tsx",
+      "sha256": "9cdf61f892ebf8782cae6f71dbb9be6b17a5367132ae6278c91007180ab0fffd",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/github/use-task-page-github-list-pending.ts",
+      "sha256": "6261ea464c88580a21291dacdea9cb8d9ea47b8fcab77e9b0c1328673628cae6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/github/use-task-page-github-list-projection.ts",
+      "sha256": "e79f8edd95de7e79ac3903c5d3282dbc21c57eb4b8a010f88d88394012727621",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/github/use-task-page-pr-check-hydration.ts",
+      "sha256": "ff4b5496a23da4dc85fda864a2e24bd1a0e6d285477e6775c98197d31ca79a5d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/jira/use-task-page-jira-favourite-filters.ts",
+      "sha256": "28d4e9670d04c4159b91ff933372c2ac622e4106a6352907c3a1558a422b3508",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/jira/use-task-page-jira-list-state.ts",
+      "sha256": "a8987b79702e41e9e9f86dd612f0161bc3ffbb5777a10ffee842c28876ee72df",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/jira/use-task-page-jira-quick-filters.ts",
+      "sha256": "491e71cc2ad627375f7d264149f25232ec52840c89c150eadb85fefd2537ee5f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/jira/use-task-page-jira-saved-filters.ts",
+      "sha256": "a0f82dc1d58c43f4e6db8d3a15b02c6e0b87b44e115fffde8aee6024ebd437c7",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/task-page/task-page-localized-options.tsx",
       "sha256": "2981d19dcc0c0968a7ae8d4fac82db3f4b0ae65adbff31492f10dead3a342545",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/use-task-page-composer-actions.ts",
+      "sha256": "e76d459ae1f3c9e716e48c95c547212a869d5992bdb415ec869e9bdf3295c7b6",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1959,6 +2004,11 @@
     {
       "path": "src/renderer/src/components/task-page/use-task-page-repo-selection.ts",
       "sha256": "baf9abc5a2e9049312614d30a6e9a5b123b4dfeec8d537325b13d5a415e6f339",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/use-task-page-resume-restoration.ts",
+      "sha256": "ff757bc400f563fe731c64082c66d6eb7fe3b156293e71a22381acd5552b97bd",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

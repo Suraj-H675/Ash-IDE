@@ -2,6 +2,14 @@ import { normalizeVisibleTaskProviders, type TaskProvider } from '../../../../sh
 
 export type AshTaskPageProvider = Extract<TaskProvider, 'github' | 'gitlab'>
 
+/** The Tasks surface is deliberately limited to code-host providers, even when legacy state survives. */
+export function isAshTaskPageProviderVisible(
+  provider: TaskProvider,
+  visibleProviders: readonly TaskProvider[]
+): provider is AshTaskPageProvider {
+  return (provider === 'github' || provider === 'gitlab') && visibleProviders.includes(provider)
+}
+
 /** Historical Jira/Linear preferences must never re-enable removed Ash integrations. */
 export function normalizeAshTaskPageSources(saved: unknown): AshTaskPageProvider[] {
   const supported = normalizeVisibleTaskProviders(saved).filter(
