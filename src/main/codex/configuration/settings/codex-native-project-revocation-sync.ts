@@ -3,7 +3,19 @@ import { observeAgentStateFile } from '../codex-path-observation'
 import { writeFileAtomicallyIfUnchanged } from '../../../codex-accounts/fs-utils'
 import type { CodexSettingsPromotionHomes } from './config-settings-promotion'
 import { applyNativeProjectRevocationsToRuntime } from './codex-config-mirror-merge'
-import { reportCodexConfigSyncOutcome } from './config-sync-stall'
+import { getCodexConfigSyncStatus, reportCodexConfigSyncOutcome } from './config-sync-stall'
+
+/** Keep native project distrust authoritative even if unrelated settings promotion fails. */
+export function guardNativeTrustAfterFailedPromotion(homes: CodexSettingsPromotionHomes): void {
+  try {
+    syncNativeProjectRevocationsDuringRefusedWriteBack(homes)
+  } finally {
+    const stalledStatus = getCodexConfigSyncStatus(homes)
+    if (stalledStatus.state === 'stalled') {
+      reportCodexConfigSyncOutcome(homes.runtimeHomePath, stalledStatus)
+    }
+  }
+}
 
 /** Degrade write-back without dropping local changes or provider-side distrust. */
 export function reportRefusedCodexWriteBack(homes: CodexSettingsPromotionHomes): void {

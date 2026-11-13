@@ -135,13 +135,13 @@ describe('STA-4737 the config mirror must not overwrite a runtime config it coul
   const SYSTEM_CONFIG = 'model = "system-model"\n'
   const RUNTIME_CONFIG = 'model = "user-picked"\n\n[mcp_servers.local]\ncommand = "run-me"\n'
 
-  // Without a baseline, promotion skips the read, leaving the mirror responsible for refusal.
-  it('leaves a denied runtime config exactly as it found it', () => {
+  // Without a baseline, promotion fails; the launch-time trust guard must refuse unknown state.
+  it('refuses launch-time sync and leaves a denied runtime config exactly as it found it', () => {
     realFs.writeFileSync(systemConfigPath(), SYSTEM_CONFIG, 'utf-8')
     realFs.writeFileSync(runtimeConfigPath(), RUNTIME_CONFIG, 'utf-8')
     denials.deny(runtimeConfigPath())
 
-    syncSystemConfigIntoManagedCodexHome()
+    expect(() => syncSystemConfigIntoManagedCodexHome()).toThrow(/project trust revocation/i)
 
     expect(realFs.readFileSync(runtimeConfigPath(), 'utf-8')).toBe(RUNTIME_CONFIG)
   })

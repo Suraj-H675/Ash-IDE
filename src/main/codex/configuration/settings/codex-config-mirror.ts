@@ -25,7 +25,10 @@ import { preserveRuntimeConflictValues } from './codex-config-settings-preservat
 import { applyCodexDaemonSocketGuard } from '../shared-server/codex-daemon-socket-path-guard'
 import { stripRuntimeOwnedTomlSections } from '../toml/config-toml-runtime-owned-sections'
 import { mergeSystemCodexConfigIntoRuntime } from './codex-config-mirror-merge'
-import { reportRefusedCodexWriteBack } from './codex-native-project-revocation-sync'
+import {
+  guardNativeTrustAfterFailedPromotion,
+  reportRefusedCodexWriteBack
+} from './codex-native-project-revocation-sync'
 
 // Mirrored MCP environment tokens require owner-only writes.
 const RUNTIME_CONFIG_WRITE = { mode: 0o600 } as const
@@ -47,11 +50,7 @@ function mirrorSystemConfigIntoManagedCodexHome(homes: CodexSettingsPromotionHom
   // Promote in-chat changes before mirroring ~/.codex or this pass would revert them.
   const promotionPlan = promoteCodexRuntimeSettingsToSystem(homes)
   if (!promotionPlan) {
-    // Preserve runtime/baseline for retry; promotion failures must report stalls without clearing the latch.
-    const stalledStatus = getCodexConfigSyncStatus(homes)
-    if (stalledStatus.state === 'stalled') {
-      reportCodexConfigSyncOutcome(homes.runtimeHomePath, stalledStatus)
-    }
+    guardNativeTrustAfterFailedPromotion(homes)
     return false
   }
   if (promotionPlan.writeBackState === 'refused') {

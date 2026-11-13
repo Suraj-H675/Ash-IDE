@@ -256,6 +256,52 @@ describe('codex settings write-back promotion', () => {
     expect(readSystemConfig()).toBe(native)
   })
 
+  it.skipIf(process.platform === 'win32')(
+    'still applies native project distrust when an unreadable settings baseline stalls promotion',
+    () => {
+      writeSystemConfig('model = "gpt-5"\n')
+      syncSystemConfigIntoManagedCodexHome()
+      simulateCodexSettingWrite('model', '"o4"')
+      writeFileSync(
+        runtimeConfigPath(),
+        `${readRuntimeConfig()}\n[projects."/tmp/revoked-workspace"]\ntrust_level = "trusted"\n`,
+        'utf-8'
+      )
+      const native =
+        'model = "gpt-5"\n\n[projects."/tmp/revoked-workspace"]\ntrust_level = "untrusted"\n'
+      writeSystemConfig(native)
+      rmSync(baselinePath())
+      symlinkSync(baselinePath(), baselinePath())
+
+      syncSystemConfigIntoManagedCodexHome()
+
+      expect(readSystemConfig()).toBe(native)
+      expect(readRuntimeConfig()).toContain('model = "o4"')
+      expect(readRuntimeConfig()).toContain('trust_level = "untrusted"')
+      expect(readRuntimeConfig()).not.toContain('trust_level = "trusted"')
+      expect(lstatSync(baselinePath()).isSymbolicLink()).toBe(true)
+    }
+  )
+
+  it.skipIf(process.platform === 'win32')(
+    'refuses stale project trust if promotion fails and native source becomes unreadable',
+    () => {
+      writeSystemConfig('model = "gpt-5"\n')
+      syncSystemConfigIntoManagedCodexHome()
+      simulateCodexSettingWrite('model', '"o4"')
+      const original = `${readRuntimeConfig()}\n[projects."/tmp/revoked-workspace"]\ntrust_level = "trusted"\n`
+      writeFileSync(runtimeConfigPath(), original, 'utf-8')
+      rmSync(baselinePath())
+      symlinkSync(baselinePath(), baselinePath())
+      rmSync(systemConfigPath())
+      symlinkSync(systemConfigPath(), systemConfigPath())
+
+      expect(() => syncSystemConfigIntoManagedCodexHome()).toThrow(/project trust revocation/i)
+      expect(readRuntimeConfig()).toBe(original)
+      expect(lstatSync(systemConfigPath()).isSymbolicLink()).toBe(true)
+    }
+  )
+
   it('does not create a native config when a pending setting cannot be written back', () => {
     writeSystemConfig(' \n')
     syncSystemConfigIntoManagedCodexHome()

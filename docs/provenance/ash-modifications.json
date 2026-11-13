@@ -388,7 +388,7 @@
     },
     {
       "path": "src/main/codex/configuration/settings/codex-config-mirror.ts",
-      "sha256": "642b2a228067a176b9435eab35b9734ca1d09ee202a779c5e29385416e26e863",
+      "sha256": "5b7e80cf2974f64d24e0ea6adac5b9e9ed1a2cc9aea8226d7518b607391c9b1c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -408,7 +408,7 @@
     },
     {
       "path": "src/main/codex/configuration/settings/config-settings-promotion.test.ts",
-      "sha256": "d79d201d5bf084a749fbf64a39856be4b54f57523a1ca0d085fef25295ec1f5e",
+      "sha256": "8c0de991b3fbd6f1308910826f0f4c571d6f4bd81b4e1f91e32e342f7bd02e68",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -499,6 +499,11 @@
     {
       "path": "src/main/codex/trust/hooks/hook-trust-promotion.ts",
       "sha256": "13b2ef427a03aabf33f9a70c981695f26d5f363354ce63536d4da3bf4670f0e9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/codex/trust/hooks/sta-4737-unreadable-is-not-absent.test.ts",
+      "sha256": "10227012538d9f19c5db035a6b855dd1dea15bd8e0c52b9f148fd5925863e011",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
