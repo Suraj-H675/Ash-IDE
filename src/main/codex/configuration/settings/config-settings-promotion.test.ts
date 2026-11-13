@@ -27,7 +27,9 @@ const { homedirMock, promotionTestState } = vi.hoisted(() => ({
   promotionTestState: {
     failAtomicWrite: false,
     failRevocationWrite: false,
+    failNextRuntimeMirrorPublication: false,
     allowNativeSettingsWrite: false,
+    raceAtRuntimePublication: null as { path: string; contents: string } | null,
     atomicWritePaths: [] as string[]
   }
 }))
@@ -42,10 +44,18 @@ vi.mock('node:os', async (importOriginal) => {
 
 vi.mock('../../../codex-accounts/fs-utils', async (importOriginal) => {
   const actual = await importOriginal<typeof CodexFsUtils>()
+  const injectRuntimeRace = (targetPath: string): void => {
+    const pending = promotionTestState.raceAtRuntimePublication
+    if (pending?.path === targetPath) {
+      promotionTestState.raceAtRuntimePublication = null
+      writeFileSync(targetPath, pending.contents, 'utf-8')
+    }
+  }
   return {
     ...actual,
     writeFileAtomically: (...args: Parameters<typeof actual.writeFileAtomically>) => {
       promotionTestState.atomicWritePaths.push(args[0])
+      injectRuntimeRace(args[0])
       if (promotionTestState.failAtomicWrite) {
         throw new Error('injected atomic write failure')
       }
@@ -54,6 +64,15 @@ vi.mock('../../../codex-accounts/fs-utils', async (importOriginal) => {
     writeFileAtomicallyIfUnchanged: (
       ...args: Parameters<typeof actual.writeFileAtomicallyIfUnchanged>
     ) => {
+      injectRuntimeRace(args[0])
+      if (
+        promotionTestState.failNextRuntimeMirrorPublication &&
+        args[0] ===
+          join(process.env.ORCA_USER_DATA_PATH ?? '', 'codex-runtime-home', 'home', 'config.toml')
+      ) {
+        promotionTestState.failNextRuntimeMirrorPublication = false
+        return false
+      }
       if (promotionTestState.failRevocationWrite) {
         return false
       }
@@ -83,7 +102,9 @@ beforeEach(() => {
   homedirMock.mockReturnValue(tmpHome)
   promotionTestState.failAtomicWrite = false
   promotionTestState.failRevocationWrite = false
+  promotionTestState.failNextRuntimeMirrorPublication = false
   promotionTestState.allowNativeSettingsWrite = false
+  promotionTestState.raceAtRuntimePublication = null
   promotionTestState.atomicWritePaths.length = 0
   if (homedir() !== tmpHome) {
     throw new Error('node:os homedir mock is not active; refusing to touch the real ~/.codex')
@@ -142,6 +163,44 @@ function simulateCodexSettingWrite(key: string, rawValue: string): void {
 }
 
 describe('codex settings write-back promotion', () => {
+  it('does not clobber a concurrent runtime edit when mirroring native project distrust', () => {
+    const trusted =
+      'model = "gpt-5"\n\n[projects."/tmp/concurrent-workspace"]\ntrust_level = "trusted"\n'
+    writeSystemConfig(trusted)
+    syncSystemConfigIntoManagedCodexHome()
+    const native = trusted.replace('"trusted"', '"untrusted"')
+    writeSystemConfig(native)
+    promotionTestState.raceAtRuntimePublication = {
+      path: runtimeConfigPath(),
+      contents: trusted.replace('model = "gpt-5"', 'model = "concurrent-local-edit"')
+    }
+
+    syncSystemConfigIntoManagedCodexHome()
+
+    expect(promotionTestState.raceAtRuntimePublication).toBeNull()
+    expect(readSystemConfig()).toBe(native)
+    expect(readRuntimeConfig()).toContain('model = "concurrent-local-edit"')
+    expect(readRuntimeConfig()).toContain('trust_level = "untrusted"')
+    expect(readRuntimeConfig()).not.toContain('trust_level = "trusted"')
+  })
+
+  it('does not overwrite a concurrently created runtime home on its first mirror', () => {
+    const native = 'model = "gpt-5"\n\n[projects."/tmp/new-workspace"]\ntrust_level = "untrusted"\n'
+    writeSystemConfig(native)
+    mkdirSync(runtimeHomeDir(), { recursive: true })
+    promotionTestState.raceAtRuntimePublication = {
+      path: runtimeConfigPath(),
+      contents: 'model = "new-local-session"\n'
+    }
+
+    syncSystemConfigIntoManagedCodexHome()
+
+    expect(promotionTestState.raceAtRuntimePublication).toBeNull()
+    expect(readSystemConfig()).toBe(native)
+    expect(readRuntimeConfig()).toContain('model = "new-local-session"')
+    expect(readRuntimeConfig()).toContain('trust_level = "untrusted"')
+  })
+
   it('refuses a direct exported write-back call when provider settings ownership is unavailable', () => {
     writeSystemConfig('model = "gpt-5"\n')
     syncSystemConfigIntoManagedCodexHome()
@@ -264,14 +323,14 @@ describe('codex settings write-back promotion', () => {
     expect(readRuntimeConfig()).toContain('trust_level = "trusted"')
     const native = trusted.replace('"trusted"', '"untrusted"')
     writeSystemConfig(native)
-    promotionTestState.failAtomicWrite = true
+    promotionTestState.failNextRuntimeMirrorPublication = true
 
     syncSystemConfigIntoManagedCodexHome()
 
     expect(readSystemConfig()).toBe(native)
     expect(readRuntimeConfig()).toContain('trust_level = "untrusted"')
     expect(readRuntimeConfig()).not.toContain('trust_level = "trusted"')
-    promotionTestState.failAtomicWrite = false
+    promotionTestState.failNextRuntimeMirrorPublication = false
     syncSystemConfigIntoManagedCodexHome()
     expect(readRuntimeConfig()).toContain('trust_level = "untrusted"')
     expect(readSystemConfig()).toBe(native)
@@ -284,7 +343,7 @@ describe('codex settings write-back promotion', () => {
     syncSystemConfigIntoManagedCodexHome()
     const native = trusted.replace('"trusted"', '"untrusted"')
     writeSystemConfig(native)
-    promotionTestState.failAtomicWrite = true
+    promotionTestState.failNextRuntimeMirrorPublication = true
     promotionTestState.failRevocationWrite = true
 
     expect(() => syncSystemConfigIntoManagedCodexHome()).toThrow(/project trust revocation/i)

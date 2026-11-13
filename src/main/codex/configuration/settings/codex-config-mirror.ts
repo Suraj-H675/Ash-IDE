@@ -3,7 +3,6 @@ import { dirname, join } from 'node:path'
 import { observeAgentStateFile } from '../codex-path-observation'
 import {
   recoverInterruptedGuardedFileOperation,
-  writeFileAtomically,
   writeFileAtomicallyIfUnchanged
 } from '../../../codex-accounts/fs-utils'
 import { getOrcaManagedCodexHomePath, getSystemCodexHomePath } from '../homes/codex-home-paths'
@@ -25,6 +24,7 @@ import { preserveRuntimeConflictValues } from './codex-config-settings-preservat
 import { applyCodexDaemonSocketGuard } from '../shared-server/codex-daemon-socket-path-guard'
 import { stripRuntimeOwnedTomlSections } from '../toml/config-toml-runtime-owned-sections'
 import { mergeSystemCodexConfigIntoRuntime } from './codex-config-mirror-merge'
+import { publishManagedCodexConfigIfUnchanged } from './codex-config-mirror-publication'
 import {
   guardNativeTrustAfterFailedMirror,
   guardNativeTrustAfterFailedPromotion,
@@ -245,7 +245,7 @@ function syncSystemConfigIntoManagedCodexHomeUnsafe(
       runtimeHomePath
     )
     const ownership = readMcpServerTomlOwnership(freshRuntimeConfig)
-    writeFileAtomically(runtimeConfigPath, freshRuntimeConfig, RUNTIME_CONFIG_WRITE)
+    publishManagedCodexConfigIfUnchanged(runtimeConfigPath, null, freshRuntimeConfig)
     return {
       status: 'mirrored',
       preservedConflictKeys: new Set(),
@@ -275,7 +275,7 @@ function syncSystemConfigIntoManagedCodexHomeUnsafe(
   )
   const nextRuntimeConfig = applyCodexDaemonSocketGuard(preserved.content, runtimeHomePath)
   if (nextRuntimeConfig !== runtimeConfig) {
-    writeFileAtomically(runtimeConfigPath, nextRuntimeConfig, RUNTIME_CONFIG_WRITE)
+    publishManagedCodexConfigIfUnchanged(runtimeConfigPath, runtimeConfig, nextRuntimeConfig)
   }
   return {
     status: 'mirrored',

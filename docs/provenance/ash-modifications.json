@@ -388,7 +388,7 @@
     },
     {
       "path": "src/main/codex/configuration/settings/codex-config-mirror.ts",
-      "sha256": "e1ffb2c6966013b1abd9416f9311a7980728aaf447d0196a60925c15be6e842c",
+      "sha256": "ef9007d508ed3cddcf819d45667f279ff08dd1b7894a967fb67397bd9c2ba6f6",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -408,7 +408,7 @@
     },
     {
       "path": "src/main/codex/configuration/settings/config-settings-promotion.test.ts",
-      "sha256": "40d0706a3dce56dff62faf4b4167937006ff1fbc4714577cc5aa5afcb5c3175b",
+      "sha256": "7db4aaabe85275180951e6e3e4e34e67d5e029a61093fc27c7feed3e65bdfa6e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
