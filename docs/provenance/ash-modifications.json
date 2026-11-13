@@ -1957,8 +1957,18 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/task-page/use-task-page-source-availability.ts",
+      "sha256": "294f12358907c63516a25387ac688a0f93c323826283a891c67520a0e86ed8b9",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/task-page/use-task-page-source-display.ts",
       "sha256": "1b4682f04986173379177691655d3c23ee08b3e9b15ab0dafd36b7f38063b1c4",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/use-task-page-source-summary.ts",
+      "sha256": "1b863e509b1fa0bcdd20723c71d81ce0fac2c5326da6618f80a54cbde9b5b957",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

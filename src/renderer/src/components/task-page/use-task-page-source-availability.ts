@@ -132,14 +132,6 @@ export function useTaskPageSourceAvailabilityPrelude(model: TaskPageRuntimeHosts
   const jiraTaskSourceScopeKey = jiraTaskSourceContext
     ? getTaskSourceCacheScope(jiraTaskSourceContext)
     : providerRuntimeContextKey
-  const accountBackedTaskSourceHostAvailability = useMemo<TaskSourceHostAvailability[]>(() => {
-    if (taskSource !== 'linear' && taskSource !== 'jira') {
-      return []
-    }
-    const host = hostRegistryById.get(accountBackedTaskSourceHostId)
-    const availability = getTaskSourceHostAvailabilityForHost(host, accountBackedTaskSourceHostId)
-    return availability ? [availability] : []
-  }, [accountBackedTaskSourceHostId, hostRegistryById, taskSource])
   const nextModel = model as typeof model & {
     getTaskPickerRepoHostLabel: typeof getTaskPickerRepoHostLabel
     taskSourceHostAvailability: typeof taskSourceHostAvailability
@@ -148,7 +140,6 @@ export function useTaskPageSourceAvailabilityPrelude(model: TaskPageRuntimeHosts
     linearTaskSourceContext: typeof linearTaskSourceContext
     jiraTaskSourceContext: typeof jiraTaskSourceContext
     jiraTaskSourceScopeKey: typeof jiraTaskSourceScopeKey
-    accountBackedTaskSourceHostAvailability: typeof accountBackedTaskSourceHostAvailability
   }
   nextModel.getTaskPickerRepoHostLabel = getTaskPickerRepoHostLabel
   nextModel.taskSourceHostAvailability = taskSourceHostAvailability
@@ -157,7 +148,6 @@ export function useTaskPageSourceAvailabilityPrelude(model: TaskPageRuntimeHosts
   nextModel.linearTaskSourceContext = linearTaskSourceContext
   nextModel.jiraTaskSourceContext = jiraTaskSourceContext
   nextModel.jiraTaskSourceScopeKey = jiraTaskSourceScopeKey
-  nextModel.accountBackedTaskSourceHostAvailability = accountBackedTaskSourceHostAvailability
   return nextModel
 }
 export function useTaskPageSourceAvailability(model: TaskPageRuntimeHostsModel) {

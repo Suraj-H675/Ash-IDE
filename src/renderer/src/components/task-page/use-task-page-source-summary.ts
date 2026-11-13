@@ -24,9 +24,7 @@ export function useTaskPageSourceSummary(model: TaskPageSourceAvailabilityPrelud
     taskSourceRepoContexts,
     hostRegistryById,
     hostLabelById,
-    taskSourceHostAvailability,
-    accountBackedTaskSourceHostId,
-    accountBackedTaskSourceHostAvailability
+    taskSourceHostAvailability
   } = model
   const taskSourceAvailabilityNoticeByProvider = useMemo<
     Partial<Record<TaskProvider, TaskSourceAvailabilityNotice>>
@@ -49,12 +47,6 @@ export function useTaskPageSourceSummary(model: TaskPageSourceAvailabilityPrelud
         runtimePreflightStatusByHostId
       })
     ]
-    const accountHost = hostRegistryById.get(accountBackedTaskSourceHostId)
-    const accountHostAvailability = getTaskSourceHostAvailabilityForHost(
-      accountHost,
-      accountBackedTaskSourceHostId
-    )
-    const accountAvailability = accountHostAvailability ? [accountHostAvailability] : []
     const labelFor = (provider: TaskProvider): string =>
       sourceOptions.find((source) => source.id === provider)?.label ?? provider
     return {
@@ -81,24 +73,9 @@ export function useTaskPageSourceSummary(model: TaskPageSourceAvailabilityPrelud
               .map((repo) => getTaskPageRepoSourceContext(repo, 'gitlab'))
               .filter((context): context is TaskSourceContext => context !== null)
           )
-        }) ?? undefined,
-      linear:
-        getTaskSourceAvailabilityNotice({
-          providerLabel: labelFor('linear'),
-          sourceCount: 1,
-          hostLabelById,
-          hostAvailability: accountAvailability
-        }) ?? undefined,
-      jira:
-        getTaskSourceAvailabilityNotice({
-          providerLabel: labelFor('jira'),
-          sourceCount: 1,
-          hostLabelById,
-          hostAvailability: accountAvailability
         }) ?? undefined
     }
   }, [
-    accountBackedTaskSourceHostId,
     hostRegistryById,
     hostLabelById,
     preflightStatus,
@@ -110,22 +87,19 @@ export function useTaskPageSourceSummary(model: TaskPageSourceAvailabilityPrelud
     sourceOptions
   ])
   const taskSourceAvailabilityNotice = useMemo(() => {
+    if (taskSource !== 'github' && taskSource !== 'gitlab') {
+      // Historical task snapshots must not surface retired provider warnings.
+      return null
+    }
     const providerLabel =
       sourceOptions.find((source) => source.id === taskSource)?.label ?? taskSource
     return getTaskSourceAvailabilityNotice({
       providerLabel,
-      sourceCount:
-        taskSource === 'linear' || taskSource === 'jira'
-          ? 1
-          : Math.max(1, taskSourceRepoContexts.length),
-      hostAvailability:
-        taskSource === 'linear' || taskSource === 'jira'
-          ? accountBackedTaskSourceHostAvailability
-          : taskSourceHostAvailability,
+      sourceCount: Math.max(1, taskSourceRepoContexts.length),
+      hostAvailability: taskSourceHostAvailability,
       hostLabelById
     })
   }, [
-    accountBackedTaskSourceHostAvailability,
     hostLabelById,
     sourceOptions,
     taskSource,
