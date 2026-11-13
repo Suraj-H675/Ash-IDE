@@ -147,8 +147,7 @@ export function useWorkItemSourceSearch({
   return {
     ...foundation,
     ...presentation,
-    resolveRow,
-    linearStatusId: foundation.linearStatusId
+    resolveRow
   }
 }
 

@@ -18,7 +18,6 @@ import {
   onboardingStepSchema,
   onboardingTaskSourcesExitActionSchema,
   onboardingTaskSourcesGithubStatusSchema,
-  onboardingTaskSourcesLinearStatusSchema,
   onboardingTourOutcomeSchema,
   onboardingValueKindSchema,
   onboardingWindowsTerminalExitActionSchema,
@@ -120,7 +119,6 @@ export const onboardingStep4PathFailedSchema = z
 export const onboardingTaskSourcesSnapshotSchema = z
   .object({
     github_status: onboardingTaskSourcesGithubStatusSchema,
-    linear_status: onboardingTaskSourcesLinearStatusSchema,
     exit_action: onboardingTaskSourcesExitActionSchema,
     duration_ms: z.number().int().nonnegative().optional(),
     advanced_via: advancedViaSchema,

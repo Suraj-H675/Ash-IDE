@@ -1,18 +1,13 @@
 import React from 'react'
-import { Button } from '@/components/ui/button'
 import { Command } from '@/components/ui/command'
 import { Popover, PopoverAnchor } from '@/components/ui/popover'
 import { SmartWorkspaceSourceTabs } from './SmartWorkspaceSourceTabs'
-import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
 import { WorkspaceEmojiSuggestionPopover } from '@/components/workspace-emoji/WorkspaceEmojiSuggestionPopover'
 import { renderSmartWorkspaceCrossRepoDialog } from './smart-workspace-cross-repo-dialog'
 import { renderSmartWorkspaceNameInput } from './smart-workspace-name-input-surface'
 import { renderSmartWorkspaceSourceResults } from './smart-workspace-source-results-surface'
-import { getJiraSourceStatusMessage } from './jira-source-status-message'
 import type { SmartWorkspaceNameFieldController } from './use-smart-workspace-name-field-controller'
-import { JiraProjectPicker } from '../jira-project-picker'
-import { LinearWorkspacePicker } from '../linear-workspace-picker'
 
 export function renderSmartWorkspaceNameField(
   controller: SmartWorkspaceNameFieldController
@@ -27,11 +22,6 @@ export function renderSmartWorkspaceNameField(
     resolvedCommandValue,
     isQueryStale,
     setCommandValue,
-    jiraSource,
-    jiraStatusId,
-    linearStatusId,
-    unresolvedLinearUrlIntent,
-    onOpenJiraSettings,
     emojiMenuOpen,
     resolvedEmojiCommandValue,
     emojiSuggestions,
@@ -50,24 +40,6 @@ export function renderSmartWorkspaceNameField(
           tabsListRef={controller.tabsListRef}
         />
       )}
-      {mode === 'jira' && selectedSource === null ? (
-        <JiraProjectPicker
-          projects={controller.jiraProjectInventory.projects}
-          value={controller.jiraProject}
-          onChange={controller.setJiraProject}
-          label={translate('components.jiraProjectPicker.label', 'Jira project')}
-          emptyLabel={translate('components.jiraProjectPicker.all', 'All Jira projects')}
-          disabled={disabled || controller.jiraProjectInventory.loading}
-        />
-      ) : null}
-      {mode === 'linear' && selectedSource === null ? (
-        <LinearWorkspacePicker
-          workspaces={controller.linearStatus.workspaces ?? []}
-          value={controller.linearWorkspaceIdOverride}
-          onChange={controller.setLinearWorkspaceId}
-          disabled={disabled || !controller.linearStatusChecked}
-        />
-      ) : null}
       <Popover
         open={!disabled && open && mode !== 'text' && selectedSource === null}
         onOpenChange={handleSourcePopoverOpenChange}
@@ -90,45 +62,6 @@ export function renderSmartWorkspaceNameField(
           {renderSmartWorkspaceSourceResults(controller)}
         </Command>
       </Popover>
-      {jiraSource.intent ? (
-        <div
-          id={jiraStatusId}
-          role="status"
-          aria-live="polite"
-          className={cn(
-            'flex items-center justify-between gap-2 px-1 text-xs text-muted-foreground',
-            !jiraSource.loading &&
-              !jiraSource.errorKind &&
-              jiraSource.accountChoices.length === 0 &&
-              'sr-only'
-          )}
-        >
-          <span>{getJiraSourceStatusMessage(jiraSource)}</span>
-          {jiraSource.errorKind === 'disconnected' && onOpenJiraSettings ? (
-            <Button type="button" variant="link" size="xs" onClick={onOpenJiraSettings}>
-              {translate(
-                'auto.components.new.workspace.SmartWorkspaceNameField.openSettings',
-                'Settings'
-              )}
-            </Button>
-          ) : jiraSource.errorKind === 'read-failed' ? (
-            <Button type="button" variant="link" size="xs" onClick={jiraSource.retry}>
-              {translate(
-                'auto.components.new.workspace.SmartWorkspaceNameField.retryJira',
-                'Retry'
-              )}
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
-      {unresolvedLinearUrlIntent ? (
-        <div id={linearStatusId} role="status" aria-live="polite" className="sr-only">
-          {translate(
-            'auto.components.new.workspace.SmartWorkspaceNameField.loadingLinearIssue',
-            'Loading Linear issue…'
-          )}
-        </div>
-      ) : null}
       <WorkspaceEmojiSuggestionPopover
         anchorRef={localInputRef}
         open={emojiMenuOpen}

@@ -14,7 +14,6 @@ import type { ThemeLookSettings } from './onboarding-theme-look-settings'
 
 type TaskSourcesSnapshotProps = EventProps<'onboarding_task_sources_snapshot'>
 type TaskSourcesGithubStatus = TaskSourcesSnapshotProps['github_status']
-type TaskSourcesLinearStatus = TaskSourcesSnapshotProps['linear_status']
 export type TaskSourcesExitAction = TaskSourcesSnapshotProps['exit_action']
 
 export function shouldSkipIntegrationsStep(status: AppState['preflightStatus']): boolean {
@@ -66,16 +65,6 @@ export function getGitHubTaskSourceStatus(
     return 'not_installed'
   }
   return status.gh.authenticated ? 'connected' : 'not_authenticated'
-}
-
-export function getLinearTaskSourceStatus(
-  status: AppState['linearStatus'],
-  checked: boolean
-): TaskSourcesLinearStatus {
-  if (status.connected) {
-    return 'connected'
-  }
-  return checked ? 'not_connected' : 'checking'
 }
 
 type OnboardingStepId = (typeof STEPS)[number]['id']

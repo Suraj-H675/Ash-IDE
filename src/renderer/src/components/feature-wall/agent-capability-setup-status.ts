@@ -88,9 +88,7 @@ export function useAgentCapabilitySetupStatus(): AgentCapabilitySetupStatus {
     () => ({
       browserUse: getSkillInstallStatus(browserUseSkill),
       computerUse: getComputerUseInstallStatus(computerUseSkill, computerUsePermissionStatus),
-      orchestration: getSkillInstallStatus(orchestrationSkill),
-      // Retain the selection field without offering Linear installation in the generic feature wall.
-      linearTickets: getFeatureWallExcludedLinearTicketsStatus()
+      orchestration: getSkillInstallStatus(orchestrationSkill)
     }),
     [browserUseSkill, computerUsePermissionStatus, computerUseSkill, orchestrationSkill]
   )
@@ -107,8 +105,7 @@ export function getDefaultAgentCapabilitySetupSelection(
     computerUse:
       !readiness.computerUseSkillInstalled ||
       (!readiness.computerUseReady && !readiness.computerUseUnavailable),
-    orchestration: !readiness.orchestrationSkillInstalled,
-    linearTickets: false
+    orchestration: !readiness.orchestrationSkillInstalled
   }
 }
 
@@ -175,13 +172,6 @@ function getSkillInstallStatus(skill: {
       'auto.components.feature.wall.agent.capability.setup.status.notInstalled',
       'Not installed'
     ),
-    tone: 'pending'
-  }
-}
-
-function getFeatureWallExcludedLinearTicketsStatus(): AgentCapabilityInstallStatus {
-  return {
-    label: '',
     tone: 'pending'
   }
 }

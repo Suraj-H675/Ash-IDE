@@ -42664,6 +42664,146 @@
       "path": "src/renderer/src/components/task-page/linear/Filters.tsx",
       "sourceSha256": "3da0e99aa41d81d055ef46dc9145221c9d06b648f29f826c2820995da19bc5a3",
       "reason": "Ash M8 exclusion: removed unmounted Jira/Linear Tasks list and filter presentation. The Tasks page only renders the supported GitHub/GitLab task experiences; provider-specific history and persisted user state are not deleted."
+    },
+    {
+      "path": "src/renderer/src/components/integrations/task-trackers/jira-integration-card.tsx",
+      "sourceSha256": "0ae7b39eaee955560b1f9f1beb93f0b981833af6af130a14f7a06ba69f1d43f2",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/integrations/task-trackers/linear-integration-card.tsx",
+      "sourceSha256": "e71898a05db611e14211b7a5e6bd9bec78f4e425c3dfc0742000f8c5452e2563",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/integrations/task-trackers/task-provider-integration-section-ids.ts",
+      "sourceSha256": "bfe00b15ec3d45ad8fe1122f37ef72c51290bea1fa264658f7165424365c5c21",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/jira-connect-dialog.tsx",
+      "sourceSha256": "27a488f277ee3bddd08259ff3ea87dfeb9edd27a782be6016cac5bea0cc65aad",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/linear-api-key-dialog.tsx",
+      "sourceSha256": "ad36be0b4dcbae47bfc09d6687d459d42f4fd95bf661a9d7d895cc2e7ccbcaa5",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/linear-api-key-dialog-state.ts",
+      "sourceSha256": "ffc4b421942c326aaf5a1374943f461adecd94223f5c414f2f4a98e4f6750e10",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/jira-project-picker.tsx",
+      "sourceSha256": "ec59d187a00269fcb2351485e5bc2c4769bc911a4dfcb2db620a327b389b0782",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/jira-project-picker-filter.ts",
+      "sourceSha256": "90342084b7a4ef1d235d72316a6d01bf541301435296ed31f72862791ccff7a9",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/use-jira-create-assignee.ts",
+      "sourceSha256": "636286673405642d352983fc658cd3a22c5d1e9be34b171c3decc753915ffe0a",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/settings/tasks/TaskSourceLinearSetup.tsx",
+      "sourceSha256": "9ee3ff5b5b1ec273bb4072083f032472afdee60a35704316e1f157b42450993d",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/settings/tasks/JiraIssueKeyCasingSetting.tsx",
+      "sourceSha256": "f8a5bacaa697689e4756ad0d507eda19c234d091abfb6e3a5da8b7cddf789564",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/settings/repository/RepositoryJiraProjectSection.tsx",
+      "sourceSha256": "5addb56b1009bea277f2eed4f96fc7f8128736822437e3cdc7075fe3a3ce9f49",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/settings/skills/linear/LinearAgentSkillGuide.tsx",
+      "sourceSha256": "5402e9d1aed1ceab8f1c2209a1b74607b7bdd867be1309ef5f1e15640e9d37bd",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/settings/skills/linear/LinearAgentSkillNotes.tsx",
+      "sourceSha256": "0e94f045026695f562696ac10ae7ae2648bd9b91bc68b728bc1993e081139dbf",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/settings/skills/linear/LinearAgentSkillPane.tsx",
+      "sourceSha256": "87b8a6b6a8315e0d30aa86badececbf39d27afb705cb1760034832c09cc43060",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/settings/skills/linear/linear-agent-skill-guide-content.ts",
+      "sourceSha256": "a2f1aed535d30da511886ff5468beefee34ea8f6b91987f2f2e9a701eecbe157",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/settings/skills/linear/linear-agent-skill-search.ts",
+      "sourceSha256": "e0be97a07f42917dc22d13c303f17c35f8408417d4bef1a3da0b4601ab14517c",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/LinearAgentSkillSetupDialog.tsx",
+      "sourceSha256": "598954c74c0717dc1984819ff5c2d834f4e5a3574f0e310493b41104e830406b",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/LinearAgentSkillSetupPrompt.tsx",
+      "sourceSha256": "e76efa46420790d3631ffc3e0085b78998b885bc824a9fc3cce8a27959bf6926",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/linear-agent-skill-runtime.ts",
+      "sourceSha256": "a319f4cc558f69f4c1171422e8723f837cfc6bc556c195bc3b23dd883ae5af1a",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/linear-agent-skill-setup-copy.ts",
+      "sourceSha256": "02d12d08af127ffde55ce445d9358b678a303f0136d2fca55e6b7425156b338f",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/linear-agent-skill-setup-reminder-toast.ts",
+      "sourceSha256": "74ab0cf809340bc987b6e7a3240b33eb3f0e31814a1c0d6ec2c2401badf7c756",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/linear-agent-skill-setup-reminders.ts",
+      "sourceSha256": "653a9176c60f62ccb1764c9846dff25823b728e7d5435497a15baf1c3f7aa4c3",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/skills/setup/WslLinearAgentSkillInstallCta.tsx",
+      "sourceSha256": "580a29dd48d911cf24afcbf46e392477e07a5129ccba963ccaea85da2083495a",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/skills/setup/linear-agent-skill-install-cta.tsx",
+      "sourceSha256": "145db539d8c37d1f5162753f4ccd07b114a386d118ae18c16e94a9b11c04c505",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/hooks/use-linear-agent-skill-setup.ts",
+      "sourceSha256": "d8d66aac036dc9d3cd0f01ec9ef74ce00d82e42f86a0f96aa935176a1e4816e3",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/lib/linear-agent-skill-update-target.ts",
+      "sourceSha256": "d070ab010277156dbefa596b6ec778deb92c899e9527057206ac271db62763af",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/lib/linear-usage-examples.ts",
+      "sourceSha256": "4b6825dd597b9252f698675fcfd838065047d329bc62e24937c739ee972c80fc",
+      "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
     }
   ]
 }

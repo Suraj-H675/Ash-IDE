@@ -44,8 +44,6 @@ export function useOnboardingFlow(
   const preflightStatusChecked = useAppStore((s) => s.preflightStatusChecked)
   const preflightStatusLoading = useAppStore((s) => s.preflightStatusLoading)
   const refreshPreflightStatus = useAppStore((s) => s.refreshPreflightStatus)
-  const linearStatus = useAppStore((s) => s.linearStatus)
-  const linearStatusChecked = useAppStore((s) => s.linearStatusChecked)
   // Why: renderToStaticMarkup uses Zustand's initial snapshot; the sync read keeps tests and the first client render aligned.
   const effectivePreflightStatus = preflightStatus ?? useAppStore.getState().preflightStatus
 
@@ -230,9 +228,7 @@ export function useOnboardingFlow(
       currentStep,
       paintedThemeRef,
       preflightStatus,
-      preflightStatusLoading,
-      linearStatus,
-      linearStatusChecked
+      preflightStatusLoading
     })
 
   // Why: auto-pick only on first mount; otherwise re-running would clobber/race the user's own agent selection.

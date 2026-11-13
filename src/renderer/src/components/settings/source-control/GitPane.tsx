@@ -13,12 +13,6 @@ import { BranchPrefixFeedback } from './BranchPrefixFeedback'
 import { matchesSettingsSearch } from '../search/settings-search'
 import { AutoRenameBranchFromWorkSetting } from './AutoRenameBranchFromWorkSetting'
 import {
-  JIRA_ISSUE_KEY_CASING_KEYWORDS,
-  JiraIssueKeyCasingSetting,
-  getJiraIssueKeyCasingDescription,
-  getJiraIssueKeyCasingTitle
-} from '../tasks/JiraIssueKeyCasingSetting'
-import {
   CompareAgainstUpstreamSetting,
   compareAgainstUpstreamMatchesSearch
 } from './CompareAgainstUpstreamSetting'
@@ -233,17 +227,6 @@ export function GitPane({
         )}
         {isBranchPrefixInputMode && <BranchPrefixFeedback rawPrefix={branchPrefixInputValue} />}
       </SearchableSetting>
-    ) : null,
-    matchesSettingsSearch(searchQuery, {
-      title: getJiraIssueKeyCasingTitle(),
-      description: getJiraIssueKeyCasingDescription(),
-      keywords: JIRA_ISSUE_KEY_CASING_KEYWORDS
-    }) ? (
-      <JiraIssueKeyCasingSetting
-        key="jira-issue-key-casing"
-        settings={settings}
-        updateSettings={updateSettings}
-      />
     ) : null,
     matchesSettingsSearch(searchQuery, {
       title: keepLocalMainUpToDateTitle,

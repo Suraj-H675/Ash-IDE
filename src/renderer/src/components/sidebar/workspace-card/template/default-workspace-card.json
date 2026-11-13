@@ -190,7 +190,6 @@
           { "el": "IdentityBlock", "when": "!(vars.hoverDetails && !ws.isRenaming)" },
           { "el": "RemoteBranchConflict", "when": "git.remoteBranchConflict != null" },
           { "el": "DeleteFailed", "when": "ws.removalError != null && !ws.isDeleting" },
-          { "el": "LinearSetupPrompt", "when": "place.isActive && links.linearIssue" },
           {
             "el": "Agents",
             "when": "vars.inlineAgents",

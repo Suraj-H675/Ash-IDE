@@ -4,7 +4,6 @@ import type {
 } from '../../../../shared/computer-use-permissions-types'
 import {
   COMPUTER_USE_SKILL_NAME,
-  ORCA_LINEAR_SKILL_NAME,
   ORCA_CLI_SKILL_NAME,
   ORCHESTRATION_SKILL_NAME
 } from '@/lib/agent-feature-skill-names'
@@ -18,33 +17,26 @@ import {
 import type { EventProps } from '../../../../shared/telemetry-events'
 import type { BundledSkillInstallState } from '@/hooks/use-bundled-skill-install'
 
-export type OnboardingFeatureSetupId =
-  | 'browserUse'
-  | 'computerUse'
-  | 'orchestration'
-  | 'linearTickets'
+export type OnboardingFeatureSetupId = 'browserUse' | 'computerUse' | 'orchestration'
 
 export type OnboardingFeatureSetupSelection = Record<OnboardingFeatureSetupId, boolean>
 
 export const DEFAULT_ONBOARDING_FEATURE_SETUP_SELECTION: OnboardingFeatureSetupSelection = {
   browserUse: true,
   computerUse: true,
-  orchestration: true,
-  linearTickets: false
+  orchestration: true
 }
 
 export const ONBOARDING_FEATURE_SETUP_IDS: readonly OnboardingFeatureSetupId[] = [
   'browserUse',
   'computerUse',
-  'orchestration',
-  'linearTickets'
+  'orchestration'
 ]
 
 const FEATURE_SKILL_NAMES: Record<OnboardingFeatureSetupId, string> = {
   browserUse: ORCA_CLI_SKILL_NAME,
   computerUse: COMPUTER_USE_SKILL_NAME,
-  orchestration: ORCHESTRATION_SKILL_NAME,
-  linearTickets: ORCA_LINEAR_SKILL_NAME
+  orchestration: ORCHESTRATION_SKILL_NAME
 }
 
 const FEATURE_TELEMETRY_IDS: Record<
@@ -53,8 +45,7 @@ const FEATURE_TELEMETRY_IDS: Record<
 > = {
   browserUse: 'browser_use',
   computerUse: 'computer_use',
-  orchestration: 'orchestration',
-  linearTickets: 'linear_tickets'
+  orchestration: 'orchestration'
 }
 
 export type OnboardingFeatureSetupWarning = {
@@ -102,22 +93,14 @@ export function onboardingFeatureSetupTelemetryFeature(
   return FEATURE_TELEMETRY_IDS[id]
 }
 
-// Why: Linear ticket setup is a recommended add-on, not onboarding progress.
-const ONBOARDING_PROGRESS_FEATURE_SETUP_IDS: readonly OnboardingFeatureSetupId[] = [
-  'browserUse',
-  'computerUse',
-  'orchestration'
-]
-
 export function onboardingFeatureSetupTelemetrySelection(
   selection: OnboardingFeatureSetupSelection
 ): EventProps<'onboarding_feature_setup_terminal_opened'> {
   return {
     browser_use: selection.browserUse,
     computer_use: selection.computerUse,
-    linear_tickets: selection.linearTickets,
     orchestration: selection.orchestration,
-    selected_count: ONBOARDING_PROGRESS_FEATURE_SETUP_IDS.filter((id) => selection[id]).length
+    selected_count: selectedOnboardingFeatureSetupIds(selection).length
   }
 }
 

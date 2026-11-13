@@ -1,5 +1,4 @@
-import { useEffect, useMemo } from 'react'
-import { filterAvailableTaskProviders } from '../../../../shared/task-providers'
+import { useEffect } from 'react'
 import type { ExecutionHostId } from '../../../../shared/execution-host'
 import { getMrStateFilters, getSmartWorkspaceNameModes } from './smart-workspace-localized-options'
 import {
@@ -19,12 +18,7 @@ export function useSmartWorkspaceFieldAvailability({
   preflightStatusChecked,
   preflightStatusContextKey,
   expectedPreflightContextKey,
-  refreshPreflightStatus,
-  linearStatus,
-  linearStatusChecked,
-  linearStatusPending,
-  checkLinearConnection,
-  jiraSourceConnected
+  refreshPreflightStatus
 }: {
   props: NormalizedWorkItemSourceSearchProps
   state: FieldState
@@ -36,12 +30,6 @@ export function useSmartWorkspaceFieldAvailability({
   preflightStatusContextKey: string | null
   expectedPreflightContextKey: string
   refreshPreflightStatus: () => Promise<void>
-  linearStatus: { connected?: boolean }
-  linearStatusChecked: boolean
-  /** The searched host's Linear status is still loading. */
-  linearStatusPending: boolean
-  checkLinearConnection: () => Promise<void>
-  jiraSourceConnected: boolean
 }) {
   const { disabled, textOnly, repoBackedSourcesDisabled, branchesEnabled, value } = props
   const { mode: storedMode, setMode, setDebouncedQuery } = state
@@ -54,15 +42,6 @@ export function useSmartWorkspaceFieldAvailability({
       sourceHostId: target.gitlabSourceContext?.hostId
     })
   )
-  const availableTaskProviders = useMemo(
-    () =>
-      filterAvailableTaskProviders(['github', 'gitlab', 'linear'], {
-        gitlabInstalled: gitlabSourceAvailable,
-        linearConnected: linearStatus.connected === true
-      }),
-    [gitlabSourceAvailable, linearStatus.connected]
-  )
-  const linearAvailable = availableTaskProviders.includes('linear')
   const availableModes = getSmartWorkspaceNameModes().filter((item) => {
     if (textOnly) {
       return item.id === 'text'
@@ -73,23 +52,14 @@ export function useSmartWorkspaceFieldAvailability({
     if (item.id === 'gitlab') {
       return gitlabSourceAvailable
     }
-    if (item.id === 'linear') {
-      return linearAvailable
-    }
-    if (item.id === 'jira') {
-      return jiraSourceConnected
-    }
     if (item.id === 'branches') {
       return branchesEnabled && !repoBackedSourcesDisabled
     }
     return item.id !== 'text' || props.typedTextEnabled === true
   })
-  // Why: an unknown status is not a disconnect; keep a chosen Linear tab until it settles.
-  const mode =
-    availableModes.some((item) => item.id === storedMode) ||
-    (storedMode === 'linear' && linearStatusPending && !textOnly)
-      ? storedMode
-      : (availableModes[0]?.id ?? 'text')
+  const mode = availableModes.some((item) => item.id === storedMode)
+    ? storedMode
+    : (availableModes[0]?.id ?? 'text')
   useEffect(() => {
     if (storedMode !== mode) {
       setMode(mode)
@@ -104,18 +74,7 @@ export function useSmartWorkspaceFieldAvailability({
     if (!preflightStatusChecked || !preflightStatusCurrent) {
       void refreshPreflightStatus()
     }
-    if (!linearStatusChecked) {
-      void checkLinearConnection()
-    }
-  }, [
-    checkLinearConnection,
-    disabled,
-    linearStatusChecked,
-    preflightStatusChecked,
-    preflightStatusCurrent,
-    refreshPreflightStatus,
-    textOnly
-  ])
+  }, [disabled, preflightStatusChecked, preflightStatusCurrent, refreshPreflightStatus, textOnly])
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedQuery(value), SEARCH_DEBOUNCE_MS)
@@ -125,7 +84,7 @@ export function useSmartWorkspaceFieldAvailability({
   return {
     mode,
     gitlabSourceAvailable,
-    linearAvailable,
+    linearAvailable: false,
     availableModes,
     mrStateFilters
   }

@@ -40,16 +40,6 @@ function getSetupStatusLabel(status: TaskProviderSetupStatus): string {
         'auto.components.settings.TaskSourceProviderCard.statusConnectRequired',
         'Connect required'
       )
-    case 'skill-required':
-      return translate(
-        'auto.components.settings.TaskSourceProviderCard.statusSkillRequired',
-        'Skill required'
-      )
-    case 'skill-unverified':
-      return translate(
-        'auto.components.settings.TaskSourceProviderCard.statusUnverified',
-        'Cannot verify'
-      )
     case 'unavailable':
       return translate(
         'auto.components.settings.TaskSourceProviderCard.statusUnavailable',

@@ -13,12 +13,6 @@ vi.mock('@/components/integrations/source-control/token-source-control-integrati
 vi.mock('@/components/integrations/source-control/bitbucket-integration-card', () => ({
   BitbucketIntegrationCard: () => <span>Bitbucket review provider</span>
 }))
-vi.mock('@/components/integrations/task-trackers/linear-integration-card', () => ({
-  LinearIntegrationCard: () => <span>Linear credential entry</span>
-}))
-vi.mock('@/components/integrations/task-trackers/jira-integration-card', () => ({
-  JiraIntegrationCard: () => <span>Jira credential entry</span>
-}))
 vi.mock('@/components/integrations/presentation/integration-card-presentation', () => ({
   IntegrationCardGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   IntegrationCardPresentationProvider: ({ children }: { children: React.ReactNode }) => (
@@ -71,11 +65,7 @@ vi.mock('../settings/tasks/TaskSourceProviderCard', () => ({
   )
 }))
 vi.mock('../settings/tasks/TaskSourceSimpleSetup', () => ({
-  CodeHostSetupSteps: () => <span>Code-host issue setup</span>,
-  JiraSetupSteps: () => <span>Jira issue setup</span>
-}))
-vi.mock('../settings/tasks/TaskSourceLinearSetup', () => ({
-  TaskSourceLinearSetup: () => <span>Linear agent-skill setup</span>
+  CodeHostSetupSteps: () => <span>Code-host issue setup</span>
 }))
 vi.mock('../settings/section-layout/SearchableSetting', () => ({
   SearchableSetting: ({ children }: { children: React.ReactNode }) => <div>{children}</div>

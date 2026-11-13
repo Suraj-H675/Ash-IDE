@@ -5,11 +5,6 @@ export type TaskProviderReadiness = {
   connected: boolean
   checking: boolean
   unavailable?: boolean
-  /** Linear only — agent skill install. Other providers leave this undefined. */
-  skillInstalled?: boolean
-  skillChecking?: boolean
-  /** The scan could not vouch for `skillInstalled: false`: an unread root, or an error before any answer. */
-  skillUnverifiable?: boolean
   visible: boolean
 }
 
@@ -17,8 +12,6 @@ export type TaskProviderSetupStatus =
   | 'checking'
   | 'ready'
   | 'connect-required'
-  | 'skill-required'
-  | 'skill-unverified'
   | 'unavailable'
   | 'hidden'
   | 'incomplete'
@@ -32,27 +25,21 @@ export const TASK_PROVIDER_SETUP_STATUS_TONE: Record<
   // Hiding a provider is deliberate; suppress setup warnings.
   hidden: 'neutral',
   'connect-required': 'attention',
-  'skill-required': 'attention',
-  'skill-unverified': 'attention',
   unavailable: 'attention',
   incomplete: 'attention'
 }
 
 export function isTaskProviderChecking(readiness: TaskProviderReadiness): boolean {
-  return readiness.checking || readiness.skillChecking === true
+  return readiness.checking
 }
 
 export function getTaskProviderCompletedSteps(readiness: TaskProviderReadiness): {
   completed: number
   total: number
 } {
-  const skillRequired = readiness.skillInstalled !== undefined
-  const total = skillRequired ? 3 : 2
+  const total = 2
   let completed = 0
   if (readiness.connected) {
-    completed += 1
-  }
-  if (skillRequired && readiness.skillInstalled) {
     completed += 1
   }
   if (readiness.visible) {
@@ -87,13 +74,6 @@ export function getTaskProviderSetupStatus(
   if (!readiness.connected) {
     return 'connect-required'
   }
-  // Unverifiable scans must not offer Install for skills that may already exist.
-  if (readiness.skillUnverifiable) {
-    return 'skill-unverified'
-  }
-  if (readiness.skillInstalled === false) {
-    return 'skill-required'
-  }
   return 'incomplete'
 }
 
@@ -113,7 +93,7 @@ export function getIncompleteVisibleTaskProviders(
 
 // All providers start visible; warn only once credentials or a skill prove setup began.
 export function hasStartedTaskProviderSetup(readiness: TaskProviderReadiness): boolean {
-  return readiness.connected || readiness.skillInstalled === true
+  return readiness.connected
 }
 
 export function getStalledVisibleTaskProviders(

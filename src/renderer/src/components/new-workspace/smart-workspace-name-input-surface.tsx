@@ -5,8 +5,6 @@ import { Input } from '@/components/ui/input'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { WorkspaceEmojiPickerButton } from '@/components/workspace-emoji/WorkspaceEmojiPickerButton'
 import { isImeCompositionKeyDown } from '@/lib/ime-composition-keyboard-event'
-import { isBlockingJiraUrlIntent } from '../../../../shared/new-workspace/smart-workspace-source-results'
-import { isBlockingLinearUrlIntent } from '../../../../shared/new-workspace/smart-workspace-linear-intent'
 import { isComposerFieldToFieldFocus } from './smart-workspace-source-popover-focus'
 import { replaceCompletedWorkspaceEmojiShortcode } from '@/lib/workspace-emoji-shortcodes'
 import { cn } from '@/lib/utils'
@@ -51,8 +49,6 @@ export function renderSmartWorkspaceNameInput(
     handleSelect,
     jiraSource,
     placeholder,
-    jiraStatusId,
-    linearStatusId,
     unresolvedLinearUrlIntent,
     blockingTaskUrlResolution,
     handleEmojiPickerOpenChange,
@@ -205,22 +201,6 @@ export function renderSmartWorkspaceNameInput(
             setOpen(true)
           }
         }}
-        onPaste={(event) => {
-          // Pasted issue URLs replace naming intent instead of extending a name fragment.
-          const pasted = event.clipboardData.getData('text')
-          if (
-            !pasted ||
-            (!isBlockingJiraUrlIntent(mode, pasted) && !isBlockingLinearUrlIntent(mode, pasted))
-          ) {
-            return
-          }
-          event.preventDefault()
-          onValueChange(pasted)
-          if (!disabled && mode !== 'text') {
-            markSourcePopoverUserEngaged()
-            setOpen(true)
-          }
-        }}
         onFocus={(event) => {
           // Open results only for field-to-field moves; keep dialog autofocus suppressed.
           if (!isComposerFieldToFieldFocus(event)) {
@@ -302,9 +282,6 @@ export function renderSmartWorkspaceNameInput(
         placeholder={placeholder}
         disabled={disabled}
         aria-busy={(jiraSource.intent && jiraSource.loading) || unresolvedLinearUrlIntent}
-        aria-describedby={
-          jiraSource.intent ? jiraStatusId : unresolvedLinearUrlIntent ? linearStatusId : undefined
-        }
         adornment={showEmojiPickerButton ? 'trailing' : 'none'}
         className="h-9 bg-background pl-8 text-sm"
       />

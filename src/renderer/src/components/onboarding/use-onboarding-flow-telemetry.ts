@@ -5,11 +5,7 @@ import { ONBOARDING_FINAL_STEP } from '../../../../shared/onboarding-defaults'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import type { EventProps } from '../../../../shared/telemetry-events'
 import type { AppState } from '@/store/types'
-import {
-  getGitHubTaskSourceStatus,
-  getLinearTaskSourceStatus,
-  type TaskSourcesExitAction
-} from './onboarding-flow-state'
+import { getGitHubTaskSourceStatus, type TaskSourcesExitAction } from './onboarding-flow-state'
 import type { StepNumber, STEPS } from './use-onboarding-flow-types'
 type OnboardingTelemetryArgs = {
   remappedLastCompletedStep: number
@@ -17,8 +13,6 @@ type OnboardingTelemetryArgs = {
   paintedThemeRef: { current: GlobalSettings['theme'] }
   preflightStatus: AppState['preflightStatus']
   preflightStatusLoading: boolean
-  linearStatus: AppState['linearStatus']
-  linearStatusChecked: boolean
 }
 
 export function useOnboardingFlowTelemetry({
@@ -26,9 +20,7 @@ export function useOnboardingFlowTelemetry({
   currentStep,
   paintedThemeRef,
   preflightStatus,
-  preflightStatusLoading,
-  linearStatus,
-  linearStatusChecked
+  preflightStatusLoading
 }: OnboardingTelemetryArgs) {
   const startedTrackedRef = useRef(false)
   useEffect(() => {
@@ -77,14 +69,13 @@ export function useOnboardingFlowTelemetry({
     ): void => {
       const payload: EventProps<'onboarding_task_sources_snapshot'> = {
         github_status: getGitHubTaskSourceStatus(preflightStatus, preflightStatusLoading),
-        linear_status: getLinearTaskSourceStatus(linearStatus, linearStatusChecked),
         exit_action: exitAction,
         duration_ms: durationMs,
         advanced_via: advancedVia
       }
       track('onboarding_task_sources_snapshot', payload)
     },
-    [linearStatus, linearStatusChecked, preflightStatus, preflightStatusLoading]
+    [preflightStatus, preflightStatusLoading]
   )
 
   return { consumeStepDurationMs, setLifecycleRootRef, trackTaskSourcesSnapshot }

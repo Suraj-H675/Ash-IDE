@@ -1,6 +1,5 @@
 import React from 'react'
 
-import { LinearAgentSkillSetupPrompt } from '../../LinearAgentSkillSetupPrompt'
 import WorktreeCardAgents from '../activity/WorktreeCardAgents'
 import {
   WorktreeCardDeleteFailed,
@@ -19,9 +18,6 @@ export function WorktreeCardSecondaryRows({
 }): React.JSX.Element {
   const {
     worktree,
-    repo,
-    settings,
-    isActive,
     lineageCollapsed,
     lineageChildWorktreeIds,
     onLineageToggle,
@@ -48,15 +44,6 @@ export function WorktreeCardSecondaryRows({
       {/* The host retains failed deletes until resolved; show its path-leading error in a tooltip. */}
       {worktree.removalError && !isDeleting ? (
         <WorktreeCardDeleteFailed error={worktree.removalError} />
-      ) : null}
-
-      {isActive && worktree.linkedLinearIssue ? (
-        <LinearAgentSkillSetupPrompt
-          linked
-          remote={Boolean(repo?.connectionId || settings?.activeRuntimeEnvironmentId?.trim())}
-          surface="modal"
-          settings={settings}
-        />
       ) : null}
 
       {/* Why: counterbalance the card stack gap (-mt-1) so agents right after the title read as one header group. */}
