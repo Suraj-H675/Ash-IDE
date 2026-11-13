@@ -19,7 +19,11 @@ The previous M8 cleanup removed Jira/Linear credential cards from the core setup
 
 - **Red-first:** three regressions failed against the prior code: Feature Wall rendered Linear setup, a legacy connected profile added Linear Settings, and the onboarding copy advertised Linear/Jira/Orca. All three passed after the correction.
 - Broader renderer and exclusion tests: **30 passed across 11 files**. These include preserved code-host integration/Tasks Settings, privacy, updater, skills, mobile, speech, cloud and scheduled-automation exclusion checks.
-- Renderer TypeScript (`config/tsconfig.tc.web.json`) **passed**, targeted Oxlint/Oxfmt and Git whitespace checks **passed**. Post-integration full repository typecheck, build, package inventory, GUI lifecycle, source ledger and GitHub CI are recorded separately if observed.
+- Renderer TypeScript (`config/tsconfig.tc.web.json`) **passed**, targeted Oxlint/Oxfmt and Git whitespace checks **passed**. After fast-forward integration on canonical `main` at `de3e4e0e008a3052fa166779aac5b93722648ac0`, the **full** `pnpm run typecheck` passed and the same expanded **30/30** renderer/exclusion tests passed again.
+- `pnpm run build:desktop:assets` **passed**: 254 renderer chunks (previously 255), sandbox preload and the CLI runtime closure (1,224 files / three commands) all verified. Pinned source provenance verified **33,506 upstream file records, 504 Ash adaptations and 8,508 documented exclusions** with the MIT license notice.
+- Fresh Linux AppImage build **passed** from integrated `main`: `dist/ash-ide-linux.AppImage`, **224,461,223 bytes**, SHA-256 **`5f3cb8b46fb5849b0453cac5449dc005b91948eabc037a2853205ebf619ecc88`**. Native binary/GLIBC checks, bundled daemon and Node PTY, plugin resources and package hygiene all passed. The actual ASAR has **5,202 entries** versus 5,205 in the previous build; the 16 previously excluded CLI artifacts remain absent and the packaged `ash-ide --help` still succeeds.
+- Native Wayland AppImage lifecycle test **passed** using an isolated virtual compositor and disposable provider homes: app PID `3354929`, runtime ID `baec854d-ca9b-4edc-8804-12c57d7542c7`, terminal handle `term_223e6cac-5f2d-4257-a7a2-9b77bc54f264`, terminal PID `3355515` survived last-window close/reopen; test-owned daemon/runtime stopped. Evidence under `/var/tmp/ashwl.RDsPdb`.
+- Hosted GitHub Actions for the new pushed HEAD must be confirmed separately. This package smoke proves runtime/PTY continuity, not pixel-level Feature Wall/Settings visual acceptance.
 
 ## Scope still open
 
