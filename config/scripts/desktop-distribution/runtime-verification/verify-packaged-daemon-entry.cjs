@@ -57,6 +57,14 @@ const TERMINAL_HOST_BOOT_TIMEOUT_MS = 20_000
 const TERMINAL_HOST_BOOT_COMMAND = 'echo "OK $((6*7))" && exit'
 const TERMINAL_HOST_BOOT_OUTPUT = 'OK 42'
 
+/** Respect a private TMPDIR while keeping Unix socket paths within conservative limits. */
+function packagedTerminalScratchPrefix({ directory = tmpdir(), platform = process.platform } = {}) {
+  const prefix = join(directory, 'oth-')
+  return platform === 'win32' || Buffer.byteLength(`${prefix}XXXXXX/d.sock`, 'utf8') <= 100
+    ? prefix
+    : '/tmp/oth-'
+}
+
 /** The command prefix that runs a `targetArch` Mach-O here, or null when this host cannot. */
 function macCommandPrefixForArch(targetArch, run = spawnSync) {
   if (targetArch === process.arch) {
@@ -158,7 +166,7 @@ async function runTerminalHostRoundTrip({
   entry,
   deadline,
   stderr,
-  scratchPrefix = '/tmp/oth-'
+  scratchPrefix = packagedTerminalScratchPrefix()
 }) {
   // A short path: the socket must fit sun_path.
   const scratch = mkdtempSync(scratchPrefix)
@@ -291,6 +299,7 @@ async function verifyPackagedMacTerminalHostBoots(appPath, { arch, required }) {
 module.exports = {
   assertPackagedDaemonEntryExists,
   macCommandPrefixForArch,
+  packagedTerminalScratchPrefix,
   runTerminalHostRoundTrip,
   verifyPackagedDaemonEntryBoots,
   verifyPackagedMacTerminalHostBoots

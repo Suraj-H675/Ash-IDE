@@ -2292,6 +2292,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "config/scripts/desktop-distribution/runtime-verification/verify-packaged-daemon-entry.cjs",
+      "sha256": "ab1e76ebfe47b7f65687c7ce941957ae42934e541f6be5cd975417c6f27b9e71",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "config/scripts/development/electron-bundle-cache/dev-electron-bundle-identity.mjs",
       "sha256": "657df1e3e98501e344960b935fd57061b9dd36a6ebfc4f76526e0c7f9db5da48",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
