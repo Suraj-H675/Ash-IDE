@@ -9,11 +9,14 @@ import {
 import { areStringSetsEqual } from '@/components/task-page/task-page-string-set-equality'
 import { buildSelectedReposKey } from '@/components/task-page/task-page-work-item-pagination'
 import {
-  normalizeVisibleTaskProviders,
   restoreAvailableDefaultTaskProvider,
   resolveVisibleTaskProvider,
   type TaskProvider
 } from '../../../../shared/task-providers'
+import {
+  defaultAshTaskPageSource,
+  normalizeAshTaskPageSources
+} from './ash-task-page-source-policy'
 import {
   getSourceOptions,
   getGitHubModeButtons,
@@ -38,8 +41,7 @@ export function useTaskPageRepoSelection(model: TaskPageStoreBindingsModel) {
     linearStatus,
     preflightStatus,
     jiraStatus,
-    preflightStatusCurrent,
-    linearConnected
+    preflightStatusCurrent
   } = model
   const eligibleRepos = useMemo(() => getTaskEligibleRepos(repos), [repos])
 
@@ -123,23 +125,25 @@ export function useTaskPageRepoSelection(model: TaskPageStoreBindingsModel) {
       ? (jiraSites.find((site) => site.id === selectedJiraSiteId) ?? null)
       : null
   const preferredVisibleTaskProviders = useMemo(
-    () => normalizeVisibleTaskProviders(settings?.visibleTaskProviders),
+    () => normalizeAshTaskPageSources(settings?.visibleTaskProviders),
     [settings?.visibleTaskProviders]
   )
-  const defaultTaskSource = settings?.defaultTaskSource ?? 'github'
+  const defaultTaskSource = defaultAshTaskPageSource(
+    settings?.defaultTaskSource,
+    preferredVisibleTaskProviders
+  )
   const visibleTaskProviders = useMemo(
     () =>
       restoreAvailableDefaultTaskProvider(
         preferredVisibleTaskProviders,
         {
           gitlabInstalled: preflightStatusCurrent && preflightStatus?.glab?.installed === true,
-          linearConnected: linearConnected === true
+          linearConnected: false
         },
         defaultTaskSource
       ),
     [
       defaultTaskSource,
-      linearConnected,
       preferredVisibleTaskProviders,
       preflightStatusCurrent,
       preflightStatus?.glab?.installed
@@ -161,6 +165,9 @@ export function useTaskPageRepoSelection(model: TaskPageStoreBindingsModel) {
   )
   const hideTaskSource = useCallback(
     (provider: TaskProvider, label: string) => {
+      if (provider !== 'github' && provider !== 'gitlab') {
+        return
+      }
       const visibleWithoutProvider = preferredVisibleTaskProviders.filter(
         (visibleProvider) => visibleProvider !== provider
       )
