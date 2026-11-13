@@ -121,5 +121,21 @@ export function applyNativeProjectRevocationsToRuntime(
   for (const edit of edits.toReversed()) {
     lines.splice(edit.start, edit.end - edit.start, ...edit.replacement)
   }
-  return edits.length === 0 ? runtimeConfig : lines.join('\n')
+  let result = edits.length === 0 ? runtimeConfig : lines.join('\n')
+  // A native revocation is authoritative even for a project not yet recorded in Ash's home.
+  for (const [key, revocation] of revoked) {
+    if (applied.has(key) || explicitlyTrusted.has(getTomlSectionHeaderKey(revocation.header))) {
+      continue
+    }
+    const separator =
+      result.length === 0
+        ? ''
+        : result.endsWith('\n\n')
+          ? ''
+          : result.endsWith('\n')
+            ? '\n'
+            : '\n\n'
+    result += `${separator}${revocation.block.trimEnd()}\n`
+  }
+  return result
 }

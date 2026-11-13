@@ -7,12 +7,15 @@ import { reportCodexConfigSyncOutcome } from './config-sync-stall'
 
 /** Degrade write-back without dropping local changes or provider-side distrust. */
 export function reportRefusedCodexWriteBack(homes: CodexSettingsPromotionHomes): void {
-  syncNativeProjectRevocationsDuringRefusedWriteBack(homes)
-  reportCodexConfigSyncOutcome(homes.runtimeHomePath, {
-    state: 'stalled',
-    reason: 'provider-writeback-refused',
-    systemConfigPath: join(homes.systemHomePath, 'config.toml')
-  })
+  try {
+    syncNativeProjectRevocationsDuringRefusedWriteBack(homes)
+  } finally {
+    reportCodexConfigSyncOutcome(homes.runtimeHomePath, {
+      state: 'stalled',
+      reason: 'provider-writeback-refused',
+      systemConfigPath: join(homes.systemHomePath, 'config.toml')
+    })
+  }
 }
 
 /** Preserve pending Ash runtime edits while honoring explicit provider-side project distrust. */
@@ -23,7 +26,10 @@ export function syncNativeProjectRevocationsDuringRefusedWriteBack(
     const native = observeAgentStateFile(join(homes.systemHomePath, 'config.toml'))
     const runtimePath = join(homes.runtimeHomePath, 'config.toml')
     const runtime = observeAgentStateFile(runtimePath)
-    if (native.kind !== 'present' || runtime.kind !== 'present') {
+    if (native.kind === 'indeterminate' || runtime.kind !== 'present') {
+      throw new Error('Cannot verify native project trust against the managed Codex config')
+    }
+    if (native.kind === 'absent') {
       return
     }
     const next = applyNativeProjectRevocationsToRuntime(runtime.value, native.value)
@@ -35,5 +41,9 @@ export function syncNativeProjectRevocationsDuringRefusedWriteBack(
     }
   } catch (error) {
     console.warn('[codex-config] Failed to apply native project trust revocations:', error)
+    throw new Error(
+      'Codex project trust revocation could not be safely applied; refusing managed config sync',
+      { cause: error }
+    )
   }
 }

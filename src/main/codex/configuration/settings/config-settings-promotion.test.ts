@@ -26,6 +26,7 @@ const { homedirMock, promotionTestState } = vi.hoisted(() => ({
   homedirMock: vi.fn<() => string>(),
   promotionTestState: {
     failAtomicWrite: false,
+    failRevocationWrite: false,
     allowNativeSettingsWrite: false,
     atomicWritePaths: [] as string[]
   }
@@ -49,6 +50,14 @@ vi.mock('../../../codex-accounts/fs-utils', async (importOriginal) => {
         throw new Error('injected atomic write failure')
       }
       return actual.writeFileAtomically(...args)
+    },
+    writeFileAtomicallyIfUnchanged: (
+      ...args: Parameters<typeof actual.writeFileAtomicallyIfUnchanged>
+    ) => {
+      if (promotionTestState.failRevocationWrite) {
+        return false
+      }
+      return actual.writeFileAtomicallyIfUnchanged(...args)
     }
   }
 })
@@ -73,6 +82,7 @@ beforeEach(() => {
   process.env.ORCA_USER_DATA_PATH = userDataDir
   homedirMock.mockReturnValue(tmpHome)
   promotionTestState.failAtomicWrite = false
+  promotionTestState.failRevocationWrite = false
   promotionTestState.allowNativeSettingsWrite = false
   promotionTestState.atomicWritePaths.length = 0
   if (homedir() !== tmpHome) {
@@ -199,6 +209,51 @@ describe('codex settings write-back promotion', () => {
     expect(readRuntimeConfig()).toContain('trust_level = "untrusted"')
     expect(readRuntimeConfig()).not.toContain('trust_level = "trusted"')
     expect(getCodexConfigSyncStatus().reason).toBe('provider-writeback-refused')
+  })
+
+  it('adds newly revoked native projects absent from the runtime during refused write-back', () => {
+    writeSystemConfig('model = "gpt-5"\n')
+    syncSystemConfigIntoManagedCodexHome()
+    simulateCodexSettingWrite('model', '"o4"')
+    const native =
+      'model = "gpt-5"\n\n[projects."/tmp/new-revocation"]\ntrust_level = "untrusted"\n'
+    writeSystemConfig(native)
+
+    syncSystemConfigIntoManagedCodexHome()
+
+    expect(readSystemConfig()).toBe(native)
+    expect(readRuntimeConfig()).toContain('model = "o4"')
+    expect(readRuntimeConfig()).toContain('[projects."/tmp/new-revocation"]')
+    expect(readRuntimeConfig()).toContain('trust_level = "untrusted"')
+    const afterFirstSync = readRuntimeConfig()
+    syncSystemConfigIntoManagedCodexHome()
+    expect(readRuntimeConfig()).toBe(afterFirstSync)
+  })
+
+  it('refuses launch-time sync if a native revocation cannot be published to the runtime', () => {
+    writeSystemConfig('model = "gpt-5"\n')
+    syncSystemConfigIntoManagedCodexHome()
+    simulateCodexSettingWrite('model', '"o4"')
+    const existing = `${readRuntimeConfig()}\n[projects."/tmp/revoked-workspace"]\ntrust_level = "trusted"\n`
+    writeFileSync(runtimeConfigPath(), existing, 'utf-8')
+    const native =
+      'model = "gpt-5"\n\n[projects."/tmp/revoked-workspace"]\ntrust_level = "untrusted"\n'
+    writeSystemConfig(native)
+    const originalBaseline = readFileSync(baselinePath(), 'utf-8')
+    promotionTestState.failRevocationWrite = true
+
+    expect(() => syncSystemConfigIntoManagedCodexHome()).toThrow(/project trust revocation/i)
+
+    expect(readSystemConfig()).toBe(native)
+    expect(readRuntimeConfig()).toBe(existing)
+    expect(readFileSync(baselinePath(), 'utf-8')).toBe(originalBaseline)
+
+    promotionTestState.failRevocationWrite = false
+    syncSystemConfigIntoManagedCodexHome()
+    expect(readRuntimeConfig()).toContain('trust_level = "untrusted"')
+    expect(readRuntimeConfig()).not.toContain('trust_level = "trusted"')
+    expect(readRuntimeConfig()).toContain('model = "o4"')
+    expect(readSystemConfig()).toBe(native)
   })
 
   it('does not create a native config when a pending setting cannot be written back', () => {

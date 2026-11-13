@@ -383,7 +383,7 @@
     },
     {
       "path": "src/main/codex/configuration/settings/codex-config-mirror-merge.ts",
-      "sha256": "8cde7f8fb446132e730e81e31406661be8e16c261fda3f094d3536f1a1a3e1b4",
+      "sha256": "b2cd61df8db13f5e3fef236dfb341dddec56caad5bf81cfa34c89bcb628862de",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -408,7 +408,7 @@
     },
     {
       "path": "src/main/codex/configuration/settings/config-settings-promotion.test.ts",
-      "sha256": "7cec963bf8f16d0cba3b17af8995b69b836ca6a8fc53bd420e825b95886e92fa",
+      "sha256": "d79d201d5bf084a749fbf64a39856be4b54f57523a1ca0d085fef25295ec1f5e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
