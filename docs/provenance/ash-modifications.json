@@ -2293,7 +2293,7 @@
     },
     {
       "path": "config/electron-builder.config.cjs",
-      "sha256": "9bb461560ca7267adc997cca89b2dffae8918df1c60b0e40856bb6f60a92e736",
+      "sha256": "cb43268d2813ee785eab05a209a2a94d4da42043db25552a47c8d1a5abf0649d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2328,7 +2328,7 @@
     },
     {
       "path": "config/scripts/desktop-distribution/runtime-verification/electron-builder-config.test.mjs",
-      "sha256": "1ddb83f0da685004f50d8f7481fd7594441aaa79b46f7728a7deac7b6600bdf3",
+      "sha256": "eec80b7ec471b29d8b609c62ccdd6fbf5fccaff50631a190e5c6eadc73963907",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

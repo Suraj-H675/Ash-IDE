@@ -62,6 +62,7 @@ const {
 const {
   verifyAshPackagedAsarHygiene
 } = require('./scripts/desktop-distribution/runtime-verification/verify-ash-packaged-asar-hygiene.cjs')
+const { EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS } = require('./excluded-task-tracker-cli-artifacts.cjs')
 const {
   appImageNodeRuntimeFpmArgs,
   placeAppImageNodeRuntime,
@@ -281,6 +282,9 @@ module.exports = {
     '!out/web{,/**/*}',
     // Ash is desktop-only: never pack stale mobile-web output from a previous Orca build.
     '!out/mobile-web{,/**/*}',
+    // Remove unregistered legacy Jira/Linear CLI command modules, but retain shared
+    // issue-reference helpers used by active Git/worktree workflows.
+    ...EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS.map((path) => `!${path}`),
     // Local dev Electron.app caches (~270MB/branch) must not enter packaged builds.
     '!out/electron-dev{,/**/*}',
     // Exclude the retired SSH relay even when stale output is present from an Orca build.

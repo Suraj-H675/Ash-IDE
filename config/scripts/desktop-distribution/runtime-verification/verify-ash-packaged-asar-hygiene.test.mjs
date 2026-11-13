@@ -88,6 +88,27 @@ it('refuses a package lacking the compiled runtime entry', async () => {
   )
 })
 
+it.each(['out/cli/handlers/jira.js', 'out/cli/specs/linear.js'])(
+  'refuses unregistered task-tracker CLI artifact %s in app.asar',
+  async (path) => {
+    const resources = await makeArchive(['package.json', 'out/main/index.js', path])
+    expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+      `[ash-package-hygiene] unregistered tracker CLI artifact packaged: ${path}`
+    )
+  }
+)
+
+it('refuses a Jira handler copied to app.asar.unpacked outside the archive', async () => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js'])
+  const artifact = 'out/cli/handlers/jira.js'
+  const unpacked = join(resources, 'app.asar.unpacked', artifact)
+  await mkdir(dirname(unpacked), { recursive: true })
+  await writeFile(unpacked, 'synthetic retired handler\n')
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    `[ash-package-hygiene] unregistered tracker CLI artifact packaged: ${artifact}`
+  )
+})
+
 it.each(['@linear/sdk', '@posthog/core', '@posthog/types', 'posthog-node'])(
   'refuses the retired vendor dependency %s in packaged node_modules',
   async (packageName) => {

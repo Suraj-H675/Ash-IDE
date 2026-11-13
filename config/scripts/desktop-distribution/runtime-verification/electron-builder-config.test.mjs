@@ -14,6 +14,61 @@ const electronBuilderConfig = require('../../../electron-builder.config.cjs')
 const { copyFiles, FileMatcher } = require('app-builder-lib/out/fileMatcher')
 
 describe('electron-builder config', () => {
+  it('does not package unregistered Jira or Linear CLI command modules while keeping local commands', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'ash-excluded-tracker-cli-'))
+    const source = join(root, 'app')
+    const destination = join(root, 'selected')
+    const excluded = [
+      'out/cli/handlers/jira.js',
+      'out/cli/handlers/jira-write.js',
+      'out/cli/handlers/linear.js',
+      'out/cli/handlers/linear-comment-write.js',
+      'out/cli/handlers/linear-list-issues.js',
+      'out/cli/handlers/linear-relation-write.js',
+      'out/cli/handlers/linear-save-issue.js',
+      'out/cli/jira-format.js',
+      'out/cli/jira-handler-group.js',
+      'out/cli/linear-format.js',
+      'out/cli/linear-handler-group.js',
+      'out/cli/linear-request-builders.js',
+      'out/cli/linear-save-issue-request.js',
+      'out/cli/specs/jira.js',
+      'out/cli/specs/linear.js',
+      'out/cli/specs/linear-mcp.js'
+    ]
+    const retained = [
+      'package.json',
+      'out/cli/index.js',
+      'out/cli/handlers/terminal.js',
+      'out/cli/handlers/worktree-linear-issue-link.js',
+      'out/cli/jira-target.js',
+      'out/cli/reference-input.js',
+      'out/shared/jira/jira-issue-url.js'
+    ]
+    try {
+      for (const relativePath of [...excluded, ...retained]) {
+        const file = join(source, relativePath)
+        await mkdir(dirname(file), { recursive: true })
+        await writeFile(file, 'synthetic dependency marker\n')
+      }
+      const matcher = new FileMatcher(
+        source,
+        destination,
+        (value) => value,
+        electronBuilderConfig.files
+      )
+      await copyFiles([matcher])
+      for (const relativePath of excluded) {
+        expect(existsSync(join(destination, relativePath)), relativePath).toBe(false)
+      }
+      for (const relativePath of retained) {
+        expect(existsSync(join(destination, relativePath)), relativePath).toBe(true)
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  })
+
   it('keeps Linux Wayland app_id, desktop entry and window association on Ash identity', async () => {
     const manifest = JSON.parse(await readFile(join(REPO_ROOT, 'package.json'), 'utf8'))
     const desktopName = manifest.desktopName
