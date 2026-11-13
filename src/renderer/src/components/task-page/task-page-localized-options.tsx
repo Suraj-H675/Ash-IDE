@@ -1,7 +1,6 @@
 import React from 'react'
 import { Github, Gitlab, LayoutGrid, List } from 'lucide-react'
 
-import { JiraIcon } from '@/components/icons/JiraIcon'
 import { createLocalizedCatalog } from '@/i18n/localized-catalog'
 import { translate } from '@/i18n/i18n'
 import {
@@ -134,16 +133,6 @@ export const getSourceOptions = createLocalizedCatalog((): SourceOption[] => [
     id: 'gitlab',
     label: translate('auto.components.TaskPage.11a828abf8', 'GitLab'),
     Icon: ({ className }) => <Gitlab className={className} />
-  },
-  {
-    id: 'linear',
-    label: translate('auto.components.TaskPage.8675cd6188', 'Linear'),
-    Icon: ({ className }) => <LinearIcon className={className} />
-  },
-  {
-    id: 'jira',
-    label: translate('auto.components.TaskPage.9cd11ba218', 'Jira'),
-    Icon: ({ className }) => <JiraIcon className={className} />
   }
 ])
 

@@ -29,11 +29,9 @@ function ForkSourceBar(): React.JSX.Element {
       ],
       repoIdentities: [{ provider: 'github', ...fork }],
       selectedRepoCount: 1
-    }),
-    linearConnected: false,
-    jiraConnected: false
+    })
   }
-  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: SourceBar's render reads only these fields with Linear and Jira disconnected; the rest are event handlers this static fixture never fires.
+  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: SourceBar's static fixture needs only source and context fields; event handlers are never fired.
   const model = fields as unknown as TaskPageComposerActionsModel
   return (
     <TooltipProvider>
