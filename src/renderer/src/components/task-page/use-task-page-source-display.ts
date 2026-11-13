@@ -4,6 +4,7 @@ import type { GitHubTaskKind } from '../../../../shared/task-github-search'
 import { buildGitHubRepoUrl } from '../../../../shared/github/links'
 import { getTaskSourceContextSummary } from '../task-source-context-summary'
 import { getGitHubProjectSourceSummary } from './task-page-source-context'
+import { translate } from '@/i18n/i18n'
 
 type TaskPageSourceDisplayInput = TaskPageLinearCreationStateModel & {
   activeGithubTaskKind: GitHubTaskKind
@@ -21,11 +22,8 @@ export function useTaskPageSourceDisplay<Model extends TaskPageSourceDisplayInpu
     taskSourceRepoContexts,
     taskSourceHostAvailability,
     accountBackedTaskSourceHostId,
-    accountBackedTaskSourceHostAvailability,
     hostRegistryById,
     hostLabelById,
-    selectedLinearWorkspace,
-    selectedJiraSite,
     activeGithubTaskKind
   } = model
   // Why strict kind: Issues and PRs resolve independently; the other kind's repo is not this list's source.
@@ -36,11 +34,19 @@ export function useTaskPageSourceDisplay<Model extends TaskPageSourceDisplayInpu
       ),
     [activeGithubTaskKind, githubSourceDisplayState]
   )
-  const linearWorkspaceName =
-    selectedLinearWorkspace?.organizationName ?? selectedLinearWorkspace?.id ?? null
-  const jiraSiteName = selectedJiraSite?.displayName ?? selectedJiraSite?.siteUrl ?? null
   // Why the catalog dep: it changes with the language, and the summary's own copy is translated too.
   const taskSourceContextSummary = useMemo(() => {
+    if (taskSource !== 'github' && taskSource !== 'gitlab') {
+      // Old task-page snapshots may still name removed Jira/Linear sources.
+      // Never show a retired account as an available Ash task source.
+      return {
+        label: translate('ash.taskPage.sourceSummary.selectCodeHost', 'Select a code host'),
+        title: translate(
+          'ash.taskPage.sourceSummary.codeHostsOnly',
+          'Choose GitHub or GitLab to browse issues.'
+        )
+      }
+    }
     const providerLabel =
       sourceOptions.find((source) => source.id === taskSource)?.label ?? taskSource
     if (taskSource === 'github' && githubMode === 'project') {
@@ -49,17 +55,6 @@ export function useTaskPageSourceDisplay<Model extends TaskPageSourceDisplayInpu
         hostId: accountBackedTaskSourceHostId,
         host: hostRegistryById.get(accountBackedTaskSourceHostId),
         hostLabelById
-      })
-    }
-    if (taskSource === 'linear' || taskSource === 'jira') {
-      return getTaskSourceContextSummary({
-        provider: taskSource,
-        providerLabel,
-        hostAvailability: accountBackedTaskSourceHostAvailability,
-        accountHostId: accountBackedTaskSourceHostId,
-        hostLabelById,
-        linearWorkspaceName,
-        jiraSiteName
       })
     }
     return getTaskSourceContextSummary({
@@ -78,14 +73,11 @@ export function useTaskPageSourceDisplay<Model extends TaskPageSourceDisplayInpu
       selectedRepoCount: selectedRepos.length
     })
   }, [
-    accountBackedTaskSourceHostAvailability,
     accountBackedTaskSourceHostId,
     githubActiveSources,
     githubMode,
     hostLabelById,
     hostRegistryById,
-    jiraSiteName,
-    linearWorkspaceName,
     selectedRepos.length,
     sourceOptions,
     taskSource,
