@@ -16,7 +16,7 @@ import { EditorAnimatedVisual } from './EditorAnimatedVisual'
 import { BrowserAnimatedVisual } from './BrowserAnimatedVisual'
 import { AgentsOrchestrationVisual } from './AgentsOrchestrationVisual'
 import { ReviewAnimatedVisual } from './ReviewAnimatedVisual'
-import { GitHubRow, LinearRow } from '../onboarding/IntegrationsStep'
+import { GitHubRow } from '../onboarding/IntegrationsStep'
 import { OrchestrationSetupCard } from './OrchestrationSetupCard'
 import { BrowserUseSkillSetupCard } from './BrowserUseSkillSetupCard'
 import { UsageAccountsCard } from './agents-orchestration/UsageAccountsCard'
@@ -98,7 +98,7 @@ export function FeatureWallBody(props: {
                     : 'w-[520px]'
                   : 'w-[520px]'
   const settingWidth = isTasks
-    ? 'max-w-[760px]'
+    ? 'max-w-[520px]'
     : isAgentsUsage
       ? isOnboardingUsage
         ? 'max-w-[400px]'
@@ -119,10 +119,7 @@ export function FeatureWallBody(props: {
                 : 'max-w-[400px]'
               : 'max-w-[480px]'
   const settingContent = isTasks ? (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-      <LinearRow compact />
-      <GitHubRow compact />
-    </div>
+    <GitHubRow compact />
   ) : isAgentsStatuses && props.settings ? (
     <KeepAwakeCard settings={props.settings} updateSettings={props.updateSettings} />
   ) : isAgentsUsage ? (

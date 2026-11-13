@@ -3,7 +3,6 @@ import { getProviderAccountsOwnerKey } from '@/runtime/runtime-provider-accounts
 import { AgentsPane } from '../agents/AgentsPane'
 import { AgentDefaultSurfaceSection } from '../agents/surfaces/AgentDefaultSurfaceSection'
 import { ComputerUsePane } from '../computer-use/ComputerUsePane'
-import { LinearAgentSkillPane } from '../skills/linear/LinearAgentSkillPane'
 import { OrchestrationPane } from '../orchestration/OrchestrationPane'
 import { SettingsSection } from '../section-layout/SettingsSection'
 import { SettingsHostScopeUnavailableNotice } from '../host-scope/SettingsHostScopePicker'
@@ -120,42 +119,21 @@ export function renderOrchestrationSettingsSection(
   )
 }
 
-export function renderLinearSettingsSection(
-  context: SettingsRenderContext
-): React.JSX.Element | null {
-  const { model, navigation, view } = context
-  return model.linearConnected ? (
-    <SettingsSection
-      id="linear"
-      title={translate('auto.components.settings.Settings.linearTitle', 'Linear')}
-      description={translate(
-        'auto.components.settings.Settings.linearDescription',
-        'How Linear works in Orca, setup checklist, agent skill, and example prompts.'
-      )}
-      searchEntries={navigation.getSectionSearchEntries('linear')}
-    >
-      {view.isSectionMounted('linear') ? <LinearAgentSkillPane /> : null}
-    </SettingsSection>
-  ) : null
-}
-
 export function renderDesktopCapabilitySettingsSections(
   context: SettingsRenderContext
 ): React.JSX.Element | null {
   const { model, navigation, view } = context
   return model.showDesktopOnlySettings ? (
-    <>
-      <SettingsSection
-        id="computer-use"
-        title={translate('auto.components.settings.Settings.c9841721cb', 'Computer Use')}
-        description={translate(
-          'auto.components.settings.Settings.7118953f14',
-          'Enable agents to control any app on your computer.'
-        )}
-        searchEntries={navigation.getSectionSearchEntries('computer-use')}
-      >
-        {view.isSectionMounted('computer-use') ? <ComputerUsePane /> : null}
-      </SettingsSection>
-    </>
+    <SettingsSection
+      id="computer-use"
+      title={translate('auto.components.settings.Settings.c9841721cb', 'Computer Use')}
+      description={translate(
+        'auto.components.settings.Settings.7118953f14',
+        'Enable agents to control any app on your computer.'
+      )}
+      searchEntries={navigation.getSectionSearchEntries('computer-use')}
+    >
+      {view.isSectionMounted('computer-use') ? <ComputerUsePane /> : null}
+    </SettingsSection>
   ) : null
 }

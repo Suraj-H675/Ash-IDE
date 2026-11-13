@@ -4,10 +4,7 @@ import { resolvePaintedTheme } from '@/lib/terminal-app-theme'
 import { useSettingsNavigationMetadata } from '@/hooks/useSettingsNavigationMetadata'
 import type { SettingsNavInstallStatus } from '@/lib/settings-navigation-types'
 import { COMPUTER_USE_SKILL_NAME, ORCHESTRATION_SKILL_NAME } from '@/lib/agent-feature-skill-names'
-import {
-  getAgentSkillNavInstallStatus,
-  getLinearAgentSkillNavInstallStatus
-} from '@/lib/agent-skill-nav-install-status'
+import { getAgentSkillNavInstallStatus } from '@/lib/agent-skill-nav-install-status'
 import { getProjectHostSetupProjectionFromState } from '../../../store/project-host-setup-selector'
 import { getSettingsSectionSearchEntries, rankSettingsSearchItems } from '../search/settings-search'
 import { deriveNeededSectionIds } from '../page/settings-load-performance'
@@ -44,11 +41,6 @@ export function useSettingsNavigationModel(
   const baseNavSections = useSettingsNavigationMetadata()
   const { installed: orchestrationSkillInstalled, loading: orchestrationSkillLoading } =
     model.orchestrationSkill
-  const {
-    installed: linearSkillInstalled,
-    loading: linearSkillLoading,
-    skills: linearSkills
-  } = model.linearSkill
   const { installed: computerUseSkillInstalled, loading: computerUseSkillLoading } =
     model.computerUseSkill
   const capabilityInstallStatusBySectionId = useMemo(() => {
@@ -64,17 +56,6 @@ export function useSettingsNavigationModel(
         })
       ]
     ])
-    if (model.linearConnected) {
-      next.set(
-        'linear',
-        getLinearAgentSkillNavInstallStatus({
-          skills: linearSkills,
-          installed: linearSkillInstalled,
-          loading: linearSkillLoading,
-          plan: applicableSkillPlan
-        })
-      )
-    }
     if (model.showDesktopOnlySettings) {
       next.set(
         'computer-use',
@@ -90,10 +71,6 @@ export function useSettingsNavigationModel(
   }, [
     computerUseSkillInstalled,
     computerUseSkillLoading,
-    linearSkillInstalled,
-    linearSkillLoading,
-    linearSkills,
-    model.linearConnected,
     model.showDesktopOnlySettings,
     model.skillFreshnessApplies,
     model.skillPlan,

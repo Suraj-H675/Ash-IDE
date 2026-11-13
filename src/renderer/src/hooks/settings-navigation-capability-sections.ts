@@ -1,10 +1,8 @@
-import { LinearIcon } from '@/components/icons/LinearIcon'
 import { getAccountsPaneSearchEntries } from '@/components/settings/accounts/accounts-search'
 import { getAgentsPaneSearchEntries } from '@/components/settings/agents/agents-search'
 import { getComputerUsePaneSearchEntries } from '@/components/settings/computer-use/computer-use-search'
 import { getGeneralPaneSearchEntries } from '@/components/settings/general/general-search'
 import { getIntegrationsPaneSearchEntries } from '@/components/settings/integrations/integrations-search'
-import { getLinearAgentSkillPaneSearchEntries } from '@/components/settings/skills/linear/linear-agent-skill-search'
 import { OrcaLogoSettingsIcon } from '@/components/settings/page/orca-logo-settings-icon'
 import { getOrchestrationPaneSearchEntries } from '@/components/settings/orchestration/orchestration-search'
 import { translate } from '@/i18n/i18n'
@@ -14,8 +12,7 @@ import type { SettingsNavigationBuildOptions } from './settings-navigation-build
 
 export function buildCapabilitySettingsSections({
   isLocalWindowsHost,
-  isWebClient,
-  isLinearConnected
+  isWebClient
 }: SettingsNavigationBuildOptions): SettingsNavSection[] {
   const showDesktopOnlySettings = !isWebClient
   return [
@@ -55,8 +52,8 @@ export function buildCapabilitySettingsSections({
       id: 'orchestration',
       title: translate('auto.hooks.useSettingsNavigationMetadata.58a868e8e4', 'Orchestration'),
       description: translate(
-        'auto.hooks.useSettingsNavigationMetadata.cd50cec5d7',
-        'Coordinate multiple coding agents through Orca.'
+        'ash.hooks.useSettingsNavigationMetadata.orchestrationDescription',
+        'Coordinate multiple coding agents through Ash IDE.'
       ),
       icon: Network,
       searchEntries: getOrchestrationPaneSearchEntries({
@@ -64,22 +61,6 @@ export function buildCapabilitySettingsSections({
       }),
       group: 'capabilities'
     },
-    // Expose only with connected Linear; its skill needs linked provider capability.
-    ...(isLinearConnected
-      ? [
-          {
-            id: 'linear',
-            title: translate('auto.hooks.useSettingsNavigationMetadata.linearTitle', 'Linear'),
-            description: translate(
-              'auto.hooks.useSettingsNavigationMetadata.linearDescription',
-              'How Linear works in Orca, setup checklist, agent skill, and example prompts.'
-            ),
-            icon: LinearIcon,
-            searchEntries: getLinearAgentSkillPaneSearchEntries(),
-            group: 'capabilities'
-          }
-        ]
-      : []),
     ...(showDesktopOnlySettings
       ? [
           {
@@ -150,8 +131,8 @@ export function buildSetupSettingsSections({
       id: 'integrations',
       title: translate('auto.hooks.useSettingsNavigationMetadata.2b043783ef', 'Integrations'),
       description: translate(
-        'auto.hooks.useSettingsNavigationMetadata.33a5e1d597',
-        'Connect GitHub, GitLab, Linear, and source-hosting services.'
+        'ash.hooks.useSettingsNavigationMetadata.codeHostIntegrationDescription',
+        'Connect GitHub, GitLab, and other source-control services.'
       ),
       icon: Blocks,
       searchEntries: getIntegrationsPaneSearchEntries(),

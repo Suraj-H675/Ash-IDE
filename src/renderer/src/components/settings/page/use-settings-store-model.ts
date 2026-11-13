@@ -8,18 +8,12 @@ import { useSystemPrefersDark } from '@/components/terminal-pane/use-system-pref
 import { isMacUserAgent, isWindowsUserAgent } from '@/components/terminal-pane/pane-helpers'
 import { useConfirmationDialog } from '@/components/confirmation-dialog-context'
 import { isWebClientLocation } from '@/lib/web-client-location'
-import {
-  COMPUTER_USE_SKILL_NAME,
-  LINEAR_AGENT_SKILL_NAMES,
-  ORCHESTRATION_SKILL_NAME
-} from '@/lib/agent-feature-skill-names'
+import { COMPUTER_USE_SKILL_NAME, ORCHESTRATION_SKILL_NAME } from '@/lib/agent-feature-skill-names'
 import {
   GLOBAL_AGENT_SKILL_SOURCE_KINDS,
-  useInstalledAgentSkill,
-  useInstalledAgentSkillNames
+  useInstalledAgentSkill
 } from '@/hooks/useInstalledAgentSkills'
 import { useActiveProjectSkillRuntime } from '@/hooks/useActiveProjectSkillRuntime'
-import { useLinearProviderConnected } from '@/hooks/useLinearProviderConnected'
 import { useSkillFreshness } from '@/hooks/useSkillFreshness'
 import {
   getFallbackTerminalFonts,
@@ -114,15 +108,8 @@ export function useSettingsStoreModel() {
   const isMac = isMacUserAgent()
   const isWebClient = isWebClientLocation()
   const showDesktopOnlySettings = !isWebClient
-  // Match navigation’s gate so the Linear entry and pane appear together.
-  const linearConnected = useLinearProviderConnected()
   const activeSkillRuntime = useActiveProjectSkillRuntime()
   const orchestrationSkill = useInstalledAgentSkill(ORCHESTRATION_SKILL_NAME, {
-    discoveryTarget: activeSkillRuntime.discoveryTarget,
-    sourceKinds: GLOBAL_AGENT_SKILL_SOURCE_KINDS
-  })
-  const linearSkill = useInstalledAgentSkillNames(LINEAR_AGENT_SKILL_NAMES, {
-    enabled: linearConnected,
     discoveryTarget: activeSkillRuntime.discoveryTarget,
     sourceKinds: GLOBAL_AGENT_SKILL_SOURCE_KINDS
   })
@@ -227,9 +214,7 @@ export function useSettingsStoreModel() {
     isMac,
     isWebClient,
     showDesktopOnlySettings,
-    linearConnected,
     orchestrationSkill,
-    linearSkill,
     computerUseSkill,
     skillFreshnessApplies,
     skillPlan,
