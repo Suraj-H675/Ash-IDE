@@ -21,7 +21,8 @@
 - Source provenance verified **33,506 upstream records, 526 Ash adaptations, 8,509 documented exclusions**, retaining the Orca MIT license notice. The removed upstream Jira metadata hook is explicitly recorded in `ash-exclusions.json` with its original source hash.
 - `pnpm run build:desktop:assets` passed: 254 renderer chunks, 7,821.9 KB minified boot graph, sandbox preload verification, 1,224 CLI closure files and three commands.
 - `pnpm run build:orcad` passed: 12.79 MB, 8,148 modules, zero Electron or `node:sqlite` imports. Native build and Electron runtime preparation passed.
-- The AppImage and packaged Wayland lifecycle must be rebuilt against the committed successor before a final artifact hash is recorded; the prior pre-removal artifact is not presented as evidence for this source state.
+- Fresh AppImage from committed HEAD `9c5006ec`: `dist/ash-ide-linux.AppImage`, **224,387,270 bytes**, SHA-256 **`4fe55ed60c580885d9590f5c69a160b52e747d3a741aa8ddd0f0a041f3934522`**. Packaging verified 5,196 archive entries, 15 native binaries against the Ubuntu 20.04 glibc floor, packaged daemon entrypoint, bundled Node PTY, and two plugin-resource bundles.
+- Packaged Wayland close/reopen lifecycle **PASS**: app PID `3618113`, runtime ID `9d3ad106-5388-4bd6-9adc-1f1b775c6302`, terminal handle `term_57063467-c3a1-4fab-b05e-0d6b88a79430`, terminal PID `3618680` survived last-window GUI close/reopen. Test-owned runtime and daemon stopped; private logs at `/var/tmp/ashwl.lYo6az`.
 - Tests used synthetic fixtures only. No Jira/Linear account, credential, user repository, or persisted provider preference was accessed or changed.
 
 ## Remaining M8 work / acceptance limits
