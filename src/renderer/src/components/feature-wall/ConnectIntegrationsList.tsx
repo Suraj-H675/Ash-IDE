@@ -9,8 +9,6 @@ import {
   GitHubIntegrationCard,
   GitLabIntegrationCard
 } from '@/components/integrations/source-control/cli-source-control-integration-cards'
-import { JiraIntegrationCard } from '@/components/integrations/task-trackers/jira-integration-card'
-import { LinearIntegrationCard } from '@/components/integrations/task-trackers/linear-integration-card'
 import {
   IntegrationCardGroup,
   IntegrationCardPresentationProvider
@@ -56,12 +54,10 @@ export function ConnectIntegrationsList(): React.JSX.Element {
 
   const flow = deriveIntegrationFlowState({
     reviewConnected: status.reviewConnected,
-    trackerProviderName: status.trackerProviderName,
-    codeHostTaskProviderName: status.codeHostTaskProviderName,
-    trackerChecking: status.trackerChecking
+    codeHostTaskProviderName: status.codeHostTaskProviderName
   })
   const reviewDone = status.reviewConnected
-  const trackerDone = status.trackerProviderName !== null
+  const trackerDone = status.codeHostTaskProviderName !== null
   const reviewExpanded = !reviewDone || reviewReopened
   const reviewCanToggle = reviewDone
   // Reset manual expansion when connection facts change so stale choices cannot override the new defaults.
@@ -89,8 +85,8 @@ export function ConnectIntegrationsList(): React.JSX.Element {
             'See PR status while agents work'
           )}
           description={translate(
-            'auto.components.feature.wall.ConnectIntegrationsList.review_step_description',
-            'Connect a review provider so Orca can show PR or MR status, checks, and reviews.'
+            'ash.components.feature.wall.ConnectIntegrationsList.reviewStepDescription',
+            'Connect a review provider so Ash IDE can show PR or MR status, checks, and reviews.'
           )}
           summary={
             <Trans
@@ -120,15 +116,15 @@ export function ConnectIntegrationsList(): React.JSX.Element {
           state={flow.task}
           expanded={taskExpanded}
           title={translate(
-            'auto.components.feature.wall.ConnectIntegrationsList.task_step_title',
-            'Start agents on your tasks without leaving Orca'
+            'ash.components.feature.wall.ConnectIntegrationsList.codeHostTaskStepTitle',
+            'Start agents on code-host issues without leaving Ash IDE'
           )}
           description={translate(
-            'auto.components.feature.wall.ConnectIntegrationsList.33b650af52',
-            'Connect where your team tracks work. Orca starts workspaces with the issue title, link, and context already attached.'
+            'ash.components.feature.wall.ConnectIntegrationsList.codeHostTaskStepDescription',
+            'Connect GitHub or GitLab to start workspaces with the issue title, link, and context already attached.'
           )}
           summary={
-            status.trackerProviderName ? (
+            status.codeHostTaskProviderName ? (
               <Trans
                 i18n={i18n}
                 defaults={translate(
@@ -141,8 +137,8 @@ export function ConnectIntegrationsList(): React.JSX.Element {
               <Trans
                 i18n={i18n}
                 defaults={translate(
-                  'auto.components.feature.wall.ConnectIntegrationsList.codeHostTasksSummary',
-                  '<provider>{{provider}}</provider> issues available as tasks · add Linear or Jira if your team plans work there',
+                  'ash.components.feature.wall.ConnectIntegrationsList.codeHostTasksSummary',
+                  '<provider>{{provider}}</provider> issues available as tasks',
                   { provider: status.codeHostTaskProviderName }
                 )}
                 components={{ provider: <span className="font-semibold text-foreground" /> }}
@@ -157,10 +153,6 @@ export function ConnectIntegrationsList(): React.JSX.Element {
             })
           }
         >
-          <IntegrationCardGroup>
-            <LinearIntegrationCard />
-            <JiraIntegrationCard />
-          </IntegrationCardGroup>
           <p className="px-1 pt-0.5 text-[12px] leading-snug text-muted-foreground">
             {translate(
               'auto.components.feature.wall.ConnectIntegrationsList.code_host_tasks_caption',

@@ -32,7 +32,6 @@ import { applyAllAgentsPermission } from '../../../../shared/agent-launch/permis
 import { NotificationStep } from '../onboarding/NotificationStep'
 import { useAppStore } from '@/store'
 import type { TuiAgent } from '../../../../shared/agent-launch/catalog/tui-agent'
-import { getProviderRuntimeContextKey } from '@/lib/provider-runtime-context'
 import { translate } from '@/i18n/i18n'
 
 import { getLocalizedFeatureWallSetupChecklistCopy } from './feature-wall-setup-checklist-localized-copy'
@@ -263,23 +262,6 @@ function NotificationAction(): React.JSX.Element {
 }
 
 function TaskSourcesAction(): React.JSX.Element {
-  const refreshPreflightStatus = useAppStore((s) => s.refreshPreflightStatus)
-  const checkJiraConnection = useAppStore((s) => s.checkJiraConnection)
-  const checkLinearConnection = useAppStore((s) => s.checkLinearConnection)
-  const settings = useAppStore((s) => s.settings)
-  const providerRuntimeContextKey = getProviderRuntimeContextKey(settings)
-
-  useEffect(() => {
-    void refreshPreflightStatus()
-    void checkJiraConnection()
-    void checkLinearConnection()
-  }, [
-    refreshPreflightStatus,
-    checkJiraConnection,
-    checkLinearConnection,
-    providerRuntimeContextKey
-  ])
-
   return (
     <div className="space-y-5">
       <ConnectIntegrationsList />

@@ -5,7 +5,6 @@ import { getRepoExecutionHostId } from '../../../../shared/execution-host'
 import { checkRuntimeHooks } from '@/runtime/runtime-hooks-client'
 import { getLocalPreflightContext, localPreflightContextKey } from '@/lib/local-preflight-context'
 import { hasEffectiveSetupCommand } from '@/lib/setup-script-status'
-import { getProviderRuntimeContextKey } from '@/lib/provider-runtime-context'
 import {
   COMPUTER_USE_SKILL_NAME,
   ORCA_CLI_SKILL_NAME,
@@ -52,14 +51,6 @@ export function useSetupGuideProgress(
   const preflightStatusLoading = useAppStore((s) => s.preflightStatusLoading)
   const refreshPreflightStatus = useAppStore((s) => s.refreshPreflightStatus)
   const activeSkillRuntime = useOnboardingSkillRuntime()
-  const linearStatus = useAppStore((s) => s.linearStatus)
-  const linearStatusChecked = useAppStore((s) => s.linearStatusChecked)
-  const linearStatusContextKey = useAppStore((s) => s.linearStatusContextKey)
-  const checkLinearConnection = useAppStore((s) => s.checkLinearConnection)
-  const jiraStatus = useAppStore((s) => s.jiraStatus)
-  const jiraStatusChecked = useAppStore((s) => s.jiraStatusChecked)
-  const jiraStatusContextKey = useAppStore((s) => s.jiraStatusContextKey)
-  const checkJiraConnection = useAppStore((s) => s.checkJiraConnection)
   const repos = useAppStore((s) => s.repos)
   const activeRepoId = useAppStore((s) => s.activeRepoId)
   const expectedPreflightContextKey = useAppStore((s) =>
@@ -89,9 +80,6 @@ export function useSetupGuideProgress(
     installed: detectedOrchestrationSkillInstalled,
     loading: detectedOrchestrationSkillLoading
   } = useInstalledAgentSkill(ORCHESTRATION_SKILL_NAME, skillOptions)
-  const providerRuntimeContextKey = getProviderRuntimeContextKey(settings)
-  const linearStatusCurrent = linearStatusContextKey === providerRuntimeContextKey
-  const jiraStatusCurrent = jiraStatusContextKey === providerRuntimeContextKey
   const preflightStatusCurrent = preflightStatusContextKey === expectedPreflightContextKey
 
   useEffect(() => {
@@ -101,26 +89,11 @@ export function useSetupGuideProgress(
     if (!preflightStatusCurrent || !preflightStatusChecked) {
       void refreshPreflightStatus()
     }
-    if (!linearStatusCurrent || !linearStatusChecked) {
-      void checkLinearConnection()
-    }
-    if (!jiraStatusCurrent || !jiraStatusChecked) {
-      void checkJiraConnection()
-    }
   }, [
-    checkJiraConnection,
-    checkLinearConnection,
-    jiraStatusCurrent,
-    jiraStatusChecked,
-    jiraStatusContextKey,
-    linearStatusCurrent,
-    linearStatusChecked,
-    linearStatusContextKey,
     expectedPreflightContextKey,
     preflightStatusContextKey,
     preflightStatusCurrent,
     preflightStatusChecked,
-    providerRuntimeContextKey,
     refreshPreflightStatus,
     shouldRefreshCoreState
   ])
@@ -233,14 +206,7 @@ export function useSetupGuideProgress(
     preflightStatusContextKey,
     preflightStatusError,
     preflightStatusLoading,
-    expectedPreflightContextKey,
-    linearStatus,
-    linearStatusChecked,
-    linearStatusContextKey,
-    jiraStatus,
-    jiraStatusChecked,
-    jiraStatusContextKey,
-    providerRuntimeContextKey
+    expectedPreflightContextKey
   })
   const hasConnectedTaskSource = taskSourceStatus.trackerConnected
   const gitRepoCount = orderedGitRepos.length

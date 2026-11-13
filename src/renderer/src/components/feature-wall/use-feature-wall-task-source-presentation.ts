@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import type { FeatureWallWorkflow } from '../../../../shared/feature-wall-workflows'
 import { useAppStore } from '@/store'
 import { getLocalPreflightContext, localPreflightContextKey } from '@/lib/local-preflight-context'
-import { getProviderRuntimeContextKey } from '@/lib/provider-runtime-context'
 import { deriveIntegrationConnectionStatus } from './use-integration-connection-status'
 
 export type FeatureWallTaskSourcePresentation = {
@@ -22,21 +21,9 @@ export function useFeatureWallTaskSourcePresentation(
   const preflightStatusError = useAppStore((s) => s.preflightStatusError)
   const preflightStatusLoading = useAppStore((s) => s.preflightStatusLoading)
   const refreshPreflightStatus = useAppStore((s) => s.refreshPreflightStatus)
-  const linearStatus = useAppStore((s) => s.linearStatus)
-  const linearStatusChecked = useAppStore((s) => s.linearStatusChecked)
-  const linearStatusContextKey = useAppStore((s) => s.linearStatusContextKey)
-  const checkLinearConnection = useAppStore((s) => s.checkLinearConnection)
-  const jiraStatus = useAppStore((s) => s.jiraStatus)
-  const jiraStatusChecked = useAppStore((s) => s.jiraStatusChecked)
-  const jiraStatusContextKey = useAppStore((s) => s.jiraStatusContextKey)
-  const checkJiraConnection = useAppStore((s) => s.checkJiraConnection)
-  const settings = useAppStore((s) => s.settings)
   const expectedPreflightContextKey = useAppStore((s) =>
     localPreflightContextKey(getLocalPreflightContext(s))
   )
-  const providerRuntimeContextKey = getProviderRuntimeContextKey(settings)
-  const linearStatusCurrent = linearStatusContextKey === providerRuntimeContextKey
-  const jiraStatusCurrent = jiraStatusContextKey === providerRuntimeContextKey
   const preflightStatusCurrent = preflightStatusContextKey === expectedPreflightContextKey
 
   useEffect(() => {
@@ -47,27 +34,12 @@ export function useFeatureWallTaskSourcePresentation(
     if (!preflightStatusCurrent || !preflightStatusChecked) {
       void refreshPreflightStatus()
     }
-    if (!linearStatusCurrent || !linearStatusChecked) {
-      void checkLinearConnection()
-    }
-    if (!jiraStatusCurrent || !jiraStatusChecked) {
-      void checkJiraConnection()
-    }
   }, [
-    checkJiraConnection,
-    checkLinearConnection,
     expectedPreflightContextKey,
     isOpen,
-    jiraStatusCurrent,
-    jiraStatusChecked,
-    jiraStatusContextKey,
-    linearStatusCurrent,
-    linearStatusChecked,
-    linearStatusContextKey,
     preflightStatusContextKey,
     preflightStatusCurrent,
     preflightStatusChecked,
-    providerRuntimeContextKey,
     refreshPreflightStatus
   ])
 
@@ -77,14 +49,7 @@ export function useFeatureWallTaskSourcePresentation(
     preflightStatusContextKey,
     preflightStatusError,
     preflightStatusLoading,
-    expectedPreflightContextKey,
-    linearStatus,
-    linearStatusChecked,
-    linearStatusContextKey,
-    jiraStatus,
-    jiraStatusChecked,
-    jiraStatusContextKey,
-    providerRuntimeContextKey
+    expectedPreflightContextKey
   })
 
   return {

@@ -1,6 +1,5 @@
 import { useAppStore } from '@/store'
 import { getLocalPreflightContext, localPreflightContextKey } from '@/lib/local-preflight-context'
-import { getProviderRuntimeContextKey } from '@/lib/provider-runtime-context'
 
 export type IntegrationStepState = 'active' | 'done' | 'upcoming'
 
@@ -23,22 +22,17 @@ export function deriveIntegrationStepStates(input: {
 
 export function deriveIntegrationFlowState(input: {
   reviewConnected: boolean
-  trackerProviderName: 'Linear' | 'Jira' | null
   codeHostTaskProviderName: 'GitHub' | 'GitLab' | null
-  trackerChecking: boolean
 }): {
   review: IntegrationStepState
   task: IntegrationStepState
   complete: boolean
   taskResolved: boolean
 } {
-  const trackerConnected = input.trackerProviderName !== null
-  // Wait for tracker checks before using the code-host fallback to avoid flashing the wrong completion reason.
-  const codeHostTaskReady = input.codeHostTaskProviderName !== null && !input.trackerChecking
   const stepStates = deriveIntegrationStepStates({
     reviewConnected: input.reviewConnected,
-    trackerConnected,
-    codeHostTaskConnected: codeHostTaskReady
+    trackerConnected: false,
+    codeHostTaskConnected: input.codeHostTaskProviderName !== null
   })
   return {
     ...stepStates,
@@ -76,13 +70,6 @@ type ProviderStatusFacts = {
   preflightStatusError: string | null
   preflightStatusLoading: boolean
   expectedPreflightContextKey: string
-  linearStatus: { connected?: boolean }
-  linearStatusChecked: boolean
-  linearStatusContextKey: string | null
-  jiraStatus: { connected?: boolean }
-  jiraStatusChecked: boolean
-  jiraStatusContextKey: string | null
-  providerRuntimeContextKey: string
 }
 
 export type IntegrationConnectionStatus = {
@@ -92,7 +79,7 @@ export type IntegrationConnectionStatus = {
   codeHostTaskProviderName: 'GitHub' | 'GitLab' | null
   // Any usable task source, including code-host issues, satisfies this legacy-named field.
   trackerConnected: boolean
-  // Dedicated trackers only; code hosts use reviewProviderName.
+  // Dedicated external trackers are excluded from Ash IDE.
   trackerProviderName: 'Linear' | 'Jira' | null
   // Include all usable sources, trackers first, for complete connection summaries.
   taskSourceNames: ('Linear' | 'Jira' | 'GitHub' | 'GitLab')[]
@@ -149,14 +136,6 @@ export function deriveIntegrationConnectionStatus(
   const giteaConnected =
     reviewReadyForConnection && isGiteaReviewConfigured(facts.preflightStatus?.gitea)
 
-  const linearStatusCurrent = facts.linearStatusContextKey === facts.providerRuntimeContextKey
-  const jiraStatusCurrent = facts.jiraStatusContextKey === facts.providerRuntimeContextKey
-  const linearChecking = !linearStatusCurrent || !facts.linearStatusChecked
-  const jiraChecking = !jiraStatusCurrent || !facts.jiraStatusChecked
-  const linearConnected =
-    !linearChecking && linearStatusCurrent && facts.linearStatus.connected === true
-  const jiraConnected = !jiraChecking && jiraStatusCurrent && facts.jiraStatus.connected === true
-
   const reviewProviderName = githubConnected
     ? 'GitHub'
     : gitlabConnected
@@ -169,16 +148,11 @@ export function deriveIntegrationConnectionStatus(
             ? 'Gitea'
             : null
   const codeHostTaskProviderName = githubConnected ? 'GitHub' : gitlabConnected ? 'GitLab' : null
-  const trackerProviderName = linearConnected ? 'Linear' : jiraConnected ? 'Jira' : null
   const taskSourceNames: IntegrationConnectionStatus['taskSourceNames'] = [
-    ...(linearConnected ? (['Linear'] as const) : []),
-    ...(jiraConnected ? (['Jira'] as const) : []),
     ...(githubConnected ? (['GitHub'] as const) : []),
     ...(gitlabConnected ? (['GitLab'] as const) : [])
   ]
   const hasUsableTaskSource = taskSourceNames.length > 0
-  // Parent readiness needs one task source; the code-host acknowledgement waits for trackers to choose accurate copy.
-  const trackerChecking = trackerProviderName === null && (linearChecking || jiraChecking)
 
   return {
     reviewConnected:
@@ -190,11 +164,11 @@ export function deriveIntegrationConnectionStatus(
     reviewProviderName,
     codeHostTaskProviderName,
     trackerConnected: hasUsableTaskSource,
-    trackerProviderName,
+    trackerProviderName: null,
     taskSourceNames,
     reviewChecking,
-    trackerChecking,
-    checking: !hasUsableTaskSource && (reviewChecking || trackerChecking)
+    trackerChecking: false,
+    checking: !hasUsableTaskSource && reviewChecking
   }
 }
 
@@ -204,18 +178,9 @@ export function useIntegrationConnectionStatus(): IntegrationConnectionStatus {
   const preflightStatusContextKey = useAppStore((s) => s.preflightStatusContextKey)
   const preflightStatusError = useAppStore((s) => s.preflightStatusError)
   const preflightStatusLoading = useAppStore((s) => s.preflightStatusLoading)
-  const linearStatus = useAppStore((s) => s.linearStatus)
-  const linearStatusChecked = useAppStore((s) => s.linearStatusChecked)
-  const linearStatusContextKey = useAppStore((s) => s.linearStatusContextKey)
-  const jiraStatus = useAppStore((s) => s.jiraStatus)
-  const jiraStatusChecked = useAppStore((s) => s.jiraStatusChecked)
-  const jiraStatusContextKey = useAppStore((s) => s.jiraStatusContextKey)
-  const settings = useAppStore((s) => s.settings)
   const expectedPreflightContextKey = useAppStore((s) =>
     localPreflightContextKey(getLocalPreflightContext(s))
   )
-
-  const providerRuntimeContextKey = getProviderRuntimeContextKey(settings)
 
   return deriveIntegrationConnectionStatus({
     preflightStatus,
@@ -223,13 +188,6 @@ export function useIntegrationConnectionStatus(): IntegrationConnectionStatus {
     preflightStatusContextKey,
     preflightStatusError,
     preflightStatusLoading,
-    expectedPreflightContextKey,
-    linearStatus,
-    linearStatusChecked,
-    linearStatusContextKey,
-    jiraStatus,
-    jiraStatusChecked,
-    jiraStatusContextKey,
-    providerRuntimeContextKey
+    expectedPreflightContextKey
   })
 }
