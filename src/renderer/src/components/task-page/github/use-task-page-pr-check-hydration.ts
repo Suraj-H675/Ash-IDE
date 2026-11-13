@@ -22,13 +22,13 @@ import {
 } from '../../../../../shared/github/complete-pr-check-owner'
 import { getWorkItemRepo } from '@/lib/work-item-repo-row'
 import type { GitHubWorkItem } from '../../../../../shared/github/work-item-types'
-import type { TaskPageJiraCreationStateModel } from '../jira/use-task-page-jira-creation-state'
+import type { TaskPageGitHubMutationStateModel } from './use-task-page-github-mutation-state'
 import { deriveTaskPagePRCheckSummary } from '../task-page-pr-check-summary'
 import { PR_CHECKS_EAGER_PREFETCH_LIMIT } from '../task-page-source-context'
 import { getTaskPageRepoSourceContext } from '../../../lib/task-repo-source-context'
 import { sameOptionalGitHubOwnerRepo } from './task-page-github-review-model'
 export function useTaskPagePRCheckHydration(
-  model: TaskPageJiraCreationStateModel,
+  model: TaskPageGitHubMutationStateModel,
   filteredWorkItems: GitHubWorkItem[],
   showPRManagementColumns: boolean
 ) {

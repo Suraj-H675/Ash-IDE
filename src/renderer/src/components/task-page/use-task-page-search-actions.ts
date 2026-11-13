@@ -29,10 +29,7 @@ export function useTaskPageSearchActions(model: TaskPageGitHubQuietRefreshModel)
     setTaskRefreshNonce,
     dialogWorkItem,
     newIssueOpen,
-    newLinearProjectOpen,
-    newLinearIssueOpen,
-    activeGithubTaskKind,
-    newJiraIssueOpen
+    activeGithubTaskKind
   } = model
   const applyPRFilterChange = useCallback(
     (change: PRFilterChange): void => {
@@ -160,9 +157,6 @@ export function useTaskPageSearchActions(model: TaskPageGitHubQuietRefreshModel)
       githubMode !== 'items' ||
       dialogWorkItem ||
       newIssueOpen ||
-      newLinearProjectOpen ||
-      newLinearIssueOpen ||
-      newJiraIssueOpen ||
       activeModal !== 'none'
     ) {
       return
@@ -194,17 +188,7 @@ export function useTaskPageSearchActions(model: TaskPageGitHubQuietRefreshModel)
     }
     addAppKeyListener('keydown', onKeyDown)
     return () => removeAppKeyListener('keydown', onKeyDown)
-  }, [
-    activeModal,
-    dialogWorkItem,
-    githubMode,
-    newIssueOpen,
-    newLinearProjectOpen,
-    newLinearIssueOpen,
-    newJiraIssueOpen,
-    taskSource,
-    taskSearchInputRef
-  ])
+  }, [activeModal, dialogWorkItem, githubMode, newIssueOpen, taskSource, taskSearchInputRef])
   const nextModel = model as typeof model & {
     applyPRFilterChange: typeof applyPRFilterChange
     handleApplyTaskSearch: typeof handleApplyTaskSearch

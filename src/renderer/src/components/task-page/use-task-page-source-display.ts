@@ -1,4 +1,4 @@
-import type { TaskPageLinearCreationStateModel } from './linear/use-task-page-linear-creation-state'
+import type { TaskPageJiraListProjectionModel } from './jira/use-task-page-jira-list-projection'
 import { useMemo } from 'react'
 import type { GitHubTaskKind } from '../../../../shared/task-github-search'
 import { buildGitHubRepoUrl } from '../../../../shared/github/links'
@@ -6,7 +6,7 @@ import { getTaskSourceContextSummary } from '../task-source-context-summary'
 import { getGitHubProjectSourceSummary } from './task-page-source-context'
 import { translate } from '@/i18n/i18n'
 
-type TaskPageSourceDisplayInput = TaskPageLinearCreationStateModel & {
+type TaskPageSourceDisplayInput = TaskPageJiraListProjectionModel & {
   activeGithubTaskKind: GitHubTaskKind
 }
 

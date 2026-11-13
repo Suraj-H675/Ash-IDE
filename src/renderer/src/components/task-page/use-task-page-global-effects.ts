@@ -1,7 +1,8 @@
-import type { TaskPageJiraSummaryGenerationModel } from './jira/use-task-page-jira-summary-generation'
+import type { TaskPageGitHubIssueCreationModel } from './github/use-task-page-github-issue-creation'
 import { useEffect } from 'react'
 import { addAppKeyListener, removeAppKeyListener } from '@/lib/app-keyboard-router'
-export function useTaskPageGlobalEffects(model: TaskPageJiraSummaryGenerationModel) {
+import { useContextualTour } from '@/components/contextual-tours/use-contextual-tour'
+export function useTaskPageGlobalEffects(model: TaskPageGitHubIssueCreationModel) {
   const {
     closeTaskPage,
     activeModal,
@@ -14,13 +15,22 @@ export function useTaskPageGlobalEffects(model: TaskPageJiraSummaryGenerationMod
     tasksRefreshing,
     tasksFiltering,
     dialogWorkItem,
+    gitlabDialogItem,
     newIssueOpen,
     selectedLinearIssue,
-    selectedJiraIssue,
-    newLinearIssueOpen,
-    newJiraIssueOpen
+    selectedJiraIssue
   } = model
   const githubTasksBusy = githubListPending || tasksRefreshing || tasksFiltering
+  useContextualTour(
+    'tasks',
+    !dialogWorkItem &&
+      !gitlabDialogItem &&
+      !selectedLinearIssue &&
+      !selectedJiraIssue &&
+      !newIssueOpen &&
+      activeModal === 'none',
+    'tasks_open'
+  )
   useEffect(() => {
     // Why: when a modal is open, let it own Esc dismissal.
     if (
@@ -28,8 +38,6 @@ export function useTaskPageGlobalEffects(model: TaskPageJiraSummaryGenerationMod
       selectedJiraIssue ||
       selectedLinearIssue ||
       newIssueOpen ||
-      newLinearIssueOpen ||
-      newJiraIssueOpen ||
       activeModal !== 'none'
     ) {
       return
@@ -73,8 +81,6 @@ export function useTaskPageGlobalEffects(model: TaskPageJiraSummaryGenerationMod
     closeTaskPage,
     dialogWorkItem,
     newIssueOpen,
-    newLinearIssueOpen,
-    newJiraIssueOpen,
     selectedLinearIssue,
     selectedJiraIssue
   ])

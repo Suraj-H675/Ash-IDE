@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from 'react'
 import { useGitHubTaskItems } from '@/hooks/useGitHubTaskItems'
-import type { TaskPageJiraCreationStateModel } from '../jira/use-task-page-jira-creation-state'
+import type { TaskPageGitHubMutationStateModel } from './use-task-page-github-mutation-state'
 import type { GitHubWorkItem } from '../../../../../shared/github/work-item-types'
 import { taskPageGitHubItemKey } from '@/components/task-page/github/task-page-github-work-item-mutation-keys'
 import { deriveAdvertisedTotalPages } from '../../../../../shared/work-item-empty-page'
 import { GITHUB_PR_TASK_GRID_CLASS, GITHUB_TASK_GRID_CLASS } from '../task-page-source-context'
 import { useTaskPageGitHubListPending } from './use-task-page-github-list-pending'
 import { useTaskPagePRCheckHydration } from './use-task-page-pr-check-hydration'
-export function useTaskPageGitHubListProjection(model: TaskPageJiraCreationStateModel) {
+export function useTaskPageGitHubListProjection(model: TaskPageGitHubMutationStateModel) {
   const {
     tasksFiltering,
     githubPageSize,

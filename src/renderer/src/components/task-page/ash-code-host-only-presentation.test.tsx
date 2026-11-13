@@ -6,21 +6,6 @@ vi.mock('./github/IssueDialog', () => ({
   TaskPageGitHubIssueDialog: () => <span>GitHub issue dialog</span>
 }))
 vi.mock('./gitlab/Dialog', () => ({ TaskPageGitLabDialog: () => <span>GitLab issue dialog</span> }))
-vi.mock('./linear/ProjectDialog', () => ({
-  TaskPageLinearProjectDialog: () => <span>Linear project dialog</span>
-}))
-vi.mock('./linear/IssueDialog', () => ({
-  TaskPageLinearIssueDialog: () => <span>Linear issue dialog</span>
-}))
-vi.mock('./jira/IssueDialog', () => ({
-  TaskPageJiraIssueDialog: () => <span>Jira issue dialog</span>
-}))
-vi.mock('./linear/ConnectDialog', () => ({
-  TaskPageLinearConnectDialog: () => <span>Linear credential dialog</span>
-}))
-vi.mock('./jira/ConnectDialog', () => ({
-  TaskPageJiraConnectDialog: () => <span>Jira credential dialog</span>
-}))
 vi.mock('./github/List', () => ({ TaskPageGitHubList: () => <span>GitHub issue list</span> }))
 vi.mock('./gitlab/TodoList', () => ({
   TaskPageGitLabTodoList: () => <span>GitLab todo list</span>
@@ -28,7 +13,6 @@ vi.mock('./gitlab/TodoList', () => ({
 vi.mock('./gitlab/ItemList', () => ({
   TaskPageGitLabItemList: () => <span>GitLab issue list</span>
 }))
-vi.mock('./jira/Content', () => ({ TaskPageJiraContent: () => <span>Jira issue list</span> }))
 vi.mock('@/components/PullRequestPage', () => ({ default: () => <span>GitHub PR</span> }))
 vi.mock('@/components/GitHubItemDialog', () => ({ default: () => <span>GitHub detail</span> }))
 vi.mock('@/components/github-project/ProjectViewWrapper', () => ({
@@ -36,8 +20,6 @@ vi.mock('@/components/github-project/ProjectViewWrapper', () => ({
 }))
 vi.mock('./github/Filters', () => ({ TaskPageGitHubFilters: () => <span>GitHub filters</span> }))
 vi.mock('./gitlab/Filters', () => ({ TaskPageGitLabFilters: () => <span>GitLab filters</span> }))
-vi.mock('./linear/Filters', () => ({ TaskPageLinearFilters: () => <span>Linear filters</span> }))
-vi.mock('./jira/Filters', () => ({ TaskPageJiraFilters: () => <span>Jira filters</span> }))
 vi.mock('@/components/linear-scope-selector', () => ({
   LinearScopeSelector: () => <span>Linear scope selector</span>
 }))

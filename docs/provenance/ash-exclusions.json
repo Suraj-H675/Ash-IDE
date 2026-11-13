@@ -30286,6 +30286,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/task-page/jira/ConnectDialog.tsx",
+      "sourceSha256": "d421480d33df2ebc98425f19fb30d335f3dfaac8ce4d4387e57eb80ed12516d0",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
       "path": "src/renderer/src/components/task-page/jira/Content.board-owner.test.tsx",
       "sourceSha256": "02f31a21d2df7f6c3a75cbc9b44c8e387aa4b77c65cfa37c554e7bac0d3fc185",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
@@ -30299,6 +30304,21 @@
       "path": "src/renderer/src/components/task-page/jira/IssueAssigneeField.test.tsx",
       "sourceSha256": "18f7cc03af5aa4126ba89964703400ac702cdf6c8e0f61468e7c83733639f4fe",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/jira/IssueAssigneeField.tsx",
+      "sourceSha256": "b72130551d84625b9ce1d297489e0d9017647ffdd66f368bfa64e6fb707e1e5c",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/jira/IssueDialog.tsx",
+      "sourceSha256": "e4365551e81d255377f164b8360d125653b21484aa92cebf3c466a8eeb4b2394",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/jira/IssueTitleField.tsx",
+      "sourceSha256": "14ee895ecc2babe55b548ee3029b6663150d6ee52a6ea1499a4cb4cf918a719d",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
     },
     {
       "path": "src/renderer/src/components/task-page/jira/task-page-jira-board-detail-integration.test.tsx",
@@ -30376,6 +30396,21 @@
       "reason": "Ash M8 exclusion: removed the Jira Tasks issue-type and create-field metadata fetch stage after the Jira application connector and Tasks creation UI were retired. Historical task state and saved user data remain untouched."
     },
     {
+      "path": "src/renderer/src/components/task-page/jira/use-task-page-jira-creation-projects.ts",
+      "sourceSha256": "c0149a19cc5afa10e47f7cefe7f496a091df014e5ac57ee5881844a2345779c4",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/jira/use-task-page-jira-creation-state.ts",
+      "sourceSha256": "956dfe3bebceca17ce3b88187eb1d236456aa1fa00064fa7cd3fc3f989b191a2",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/jira/use-task-page-jira-issue-creation.ts",
+      "sourceSha256": "1d68453a54660df7b2cc758a546e1e92902e92e4a5b866a19b3a4a473feb7b36",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
       "path": "src/renderer/src/components/task-page/jira/use-task-page-jira-list-effects.test.ts",
       "sourceSha256": "3a01784a221412c9824da974428d28a579cd7c69bbf749954a5e5a514a23ccc9",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
@@ -30406,9 +30441,39 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/components/task-page/jira/use-task-page-jira-summary-generation.ts",
+      "sourceSha256": "edb3bec05f314dc72d42676c75155ea14fd002a4a08b15d38c4fe7b1280c36c1",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/linear/ConnectDialog.tsx",
+      "sourceSha256": "9a2940a29a8be44472a0b375d91130ef56d73c51161edef786e902d0c20e84f9",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/linear/IssueAttributes.tsx",
+      "sourceSha256": "70d804165114bfe0378b6c58f1ae420253ae0781d753e5769d8fa264b1fd79eb",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/linear/IssueDialog.tsx",
+      "sourceSha256": "a2f5d78097c82fce63ef588e583a928d1df830fa10b29be77e1cd318444b2b6e",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
       "path": "src/renderer/src/components/task-page/linear/IssueTable.test.tsx",
       "sourceSha256": "71431f41b76de0097759b4515de50d21cf6e17e2221cebe532dde9e962f0dff5",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/linear/ProjectDialog.tsx",
+      "sourceSha256": "6fd67c294192b54e2451b930e06db90e15acd5333a7e5845b7a07ff1978b5e8e",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/linear/ProjectFields.tsx",
+      "sourceSha256": "5a67e859f79570a4bfbc12d87bdc95589f9376e10de887fef999af079428c60d",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
     },
     {
       "path": "src/renderer/src/components/task-page/linear/task-page-linear-committed-publication.test.tsx",
@@ -30459,6 +30524,21 @@
       "path": "src/renderer/src/components/task-page/linear/task-page-linear-team-selection.test.ts",
       "sourceSha256": "6f0293f516896f0f4b640fd0ce6863cc83e12e4618dbdb83354924a572290d48",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/linear/use-task-page-linear-creation-state.ts",
+      "sourceSha256": "db6b3086859c777866e9826a29799fc4aaeb1e02a69cbe9ae8fd36212e6e369e",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/linear/use-task-page-linear-issue-creation.ts",
+      "sourceSha256": "0ed962e4560b6f2c719838dcbd9716db050ce270b724f1dc733113b2b77e5447",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/linear/use-task-page-linear-project-creation.ts",
+      "sourceSha256": "c558d0328ba68d1406d8e1ec5d5ad6ae8ed25a65012863df962497f8b560928d",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
     },
     {
       "path": "src/renderer/src/components/task-page/task-page-cache-selectors.test.ts",
@@ -30619,6 +30699,11 @@
       "path": "src/renderer/src/components/use-jira-project-inventory.test.tsx",
       "sourceSha256": "ea6303e277aee9ffa755aab1b2fe3760b53122ce4c7a464618f602627671b5dd",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/renderer/src/components/use-new-linear-issue-projects.ts",
+      "sourceSha256": "5aeb496c3c38a74ba9ac5308cb2278ddfd0f9ba9c3aa19f743896e3ff4529ffa",
+      "reason": "Ash M8 exclusion: removed the retired Jira/Linear Tasks creation UI, draft state, and issue/project metadata fetch workflows. These provider-specific creation surfaces are not part of the supported GitHub/GitLab Tasks experience; existing historical tasks and saved user data are retained."
     },
     {
       "path": "src/renderer/src/components/use-quick-open-interaction.test.tsx",
@@ -42559,6 +42644,26 @@
       "path": "src/main/orcad/orcad-plaintext-credential-migration.ts",
       "sourceSha256": "658931ae9803d64ac110aa09e4d4fb6d0f2c27cb37483210bac5ddd45442a80d",
       "reason": "Ash M8 secret isolation: retire unreachable legacy Orca plaintext credential re-sealing/migration implementation. Ash runtime must not enumerate or rewrite ~/.orca credentials on startup. Retain source-compatible read-only legacy path helpers for an explicitly user-approved future import."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/jira/Content.tsx",
+      "sourceSha256": "ce51ed6c0d12eae1547545e47aee79f828f155e100b87b0d11d7ac03eee5cab5",
+      "reason": "Ash M8 exclusion: removed unmounted Jira/Linear Tasks list and filter presentation. The Tasks page only renders the supported GitHub/GitLab task experiences; provider-specific history and persisted user state are not deleted."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/jira/Filters.tsx",
+      "sourceSha256": "c0860080a103d5d12be0853243c52676890a90788ee32192dbb4c0e05e1c0e0d",
+      "reason": "Ash M8 exclusion: removed unmounted Jira/Linear Tasks list and filter presentation. The Tasks page only renders the supported GitHub/GitLab task experiences; provider-specific history and persisted user state are not deleted."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/linear/Content.tsx",
+      "sourceSha256": "0d35b112edd15268a26d20d777ad0abbf4294c6179b66f1dce25d8ba0b7cfd62",
+      "reason": "Ash M8 exclusion: removed unmounted Jira/Linear Tasks list and filter presentation. The Tasks page only renders the supported GitHub/GitLab task experiences; provider-specific history and persisted user state are not deleted."
+    },
+    {
+      "path": "src/renderer/src/components/task-page/linear/Filters.tsx",
+      "sourceSha256": "3da0e99aa41d81d055ef46dc9145221c9d06b648f29f826c2820995da19bc5a3",
+      "reason": "Ash M8 exclusion: removed unmounted Jira/Linear Tasks list and filter presentation. The Tasks page only renders the supported GitHub/GitLab task experiences; provider-specific history and persisted user state are not deleted."
     }
   ]
 }

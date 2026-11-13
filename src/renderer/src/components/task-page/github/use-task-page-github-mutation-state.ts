@@ -1,4 +1,4 @@
-import type { TaskPageLinearCreationStateModel } from '../linear/use-task-page-linear-creation-state'
+import type { TaskPageJiraListProjectionModel } from '../jira/use-task-page-jira-list-projection'
 import { getGitHubTaskKind } from '../../../../../shared/task-github-search'
 import { useMemo, useLayoutEffect, useEffect, useCallback, useRef } from 'react'
 import { parseTaskQuery } from '../../../../../shared/task-query'
@@ -13,7 +13,7 @@ import { useTaskPageGitHubWorkItemMutation } from '@/hooks/useTaskPageGitHubWork
 import { rebuildSoftHiddenKeysFromPendingAndSticky } from '@/components/task-page/github/task-page-github-work-item-mutation-composition'
 import { getTaskPageRepoSourceContext } from '../../../lib/task-repo-source-context'
 import { useTaskPageSourceDisplay } from '../use-task-page-source-display'
-export function useTaskPageGitHubMutationState(model: TaskPageLinearCreationStateModel) {
+export function useTaskPageGitHubMutationState(model: TaskPageJiraListProjectionModel) {
   const {
     selectedRepos,
     taskSource,
