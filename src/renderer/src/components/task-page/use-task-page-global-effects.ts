@@ -5,18 +5,11 @@ export function useTaskPageGlobalEffects(model: TaskPageJiraSummaryGenerationMod
   const {
     closeTaskPage,
     activeModal,
-    linearStatusContextKey,
     preflightStatusChecked,
     preflightStatusContextKey,
-    checkLinearConnection,
     refreshPreflightStatus,
     expectedPreflightContextKey,
-    jiraStatusContextKey,
-    checkJiraConnection,
-    providerRuntimeContextKey,
     preflightStatusCurrent,
-    linearStatusReady,
-    jiraStatusReady,
     githubListPending,
     tasksRefreshing,
     tasksFiltering,
@@ -86,24 +79,13 @@ export function useTaskPageGlobalEffects(model: TaskPageJiraSummaryGenerationMod
     selectedJiraIssue
   ])
   useEffect(() => {
+    // Ash's task surface supports code-host issues; do not probe excluded
+    // Jira/Linear app connectors just because the page was opened.
     if (!preflightStatusCurrent || !preflightStatusChecked) {
       void refreshPreflightStatus()
     }
-    if (!linearStatusReady) {
-      void checkLinearConnection()
-    }
-    if (!jiraStatusReady) {
-      void checkJiraConnection()
-    }
   }, [
-    checkJiraConnection,
-    checkLinearConnection,
     expectedPreflightContextKey,
-    jiraStatusContextKey,
-    jiraStatusReady,
-    linearStatusContextKey,
-    linearStatusReady,
-    providerRuntimeContextKey,
     preflightStatusContextKey,
     preflightStatusChecked,
     preflightStatusCurrent,
