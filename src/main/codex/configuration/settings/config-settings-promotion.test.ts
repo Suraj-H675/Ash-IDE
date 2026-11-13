@@ -256,6 +256,42 @@ describe('codex settings write-back promotion', () => {
     expect(readSystemConfig()).toBe(native)
   })
 
+  it('recovers native distrust if the ordinary runtime mirror write fails', () => {
+    const trusted =
+      'model = "gpt-5"\n\n[projects."/tmp/revoked-workspace"]\ntrust_level = "trusted"\n'
+    writeSystemConfig(trusted)
+    syncSystemConfigIntoManagedCodexHome()
+    expect(readRuntimeConfig()).toContain('trust_level = "trusted"')
+    const native = trusted.replace('"trusted"', '"untrusted"')
+    writeSystemConfig(native)
+    promotionTestState.failAtomicWrite = true
+
+    syncSystemConfigIntoManagedCodexHome()
+
+    expect(readSystemConfig()).toBe(native)
+    expect(readRuntimeConfig()).toContain('trust_level = "untrusted"')
+    expect(readRuntimeConfig()).not.toContain('trust_level = "trusted"')
+    promotionTestState.failAtomicWrite = false
+    syncSystemConfigIntoManagedCodexHome()
+    expect(readRuntimeConfig()).toContain('trust_level = "untrusted"')
+    expect(readSystemConfig()).toBe(native)
+  })
+
+  it('refuses a failed mirror if its trust-revocation fallback also loses a write race', () => {
+    const trusted =
+      'model = "gpt-5"\n\n[projects."/tmp/revoked-workspace"]\ntrust_level = "trusted"\n'
+    writeSystemConfig(trusted)
+    syncSystemConfigIntoManagedCodexHome()
+    const native = trusted.replace('"trusted"', '"untrusted"')
+    writeSystemConfig(native)
+    promotionTestState.failAtomicWrite = true
+    promotionTestState.failRevocationWrite = true
+
+    expect(() => syncSystemConfigIntoManagedCodexHome()).toThrow(/project trust revocation/i)
+    expect(readSystemConfig()).toBe(native)
+    expect(readRuntimeConfig()).toContain('trust_level = "trusted"')
+  })
+
   it.skipIf(process.platform === 'win32')(
     'still applies native project distrust when an unreadable settings baseline stalls promotion',
     () => {

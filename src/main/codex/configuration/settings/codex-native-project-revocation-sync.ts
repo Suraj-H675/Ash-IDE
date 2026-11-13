@@ -17,6 +17,22 @@ export function guardNativeTrustAfterFailedPromotion(homes: CodexSettingsPromoti
   }
 }
 
+/** A failed mirror cannot quietly leave a native project revocation unapplied. */
+export function guardNativeTrustAfterFailedMirror(
+  homes: CodexSettingsPromotionHomes,
+  mirrorError: unknown
+): void {
+  try {
+    syncNativeProjectRevocationsDuringRefusedWriteBack(homes)
+  } finally {
+    reportCodexConfigSyncOutcome(
+      homes.runtimeHomePath,
+      getCodexConfigSyncStatus(homes),
+      mirrorError
+    )
+  }
+}
+
 /** Degrade write-back without dropping local changes or provider-side distrust. */
 export function reportRefusedCodexWriteBack(homes: CodexSettingsPromotionHomes): void {
   try {

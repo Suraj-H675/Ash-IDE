@@ -166,7 +166,9 @@ describe('STA-4737 the config mirror must not overwrite a runtime config it coul
     try {
       const mirror = await import('../../configuration/settings/codex-config-mirror')
       denials.deny(runtimeConfigPath())
-      mirror.syncSystemConfigIntoManagedCodexHome()
+      expect(() => mirror.syncSystemConfigIntoManagedCodexHome()).toThrow(
+        /project trust revocation/i
+      )
       expect(realFs.readFileSync(runtimeConfigPath(), 'utf-8')).toBe(RUNTIME_CONFIG)
     } finally {
       vi.doUnmock('../../configuration/settings/config-settings-promotion')

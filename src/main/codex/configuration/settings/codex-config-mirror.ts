@@ -26,6 +26,7 @@ import { applyCodexDaemonSocketGuard } from '../shared-server/codex-daemon-socke
 import { stripRuntimeOwnedTomlSections } from '../toml/config-toml-runtime-owned-sections'
 import { mergeSystemCodexConfigIntoRuntime } from './codex-config-mirror-merge'
 import {
+  guardNativeTrustAfterFailedMirror,
   guardNativeTrustAfterFailedPromotion,
   reportRefusedCodexWriteBack
 } from './codex-native-project-revocation-sync'
@@ -61,16 +62,12 @@ function mirrorSystemConfigIntoManagedCodexHome(homes: CodexSettingsPromotionHom
   try {
     mirrorResult = syncSystemConfigIntoManagedCodexHomeUnsafe(homes, promotionPlan)
   } catch (error) {
-    reportCodexConfigSyncOutcome(homes.runtimeHomePath, getCodexConfigSyncStatus(homes), error)
+    guardNativeTrustAfterFailedMirror(homes, error)
     return false
   }
   if (mirrorResult.status === 'refused-indeterminate') {
     // Keep the baseline unchanged on indeterminate reads so unmirrored changes can retry.
-    reportCodexConfigSyncOutcome(
-      homes.runtimeHomePath,
-      getCodexConfigSyncStatus(homes),
-      mirrorResult.error
-    )
+    guardNativeTrustAfterFailedMirror(homes, mirrorResult.error)
     return false
   }
   // This pass did not refuse write-back, so an older refusal is no longer the current sync state.
