@@ -13,6 +13,11 @@ import {
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import {
+  assertAshOwnedChildPath,
+  assertAshUserDataPathIsIndependent,
+  resolveUserDataPath
+} from '../../../orcad/orcad-app-paths'
+import {
   clearCopiedResourceMarker,
   markCopiedResource,
   targetIsOwnedFallbackCopy
@@ -44,12 +49,18 @@ export function getSystemCodexHomePath(): string {
 
 /** Path only; use when a read-only caller must not materialize the mirror. */
 export function resolveOrcaManagedCodexHomePath(): string {
-  return join(getOrcaUserDataPath(), 'codex-runtime-home', 'home')
+  const ashUserData = getOrcaUserDataPath()
+  const homePath = join(ashUserData, 'codex-runtime-home', 'home')
+  // This shared helper also serves offline CLI and history readers. Never
+  // follow a linked child into another application's sessions or trust files.
+  assertAshOwnedChildPath(ashUserData, homePath)
+  return homePath
 }
 
 export function getOrcaManagedCodexHomePath(): string {
   const managedHomePath = resolveOrcaManagedCodexHomePath()
-  mkdirSync(managedHomePath, { recursive: true })
+  mkdirSync(managedHomePath, { recursive: true, mode: 0o700 })
+  assertAshOwnedChildPath(getOrcaUserDataPath(), managedHomePath)
   return managedHomePath
 }
 
@@ -73,16 +84,14 @@ export function getCodexSessionBackfillStateDirPath(): string {
 
 export function getOrcaUserDataPath(): string {
   if (process.env.ORCA_USER_DATA_PATH) {
+    // The inherited environment key is still used between Ash hosts, but its
+    // *value* must identify an Ash-owned profile, never an installed Orca one.
+    assertAshUserDataPathIsIndependent(process.env.ORCA_USER_DATA_PATH)
     return process.env.ORCA_USER_DATA_PATH
   }
-  // Offline CLI hooks run outside Electron and must resolve the same userData path.
-  if (process.platform === 'darwin') {
-    return join(homedir(), 'Library', 'Application Support', 'orca')
-  }
-  if (process.platform === 'win32') {
-    return join(process.env.APPDATA ?? join(homedir(), 'AppData', 'Roaming'), 'orca')
-  }
-  return join(process.env.XDG_CONFIG_HOME || join(homedir(), '.config'), 'orca')
+  // Offline CLI invocations can arrive without Electron's environment bridge.
+  // Use the same validated platform-specific Ash default as the standalone host.
+  return resolveUserDataPath()
 }
 
 export function syncSystemCodexResourcesIntoManagedHome(managedHomePath?: string): void {
