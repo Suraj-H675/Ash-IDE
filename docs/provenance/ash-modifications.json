@@ -1947,6 +1947,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/task-page/use-task-page-provider-metadata.ts",
+      "sha256": "eb152787baec9577e13a3d49f739151edcb6ca2533c40362ecb4ff04cb4ad0f0",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/task-page/use-task-page-repo-selection.ts",
       "sha256": "baf9abc5a2e9049312614d30a6e9a5b123b4dfeec8d537325b13d5a415e6f339",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
