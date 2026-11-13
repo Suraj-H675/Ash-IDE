@@ -1,4 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+// Preserve inherited native-home reconciliation coverage in disposable
+// fixtures without authorizing production provider-global hook mutation.
+vi.mock('../../../agent-hooks/ash-hook-ownership-policy', () => ({
+  canAshWriteProviderGlobalHooks: () => true
+}))
 import {
   existsSync,
   mkdirSync,

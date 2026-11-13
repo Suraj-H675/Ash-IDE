@@ -9,6 +9,12 @@ import '../../trust/toml/config-toml-trust'
 import { upsertHookTrustContent as upsertHookTrustEntriesInContent } from '../../trust/toml/config-toml-hook-trust-edit'
 import { setupCodexHookHomes } from './hook-service-test-harness'
 
+// Exercise retired Orca migration mechanics only with disposable hook homes.
+// Ash production deliberately never enables provider-global mutation.
+vi.mock('../../../agent-hooks/ash-hook-ownership-policy', () => ({
+  canAshWriteProviderGlobalHooks: () => true
+}))
+
 const { getPathMock, homedirMock } = vi.hoisted(() => ({
   getPathMock: vi.fn<(name: string) => string>(),
   homedirMock: vi.fn<() => string>()

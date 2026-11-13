@@ -377,13 +377,18 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/codex/hooks/definitions/codex-real-home-hook-key-spellings.test.ts",
+      "sha256": "bedbf6154af6c0a8998a94f98f40a7f2121819545b5d05659a22c6ed3ae0c4bd",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/codex/hooks/installation/codex-hook-service-implementation.ts",
       "sha256": "2faed5ed52072dc4cf58e5d35d726f70057fd4505844e7961ea042d2db3d4a7b",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/main/codex/hooks/installation/hook-service-legacy-cleanup.test.ts",
-      "sha256": "a55e6f3c709facbe09d1f0329a348e35d0c6bd622ba0eff5e570b4448dabb597",
+      "sha256": "91ea33e8e82251d479e9a6011cbac1dde3a1239b4acfe498585b4d1facba6d6f",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -402,8 +407,33 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/codex/hooks/reconciliation/codex-hook-legacy-cleanup.ts",
+      "sha256": "d7b5971a61168dd68f50a7d06420eceb5e190f2f246ec98617a6e93c2a9a34c2",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/codex/hooks/reconciliation/codex-hook-real-home-status.test.ts",
+      "sha256": "3b01d479a57f899a1dfb06f005b951bd4a7ea930bc09639f76d782bdbd529387",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/codex/hooks/reconciliation/codex-hook-reconcile.test.ts",
+      "sha256": "43298935cad4bf2b775b36785f374372cc3c7298183a4911fc25ab8d26e811f0",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/codex/hooks/reconciliation/codex-hook-sweep-per-agent-opt-out.test.ts",
       "sha256": "513b70da79cbc820a4e5f91098326d3d19d278ef77c4041569a2068e974d5628",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/codex/hooks/reconciliation/codex-real-home-hook-entries.test.ts",
+      "sha256": "21123f66066a555c2b355034722a052d49b8c312d84e284262634134a4778c5d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/codex/hooks/reconciliation/codex-real-home-hook-install.ts",
+      "sha256": "6d3058edad90e011b640479a2d6a5a54fdc59e6a665e27b4feae36ec03175920",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -414,6 +444,16 @@
     {
       "path": "src/main/codex/hooks/reconciliation/codex-real-home-shared-entry.test.ts",
       "sha256": "136792d7a52f8e486116e96e15007048a3dd3d6d5a3985d8d423c0decb6613b8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/codex/trust/hooks/hook-trust-promotion.test.ts",
+      "sha256": "3cbad56563a55543b19120944c2189b57186f0baef83ddb9af11de12999268c0",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/codex/trust/hooks/hook-trust-promotion.ts",
+      "sha256": "13b2ef427a03aabf33f9a70c981695f26d5f363354ce63536d4da3bf4670f0e9",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

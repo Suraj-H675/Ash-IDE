@@ -19,6 +19,12 @@ import {
 } from '../identity/codex-trust-identity'
 import { upsertHookTrustContent as upsertHookTrustEntriesInContent } from '../toml/config-toml-hook-trust-edit'
 
+// Preserve positive coverage of inherited trust migration in isolated fixtures.
+// Normal Ash launches use the deny-by-default provider-global ownership gate.
+vi.mock('../../../agent-hooks/ash-hook-ownership-policy', () => ({
+  canAshWriteProviderGlobalHooks: () => true
+}))
+
 const { getPathMock, homedirMock } = vi.hoisted(() => ({
   getPathMock: vi.fn<(name: string) => string>(),
   homedirMock: vi.fn<() => string>()

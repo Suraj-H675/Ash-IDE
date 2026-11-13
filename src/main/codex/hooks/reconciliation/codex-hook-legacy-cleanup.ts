@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, unlinkSync } from 'node:fs'
 import { join } from 'node:path'
+import { canAshWriteProviderGlobalHooks } from '../../../agent-hooks/ash-hook-ownership-policy'
 import {
   hookDefinitionHasManagedCommand,
   removeManagedCommands,
@@ -34,6 +35,9 @@ function getLegacyCodexProfileTomlPath(): string {
 }
 
 export function cleanupLegacySystemManagedHooks(): Promise<void> {
+  if (!canAshWriteProviderGlobalHooks()) {
+    return Promise.resolve()
+  }
   // Serialize with reconciliation: both write real-home hooks and trust.
   return runExclusivelyForCodexTrustConfig(
     getSystemCodexConfigTomlPath(),
@@ -155,6 +159,11 @@ function cleanupLegacyCodexProfileHooks(): void {
 }
 
 export async function cleanupLegacyManagedHookRepresentations(): Promise<void> {
+  // Legacy Orca markers/filenames do not prove Ash ownership. No native
+  // provider-home changes are permitted during an ordinary Ash launch.
+  if (!canAshWriteProviderGlobalHooks()) {
+    return
+  }
   try {
     await cleanupLegacySystemManagedHooks()
     cleanupLegacyCodexProfileHooks()

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { canAshWriteProviderGlobalHooks } from '../../../agent-hooks/ash-hook-ownership-policy'
 import { isDefinitiveAbsence } from '../../../../shared/definitive-filesystem-absence'
 import {
   createManagedCommandMatcher,
@@ -125,6 +126,11 @@ export function snapshotCodexRuntimeHookTrustProvenance(
 export function promoteCodexRuntimeHookApprovalsToSystem(
   runtimeHomePath: string = getOrcaManagedCodexHomePath()
 ): void {
+  // User-approved Ash runtime entries are not consent to rewrite the global
+  // ~/.codex trust store. Preserve native state until per-entry ownership exists.
+  if (!canAshWriteProviderGlobalHooks()) {
+    return
+  }
   try {
     promoteCodexRuntimeHookApprovalsToSystemUnsafe(runtimeHomePath)
   } catch (error) {

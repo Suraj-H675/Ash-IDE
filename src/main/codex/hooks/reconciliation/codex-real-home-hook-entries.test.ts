@@ -21,6 +21,12 @@ import type * as RealHomeHooksJson from './codex-real-home-hooks-json'
 import type { HookDefinition } from '../../../agent-hooks/installer-utils'
 import { wrapPosixHookCommand } from '../../../agent-hooks/posix-hook-command'
 
+// Legacy provider-home transaction mechanics are exercised only with this
+// suite's disposable HOME and userData roots; Ash production cannot write.
+vi.mock('../../../agent-hooks/ash-hook-ownership-policy', () => ({
+  canAshWriteProviderGlobalHooks: () => true
+}))
+
 const mocks = vi.hoisted(() => {
   const state: { beforeHooksJsonGuard: (() => void) | null; hooksJsonWrites: number } = {
     beforeHooksJsonGuard: null,

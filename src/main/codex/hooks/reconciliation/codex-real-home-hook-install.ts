@@ -4,6 +4,7 @@ import {
   writeHooksJson,
   writeManagedScript
 } from '../../../agent-hooks/installer-utils'
+import { canAshWriteProviderGlobalHooks } from '../../../agent-hooks/ash-hook-ownership-policy'
 import { readHooksJsonWithRaw } from '../../../agent-hooks/hooks-json-read'
 import { resolveHooksJsonWritePath } from '../../../agent-hooks/hook-config-write-path'
 import {
@@ -66,6 +67,11 @@ const MAX_PASSES = 4
 
 /** Approve before writing entries; roll back approvals if the entry write fails. */
 export async function reconcileRealHomeCodexHookEntries(args: ReconcileArgs): Promise<void> {
+  // Native ~/.codex belongs to the provider/user, not Ash. Inherited Orca
+  // commands and filenames cannot establish ownership for new entries.
+  if (!canAshWriteProviderGlobalHooks()) {
+    return
+  }
   await reconcileCodexHookEntriesInHome(getRealHomeCodexHookHome(), args, { pristineBackup: true })
 }
 

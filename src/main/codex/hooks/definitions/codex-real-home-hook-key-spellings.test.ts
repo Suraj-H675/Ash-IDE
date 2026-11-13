@@ -19,6 +19,12 @@ import {
 import { computeCodexTrustKey as computeTrustKey } from '../../trust/identity/codex-trust-identity'
 import type { CodexHookHashes } from '../../trust/hooks/codex-hook-trust-derivation'
 
+// Verify inherited symlink/trust migration mechanics against disposable native
+// homes. Ash itself never authorizes provider-global hook registration.
+vi.mock('../../../agent-hooks/ash-hook-ownership-policy', () => ({
+  canAshWriteProviderGlobalHooks: () => true
+}))
+
 const { homedirMock } = vi.hoisted(() => ({ homedirMock: vi.fn<() => string>() }))
 
 vi.mock('node:os', async () => {

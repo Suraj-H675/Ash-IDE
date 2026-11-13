@@ -6,6 +6,12 @@ import { join } from 'node:path'
 import type * as CodexCommand from '../../../codex-cli/command'
 import type * as TrustDerivation from '../../trust/hooks/codex-hook-trust-derivation'
 
+// Test historical Orca real-home status in disposable fixtures only. Ash
+// production must not install or reconcile provider-global hook entries.
+vi.mock('../../../agent-hooks/ash-hook-ownership-policy', () => ({
+  canAshWriteProviderGlobalHooks: () => true
+}))
+
 const mocks = vi.hoisted(() => ({
   homedir: vi.fn<() => string>(),
   codexPath: '',
