@@ -31,11 +31,12 @@ const root = process.argv[2]
 const read = name => JSON.parse(fs.readFileSync(path.join(root, `${name}.json`), 'utf8'))
 
 for (const name of [
-  'repo-add', 'terminal-create', 'terminal-before', 'terminal-closed',
+  'settings-read', 'repo-add', 'terminal-create', 'terminal-before', 'terminal-closed',
   'terminal-reopened', 'status-before', 'status-closed', 'open', 'status-reopened'
 ]) {
   assert.equal(read(name).ok, true, `${name} must succeed`)
 }
+assert.equal(read('settings-read').settingsRead, true, 'local Settings RPC must be readable')
 
 const before = read('status-before').result
 const closed = read('status-closed').result
@@ -137,7 +138,13 @@ NODE
   export WAYLAND_DISPLAY=ash-private XDG_SESSION_TYPE=wayland QT_QPA_PLATFORM=wayland
   export ASH_USER_DATA_PATH="$test_root/profile" ORCA_USER_DATA_PATH="$test_root/profile"
   export ASH_APP_EXECUTABLE="$appimage"
-  WAYLAND_DEBUG=client "$appimage" --ozone-platform=wayland >"$test_root/app.log" 2>&1 &
+  local -a app_args=(--ozone-platform=wayland)
+  if [[ "${ASH_TEST_CHROMIUM_NETLOG:-}" == '1' ]]; then
+    # Chromium's default net-log mode omits raw cookies and sensitive request headers.
+    # Keep the log private in this disposable fixture: URLs may still be sensitive.
+    app_args+=("--log-net-log=$test_root/chromium-netlog.json")
+  fi
+  WAYLAND_DEBUG=client "$appimage" "${app_args[@]}" >"$test_root/app.log" 2>&1 &
   app_pid=$!
   for ((i=0; i<90; i++)); do
     if [[ -f "$test_root/profile/ash-runtime.json" ]]; then
@@ -150,6 +157,24 @@ NODE
     grep -E 'Failed to start local RPC transport|listen EINVAL|FATAL' "$test_root/app.log" | tail -6 >&2 || true
     return 1
   fi
+
+  # Exercise a real authenticated Settings read without logging private settings.
+  # Network auditing can now cover a user Settings request as well as first run,
+  # terminal interaction, GUI close/reopen and explicit daemon/runtime shutdown.
+  cat >"$test_root/read-settings.cjs" <<'NODE'
+const { RuntimeClient } = require(process.argv[2])
+const client = new RuntimeClient(process.env.ASH_USER_DATA_PATH)
+client.call('settings.get')
+  .then(response => {
+    if (!response.ok || !response.result?.settings ||
+        typeof response.result.settings !== 'object') {
+      throw new Error('Authenticated local settings read returned no settings')
+    }
+    console.log(JSON.stringify({ ok: true, settingsRead: true }))
+  })
+  .catch(error => { console.error(error); process.exitCode = 1 })
+NODE
+  "$packaged_node" "$test_root/read-settings.cjs" "$(dirname "$packaged_cli")/runtime/client.js" >"$test_root/settings-read.json" 2>"$test_root/settings-read.err"
 
   # `repo add` is intentionally absent from Ash's minimal public CLI, but the
   # authenticated local repo.add RPC remains available to the desktop runtime.
@@ -263,6 +288,13 @@ assert.equal(runtime.ok, true)
 assert.equal(runtime.result.status, 'stopping')
 const reported = fs.readFileSync(path.join(root, 'driver.log'), 'utf8').split('\n').find(line => line.startsWith('{"status":"PASS"'))
 assert.ok(reported, 'missing successful identity and protocol assertions')
+if (process.env.ASH_TEST_CHROMIUM_NETLOG === '1') {
+  const netlogPath = path.join(root, 'chromium-netlog.json')
+  assert.ok(fs.existsSync(netlogPath), 'Chromium netlog was not created')
+  const netlog = JSON.parse(fs.readFileSync(netlogPath, 'utf8'))
+  assert.ok(Array.isArray(netlog.events), 'Chromium netlog is missing events')
+  console.log(`Chromium private network log: ${netlog.events.length} events in ${netlogPath}`)
+}
 console.log(reported)
 console.log('Test-owned daemon and runtime stopped; private logs at ' + root)
 NODE
