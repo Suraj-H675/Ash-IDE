@@ -1,117 +1,36 @@
-import { denyRpcMethodForCaller } from '../rpc-caller-scope'
-import '../unused-default-rpc-methods.test-fixture'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { getDefaultUIState } from '../../../../shared/constants'
-import type { PersistedUIState } from '../../../../shared/persisted-ui-state-types'
-import type { OrcaRuntimeService } from '../../orca-runtime'
-import { CLIENT_UI_METHODS } from './client-ui'
-import { RpcDispatcher } from '../dispatcher'
+import {
+  normalizeJiraSavedFilterState,
+  mutateJiraSavedFilterState
+} from '../../../../shared/jira/jira-saved-filters'
+import { normalizeJiraQuickFilterState } from '../../../../shared/jira/jira-quick-filters'
 
-const filter = { id: 'mine', name: 'My work', jql: 'assignee = currentUser()' }
-function setup() {
-  let ui: PersistedUIState = {
-    ...getDefaultUIState(),
-    taskResumeState: { jiraQuery: 'project = OLD' }
-  }
-  const updateUIState = vi.fn((updates: Partial<PersistedUIState>) => {
-    ui = { ...ui, ...updates }
-    return ui
-  })
-  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The dispatcher only invokes these three runtime methods in this test.
-  const runtime = {
-    getRuntimeId: () => 'host-a',
-    getUIState: () => ui,
-    updateUIState
-  } as unknown as OrcaRuntimeService
-  const dispatcher = new RpcDispatcher({ runtime, methods: CLIENT_UI_METHODS })
-  const dispatch = (method: string, params?: unknown) =>
-    dispatcher.dispatch({ id: 'request', method, params, authToken: 'token' })
-  return { dispatch, updateUIState, read: () => ui }
-}
-describe('Jira saved-filter runtime UI state', () => {
-  it('stores filters on the called host while preserving the old strict taskResumeState shape', async () => {
-    const { dispatch, read, updateUIState } = setup()
-    expect(await dispatch('ui.getJiraSavedFilters')).toMatchObject({
-      ok: true,
-      result: { filters: [], activeFilterId: null }
-    })
-    expect(await dispatch('ui.mutateJiraSavedFilters', { kind: 'save', filter })).toMatchObject({
-      ok: true,
-      result: { filters: [filter] }
-    })
-    expect(
-      await dispatch('ui.mutateJiraSavedFilters', { kind: 'select', id: filter.id })
-    ).toMatchObject({ ok: true, result: { activeFilterId: filter.id } })
-    expect(read().taskResumeState).toEqual({ jiraQuery: 'project = OLD' })
-    expect(updateUIState.mock.calls.every(([update]) => !('taskResumeState' in update))).toBe(true)
-    expect(await dispatch('ui.getJiraSavedFilters')).toMatchObject({
-      ok: true,
-      result: { filters: [filter], activeFilterId: filter.id }
-    })
-  })
-  it('applies mutations to current host state so two clients do not erase each other’s filters', async () => {
-    const { dispatch } = setup()
-    const second = { id: 'bugs', name: 'Bugs', jql: 'type = Bug' }
-    await dispatch('ui.mutateJiraSavedFilters', { kind: 'save', filter })
-    await dispatch('ui.mutateJiraSavedFilters', { kind: 'save', filter: second })
-    expect(await dispatch('ui.getJiraSavedFilters')).toMatchObject({
-      ok: true,
-      result: { filters: [filter, second] }
-    })
-    await dispatch('ui.mutateJiraSavedFilters', { kind: 'delete', id: filter.id })
-    expect(await dispatch('ui.getJiraSavedFilters')).toMatchObject({
-      ok: true,
-      result: { filters: [second] }
-    })
-  })
-  it('rejects malformed or oversized remote input without changing host UI state', async () => {
-    const { dispatch, updateUIState } = setup()
-    expect(
-      await dispatch('ui.mutateJiraSavedFilters', {
-        kind: 'save',
-        filter: { ...filter, jql: 'x'.repeat(10_001) }
-      })
-    ).toMatchObject({ ok: false, error: { code: 'invalid_argument' } })
-    expect(
-      await dispatch('ui.mutateJiraSavedFilters', { kind: 'select', id: 'mine', unexpected: true })
-    ).toMatchObject({ ok: false, error: { code: 'invalid_argument' } })
-    expect(updateUIState).not.toHaveBeenCalled()
-  })
-})
+const archivedFilter = { id: 'legacy', name: 'My work', jql: 'assignee = currentUser()' }
 
-it('denies historical mobile callers rather than routing saved-filter requests', () => {
-  expect(
-    denyRpcMethodForCaller({ kind: 'mobile' }, 'ui.getJiraSavedFilters', 'workspace')
-  ).not.toBeNull()
-  expect(
-    denyRpcMethodForCaller({ kind: 'mobile' }, 'ui.mutateJiraSavedFilters', 'workspace')
-  ).not.toBeNull()
-})
+describe('historical Jira filter data remains readable without a connector', () => {
+  it('normalizes stored filters and old task resume data without changing either', () => {
+    const persisted = {
+      ...getDefaultUIState(),
+      taskResumeState: { jiraQuery: 'project = OLD' },
+      jiraSavedFilterState: { filters: [archivedFilter], activeFilterId: archivedFilter.id },
+      jiraQuickFilterState: { statuses: ['In Progress'] }
+    }
 
-it('persists quick filters on the execution host without rewriting saved JQL or resume fields', async () => {
-  const { dispatch, read, updateUIState } = setup()
-  await dispatch('ui.mutateJiraSavedFilters', { kind: 'save', filter })
-  expect(
-    await dispatch('ui.setJiraQuickFilters', { statuses: ['In Progress', 'Blocked'] })
-  ).toMatchObject({
-    ok: true,
-    result: { statuses: ['In Progress', 'Blocked'] }
+    expect(normalizeJiraSavedFilterState(persisted.jiraSavedFilterState)).toEqual({
+      filters: [archivedFilter],
+      activeFilterId: 'legacy'
+    })
+    expect(normalizeJiraQuickFilterState(persisted.jiraQuickFilterState)).toEqual({
+      statuses: ['In Progress']
+    })
+    expect(persisted.taskResumeState).toEqual({ jiraQuery: 'project = OLD' })
   })
-  expect(await dispatch('ui.getJiraQuickFilters')).toMatchObject({
-    ok: true,
-    result: { statuses: ['In Progress', 'Blocked'] }
+
+  it('keeps the pure legacy state normalization independent of IPC or provider accounts', () => {
+    const previous = { filters: [archivedFilter], activeFilterId: archivedFilter.id }
+    const next = mutateJiraSavedFilterState(previous, { kind: 'delete', id: archivedFilter.id })
+    expect(next).toEqual({ filters: [], activeFilterId: null })
+    expect(previous).toEqual({ filters: [archivedFilter], activeFilterId: archivedFilter.id })
   })
-  expect(read().jiraSavedFilterState?.filters).toEqual([filter])
-  expect(read().taskResumeState).toEqual({ jiraQuery: 'project = OLD' })
-  expect(updateUIState.mock.calls.every(([update]) => !('taskResumeState' in update))).toBe(true)
-  expect(await dispatch('ui.setJiraQuickFilters', { statuses: ['x'.repeat(129)] })).toMatchObject({
-    ok: false,
-    error: { code: 'invalid_argument' }
-  })
-  expect(
-    denyRpcMethodForCaller({ kind: 'mobile' }, 'ui.getJiraQuickFilters', 'workspace')
-  ).not.toBeNull()
-  expect(
-    denyRpcMethodForCaller({ kind: 'mobile' }, 'ui.setJiraQuickFilters', 'workspace')
-  ).not.toBeNull()
 })

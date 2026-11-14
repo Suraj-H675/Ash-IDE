@@ -1,10 +1,3 @@
-import { normalizeJiraQuickFilterState } from '../../../../shared/jira/jira-quick-filters'
-import { JiraQuickFilterStateParam } from '../../../../shared/rpc-contract/jira-quick-filter-params'
-import {
-  normalizeJiraSavedFilterState,
-  mutateJiraSavedFilterState
-} from '../../../../shared/jira/jira-saved-filters'
-import { JiraSavedFilterMutationParam } from '../../../../shared/rpc-contract/jira-saved-filter-params'
 import {
   omitPairingLocalUiFields,
   type PairedUiState
@@ -43,40 +36,6 @@ function uiForCaller(
 }
 
 export const CLIENT_UI_METHODS = [
-  defineMethod({
-    name: 'ui.getJiraQuickFilters',
-    permission: 'workspace',
-    params: null,
-    handler: (_params, { runtime }) =>
-      normalizeJiraQuickFilterState(runtime.getUIState().jiraQuickFilterState)
-  }),
-  defineMethod({
-    name: 'ui.setJiraQuickFilters',
-    permission: 'workspace',
-    params: JiraQuickFilterStateParam,
-    handler: (params, { runtime }) => {
-      const state = normalizeJiraQuickFilterState(params)
-      runtime.updateUIState({ jiraQuickFilterState: state })
-      return state
-    }
-  }),
-  defineMethod({
-    name: 'ui.getJiraSavedFilters',
-    permission: 'workspace',
-    params: null,
-    handler: (_params, { runtime }) =>
-      normalizeJiraSavedFilterState(runtime.getUIState().jiraSavedFilterState)
-  }),
-  defineMethod({
-    name: 'ui.mutateJiraSavedFilters',
-    permission: 'workspace',
-    params: JiraSavedFilterMutationParam,
-    handler: (params, { runtime }) => {
-      const state = mutateJiraSavedFilterState(runtime.getUIState().jiraSavedFilterState, params)
-      runtime.updateUIState({ jiraSavedFilterState: state })
-      return state
-    }
-  }),
   defineMethod({
     name: 'settings.getAgentLaunch',
     permission: 'workspace',

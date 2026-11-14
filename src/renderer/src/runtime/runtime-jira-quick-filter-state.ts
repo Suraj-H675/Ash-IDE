@@ -1,49 +1,16 @@
-import {
-  JIRA_STATUS_FILTER_RUNTIME_CAPABILITY,
-  JIRA_STATUS_FILTER_UPDATE_REQUIRED,
-  normalizeJiraQuickFilterState,
-  type JiraQuickFilterState
-} from '../../../shared/jira/jira-quick-filters'
-import { assertRuntimeEnvironmentCapability, callRuntimeRpc } from './runtime-rpc-client'
+import type { JiraQuickFilterState } from '../../../shared/jira/jira-quick-filters'
 import type { RuntimeClientTarget } from '../../../shared/runtime-client-target'
 
+// Compatibility exports for unmounted legacy Tasks hooks; no provider transport is permitted.
 export async function readJiraQuickFilterState(
-  target: RuntimeClientTarget
+  _target: RuntimeClientTarget
 ): Promise<JiraQuickFilterState> {
-  if (target.kind === 'environment') {
-    await assertRuntimeEnvironmentCapability(
-      target.environmentId,
-      JIRA_STATUS_FILTER_RUNTIME_CAPABILITY,
-      JIRA_STATUS_FILTER_UPDATE_REQUIRED,
-      15_000
-    )
-    return normalizeJiraQuickFilterState(
-      await callRuntimeRpc(target, 'ui.getJiraQuickFilters', undefined, { timeoutMs: 15_000 })
-    )
-  }
-  if (!window.api.ui.getJiraQuickFilters) {
-    throw new Error(JIRA_STATUS_FILTER_UPDATE_REQUIRED)
-  }
-  return normalizeJiraQuickFilterState(await window.api.ui.getJiraQuickFilters())
+  throw new Error('Jira integration is excluded from Ash IDE')
 }
 
 export async function writeJiraQuickFilterState(
-  target: RuntimeClientTarget,
-  state: JiraQuickFilterState
+  _target: RuntimeClientTarget,
+  _state: JiraQuickFilterState
 ): Promise<JiraQuickFilterState> {
-  if (target.kind === 'environment') {
-    await assertRuntimeEnvironmentCapability(
-      target.environmentId,
-      JIRA_STATUS_FILTER_RUNTIME_CAPABILITY,
-      JIRA_STATUS_FILTER_UPDATE_REQUIRED,
-      15_000
-    )
-    return normalizeJiraQuickFilterState(
-      await callRuntimeRpc(target, 'ui.setJiraQuickFilters', state, { timeoutMs: 15_000 })
-    )
-  }
-  if (!window.api.ui.setJiraQuickFilters) {
-    throw new Error(JIRA_STATUS_FILTER_UPDATE_REQUIRED)
-  }
-  return normalizeJiraQuickFilterState(await window.api.ui.setJiraQuickFilters(state))
+  throw new Error('Jira integration is excluded from Ash IDE')
 }

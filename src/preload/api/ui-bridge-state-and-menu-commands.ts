@@ -10,10 +10,6 @@ import type {
 } from '../../shared/desktop-browser-bridge-protocol'
 
 export const uiStateAndMenuCommandsApi = {
-  getJiraQuickFilters: () => ipcRenderer.invoke('ui:getJiraQuickFilters'),
-  setJiraQuickFilters: (state) => ipcRenderer.invoke('ui:setJiraQuickFilters', state),
-  getJiraSavedFilters: () => ipcRenderer.invoke('ui:getJiraSavedFilters'),
-  mutateJiraSavedFilters: (mutation) => ipcRenderer.invoke('ui:mutateJiraSavedFilters', mutation),
   get: () => ipcRenderer.invoke('ui:get'),
   set: (args) => ipcRenderer.invoke('ui:set', args),
   setWithAck: (args) => ipcRenderer.invoke('ui:set', args),

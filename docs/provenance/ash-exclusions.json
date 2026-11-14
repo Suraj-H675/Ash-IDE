@@ -36126,6 +36126,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/renderer/src/web/preload-api/web-jira-filter-state-api.ts",
+      "sourceSha256": "7fd32a3136c858cf488fbaa0390944da4ced0809bc038c25bf7152392e9535cb",
+      "reason": "Ash M8 EX-07 exclusion: removed the retired web-client Jira filter RPC bridge. Historical saved filter data is retained by local persistence, but the web surface no longer exposes Jira-specific filter APIs."
+    },
+    {
       "path": "src/renderer/src/web/preload-api/web-runtime-calls-connection-pin.test.ts",
       "sourceSha256": "afbdb14fa9cd4fdb08a4bbf25461a6dc116f84e016bb344cdafc16348ba11951",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
