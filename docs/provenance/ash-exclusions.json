@@ -42834,6 +42834,21 @@
       "path": "src/renderer/src/lib/linear-usage-examples.ts",
       "sourceSha256": "4b6825dd597b9252f698675fcfd838065047d329bc62e24937c739ee972c80fc",
       "reason": "Ash EX-07 exclusion: removed Jira/Linear integration credential cards, credential-capture dialogs, task-source setup, Jira-specific repository/Git settings, and Linear agent-skill installation surfaces. Existing saved credentials, provider metadata and user data are retained; this change removes the UI and does not erase stored secrets."
+    },
+    {
+      "path": "src/renderer/src/components/FirstLaunchBanner.tsx",
+      "sourceSha256": "df77fccd1ce47913ffacd634823fbd02720ce22a00eb85b30333f3451604f1f2",
+      "reason": "Ash EX-09/EX-10 exclusion: removed dormant first-launch analytics consent notice, legacy opt-in actions, and upstream Orca telemetry-policy link; local diagnostics and historical settings remain intact."
+    },
+    {
+      "path": "src/renderer/src/components/TelemetryFirstLaunchSurface.tsx",
+      "sourceSha256": "ab35512209115b4e6a0deb50322a0d94e8e96febc0231d812a5ba0f6061dc8b5",
+      "reason": "Ash EX-09/EX-10 exclusion: removed obsolete telemetry consent overlay and all renderer-owned opt-in presentation; persisted historical consent fields are preserved for safe compatibility."
+    },
+    {
+      "path": "src/renderer/src/components/dashboard-popout/use-agent-dashboard-telemetry.ts",
+      "sourceSha256": "808deef5e8983b743f837b564524b9068cd1bcfd6a96542232060a742d5e35f6",
+      "reason": "Ash EX-09 exclusion: removed dashboard product-analytics event emission and scheduled visibility-based telemetry sampling without changing the live dashboard or pop-out behavior."
     }
   ]
 }

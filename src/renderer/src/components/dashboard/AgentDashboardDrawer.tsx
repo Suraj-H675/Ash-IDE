@@ -16,7 +16,6 @@ import {
 } from '../sidebar/workspace-chrome-metrics'
 import { AgentDashboardSettingsMenu } from './AgentDashboardSettingsMenu'
 import { useLiveDashboardSnapshot } from './useLiveDashboardSnapshot'
-import { useAgentDashboardTelemetry } from '../dashboard-popout/use-agent-dashboard-telemetry'
 import { translate } from '@/i18n/i18n'
 import { trackSidebarLiveWidth } from '@/components/sidebar/sidebar-live-width'
 
@@ -42,7 +41,6 @@ function AgentDashboardDrawerBody({
   onMenuOpenChange: (open: boolean) => void
 }): React.JSX.Element {
   const snapshot = useLiveDashboardSnapshot()
-  useAgentDashboardTelemetry('in_window')
 
   // Pop-out IPC rejects this renderer; in-window reads/reveals must use the store directly.
   const handleAckAgent = useCallback((paneKey: string, intent: AgentSubjectReadIntent) => {

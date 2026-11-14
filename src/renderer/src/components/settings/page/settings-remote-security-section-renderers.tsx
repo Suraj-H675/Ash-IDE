@@ -95,11 +95,8 @@ export function renderPrivacySettingsSection(context: SettingsRenderContext): Re
   return (
     <SettingsSection
       id="privacy"
-      title={translate('auto.components.settings.Settings.d7e3f62d70', 'Privacy & Telemetry')}
-      description={translate(
-        'auto.components.settings.Settings.c1b43dc4e2',
-        'Anonymous usage data and telemetry controls.'
-      )}
+      title="Privacy & Diagnostics"
+      description="Review local diagnostic files and privacy safeguards."
       searchEntries={navigation.getSectionSearchEntries('privacy')}
     >
       {view.isSectionMounted('privacy') ? <PrivacyPane settings={model.settings} /> : null}
