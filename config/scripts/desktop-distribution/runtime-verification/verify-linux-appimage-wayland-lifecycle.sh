@@ -44,6 +44,30 @@ if (process.env.ASH_TEST_OSC52_CLIPBOARD === '1') {
   assert.equal(clipboard.nativeClipboardRead, true)
   assert.equal(clipboard.exactTextMatched, true)
 }
+if (process.env.ASH_TEST_WINDOWLESS_NOTIFICATION === '1') {
+  const forged = read('hook-forged')
+  assert.equal(forged.ok, true)
+  assert.equal(forged.authenticatedHookSubmitted, false)
+  assert.equal(forged.wrongTokenRejected, true)
+  const started = read('hook-working')
+  const finished = read('hook-finished')
+  const native = read('native-notification')
+  const guard = read('status-running-work-guard')
+  const confirmed = read('x11-close-confirm-return')
+  assert.equal(started.ok, true)
+  assert.equal(started.phase, 'working')
+  assert.equal(started.authenticatedHookSubmitted, true)
+  assert.equal(finished.ok, true)
+  assert.equal(finished.phase, 'finished')
+  assert.equal(finished.authenticatedHookSubmitted, true)
+  assert.equal(native.ok, true)
+  assert.equal(native.nativeDBusReceived, true)
+  assert.equal(native.appNameMatched, true)
+  assert.equal(native.exactContentMatched, true)
+  assert.equal(guard.result.runtime.state, 'ready')
+  assert.equal(confirmed.ok, true)
+  assert.equal(confirmed.returnSent, true)
+}
 if (process.env.ASH_TEST_BROWSER_SMOKE === '1') {
   const visited = read('local-browser-before')
   const restored = read('local-browser-after')
@@ -94,6 +118,12 @@ const closed = read('status-closed').result
 const opened = read('open').result
 const reopened = read('status-reopened').result
 const terminal = read('terminal-create').result.terminal
+if (process.env.ASH_TEST_WINDOWLESS_NOTIFICATION === '1') {
+  const persisted = read('profile/agent-hooks/last-status')
+  const hookRow = persisted.entries?.[terminal.paneKey]
+  assert.equal(hookRow?.payload?.agentType, 'claude', 'real hook server persisted Claude-formatted agent')
+  assert.equal(hookRow?.payload?.state, 'done', 'only the post-close completion may end the turn')
+}
 assert.ok(Number.isInteger(before.app.pid) && before.app.pid > 0)
 assert.ok(Number.isInteger(terminal.processId) && terminal.processId > 0)
 assert.match(terminal.handle, /^term_/)
@@ -140,6 +170,7 @@ private_session() {
   kwin_pid=''
   xvfb_pid=''
   browser_server_pid=''
+  notification_sink_pid=''
   app_pid=''
 
   cleanup() {
@@ -173,10 +204,12 @@ NODE
     fi
     [[ -z "${app_pid:-}" ]] || kill "$app_pid" 2>/dev/null || true
     [[ -z "${browser_server_pid:-}" ]] || kill "$browser_server_pid" 2>/dev/null || true
+    [[ -z "${notification_sink_pid:-}" ]] || kill "$notification_sink_pid" 2>/dev/null || true
     [[ -z "${kwin_pid:-}" ]] || kill "$kwin_pid" 2>/dev/null || true
     [[ -z "${xvfb_pid:-}" ]] || kill "$xvfb_pid" 2>/dev/null || true
     [[ -z "${app_pid:-}" ]] || wait "$app_pid" 2>/dev/null || true
     [[ -z "${browser_server_pid:-}" ]] || wait "$browser_server_pid" 2>/dev/null || true
+    [[ -z "${notification_sink_pid:-}" ]] || wait "$notification_sink_pid" 2>/dev/null || true
     [[ -z "${kwin_pid:-}" ]] || wait "$kwin_pid" 2>/dev/null || true
     [[ -z "${xvfb_pid:-}" ]] || wait "$xvfb_pid" 2>/dev/null || true
     if (( result != 0 )); then echo 'Warning: test-owned shutdown was not fully confirmed' >&2; fi
@@ -233,6 +266,11 @@ NODE
       cc -std=c11 -Wall -Wextra -Werror -O2 \
         "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-x11-clipboard-probe.c" \
         -lX11 -o "$test_root/ash-x11-clipboard-probe"
+    fi
+    if [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
+      cc -std=c11 -Wall -Wextra -Werror -O2 \
+        "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-private-desktop-notification-sink.c" \
+        $(pkg-config --cflags --libs gio-2.0) -o "$test_root/ash-private-notification-sink"
     fi
   else
     kwin_wayland --virtual --socket ash-private --no-lockscreen --no-global-shortcuts --no-kactivities >"$test_root/kwin.log" 2>&1 &
@@ -337,10 +375,21 @@ NODE
     encoded="$(printf '%s' "$clipboard_value" | base64 -w0)"
     command="sleep 4; printf '\\033]52;c;$encoded\\007'; sleep 120"
     (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command "$command" --focus --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
+  elif [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
+    (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --focus --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
   else
     (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
   fi
   (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --json >"$test_root/terminal-before.json" 2>"$test_root/terminal-before.err")
+  if [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
+    # Establish a real Claude-format working state while GUI presentation
+    # exists. No provider login is needed: the isolated test owns its hook
+    # token and injects only fixture events into the production hook server.
+    "$packaged_node" "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-packaged-closed-gui-agent-hook.cjs" \
+      forged "$test_root" >"$test_root/hook-forged.json" 2>"$test_root/hook-forged.err"
+    "$packaged_node" "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-packaged-closed-gui-agent-hook.cjs" \
+      working "$test_root" >"$test_root/hook-working.json" 2>"$test_root/hook-working.err"
+  fi
   if [[ "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ]]; then
     local clipboard_observed=0
     for ((i=0; i<18; i++)); do
@@ -374,7 +423,7 @@ JS
     [[ "$script_id" =~ ^[0-9]+$ ]] || { echo 'KWin rejected close script' >&2; return 1; }
     busctl --user call org.kde.KWin "/Scripting/Script$script_id" org.kde.kwin.Script run >"$test_root/kwin-script.log" 2>&1
   fi
-  if [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' || "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ]]; then
+  if [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' || "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' || "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
     # The local live PTY is now represented in the workbench; unlike Landing,
     # the real close flow correctly shows an explicit running-work dialog.
     # Test its deliberate user confirmation instead of bypassing the guard.
@@ -390,6 +439,41 @@ JS
   done
   assert_cli_state "$test_root/status-closed.json" graph_not_ready openable
   (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --json >"$test_root/terminal-closed.json" 2>"$test_root/terminal-closed.err")
+
+  if [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
+    # Start listening only *after* status proves GUI is closed; the first
+    # native notification in this bus must originate from the later Stop.
+    [[ ! -e "$test_root/native-notification.json" ]] || return 1
+    "$test_root/ash-private-notification-sink" "$test_root" \
+      '--suffix:Claude finished' 'Claude finished.' \
+      >"$test_root/notification-sink.log" 2>&1 &
+    notification_sink_pid=$!
+    for ((i=0; i<45; i++)); do
+      [[ -s "$test_root/dbus-notification-ready" ]] && break
+      kill -0 "$notification_sink_pid" 2>/dev/null || break
+      sleep .1
+    done
+    [[ -s "$test_root/dbus-notification-ready" ]] || {
+      echo 'Private D-Bus notification server failed after GUI closure' >&2
+      return 1
+    }
+    "$packaged_node" "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-packaged-closed-gui-agent-hook.cjs" \
+      finished "$test_root" >"$test_root/hook-finished.json" 2>"$test_root/hook-finished.err"
+    local native_notification_observed=0
+    for ((i=0; i<55; i++)); do
+      if [[ -s "$test_root/native-notification.json" ]]; then
+        native_notification_observed=1
+        break
+      fi
+      kill -0 "$notification_sink_pid" 2>/dev/null || break
+      sleep .1
+    done
+    ((native_notification_observed == 1)) || {
+      echo 'No native Linux agent completion notification after GUI closure' >&2
+      tail -9 "$test_root/notification-sink.log" >&2 || true
+      return 1
+    }
+  fi
 
   "$packaged_node" "$packaged_cli" open --json >"$test_root/open.json" 2>"$test_root/open.err"
   for ((i=0; i<90; i++)); do
@@ -417,12 +501,16 @@ display_server="${ASH_TEST_DISPLAY_SERVER:-wayland}"
   echo 'ASH_TEST_DISPLAY_SERVER must be wayland or x11' >&2
   exit 2
 }
-if [[ ( "${ASH_TEST_BROWSER_SMOKE:-}" == '1' || "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ) && "$display_server" != 'x11' ]]; then
-  echo 'Optional packaged browser and X11 clipboard fixtures currently require native X11' >&2
+if [[ ( "${ASH_TEST_BROWSER_SMOKE:-}" == '1' || "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' || "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ) && "$display_server" != 'x11' ]]; then
+  echo 'Optional packaged browser, X11 clipboard and closed-GUI notification fixtures currently require native X11' >&2
   exit 2
 fi
 if [[ "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ]]; then
   require_command base64
+fi
+if [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
+  require_command pkg-config
+  pkg-config --exists gio-2.0 || { echo 'Native GIO D-Bus dev package required' >&2; exit 2; }
 fi
 
 if [[ "${1:-}" == '--inner' ]]; then

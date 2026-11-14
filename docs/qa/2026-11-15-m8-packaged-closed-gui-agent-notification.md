@@ -1,0 +1,43 @@
+# M8 / RT-12 — packaged Linux closed-GUI agent-hook notification journey
+
+**Date:** 2026-11-15 (Asia/Kolkata). **Baseline:** synchronized canonical `main` at `eaa8b761500bca932ae56066c5736551a770225d`, CI run `43566121476` observed successful. **Worktree:** `/home/suraj/.devspace/worktrees/Ash-IDE-020c66c5`, branch `test/m8-packaged-closed-gui-hook-notification`. **Upstream:** separately pinned, read-only Orca `55697aec91390357540103f49991458f756b41cc` and unchanged MIT license/attribution.
+
+## Why this test matters
+
+The preceding M8 notification implementation established the real `notify-send` to private D-Bus transport and verified agent-notification source gates with unit tests. It did **not** establish that a *packaged* Ash agent completion arriving **after the last GUI window closed** reached the OS. This opt-in integration test joins those previously separate portions through Ash's real authenticated local hook server and persistent runtime.
+
+## Test-owned, authenticated journey
+
+1. Set `ASH_TEST_WINDOWLESS_NOTIFICATION=1` for the existing true-native-X11 AppImage harness, which runs under its own authenticated Xvfb display, private mode-0700 home/profile/workspace, session D-Bus, unprivileged test-owned daemon and local CLI; use only the bundled Node/CLI paired with the AppImage. The provider-home environment is explicitly isolated from existing real Codex/Claude accounts.
+2. Create a focused **real PTY** through the packaged CLI in a disposable original folder; use the returned actual pane key, tab ID, and worktree identity. The tiny `ash-packaged-closed-gui-agent-hook.cjs` fixture validates the exact private QA root marker/owner/permissions and reads the mode-0600 endpoint published **by that AppImage's hook server**. Endpoint token, pane identifiers, full hook payload and process output stay private.
+3. **Negative control:** POST a Claude-format working event over `127.0.0.1` with an invalid hook token. The packaged hook server must return HTTP **403**; the fixture emits only a boolean result. **Positive control:** send the same well-formed lifecycle event with the actual private endpoint token; the server must return **204**. No real provider is contacted, and no shared provider hook configuration is altered.
+4. Issue real `WM_DELETE_WINDOW` to the matched Ash WM_CLASS/PID. With its running terminal focused, the existing running-work dialog correctly blocks closure; confirm it through the isolated XTest input helper. Confirm authenticated CLI `status` reports `runtime.state=graph_not_ready` and `desktopWindowStatus=openable`, while the runtime/PTY remains alive.
+5. **Only now**, register the private `org.freedesktop.Notifications` D-Bus sink, using `gio-2.0` on the independent test-owned session bus. It is explicitly prohibited from owning the user's real desktop bus. Send the genuine Claude-format `Stop` completion hook to the same packaged hook server **after** GUI closure. Validate that the native D-Bus `Notify` call comes through with `appName=Ash IDE`, a title ending `Claude finished`, and body exactly `Claude finished.`. The sink records only booleans, not the notification text.
+6. Reopen the GUI in the original app process, confirm the original runtime ID/PTY handle/live OS terminal PID persist, and inspect the real agent-hook server's persisted cache for the matching pane's final `{agentType:'claude',state:'done'}`. Explicitly stop the test-owned daemon/runtime; no fixture process is left alive.
+
+## Actual packaged evidence
+
+- A first attempt submitted a real working hook, but without `terminal create --focus` the Landing window closed immediately and the harness incorrectly expected a confirmation dialog. That was a **QA assumption**, not a product defect. The corrected test explicitly focuses the real terminal.
+- First full closed-GUI notification/PTY lifecycle **PASS**: private fixture `/var/tmp/ashx11.MNoxVs`, app PID `24788`, runtime ID `d7415317-53ff-46a4-8d5a-3fc6b9c8e7bc`, retained terminal `term_34d48978-b5b3-4e90-9b0b-da572dc0dcc1`, live PTY PID `25323`. Authenticated hook working and finish both returned `204`; D-Bus captured the completion after GUI closure; retained row ended in `claude/done`.
+- Strengthened second run with forged-token **403 rejection** plus screenshots **PASS**: `/var/tmp/ashx11.RfrmOS`. App PID **`28860`**, runtime ID **`4c53670f-b589-4da3-9361-51abef7d6d87`**, terminal handle **`term_bda4ec18-4dea-4ca4-893b-b287149217e8`**, PTY PID **`29378`** retained across GUI closure and reattachment. The original native Ash window `0x200003` and reopened `0x200019` both matched `com.ashide.desktop` / the same PID. The running-work confirmation was sent to the original window via private X11; persisted hook cache recorded the matching `claude/done` row. Private `native-notification.json` contained `nativeDBusReceived`, `appNameMatched` and `exactContentMatched` as true. Both real `1280×800` screenshots had nontrivial rendered pixels (472 initial/361 reopened distinct colors). All tested application and terminal processes exited after explicit test-owned shutdown.
+- Artifact under test: real previously built AppImage, **224,358,813 bytes**, SHA-256 **`074d0632b3caf05be5ad398039fca534778de2297320b3bb654382cf16dd2662`** (from the preceding production implementation); no production app code or release binary is changed in this QA-only slice. The matching `linux-unpacked` helpers are from that build.
+- Existing **private native D-Bus transport regression PASS** after the `--suffix:` test-sink extension, `/var/tmp/ashnotify.Ba9GU1`, exact-notification mode unchanged. **Negative file-access fixture control PASS**: the hook test script refused a non-private current directory. **Default native X11 lifecycle PASS** without the new flag: `/var/tmp/ashx11.YKJpOh`, app PID `33185`, runtime ID `7ba77724-ac83-4fc8-bd11-3b035de40a58`, retained terminal `term_343939f3-3dae-4397-bb50-625fd3dc1a10`, PTY PID `33700`. **Default native Wayland lifecycle PASS**: `/var/tmp/ashwl.FK5cMZ`, app PID `34613`, runtime ID `e9cd532b-0015-4147-86e4-3e2846d89fe7`, retained terminal `term_d852410f-fa7e-4a3c-91b6-4bddfb0d243c`, PTY PID `35130`. Both default fixtures shut down their own daemon/runtime.
+- Native GIO test sink compiles with `cc -std=c11 -Wall -Wextra -Werror -O2`; X11 wrapper/Bash syntax, new JS fixture Node syntax, QA-script formatting and lint, Git whitespace check and pinned-source provenance checks passed. The package-only test has no new source-derived Orca adaptations.
+
+## Acceptance boundary
+
+- **Verified**: on Linux native X11, a correctly authenticated Claude-format **agent completion hook received after the GUI closes** is processed by the packaged persistent runtime and delivered to the real local OS notification API over private D-Bus, with settings at their isolated fixture defaults. The test is stronger than an in-process mocked notification and independent of the test that directly invoked `notifyWindowlessLinuxAgent`.
+- **Not verified**: running an actual authenticated Claude/Codex provider agent and observing its provider-native emitted hooks in this exact journey; real provider API/model costs and credentials were deliberately not involved. RT-12 has strong provider-format end-to-end evidence, but the full real-provider release acceptance gate remains open. Notifications-disabled packaged negative case, click-to-focus, Wayland notification integration, macOS/Windows behavior, RPM, update rollback, visual parity and all M8 exclusions remain separate open gates.
+- The raw private hook server token, provider-format events and filesystem paths stay in disposable mode-0700 logs/fixtures. No existing user project, provider account, real desktop bus or installed application's data was touched. No GitHub release was published.
+- **CI** for the final integrated commit must be observed after push; preceding CI `43566121476` is the observed baseline, not a prediction.
+
+## Reproduce on Arch Linux with matching built AppImage
+
+```bash
+TMPDIR=/var/tmp TEMP=/var/tmp TMP=/var/tmp \
+  ASH_TEST_WINDOWLESS_NOTIFICATION=1 ASH_TEST_CAPTURE_X11_SCREENSHOT=1 \
+  config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-x11-lifecycle.sh \
+  "$PWD/dist/ash-ide-linux.AppImage"
+```
+
+Requires Xvfb/Xlib/XTest headers, `gio-2.0` development headers and compiler, ImageMagick for optional screenshots, a local user-session D-Bus daemon, and the source-matched unpacked packaged Node/CLI tree. This is opt-in: existing X11, Wayland, browser and clipboard smoke behavior remains unchanged when the new flag is absent.

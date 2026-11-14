@@ -10,6 +10,13 @@ static const gchar *expected_body;
 static gchar *fixture_root;
 static GMainLoop *loop;
 
+static gboolean matches_expected(const gchar *actual, const gchar *expected) {
+  if (g_str_has_prefix(expected, "--suffix:")) {
+    return g_str_has_suffix(actual, expected + strlen("--suffix:"));
+  }
+  return g_str_equal(actual, expected);
+}
+
 static const gchar XML[] =
     "<node><interface name='org.freedesktop.Notifications'>"
     "<method name='GetCapabilities'><arg type='as' direction='out'/></method>"
@@ -50,8 +57,8 @@ static void on_call(GDBusConnection *connection, const gchar *sender,
     GVariant *body = g_variant_get_child_value(args, 4);
     const gboolean valid =
         g_str_equal(g_variant_get_string(app, NULL), "Ash IDE") &&
-        g_str_equal(g_variant_get_string(title, NULL), expected_title) &&
-        g_str_equal(g_variant_get_string(body, NULL), expected_body);
+        matches_expected(g_variant_get_string(title, NULL), expected_title) &&
+        matches_expected(g_variant_get_string(body, NULL), expected_body);
     g_variant_unref(app);
     g_variant_unref(title);
     g_variant_unref(body);
@@ -120,9 +127,12 @@ int main(int argc, char **argv) {
     g_printerr("Refusing to own a notification name on the user's desktop bus\n");
     return 2;
   }
-  if (argc != 4 || !g_str_has_prefix(argv[1], "/var/tmp/ashnotify.") ||
-      strlen(argv[1]) != strlen("/var/tmp/ashnotify.") + 6 ||
-      strspn(argv[1] + strlen("/var/tmp/ashnotify."),
+  const gchar *prefix = argc > 1 && g_str_has_prefix(argv[1], "/var/tmp/ashx11.")
+                            ? "/var/tmp/ashx11." : "/var/tmp/ashnotify.";
+  const size_t prefix_len = strlen(prefix);
+  if (argc != 4 || !g_str_has_prefix(argv[1], prefix) ||
+      strlen(argv[1]) != prefix_len + 6 ||
+      strspn(argv[1] + prefix_len,
              "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") != 6) {
     g_printerr("Refusing to listen outside a disposable Ash notification fixture\n");
     return 2;
