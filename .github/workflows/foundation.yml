@@ -34,6 +34,7 @@ jobs:
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-wayland-lifecycle.sh
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-x11-lifecycle.sh
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-network-audit.sh
+          node --check config/scripts/desktop-distribution/runtime-verification/ash-packaged-browser-local-smoke.cjs
       - name: Verify retained desktop localization references
         run: pnpm run verify:localization-catalog
       - name: Build retained workspace packages

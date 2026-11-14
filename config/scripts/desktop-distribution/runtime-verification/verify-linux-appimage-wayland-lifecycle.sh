@@ -38,6 +38,24 @@ for (const name of [
   assert.equal(read(name).ok, true, `${name} must succeed`)
 }
 assert.equal(read('settings-read').settingsRead, true, 'local Settings RPC must be readable')
+if (process.env.ASH_TEST_BROWSER_SMOKE === '1') {
+  const visited = read('local-browser-before')
+  const restored = read('local-browser-after')
+  const guarded = read('status-running-work-guard')
+  const confirmed = read('x11-close-confirm-return')
+  assert.equal(visited.ok, true)
+  assert.equal(visited.firstPage, true)
+  assert.equal(visited.click, true)
+  assert.equal(visited.evaluation, true)
+  assert.equal(visited.secondPage, true)
+  assert.equal(restored.ok, true)
+  assert.equal(restored.sameBrowserPageId, true)
+  assert.equal(restored.retainedUrl, true)
+  assert.equal(restored.loadedAfterReopen, true)
+  assert.equal(guarded.result.runtime.state, 'ready', 'running work must prompt before closing')
+  assert.equal(confirmed.ok, true)
+  assert.equal(confirmed.returnSent, true)
+}
 const nativeX11 = process.env.ASH_TEST_DISPLAY_SERVER === 'x11'
 if (nativeX11) {
   const window = read('x11-window')
@@ -115,6 +133,7 @@ private_session() {
   packaged_cli="$4"
   kwin_pid=''
   xvfb_pid=''
+  browser_server_pid=''
   app_pid=''
 
   cleanup() {
@@ -147,9 +166,11 @@ try {
 NODE
     fi
     [[ -z "${app_pid:-}" ]] || kill "$app_pid" 2>/dev/null || true
+    [[ -z "${browser_server_pid:-}" ]] || kill "$browser_server_pid" 2>/dev/null || true
     [[ -z "${kwin_pid:-}" ]] || kill "$kwin_pid" 2>/dev/null || true
     [[ -z "${xvfb_pid:-}" ]] || kill "$xvfb_pid" 2>/dev/null || true
     [[ -z "${app_pid:-}" ]] || wait "$app_pid" 2>/dev/null || true
+    [[ -z "${browser_server_pid:-}" ]] || wait "$browser_server_pid" 2>/dev/null || true
     [[ -z "${kwin_pid:-}" ]] || wait "$kwin_pid" 2>/dev/null || true
     [[ -z "${xvfb_pid:-}" ]] || wait "$xvfb_pid" 2>/dev/null || true
     if (( result != 0 )); then echo 'Warning: test-owned shutdown was not fully confirmed' >&2; fi
@@ -201,7 +222,7 @@ NODE
     ((ready == 1)) || { echo 'Private authenticated native Xvfb X11 server unavailable' >&2; return 1; }
     cc -std=c11 -Wall -Wextra -Werror -O2 \
       "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-x11-window-control.c" \
-      -lX11 -o "$test_root/ash-x11-window-control"
+      -lX11 -lXtst -o "$test_root/ash-x11-window-control"
   else
     kwin_wayland --virtual --socket ash-private --no-lockscreen --no-global-shortcuts --no-kactivities >"$test_root/kwin.log" 2>&1 &
     kwin_pid=$!
@@ -281,6 +302,23 @@ client.call('repo.add', { path: process.argv[3], kind: 'folder' })
   .catch(error => { console.error(error); process.exitCode = 1 })
 NODE
   "$packaged_node" "$test_root/register-folder.cjs" "$(dirname "$packaged_cli")/runtime/client.js" "$test_root/project" >"$test_root/repo-add.json" 2>"$test_root/repo-add.err"
+
+  if [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' ]]; then
+    local browser_fixture="$script_root/config/scripts/desktop-distribution/runtime-verification/ash-packaged-browser-local-smoke.cjs"
+    "$packaged_node" "$browser_fixture" serve "$test_root" >"$test_root/browser-server.log" 2>"$test_root/browser-server.err" &
+    browser_server_pid=$!
+    for ((i=0; i<50; i++)); do
+      [[ -s "$test_root/local-browser-ready.json" ]] && break
+      kill -0 "$browser_server_pid" 2>/dev/null || break
+      sleep .2
+    done
+    [[ -s "$test_root/local-browser-ready.json" ]] || {
+      echo 'Private loopback browser HTTP fixture failed to start' >&2
+      return 1
+    }
+    timeout --kill-after=5s 65s "$packaged_node" "$browser_fixture" before "$test_root" \
+      "$(dirname "$packaged_cli")/runtime/client.js" >"$test_root/local-browser-before.json" 2>"$test_root/local-browser-before.err"
+  fi
   (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
   (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --json >"$test_root/terminal-before.json" 2>"$test_root/terminal-before.err")
 
@@ -301,6 +339,15 @@ JS
     [[ "$script_id" =~ ^[0-9]+$ ]] || { echo 'KWin rejected close script' >&2; return 1; }
     busctl --user call org.kde.KWin "/Scripting/Script$script_id" org.kde.kwin.Script run >"$test_root/kwin-script.log" 2>&1
   fi
+  if [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' ]]; then
+    # The local live PTY is now represented in the workbench; unlike Landing,
+    # the real close flow correctly shows an explicit running-work dialog.
+    # Test its deliberate user confirmation instead of bypassing the guard.
+    sleep 2
+    "$packaged_node" "$packaged_cli" status --json >"$test_root/status-running-work-guard.json" 2>"$test_root/status-running-work-guard.err"
+    assert_cli_state "$test_root/status-running-work-guard.json" ready available
+    "$test_root/ash-x11-window-control" send-return "$ash_pid" >"$test_root/x11-close-confirm-return.json" 2>"$test_root/x11-close-confirm-return.err"
+  fi
   for ((i=0; i<45; i++)); do
     "$packaged_node" "$packaged_cli" status --json >"$test_root/status-closed.json" 2>"$test_root/status-closed.err" || true
     if assert_cli_state "$test_root/status-closed.json" graph_not_ready openable 2>/dev/null; then break; fi
@@ -316,6 +363,10 @@ JS
     sleep .4
   done
   assert_cli_state "$test_root/status-reopened.json" ready available
+  if [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' ]]; then
+    timeout --kill-after=5s 35s "$packaged_node" "$browser_fixture" after "$test_root" \
+      "$(dirname "$packaged_cli")/runtime/client.js" >"$test_root/local-browser-after.json" 2>"$test_root/local-browser-after.err"
+  fi
   if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' ]]; then
     "$test_root/ash-x11-window-control" probe "$ash_pid" >"$test_root/x11-reopened-window.json" 2>"$test_root/x11-reopened-window.err"
   fi
@@ -331,6 +382,10 @@ display_server="${ASH_TEST_DISPLAY_SERVER:-wayland}"
   echo 'ASH_TEST_DISPLAY_SERVER must be wayland or x11' >&2
   exit 2
 }
+if [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' && "$display_server" != 'x11' ]]; then
+  echo 'The optional packaged browser fixture is currently X11-only' >&2
+  exit 2
+fi
 
 if [[ "${1:-}" == '--inner' ]]; then
   shift
@@ -387,7 +442,7 @@ env -u DISPLAY -u WAYLAND_DISPLAY -u XAUTHORITY -u SSH_AUTH_SOCK -u ORCA_PAIRING
   XDG_STATE_HOME="$test_root/home/.local/state" \
   CODEX_HOME="$test_root/home/.codex" \
   CLAUDE_CONFIG_DIR="$test_root/home/.claude" \
-  timeout 120s dbus-run-session -- "$0" --inner "$test_root" "$appimage" "$packaged_node" "$packaged_cli" >"$test_root/driver.log" 2>&1
+  timeout "$( [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' ]] && echo 170 || echo 120 )s" dbus-run-session -- "$0" --inner "$test_root" "$appimage" "$packaged_node" "$packaged_cli" >"$test_root/driver.log" 2>&1
 result=$?
 set -e
 if (( result != 0 )); then

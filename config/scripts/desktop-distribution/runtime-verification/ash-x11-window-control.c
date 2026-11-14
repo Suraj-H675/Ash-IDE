@@ -1,9 +1,12 @@
 // Observe and gracefully close only a real Ash top-level on a disposable X11
-// server. The driver supplies its own private DISPLAY/XAUTHORITY and expected
-// process ID; this helper never interacts with the user's live X11 desktop.
+// server. An optional test-only Return key confirms the running-PTY dialog.
+// The driver supplies private DISPLAY/XAUTHORITY and the expected Ash PID;
+// the synthetic input path additionally requires the owned fixture profile.
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/XTest.h>
+#include <X11/keysym.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -71,8 +74,9 @@ static void examine(Search *search, Window window, int depth) {
 
 int main(int argc, char **argv) {
   if (argc != 3 || (strcmp(argv[1], "probe") != 0 &&
-                    strcmp(argv[1], "close") != 0)) {
-    fputs("Usage: ash-x11-window-control probe|close EXPECTED_ASH_PID\n", stderr);
+                    strcmp(argv[1], "close") != 0 &&
+                    strcmp(argv[1], "send-return") != 0)) {
+    fputs("Usage: ash-x11-window-control probe|close|send-return EXPECTED_ASH_PID\n", stderr);
     return 2;
   }
   char *end = NULL;
@@ -103,6 +107,46 @@ int main(int argc, char **argv) {
     printf("{\"ok\":true,\"nativeX11\":true,\"class\":\"com.ashide.desktop\","
            "\"pid\":%lu,\"window\":\"0x%lx\",\"width\":%u,\"height\":%u}\n",
            pid, search.matching_window, search.width, search.height);
+  } else if (strcmp(argv[1], "send-return") == 0) {
+    // Only a private, test-owned native Xvfb server may receive synthetic input.
+    const char *authority = getenv("XAUTHORITY");
+    const char *profile = getenv("ASH_USER_DATA_PATH");
+    const char prefix[] = "/var/tmp/ashx11.";
+    if (authority == NULL || profile == NULL ||
+        strncmp(authority, prefix, sizeof(prefix) - 1) != 0 ||
+        strncmp(profile, prefix, sizeof(prefix) - 1) != 0 ||
+        strlen(profile) < sizeof(prefix) + 6 ||
+        strcmp(profile + strlen(profile) - 8, "/profile") != 0 ||
+        strncmp(authority, profile, strlen(profile) - 8) != 0 ||
+        strcmp(authority + strlen(profile) - 8, "/Xauthority") != 0) {
+      fputs("Synthetic Return requires the private X11 test fixture\n", stderr);
+      XCloseDisplay(display);
+      return 2;
+    }
+    int event_base = 0, error_base = 0, major_version = 0, minor_version = 0;
+    if (XTestQueryExtension(display, &event_base, &error_base,
+                            &major_version, &minor_version) == False) {
+      fputs("XTest extension is unavailable on this private X11 server\n", stderr);
+      XCloseDisplay(display);
+      return 1;
+    }
+    const KeyCode keycode = XKeysymToKeycode(display, XK_Return);
+    if (keycode == 0) {
+      fputs("X11 Return key is unavailable\n", stderr);
+      XCloseDisplay(display);
+      return 1;
+    }
+    XSetInputFocus(display, search.matching_window, RevertToParent, CurrentTime);
+    XSync(display, False);
+    if (XTestFakeKeyEvent(display, keycode, True, CurrentTime) == 0 ||
+        XTestFakeKeyEvent(display, keycode, False, CurrentTime) == 0) {
+      fputs("Could not send private X11 Return key\n", stderr);
+      XCloseDisplay(display);
+      return 1;
+    }
+    XFlush(display);
+    printf("{\"ok\":true,\"returnSent\":true,\"window\":\"0x%lx\"}\n",
+           search.matching_window);
   } else {
     const Atom wm_protocols = XInternAtom(display, "WM_PROTOCOLS", False);
     const Atom delete_window = XInternAtom(display, "WM_DELETE_WINDOW", False);
