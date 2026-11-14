@@ -8521,6 +8521,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/ipc/telemetry.ts",
+      "sourceSha256": "4edb75f081f10f4eda15a8145bd64c6aa63f740452fd85236ac38e94af633885",
+      "reason": "Ash EX-09 exclusion: removed the unregistered product telemetry IPC handler, consent-enrollment endpoints and event dispatch. Local diagnostics remain separate; historical settings are preserved."
+    },
+    {
       "path": "src/main/ipc/ui.test.ts",
       "sourceSha256": "e4ad5f3d575036790fd190bc7d6e738aaca919532fbd8867d3f3fdc5e2cdecb1",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
@@ -20906,6 +20911,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/telemetry/client-test-harness.ts",
+      "sourceSha256": "5dff08978d95f7354b840a1417d5ba02f31497fe0efc02f616778c928bfacbd9",
+      "reason": "Ash EX-09 exclusion: retired the PostHog capture test harness alongside the disabled product telemetry network transport; dedicated no-transport regression tests replace it."
+    },
+    {
       "path": "src/main/telemetry/consent.test.ts",
       "sourceSha256": "7f06eb6f0f6d483e0812cfcf7a9857c1e73700b7c81428f3442ce937a84001f2",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
@@ -20926,9 +20936,19 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/telemetry/posthog-client-start.ts",
+      "sourceSha256": "76329065841bcdd7e80c4924d7c6decf8e9d997960bd9dbd20cc376061224c7c",
+      "reason": "Ash EX-09 exclusion: removed deferred PostHog startup, queues and flush timers; no app-level analytics transport is permitted."
+    },
+    {
       "path": "src/main/telemetry/posthog-transport-main-http-client.test.ts",
       "sourceSha256": "74ba72e3018ba15ffeebec0e6c1b66fa2f87b5d6b1fdb3178bef9a2bdf9ef048",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
+    },
+    {
+      "path": "src/main/telemetry/posthog-transport.ts",
+      "sourceSha256": "e35073f41190a1f5661a5afc35f48931ec1e7585a09903347c62ffc95b8c9e65",
+      "reason": "Ash EX-09 exclusion: removed outbound PostHog SDK construction, collection endpoint and HTTP send plumbing; local diagnostic logs and user-triggered exports remain unaffected."
     },
     {
       "path": "src/main/telemetry/validator-warn-cache.test.ts",

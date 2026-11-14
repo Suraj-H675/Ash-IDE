@@ -1337,6 +1337,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/telemetry/client.ts",
+      "sha256": "63bd7b3d7ce640be44eb5532bdb2115d7eb776c9b8c179625ba0da3a4580db65",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/tray/system-tray.test.ts",
       "sha256": "bfa3cfcc400202342dd6b5dc503d1464fb867bf63f28ef9d3dad16412bb12ee8",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -2652,6 +2657,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/types/build-constants.d.ts",
+      "sha256": "c910d7e9acd3a3225ded7179d01c462a420a5b9ddfed7e740d222c4c86be53ea",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "config/electron-builder.config.cjs",
       "sha256": "cb43268d2813ee785eab05a209a2a94d4da42043db25552a47c8d1a5abf0649d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -2817,6 +2827,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "config/scripts/release/javascript-artifacts/release-javascript-artifact.mjs",
+      "sha256": "0292d99f66c82787703bf84f67fd8be020043a51b41c09981c12aabd154880ee",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "config/scripts/runtime-verification/daemon-lifecycle/run-headless-serve-shutdown-docker.mjs",
       "sha256": "ecb21e1ce51dd39336563f4d059bcd547bead5d32dcca9c7093d66ac41b13bfa",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -2863,7 +2878,17 @@
     },
     {
       "path": "package.json",
-      "sha256": "0c3e1b6a138507044744ce1dfb509772cef8aebae57c050147298b2ca36d2df8",
+      "sha256": "0b9b4a94fd6387509d7bb4bb564a127b6742b25d9a388eaf8f4188f0e04bd8f1",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "26e491d2acac32c77372f227161db88afdb0d8539f7a5a4995d15259f50bed52",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "electron.vite.config.ts",
+      "sha256": "de0c0e4d5979ab2c4ec3c5fa3fc3df93e95615b6c9fc747d64f4af89a6b67700",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     }
   ]
