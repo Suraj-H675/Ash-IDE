@@ -1730,8 +1730,6 @@
         "225071c560": "Expérimental",
         "e338c507c1": "Paramètres de compatibilité bas niveau pour le dépannage.",
         "580a04cd81": "Avancé",
-        "8400cfe1c1": "Données d'utilisation anonymes et contrôles de télémétrie.",
-        "3618579df6": "Confidentialité & télémétrie",
         "65ec7d1968": "Accès de confidentialité macOS pour les outils de développement lancés depuis le terminal.",
         "d91ae31fbd": "Autorisations macOS",
         "95a1886d94": "Contrôlez les terminaux et les agents depuis votre téléphone.",
@@ -1871,15 +1869,6 @@
         "d3e8a1f4b2": "Compte changé",
         "9375620cc3": "Redémarrez cette session pour utiliser {{value0}}. Elle reste sur le compte précédent tant que vous ne l'avez pas fait.",
         "6133594b12": "Conserver l'ancien compte"
-      },
-      "FirstLaunchBanner": {
-        "b9e1b966c7": "Masquer l'avis",
-        "94cc673726": "Compris",
-        "fc5cc29955": "Refuser",
-        "d1deebb050": "Politique de confidentialité",
-        "958d2cc31b": "Des comptages anonymes des fonctionnalités que vous utilisez nous aident à prioriser ce qu'il faut construire. Aucun contenu de fichier, prompt, sortie de terminal ni rien qui vous identifie. Modifiable à tout moment dans Paramètres -> Confidentialité & télémétrie.",
-        "9784b4d7bc": "Aidez-nous à décider quoi construire ensuite",
-        "fcbee32f08": "Avis de télémétrie"
       },
       "GitHubItemDialog": {
         "3cd5ae5b7b": "Aucun fichier modifié.",
@@ -8304,14 +8293,6 @@
           "db3228e01a": "Fichier de révision ouvert",
           "a2b3505c77": "Fichier de révision créé"
         },
-        "PrivacyPane": {
-          "36e0e2e63b": "variable d'environnement. Supprimez-la et redémarrez pour réactiver.",
-          "79a0f3c16c": "La télémétrie est désactivée par la",
-          "e3970bbbf5": "La télémétrie est désactivée car une variable d'environnement CI est définie. Supprimez-la et redémarrez.",
-          "fe904ac984": "Partager les données d'utilisation anonymes",
-          "77410e0566": "Politique de confidentialité",
-          "8bfdd23a88": "Aidez-nous à décider quoi développer ensuite. Orca envoie anonymement des comptages des fonctionnalités que vous utilisez et des endroits où ça casse."
-        },
         "QuickCommandsList": {
           "noSearchMatches": "Aucune commande ne correspond à cette recherche."
         },
@@ -8692,8 +8673,6 @@
           "8b017f2506": "Expérimental",
           "499c1cd7f9": "Paramètres de compatibilité bas niveau pour le dépannage.",
           "1c87f8d024": "Avancé",
-          "c1b43dc4e2": "Données d'utilisation anonymes et contrôles de télémétrie.",
-          "d7e3f62d70": "Confidentialité & télémétrie",
           "9b83cc62c2": "Accès de confidentialité macOS pour les outils de développement lancés depuis le terminal.",
           "65660d4548": "Autorisations macOS",
           "c6c01ac209": "Contrôlez les terminaux et les agents depuis votre téléphone.",
@@ -10445,28 +10424,14 @@
             "94e04427f6": "env",
             "664f1a8984": "intégration continue",
             "5854a5c752": "ci",
-            "69637f4dc4": "orca_telemetry_disabled",
             "058550f6bc": "do_not_track",
             "83a6cd79b3": "do not track",
-            "f7a2d9f137": "Variables d'environnement qui désactivent l'envoi des données de télémétrie.",
-            "e058a3c98d": "Variables d'environnement de télémétrie",
             "1686c07fee": "assistance",
             "c0494ff48a": "diagnostics",
             "8b08f32366": "Diagnostics de l'app et contrôles de partage avec le support.",
             "6d258d2ed6": "Diagnostics",
             "ead1deded2": "partager",
-            "27a27b2f63": "refuser",
-            "4d4bb76bf4": "accepter",
-            "b021b9cb81": "anonyme",
-            "79c319948b": "utilisation",
-            "77d3180def": "télémétrie",
-            "b707cc3981": "Aidez à améliorer Orca en envoyant des événements anonymes d'utilisation des fonctionnalités.",
-            "57b283461a": "Partager les données d'utilisation anonymes",
-            "2b5a5c312f": "posthog",
-            "4104f6f0f3": "analytique",
-            "10124159f1": "confidentialité",
-            "aa3b794c17": "Données d'utilisation anonymes du produit, diagnostics et contrôles de télémétrie.",
-            "5c508bad41": "Confidentialité & télémétrie"
+            "10124159f1": "confidentialité"
           }
         },
         "quick": {
@@ -11293,7 +11258,6 @@
         },
         "PrivacyDiagnosticsRows": {
           "5a7cbe069a": "DO_NOT_TRACK=1 est défini — la création et l'envoi de fichiers de diagnostic sont désactivés.",
-          "63d03261d1": "ORCA_TELEMETRY_DISABLED=1 est défini — la création et l'envoi de fichiers de diagnostic sont désactivés.",
           "d37e92a06b": "ORCA_DIAGNOSTICS_DISABLED=1 est défini — les diagnostics de l'app sont désactivés.",
           "5ebb31e1fb": "Exécution en CI — diagnostics désactivés.",
           "e27c8d45bf": "Les diagnostics sont désactivés par une variable d'environnement."

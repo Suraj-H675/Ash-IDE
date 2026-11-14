@@ -2176,8 +2176,6 @@
         "225071c560": "Experimental",
         "e338c507c1": "Low-level compatibility settings for troubleshooting.",
         "580a04cd81": "Advanced",
-        "8400cfe1c1": "Anonymous usage data and telemetry controls.",
-        "3618579df6": "Privacy & Telemetry",
         "65ec7d1968": "macOS privacy access for terminal-launched developer tools.",
         "d91ae31fbd": "macOS Permissions",
         "95a1886d94": "Control terminals and agents from your phone.",
@@ -2301,15 +2299,6 @@
         "d3e8a1f4b2": "Account switched",
         "9375620cc3": "Restart this session to use {{value0}}. It stays on the previous account until you do.",
         "6133594b12": "Keep old account"
-      },
-      "FirstLaunchBanner": {
-        "b9e1b966c7": "Dismiss notice",
-        "94cc673726": "Got it",
-        "fc5cc29955": "Opt out",
-        "d1deebb050": "Privacy policy",
-        "958d2cc31b": "Anonymous counts of which features you use help us prioritize what to build. No file contents, prompts, terminal output, or anything that identifies you. Change anytime in Settings -> Privacy & Telemetry.",
-        "9784b4d7bc": "Help us decide what to build next",
-        "fcbee32f08": "Telemetry notice"
       },
       "GitHubItemDialog": {
         "refreshTask": "Refresh task",
@@ -8731,14 +8720,6 @@
           "db3228e01a": "Review file opened",
           "a2b3505c77": "Review file created"
         },
-        "PrivacyPane": {
-          "36e0e2e63b": "environment variable. Unset it and restart to re-enable.",
-          "79a0f3c16c": "Telemetry is disabled by the",
-          "e3970bbbf5": "Telemetry is disabled because a CI environment variable is set. Unset it and restart.",
-          "fe904ac984": "Share anonymous usage data",
-          "77410e0566": "Privacy policy",
-          "8bfdd23a88": "Help us figure out what to build next. Orca sends anonymous counts of which features you use and where things break."
-        },
         "QuickCommandsList": {
           "noSearchMatches": "No commands match this search."
         },
@@ -9120,8 +9101,6 @@
           "8b017f2506": "Experimental",
           "499c1cd7f9": "Low-level compatibility settings for troubleshooting.",
           "1c87f8d024": "Advanced",
-          "c1b43dc4e2": "Anonymous usage data and telemetry controls.",
-          "d7e3f62d70": "Privacy & Telemetry",
           "9b83cc62c2": "macOS privacy access for terminal-launched developer tools.",
           "65660d4548": "macOS Permissions",
           "c6c01ac209": "Control terminals and agents from your phone.",
@@ -10887,28 +10866,14 @@
             "94e04427f6": "env",
             "664f1a8984": "continuous integration",
             "5854a5c752": "ci",
-            "69637f4dc4": "orca_telemetry_disabled",
             "058550f6bc": "do_not_track",
             "83a6cd79b3": "do not track",
-            "f7a2d9f137": "Environment variables that disable telemetry transmission.",
-            "e058a3c98d": "Telemetry environment variables",
             "1686c07fee": "support",
             "c0494ff48a": "diagnostics",
             "8b08f32366": "App diagnostics and support sharing controls.",
             "6d258d2ed6": "Diagnostics",
             "ead1deded2": "share",
-            "27a27b2f63": "opt out",
-            "4d4bb76bf4": "opt in",
-            "b021b9cb81": "anonymous",
-            "79c319948b": "usage",
-            "77d3180def": "telemetry",
-            "b707cc3981": "Help improve Orca by sending anonymous feature-usage events.",
-            "57b283461a": "Share Anonymous Usage Data",
-            "2b5a5c312f": "posthog",
-            "4104f6f0f3": "analytics",
-            "10124159f1": "privacy",
-            "aa3b794c17": "Anonymous product usage data, diagnostics, and telemetry controls.",
-            "5c508bad41": "Privacy & Telemetry"
+            "10124159f1": "privacy"
           }
         },
         "quick": {
@@ -11736,7 +11701,6 @@
         },
         "PrivacyDiagnosticsRows": {
           "5a7cbe069a": "DO_NOT_TRACK=1 is set — creating and sending diagnostic files is disabled.",
-          "63d03261d1": "ORCA_TELEMETRY_DISABLED=1 is set — creating and sending diagnostic files is disabled.",
           "d37e92a06b": "ORCA_DIAGNOSTICS_DISABLED=1 is set — app diagnostics are off.",
           "5ebb31e1fb": "Running in CI — diagnostics are off.",
           "e27c8d45bf": "Diagnostics are disabled by an environment variable."

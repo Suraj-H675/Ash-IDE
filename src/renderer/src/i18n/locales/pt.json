@@ -2198,8 +2198,6 @@
         "225071c560": "Experimental",
         "e338c507c1": "Configurações de compatibilidade de baixo nível para solução de problemas.",
         "580a04cd81": "Avançado",
-        "8400cfe1c1": "Controles de dados de uso anônimos e telemetria.",
-        "3618579df6": "Privacidade e Telemetria",
         "65ec7d1968": "Acesso de privacidade do macOS para ferramentas de desenvolvedor iniciadas pelo terminal.",
         "d91ae31fbd": "Permissões do macOS",
         "95a1886d94": "Controle terminais e agentes a partir do seu celular.",
@@ -5006,8 +5004,6 @@
           "8b017f2506": "Experimental",
           "499c1cd7f9": "Configurações de compatibilidade de baixo nível para solução de problemas.",
           "1c87f8d024": "Avançado",
-          "c1b43dc4e2": "Controles de dados de uso anônimos e telemetria.",
-          "d7e3f62d70": "Privacidade e Telemetria",
           "9b83cc62c2": "Acesso de privacidade do macOS para ferramentas de desenvolvedor iniciadas pelo terminal.",
           "65660d4548": "Permissões do macOS",
           "c6c01ac209": "Controle terminais e agentes a partir do seu celular.",
@@ -6535,28 +6531,14 @@
             "94e04427f6": "env",
             "664f1a8984": "integração contínua",
             "5854a5c752": "ci",
-            "69637f4dc4": "orca_telemetry_disabled",
             "058550f6bc": "do_not_track",
             "83a6cd79b3": "não rastrear",
-            "f7a2d9f137": "Variáveis de ambiente que desativam a transmissão de telemetria.",
-            "e058a3c98d": "Variáveis de ambiente de telemetria",
             "1686c07fee": "suporte",
             "c0494ff48a": "diagnósticos",
             "8b08f32366": "Controles de compartilhamento de diagnósticos e suporte do aplicativo.",
             "6d258d2ed6": "Diagnósticos",
             "ead1deded2": "compartilhar",
-            "27a27b2f63": "sair",
-            "4d4bb76bf4": "aderir",
-            "b021b9cb81": "anônimo",
-            "79c319948b": "uso",
-            "77d3180def": "telemetria",
-            "b707cc3981": "Ajude a melhorar o Orca enviando eventos anônimos de uso de recursos.",
-            "57b283461a": "Compartilhar Dados de Uso Anônimos",
-            "2b5a5c312f": "posthog",
-            "4104f6f0f3": "análises",
-            "10124159f1": "privacidade",
-            "aa3b794c17": "Controles de dados de uso anônimos do produto, diagnósticos e telemetria.",
-            "5c508bad41": "Privacidade e Telemetria"
+            "10124159f1": "privacidade"
           }
         },
         "PluginSettingsRow": {
@@ -8216,14 +8198,6 @@
           "893790e13b": "Adicione uma chave de API da OpenAI antes de selecionar modelos de voz para texto na nuvem.",
           "b59b9b2b51": "Chave de API configurada para modelos de voz para texto na nuvem."
         },
-        "PrivacyPane": {
-          "36e0e2e63b": "variável de ambiente. Remova-a e reinicie para reativar.",
-          "79a0f3c16c": "A telemetria está desativada pela",
-          "e3970bbbf5": "A telemetria está desativada porque uma variável de ambiente de CI está definida. Remova-a e reinicie.",
-          "fe904ac984": "Compartilhar dados de uso anônimos",
-          "77410e0566": "Política de privacidade",
-          "8bfdd23a88": "Ajude-nos a descobrir o que construir a seguir. O Orca envia contagens anônimas de quais recursos você usa e onde as coisas quebram."
-        },
         "RepositorySourceControlAiSection": {
           "71b003b62b": "IA de Controle de Versão"
         },
@@ -8354,7 +8328,6 @@
         },
         "PrivacyDiagnosticsRows": {
           "5a7cbe069a": "DO_NOT_TRACK=1 está definido — a criação e o envio de arquivos de diagnóstico estão desativados.",
-          "63d03261d1": "ORCA_TELEMETRY_DISABLED=1 está definido — a criação e o envio de arquivos de diagnóstico estão desativados.",
           "d37e92a06b": "ORCA_DIAGNOSTICS_DISABLED=1 está definido — os diagnósticos do app estão desativados.",
           "5ebb31e1fb": "Executando em CI — os diagnósticos estão desativados.",
           "e27c8d45bf": "Os diagnósticos estão desativados por uma variável de ambiente."
@@ -19107,15 +19080,6 @@
           "50cdb57c03": "Gerencie agentes de IA, defina um padrão, e personalize comandos.",
           "fc0268e4ed": "Agentes"
         }
-      },
-      "FirstLaunchBanner": {
-        "b9e1b966c7": "Descartar aviso",
-        "94cc673726": "Entendi",
-        "fc5cc29955": "Recusar",
-        "d1deebb050": "Política de privacidade",
-        "958d2cc31b": "Contagens anônimas de quais recursos você usa nos ajudam a priorizar o que construir. Nenhum conteúdo de arquivo, prompt, saída de terminal, ou qualquer coisa que o identifique. Altere isso a qualquer momento em Configurações -> Privacidade e Telemetria.",
-        "9784b4d7bc": "Ajude-nos a decidir o que construir a seguir",
-        "fcbee32f08": "Aviso de telemetria"
       },
       "TerminalSearch": {
         "db234b7519": "Fechar",

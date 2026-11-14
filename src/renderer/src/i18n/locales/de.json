@@ -1955,8 +1955,6 @@
         "225071c560": "Experimentell",
         "e338c507c1": "Systemnahe Kompatibilitätseinstellungen zur Fehlerbehebung.",
         "580a04cd81": "Erweitert",
-        "8400cfe1c1": "Anonyme Nutzungsdaten und Telemetrieeinstellungen.",
-        "3618579df6": "Datenschutz & Telemetrie",
         "65ec7d1968": "macOS-Datenschutzberechtigungen für Entwicklerwerkzeuge, die im Terminal gestartet werden.",
         "d91ae31fbd": "macOS-Berechtigungen",
         "95a1886d94": "Terminals und Agenten vom Smartphone aus steuern.",
@@ -2080,15 +2078,6 @@
         "d3e8a1f4b2": "Konto gewechselt",
         "9375620cc3": "Diese Sitzung neu starten, um {{value0}} zu verwenden. Bis dahin bleibt das bisherige Konto aktiv.",
         "6133594b12": "Bisheriges Konto beibehalten"
-      },
-      "FirstLaunchBanner": {
-        "b9e1b966c7": "Hinweis verwerfen",
-        "94cc673726": "Bestätigen",
-        "fc5cc29955": "Nicht teilnehmen",
-        "d1deebb050": "Datenschutzerklärung",
-        "958d2cc31b": "Anonyme Zählungen der genutzten Funktionen helfen uns, die weitere Entwicklung zu priorisieren. Keine Dateiinhalte, Prompts, Terminalausgaben oder sonstigen Daten, die Rückschlüsse auf die Person zulassen. Jederzeit unter Einstellungen -> Datenschutz & Telemetrie änderbar.",
-        "9784b4d7bc": "Mitentscheiden, was als Nächstes entwickelt wird",
-        "fcbee32f08": "Telemetriehinweis"
       },
       "GitHubItemDialog": {
         "3cd5ae5b7b": "Keine Dateien geändert.",
@@ -8433,14 +8422,6 @@
           "db3228e01a": "Datei zur Prüfung geöffnet",
           "a2b3505c77": "Datei zur Prüfung erstellt"
         },
-        "PrivacyPane": {
-          "36e0e2e63b": "deaktiviert. Zum erneuten Aktivieren die Variable entfernen und neu starten.",
-          "79a0f3c16c": "Telemetrie ist durch die Umgebungsvariable",
-          "e3970bbbf5": "Telemetrie ist deaktiviert, weil eine CI-Umgebungsvariable gesetzt ist. Die Variable entfernen und neu starten.",
-          "fe904ac984": "Anonyme Nutzungsdaten teilen",
-          "77410e0566": "Datenschutzerklärung",
-          "8bfdd23a88": "Hilft bei der Entscheidung, welche Funktionen als Nächstes entwickelt werden. Orca sendet anonymisierte Zählwerte zur Nutzung von Funktionen und zu auftretenden Fehlern."
-        },
         "QuickCommandsList": {
           "noSearchMatches": "Keine Befehle entsprechen dieser Suche."
         },
@@ -8821,8 +8802,6 @@
           "8b017f2506": "Experimentell",
           "499c1cd7f9": "Systemnahe Kompatibilitätseinstellungen zur Fehlerbehebung.",
           "1c87f8d024": "Erweitert",
-          "c1b43dc4e2": "Anonyme Nutzungsdaten und Telemetrieeinstellungen.",
-          "d7e3f62d70": "Datenschutz & Telemetrie",
           "9b83cc62c2": "macOS-Datenschutzberechtigungen für Entwicklerwerkzeuge, die im Terminal gestartet werden.",
           "65660d4548": "macOS-Berechtigungen",
           "c6c01ac209": "Terminals und Agenten vom Smartphone aus steuern.",
@@ -10574,28 +10553,14 @@
             "94e04427f6": "env",
             "664f1a8984": "Kontinuierliche Integration",
             "5854a5c752": "CI",
-            "69637f4dc4": "orca_telemetry_disabled",
             "058550f6bc": "do_not_track",
             "83a6cd79b3": "Nicht verfolgen",
-            "f7a2d9f137": "Umgebungsvariablen, die die Übertragung von Telemetriedaten deaktivieren.",
-            "e058a3c98d": "Telemetrie-Umgebungsvariablen",
             "1686c07fee": "Support",
             "c0494ff48a": "Diagnose",
             "8b08f32366": "App-Diagnose und Einstellungen zum Teilen von Daten mit dem Support.",
             "6d258d2ed6": "Diagnose",
             "ead1deded2": "teilen",
-            "27a27b2f63": "Widersprechen",
-            "4d4bb76bf4": "Einwilligen",
-            "b021b9cb81": "Anonym",
-            "79c319948b": "Nutzung",
-            "77d3180def": "Telemetrie",
-            "b707cc3981": "Zur Verbesserung von Orca anonyme Ereignisse zur Funktionsnutzung senden.",
-            "57b283461a": "Anonyme Nutzungsdaten teilen",
-            "2b5a5c312f": "posthog",
-            "4104f6f0f3": "Analyse",
-            "10124159f1": "Datenschutz",
-            "aa3b794c17": "Anonyme Produktnutzungsdaten, Diagnosen und Telemetrie-Einstellungen.",
-            "5c508bad41": "Datenschutz & Telemetrie"
+            "10124159f1": "Datenschutz"
           }
         },
         "quick": {
@@ -11421,7 +11386,6 @@
         },
         "PrivacyDiagnosticsRows": {
           "5a7cbe069a": "DO_NOT_TRACK=1 ist gesetzt – das Erstellen und Senden von Diagnosedateien ist deaktiviert.",
-          "63d03261d1": "ORCA_TELEMETRY_DISABLED=1 ist gesetzt – das Erstellen und Senden von Diagnosedateien ist deaktiviert.",
           "d37e92a06b": "ORCA_DIAGNOSTICS_DISABLED=1 ist gesetzt – die App-Diagnose ist ausgeschaltet.",
           "5ebb31e1fb": "Ausführung in CI – die Diagnose ist ausgeschaltet.",
           "e27c8d45bf": "Die Diagnose ist durch eine Umgebungsvariable deaktiviert."

@@ -1933,8 +1933,6 @@
         "225071c560": "Deneysel",
         "e338c507c1": "Sorun giderme için düşük seviyeli uyumluluk ayarları.",
         "580a04cd81": "Gelişmiş",
-        "8400cfe1c1": "Anonim kullanım verisi ve telemetri denetimleri.",
-        "3618579df6": "Gizlilik ve Telemetri",
         "65ec7d1968": "Terminalden başlatılan geliştirici araçları için macOS gizlilik erişimi.",
         "d91ae31fbd": "macOS İzinleri",
         "95a1886d94": "Terminalleri ve ajanları telefonunuzdan kontrol edin.",
@@ -2058,15 +2056,6 @@
         "d3e8a1f4b2": "Hesap değiştirildi",
         "9375620cc3": "{{value0}} hesabını kullanmak için bu oturumu yeniden başlatın. Siz yapana kadar önceki hesapta kalır.",
         "6133594b12": "Eski hesabı koru"
-      },
-      "FirstLaunchBanner": {
-        "b9e1b966c7": "Bildirimi kapat",
-        "94cc673726": "Anladım",
-        "fc5cc29955": "Vazgeç",
-        "d1deebb050": "Gizlilik politikası",
-        "958d2cc31b": "Hangi özellikleri kullandığınızın anonim sayıları, neyi öncelikli geliştireceğimize karar vermemize yardımcı olur. Dosya içeriği, istemler, terminal çıktısı veya sizi tanımlayan hiçbir şey gönderilmez. Ayarlar -> Gizlilik ve Telemetri'den istediğiniz zaman değiştirebilirsiniz.",
-        "9784b4d7bc": "Sırada neyi geliştireceğimize karar vermemize yardımcı olun",
-        "fcbee32f08": "Telemetri bildirimi"
       },
       "GitHubItemDialog": {
         "3cd5ae5b7b": "Değiştirilen dosya yok.",
@@ -8419,14 +8408,6 @@
           "db3228e01a": "İnceleme dosyası açıldı",
           "a2b3505c77": "İnceleme dosyası oluşturuldu"
         },
-        "PrivacyPane": {
-          "36e0e2e63b": "ortam değişkeni. Yeniden etkinleştirmek için değişkeni kaldırın ve yeniden başlatın.",
-          "79a0f3c16c": "Telemetri şu nedenle devre dışı:",
-          "e3970bbbf5": "Bir CI ortam değişkeni ayarlandığı için telemetri devre dışı. Değişkeni kaldırın ve yeniden başlatın.",
-          "fe904ac984": "Anonim kullanım verilerini paylaş",
-          "77410e0566": "Gizlilik politikası",
-          "8bfdd23a88": "Sırada neyi geliştireceğimizi belirlememize yardımcı olun. Orca, hangi özellikleri kullandığınızın ve nerede sorun yaşandığının anonim sayımlarını gönderir."
-        },
         "QuickCommandsList": {
           "noSearchMatches": "Bu aramayla eşleşen komut yok."
         },
@@ -8807,8 +8788,6 @@
           "8b017f2506": "Deneysel",
           "499c1cd7f9": "Sorun giderme için düşük seviyeli uyumluluk ayarları.",
           "1c87f8d024": "Gelişmiş",
-          "c1b43dc4e2": "Anonim kullanım verileri ve telemetri kontrolleri.",
-          "d7e3f62d70": "Gizlilik ve Telemetri",
           "9b83cc62c2": "Terminalden başlatılan geliştirici araçları için macOS gizlilik erişimi.",
           "65660d4548": "macOS İzinleri",
           "c6c01ac209": "Terminalleri ve ajanları telefonunuzdan kontrol edin.",
@@ -10560,28 +10539,14 @@
             "94e04427f6": "env",
             "664f1a8984": "sürekli entegrasyon",
             "5854a5c752": "ci",
-            "69637f4dc4": "orca_telemetry_disabled",
             "058550f6bc": "do_not_track",
             "83a6cd79b3": "izleme reddi",
-            "f7a2d9f137": "Telemetri iletimini devre dışı bırakan ortam değişkenleri.",
-            "e058a3c98d": "Telemetri ortam değişkenleri",
             "1686c07fee": "destek",
             "c0494ff48a": "tanılama",
             "8b08f32366": "Uygulama tanılama ve destek paylaşımı denetimleri.",
             "6d258d2ed6": "Tanılama",
             "ead1deded2": "paylaş",
-            "27a27b2f63": "vazgeç",
-            "4d4bb76bf4": "katıl",
-            "b021b9cb81": "anonim",
-            "79c319948b": "kullanım",
-            "77d3180def": "telemetri",
-            "b707cc3981": "Anonim özellik kullanım olayları göndererek Orca'nın geliştirilmesine yardımcı olun.",
-            "57b283461a": "Anonim Kullanım Verilerini Paylaş",
-            "2b5a5c312f": "posthog",
-            "4104f6f0f3": "analitik",
-            "10124159f1": "gizlilik",
-            "aa3b794c17": "Anonim ürün kullanım verileri, tanılama ve telemetri denetimleri.",
-            "5c508bad41": "Gizlilik ve Telemetri"
+            "10124159f1": "gizlilik"
           }
         },
         "quick": {
@@ -11407,7 +11372,6 @@
         },
         "PrivacyDiagnosticsRows": {
           "5a7cbe069a": "DO_NOT_TRACK=1 ayarlı; tanılama dosyaları oluşturma ve gönderme devre dışı.",
-          "63d03261d1": "ORCA_TELEMETRY_DISABLED=1 ayarlı; tanılama dosyaları oluşturma ve gönderme devre dışı.",
           "d37e92a06b": "ORCA_DIAGNOSTICS_DISABLED=1 ayarlı; uygulama tanılaması kapalı.",
           "5ebb31e1fb": "CI'de çalışıyor; tanılama kapalı.",
           "e27c8d45bf": "Tanılama bir ortam değişkeni tarafından devre dışı bırakıldı."
