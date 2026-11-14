@@ -2283,7 +2283,7 @@
     },
     {
       "path": "src/renderer/src/i18n/locales/en.json",
-      "sha256": "40ce098b4a8c66104e2e183510fe38fe4707d76f1ae3461905f31f399b2f191a",
+      "sha256": "0527faef8f1f3933ac67dd31b3e4665ca53baac29652713b264852ea8487de32",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

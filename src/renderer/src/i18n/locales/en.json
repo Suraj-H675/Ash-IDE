@@ -1255,7 +1255,8 @@
     "copy": "Copy",
     "selectAll": "Select All",
     "quitAndStopAllSessions": "Quit Completely...",
-    "quitAndStopAllSessionsTooltip": "Also stops every terminal session, including running agents. Plain Quit keeps them running so Orca reattaches on next launch."
+    "quitAndStopAllSessionsTooltip": "Also stops every terminal session, including running agents. Plain Quit keeps them running so Orca reattaches on next launch.",
+    "exploreAsh": "Explore Ash"
   },
   "tray": {
     "openOrca": "Open Orca",
@@ -1264,7 +1265,8 @@
       "body": "Orca is still running in the system tray"
     },
     "activityWaiting": "Orca - activity waiting",
-    "activityWaitingSuffix": "activity waiting"
+    "activityWaitingSuffix": "activity waiting",
+    "openAsh": "Open Ash IDE"
   },
   "worktreeJumpPalette": {
     "goToWebsite": "Go to {{value0}}",
@@ -23689,5 +23691,52 @@
     "discussionAction": "Join the discussion",
     "checkAction": "Check compatibility",
     "settingsStatus": "Orca {{version}} requires macOS {{macos}} or later. This is the latest version for this Mac."
+  },
+  "ash": {
+    "components": {
+      "feature": {
+        "wall": {
+          "ConnectIntegrationsList": {
+            "reviewStepDescription": "Connect a review provider so Ash IDE can show PR or MR status, checks, and reviews.",
+            "codeHostTaskStepTitle": "Start agents on code-host issues without leaving Ash IDE",
+            "codeHostTaskStepDescription": "Connect GitHub or GitLab to start workspaces with the issue title, link, and context already attached.",
+            "codeHostTasksSummary": "<provider>{{provider}}</provider> issues available as tasks"
+          }
+        }
+      },
+      "settings": {
+        "IntegrationsPane": {
+          "reviewDescription": "Connect the code hosts Ash IDE can use for pull requests, merge requests, checks, and review status."
+        },
+        "TasksPane": {
+          "codeHostSetupDescription": "Connect GitHub or GitLab and choose which issue sources appear in Tasks. At least one code host must stay visible.",
+          "codeHostProvidersDescription": "Connect a code host and choose whether its issues appear in Tasks.",
+          "codeHostIntegrationsHint": "Code-host connection settings are available under"
+        },
+        "tasks": {
+          "search": {
+            "providersDescription": "Connect GitHub or GitLab issues and choose what appears in Tasks."
+          }
+        }
+      }
+    },
+    "onboarding": {
+      "integrations": {
+        "moreCodeHostsTitle": "Other code-host integrations",
+        "moreCodeHostsDescription": "GitLab, Bitbucket, Azure DevOps, and Gitea are available in Settings > Integrations for supported source-control workflows."
+      }
+    },
+    "taskPage": {
+      "sourceSummary": {
+        "selectCodeHost": "Select a code host",
+        "codeHostsOnly": "Choose GitHub or GitLab to browse issues."
+      }
+    },
+    "hooks": {
+      "useSettingsNavigationMetadata": {
+        "orchestrationDescription": "Coordinate multiple coding agents through Ash IDE.",
+        "codeHostIntegrationDescription": "Connect GitHub, GitLab, and other source-control services."
+      }
+    }
   }
 }

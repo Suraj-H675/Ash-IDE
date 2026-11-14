@@ -29,6 +29,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Verify source attribution and adapted file hashes
         run: node config/scripts/provenance/verify-source-ledger.mjs
+      - name: Verify retained desktop localization references
+        run: pnpm run verify:localization-catalog
       - name: Build retained workspace packages
         run: node config/scripts/workspace-package-build/build-workspace-packages.mjs
       - name: Check TypeScript projects
