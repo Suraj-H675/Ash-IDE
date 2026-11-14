@@ -36,7 +36,7 @@ fi
 # its own KWin compositor, then exercises settings, PTY, GUI close/reopen and
 # explicit shutdown. -s 0 prevents syscall payload/credential logging.
 set +e
-APPIMAGE_EXTRACT_AND_RUN=1 ASH_TEST_CHROMIUM_NETLOG=1 \
+APPIMAGE_EXTRACT_AND_RUN=1 ASH_TEST_CHROMIUM_NETLOG=1 ASH_TEST_DISPLAY_SERVER=wayland \
   TMPDIR=/var/tmp TEMP=/var/tmp TMP=/var/tmp \
   timeout --kill-after=10s 220s "$strace_bin" -f -qq -ttt -s 0 \
     -e trace=network -o "$capture_root/network-syscalls.log" \

@@ -32,6 +32,7 @@ jobs:
       - name: Validate native Linux package QA harness syntax
         run: |
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-wayland-lifecycle.sh
+          bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-x11-lifecycle.sh
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-network-audit.sh
       - name: Verify retained desktop localization references
         run: pnpm run verify:localization-catalog
