@@ -38,6 +38,12 @@ for (const name of [
   assert.equal(read(name).ok, true, `${name} must succeed`)
 }
 assert.equal(read('settings-read').settingsRead, true, 'local Settings RPC must be readable')
+if (process.env.ASH_TEST_OSC52_CLIPBOARD === '1') {
+  const clipboard = read('x11-osc52-clipboard')
+  assert.equal(clipboard.ok, true)
+  assert.equal(clipboard.nativeClipboardRead, true)
+  assert.equal(clipboard.exactTextMatched, true)
+}
 if (process.env.ASH_TEST_BROWSER_SMOKE === '1') {
   const visited = read('local-browser-before')
   const restored = read('local-browser-after')
@@ -223,6 +229,11 @@ NODE
     cc -std=c11 -Wall -Wextra -Werror -O2 \
       "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-x11-window-control.c" \
       -lX11 -lXtst -o "$test_root/ash-x11-window-control"
+    if [[ "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ]]; then
+      cc -std=c11 -Wall -Wextra -Werror -O2 \
+        "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-x11-clipboard-probe.c" \
+        -lX11 -o "$test_root/ash-x11-clipboard-probe"
+    fi
   else
     kwin_wayland --virtual --socket ash-private --no-lockscreen --no-global-shortcuts --no-kactivities >"$test_root/kwin.log" 2>&1 &
     kwin_pid=$!
@@ -319,8 +330,32 @@ NODE
     timeout --kill-after=5s 65s "$packaged_node" "$browser_fixture" before "$test_root" \
       "$(dirname "$packaged_cli")/runtime/client.js" >"$test_root/local-browser-before.json" 2>"$test_root/local-browser-before.err"
   fi
-  (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
+  if [[ "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ]]; then
+    # Only the private test-owned PTY emits OSC52. The renderer must parse the
+    # real PTY bytes and publish to X11; compare through a second Xlib client.
+    local clipboard_value='Ash IDE X11 OSC52 clipboard test' encoded command
+    encoded="$(printf '%s' "$clipboard_value" | base64 -w0)"
+    command="sleep 4; printf '\\033]52;c;$encoded\\007'; sleep 120"
+    (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command "$command" --focus --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
+  else
+    (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
+  fi
   (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --json >"$test_root/terminal-before.json" 2>"$test_root/terminal-before.err")
+  if [[ "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ]]; then
+    local clipboard_observed=0
+    for ((i=0; i<18; i++)); do
+      if "$test_root/ash-x11-clipboard-probe" "$clipboard_value" >"$test_root/x11-osc52-clipboard.json" 2>"$test_root/x11-osc52-clipboard.err"; then
+        clipboard_observed=1
+        break
+      fi
+      sleep .25
+    done
+    ((clipboard_observed == 1)) || {
+      echo 'Native X11 clipboard did not receive the expected live terminal OSC52 write' >&2
+      tail -1 "$test_root/x11-osc52-clipboard.err" >&2 || true
+      return 1
+    }
+  fi
 
   if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' ]]; then
     "$test_root/ash-x11-window-control" close "$ash_pid" >"$test_root/x11-close.json" 2>"$test_root/x11-close.err"
@@ -339,7 +374,7 @@ JS
     [[ "$script_id" =~ ^[0-9]+$ ]] || { echo 'KWin rejected close script' >&2; return 1; }
     busctl --user call org.kde.KWin "/Scripting/Script$script_id" org.kde.kwin.Script run >"$test_root/kwin-script.log" 2>&1
   fi
-  if [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' ]]; then
+  if [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' || "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ]]; then
     # The local live PTY is now represented in the workbench; unlike Landing,
     # the real close flow correctly shows an explicit running-work dialog.
     # Test its deliberate user confirmation instead of bypassing the guard.
@@ -382,9 +417,12 @@ display_server="${ASH_TEST_DISPLAY_SERVER:-wayland}"
   echo 'ASH_TEST_DISPLAY_SERVER must be wayland or x11' >&2
   exit 2
 }
-if [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' && "$display_server" != 'x11' ]]; then
-  echo 'The optional packaged browser fixture is currently X11-only' >&2
+if [[ ( "${ASH_TEST_BROWSER_SMOKE:-}" == '1' || "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ) && "$display_server" != 'x11' ]]; then
+  echo 'Optional packaged browser and X11 clipboard fixtures currently require native X11' >&2
   exit 2
+fi
+if [[ "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ]]; then
+  require_command base64
 fi
 
 if [[ "${1:-}" == '--inner' ]]; then
