@@ -34,6 +34,7 @@ jobs:
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-wayland-lifecycle.sh
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-x11-lifecycle.sh
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-network-audit.sh
+          bash -n config/scripts/desktop-distribution/runtime-verification/verify-windowless-linux-native-notification.sh
           node --check config/scripts/desktop-distribution/runtime-verification/ash-packaged-browser-local-smoke.cjs
       - name: Verify retained desktop localization references
         run: pnpm run verify:localization-catalog
@@ -60,6 +61,8 @@ jobs:
             src/main/runtime/terminal/launch/ash-agent-account-env-snapshot.test.ts \
             src/main/runtime/terminal/launch/ash-claude-live-pane-adoption.test.ts \
             src/main/runtime/terminal/launch/ash-claude-degraded-status-launch.test.ts \
+            src/main/runtime/notifications/windowless-linux-agent-notifier.test.ts \
+            src/main/runtime/terminal-agent-phone-push-desktop.test.ts \
             src/main/runtime/terminal/launch/ash-claude-session-overlay-launch.test.ts \
             src/main/runtime/terminal/launch/ash-claude-session-overlay-recovery.test.ts \
             src/main/agent-hooks/session/claude-host-launch-correlation-consistency.test.ts \

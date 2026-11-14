@@ -35,6 +35,8 @@ export type TerminalAgentPhonePushDeps = {
   readHookRow: (paneKey: string) => AgentStatusIpcPayload | null
   translate?: (key: string, fallback: string) => string
   dispatch: (event: MobileNotificationDispatchEvent) => void
+  /** Native OS alert when the execution host has no GUI (not a remote push). */
+  notifyDesktop?: (input: { title: string; body: string }) => void
   setTimer: (run: () => void, delayMs: number) => { cancel: () => void }
   now: () => number
 }
@@ -124,11 +126,15 @@ export class TerminalAgentPhonePush {
       return
     }
     // No attention key: later cooldowns then key on the workspace, as the window's request does.
-    this.deps.dispatch({
+    const event = {
       ...news.event,
       emittedAt: now,
       ...(!desktopAllowed ? { desktopAllowed: false } : {})
-    })
+    }
+    this.deps.dispatch(event)
+    if (desktopAllowed) {
+      this.deps.notifyDesktop?.({ title: event.title, body: event.body })
+    }
   }
 
   private readLabels(worktreeId: string, paneKey: string): TerminalAgentWorkspaceLabels {

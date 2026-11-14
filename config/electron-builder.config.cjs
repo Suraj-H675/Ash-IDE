@@ -150,6 +150,9 @@ const commonExtraResources = [
 const debElectronRuntimeDependencies = [
   'libgtk-3-0',
   'libnotify4',
+  // The windowless Node runtime calls /usr/bin/notify-send; libnotify4 alone
+  // supplies the shared library, not the executable on Debian/Ubuntu.
+  'libnotify-bin',
   'libnss3',
   'libxss1',
   'libxtst6',

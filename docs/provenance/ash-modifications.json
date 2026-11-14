@@ -917,6 +917,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/orca-runtime-agent-transitions.ts",
+      "sha256": "d64ad2e39a780aee33e7f23137c2056a05add227ef178bd11a7e5ca29ada7779",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/orca-runtime-get-status.ts",
       "sha256": "26a4d61c86386b9d0846c948fe7874491a7e9d97bf67d009345f6dffa66ff9a8",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1179,6 +1184,11 @@
     {
       "path": "src/main/runtime/terminal/launch/runtime-agent-terminal-startup.ts",
       "sha256": "381c94536672e8fb134d0ca02de193ed0e28855800fe93a4df3654acf99e8637",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/terminal-agent-phone-push.ts",
+      "sha256": "ccf9a05665e858e13a8e2a3e56c8a6276cd82b8033d908b426c6e1e1adca892c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2683,7 +2693,7 @@
     },
     {
       "path": "config/electron-builder.config.cjs",
-      "sha256": "cb43268d2813ee785eab05a209a2a94d4da42043db25552a47c8d1a5abf0649d",
+      "sha256": "e66015a66848bd02a1b61caa9dcf9519b0eeed63fcc93a46446da65d6ab48085",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

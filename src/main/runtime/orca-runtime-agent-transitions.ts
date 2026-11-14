@@ -12,6 +12,7 @@ import { getRuntimeDesktopSurface } from './runtime-desktop-surface'
 import type { AgentStatusStoreView } from './sidebar-inputs/workspace-activity-facts-producer'
 import { subscribeHookStatusTitles } from './terminal/layout/hook-status-title-subscription'
 import { TerminalWorkerTurnStops } from './orchestration/terminal-worker-turn-stops'
+import { notifyWindowlessLinuxAgent } from './notifications/windowless-linux-agent-notifier'
 import type { WorkerTerminalResourceRow } from './orchestration/worker-terminal-ownership'
 import { resolveStructuredWorkerIdentity } from './orchestration/terminal-authority/structured-sessions/structured-worker-authority'
 import { chatStatusInTurn, terminalPhaseInTurn } from './orchestration/worker-auto-release-activity'
@@ -50,6 +51,16 @@ export abstract class OrcaRuntimeWithAgentTransitions extends OrcaRuntimeWithWin
     translate: (key, fallback) =>
       getRuntimeDesktopSurface().translateNotification?.(key, fallback) ?? fallback,
     dispatch: (event) => this.mobileNotifications.dispatch(event),
+    notifyDesktop: ({ title, body }) => {
+      try {
+        if (getRuntimeDesktopSurface().showNotification({ title, body })) {
+          return
+        }
+      } catch {
+        // The native Electron surface may be absent or rejecting deliveries.
+      }
+      void notifyWindowlessLinuxAgent({ title, body })
+    },
     setTimer: unrefTimer,
     now: Date.now
   })
