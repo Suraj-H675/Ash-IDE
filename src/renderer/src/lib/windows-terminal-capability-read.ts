@@ -22,31 +22,15 @@ export async function readWindowsTerminalCapabilities(
   sshConnectionId?: string | null
 ): Promise<WindowsTerminalCapabilities> {
   if (sshConnectionId) {
-    const remoteCapabilityPromise =
-      target.kind === 'environment'
-        ? callRuntimeRpc<Omit<WindowsTerminalCapabilities, 'isLoading'>>(
-            target,
-            'preflight.detectRemoteWindowsTerminalCapabilities',
-            { connectionId: sshConnectionId },
-            { timeoutMs: 15_000 }
-          )
-        : window.api.preflight.detectRemoteWindowsTerminalCapabilities({
-            connectionId: sshConnectionId
-          })
-    return remoteCapabilityPromise
-      .then((capabilities) => ({
-        ...capabilities,
-        wslDistros: capabilities.wslDistros ?? [],
-        isLoading: false
-      }))
-      .catch(() => ({
-        wslAvailable: false,
-        wslDistros: [],
-        pwshAvailable: false,
-        gitBashAvailable: false,
-        hostPlatform: null,
-        isLoading: false
-      }))
+    // Ash excludes managed SSH hosts. Do not query retired desktop or RPC preflight methods.
+    return {
+      wslAvailable: false,
+      wslDistros: [],
+      pwshAvailable: false,
+      gitBashAvailable: false,
+      hostPlatform: null,
+      isLoading: false
+    }
   }
 
   if (target.kind === 'local') {

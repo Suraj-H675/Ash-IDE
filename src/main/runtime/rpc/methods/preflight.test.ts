@@ -8,21 +8,18 @@ import { SSH_HOST_NOT_SERVED_MESSAGE } from '../../../providers/ssh-host-not-ser
 
 const {
   detectInstalledAgentsWithShellPathHydrationMock,
-  detectRemoteWindowsTerminalCapabilitiesMock,
   refreshShellPathAndDetectAgentsMock,
   runPreflightCheckMock,
   assertWslDistroRunningForExecMock
 } = vi.hoisted(() => ({
   assertWslDistroRunningForExecMock: vi.fn(async (_distro?: string | null) => {}),
   detectInstalledAgentsWithShellPathHydrationMock: vi.fn(),
-  detectRemoteWindowsTerminalCapabilitiesMock: vi.fn(),
   refreshShellPathAndDetectAgentsMock: vi.fn(),
   runPreflightCheckMock: vi.fn()
 }))
 
 vi.mock('../../../preflight/agent-detection', () => ({
   detectInstalledAgentsWithShellPathHydration: detectInstalledAgentsWithShellPathHydrationMock,
-  detectRemoteWindowsTerminalCapabilities: detectRemoteWindowsTerminalCapabilitiesMock,
   refreshShellPathAndDetectAgents: refreshShellPathAndDetectAgentsMock,
   runPreflightCheck: runPreflightCheckMock
 }))
@@ -195,7 +192,7 @@ describe('preflight RPC methods', () => {
     }
   )
 
-  it('refuses agent detection on an SSH target this host does not serve', async () => {
+  it('does not register an SSH agent detection method at all', async () => {
     detectInstalledAgentsWithShellPathHydrationMock.mockClear()
     const runtime = { getRuntimeId: () => 'test-runtime' } as unknown as OrcaRuntimeService
     const dispatcher = new RpcDispatcher({ runtime, methods: PREFLIGHT_METHODS })
@@ -204,7 +201,7 @@ describe('preflight RPC methods', () => {
       makeRequest('preflight.detectRemoteAgents', { connectionId: 'ssh-1' })
     )
 
-    expect(response).toMatchObject({ ok: false, error: { message: SSH_HOST_NOT_SERVED_MESSAGE } })
+    expect(response).toMatchObject({ ok: false })
     expect(detectInstalledAgentsWithShellPathHydrationMock).not.toHaveBeenCalled()
   })
 })

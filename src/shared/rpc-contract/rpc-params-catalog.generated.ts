@@ -465,8 +465,6 @@ import {
 import {
   PreflightAgentDetection,
   PreflightCheck,
-  PreflightDetectRemoteAgents,
-  PreflightDetectRemoteWindowsTerminalCapabilities,
   PreflightProjectAgentDetection
 } from './preflight-params'
 import {
@@ -1205,9 +1203,6 @@ export const RPC_PARAMS_BY_METHOD = {
   'plugins.shotReplay': PluginShotReplayParams,
   'preflight.check': PreflightCheck,
   'preflight.detectAgents': PreflightProjectAgentDetection,
-  'preflight.detectRemoteAgents': PreflightDetectRemoteAgents,
-  'preflight.detectRemoteWindowsTerminalCapabilities':
-    PreflightDetectRemoteWindowsTerminalCapabilities,
   'preflight.refreshAgents': PreflightAgentDetection,
   'project.list': null,
   'project.update': ProjectUpdate,

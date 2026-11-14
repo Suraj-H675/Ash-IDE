@@ -24,10 +24,6 @@ import {
   isCommandAvailable
 } from '../ipc/preflight-command-exec'
 import { quotePosixShell } from '../../shared/shell/launch/shell-argument-quoting'
-import {
-  detectRemoteWindowsTerminalCapabilities,
-  type RemoteWindowsTerminalCapabilities
-} from '../ipc/preflight-remote-windows-terminal-capabilities'
 import { invalidateWslGuestEnvironment } from '../wsl/execution/wsl-guest-environment'
 import { prunePreflightWslCache } from '../wsl/discovery/preflight-wsl-cache'
 import { assertWslDistroRunningForExec } from '../wsl/discovery/wsl-background-exec-gate'
@@ -62,9 +58,6 @@ export type PreflightStatus = {
     tokenConfigured: boolean
   }
 }
-
-export { detectRemoteWindowsTerminalCapabilities }
-export type { RemoteWindowsTerminalCapabilities }
 
 // Collapse repeated Landing probes within an app session.
 let cached: PreflightStatus | null = null

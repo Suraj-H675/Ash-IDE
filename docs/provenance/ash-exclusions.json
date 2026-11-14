@@ -8131,6 +8131,11 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
+      "path": "src/main/ipc/preflight-remote-windows-terminal-capabilities.ts",
+      "sourceSha256": "d1295464ed2a878984c73d305c2ef0eb2eb004b91d77b818208203146f4280a5",
+      "reason": "Ash EX-02 M8 exclusion: removed orphaned managed-SSH Windows terminal capability probing after retiring its desktop and runtime preflight entrypoints. Local Windows and WSL terminal checks remain available."
+    },
+    {
       "path": "src/main/ipc/preflight-runnable-local-cli.test.ts",
       "sourceSha256": "d3f76dd640983d641eb98a5502971dfe5fe0141d4dc129f3cdd72af103d8ec31",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."

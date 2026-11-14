@@ -25,7 +25,6 @@ export const preflightApi = {
       baseUrl: string | null
       tokenConfigured: boolean
     }
-    linear: { connected: boolean }
   }> => ipcRenderer.invoke('preflight:check', args),
   detectAgents: (
     args?: PreflightRuntimeContext & { enabledOnly?: boolean; wakeWslDistro?: boolean }
@@ -39,16 +38,5 @@ export const preflightApi = {
     ipcRenderer.invoke('preflight:zcodeInteractiveCapability'),
   refreshAgents: (
     args?: PreflightRuntimeContext & { enabledOnly?: boolean; wakeWslDistro?: boolean }
-  ): Promise<RefreshAgentsResult> => ipcRenderer.invoke('preflight:refreshAgents', args),
-  detectRemoteAgents: (args: { connectionId: string }): Promise<string[]> =>
-    ipcRenderer.invoke('preflight:detectRemoteAgents', args),
-  detectRemoteWindowsTerminalCapabilities: (args: {
-    connectionId: string
-  }): Promise<{
-    wslAvailable: boolean
-    wslDistros: string[]
-    pwshAvailable: boolean
-    gitBashAvailable: boolean
-    hostPlatform: NodeJS.Platform | null
-  }> => ipcRenderer.invoke('preflight:detectRemoteWindowsTerminalCapabilities', args)
+  ): Promise<RefreshAgentsResult> => ipcRenderer.invoke('preflight:refreshAgents', args)
 } satisfies PreloadApi['preflight']

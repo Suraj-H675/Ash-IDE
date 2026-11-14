@@ -1,20 +1,13 @@
 import { ipcMain } from 'electron'
 import type { Store } from '../persistence/loading-store/store'
-import {
-  detectRemoteWindowsTerminalCapabilities,
-  runPreflightCheck
-} from '../preflight/agent-detection'
+import { runPreflightCheck } from '../preflight/agent-detection'
 import {
   assertAgentDetectionHostRunning,
   detectAgentsOnHost,
   refreshAgentsOnHost,
   type AgentDetectionHost
 } from '../preflight/workspace-agent-detection'
-import type {
-  PreflightRuntimeContext,
-  PreflightStatus,
-  RemoteWindowsTerminalCapabilities
-} from '../preflight/agent-detection'
+import type { PreflightRuntimeContext, PreflightStatus } from '../preflight/agent-detection'
 
 import { readZCodeInteractiveCapability } from '../zcode/interactive-capability'
 import { getPreflightWslTarget } from './preflight-runtime-target'
@@ -78,18 +71,5 @@ export function registerPreflightHandlers(store?: Pick<Store, 'getSettings'>): v
         await assertAgentDetectionHostRunning(host)
         return refreshAgentsOnHost(host, detectionOptions(args))
       })
-  )
-
-  ipcMain.handle(
-    'preflight:detectRemoteAgents',
-    async (_event, args: { connectionId: string }): Promise<string[]> =>
-      detectAgentsOnHost({ kind: 'ssh', connectionId: args.connectionId })
-  )
-
-  ipcMain.handle(
-    'preflight:detectRemoteWindowsTerminalCapabilities',
-    async (_event, args: { connectionId: string }): Promise<RemoteWindowsTerminalCapabilities> => {
-      return detectRemoteWindowsTerminalCapabilities(args)
-    }
   )
 }

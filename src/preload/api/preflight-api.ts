@@ -58,12 +58,4 @@ export type PreflightApi = {
   refreshAgents: (
     args?: PreflightRuntimeContext & { enabledOnly?: boolean; wakeWslDistro?: boolean }
   ) => Promise<RefreshAgentsResult>
-  detectRemoteAgents: (args: { connectionId: string }) => Promise<string[]>
-  detectRemoteWindowsTerminalCapabilities: (args: { connectionId: string }) => Promise<{
-    wslAvailable: boolean
-    wslDistros: string[]
-    pwshAvailable: boolean
-    gitBashAvailable: boolean
-    hostPlatform: NodeJS.Platform | null
-  }>
 }

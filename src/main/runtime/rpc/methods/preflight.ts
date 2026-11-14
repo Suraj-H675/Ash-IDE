@@ -1,9 +1,6 @@
 import { defineMethod } from '../core'
 import { resolveQualifiedAgentDetectionHost } from './preflight-workspace-target'
-import {
-  detectRemoteWindowsTerminalCapabilities,
-  runPreflightCheck
-} from '../../../preflight/agent-detection'
+import { runPreflightCheck } from '../../../preflight/agent-detection'
 import {
   assertAgentDetectionHostRunning,
   detectAgentsOnHost,
@@ -12,9 +9,7 @@ import {
 import {
   PreflightAgentDetection,
   PreflightProjectAgentDetection,
-  PreflightCheck,
-  PreflightDetectRemoteAgents,
-  PreflightDetectRemoteWindowsTerminalCapabilities
+  PreflightCheck
 } from '../../../../shared/rpc-contract/preflight-params'
 
 export const PREFLIGHT_METHODS = [
@@ -39,19 +34,6 @@ export const PREFLIGHT_METHODS = [
       await assertAgentDetectionHostRunning(host)
       return detectAgentsOnHost(host)
     }
-  }),
-  defineMethod({
-    name: 'preflight.detectRemoteAgents',
-    permission: 'workspace',
-    params: PreflightDetectRemoteAgents,
-    handler: async (params) =>
-      detectAgentsOnHost({ kind: 'ssh', connectionId: params.connectionId })
-  }),
-  defineMethod({
-    name: 'preflight.detectRemoteWindowsTerminalCapabilities',
-    permission: 'workspace',
-    params: PreflightDetectRemoteWindowsTerminalCapabilities,
-    handler: async (params) => detectRemoteWindowsTerminalCapabilities(params)
   }),
   defineMethod({
     name: 'preflight.refreshAgents',
