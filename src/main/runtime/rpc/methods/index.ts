@@ -48,12 +48,7 @@ import { PLUGIN_DEV_REQUEST_METHODS } from './plugin-dev-request'
 import { SKILL_METHODS } from './skills'
 import { CLIPBOARD_METHODS } from './clipboard'
 import { HOST_CAPABILITY_METHODS } from './host-capabilities'
-import { MOBILE_WEB_BUNDLE_METHODS } from './mobile-web-bundle'
 import { RUNTIME_CLIENT_CAPABILITY_METHODS } from './runtime-client-capabilities'
-import { EMULATOR_METHODS } from './emulator'
-import { PAIRING_METHODS } from './pairing'
-import { MOBILE_RELAY_HOSTS_METHODS } from './mobile-relay-hosts'
-import { MOBILE_PROJECT_SECTIONS_METHODS } from './mobile-project-sections'
 import { UPDATER_METHODS } from './updater'
 import { AUTOMATIC_WORK_METHODS } from './automatic-work'
 import { ASH_RUNTIME_CONTROL_METHODS } from './ash-runtime-control'
@@ -137,14 +132,9 @@ export const ALL_RPC_METHODS = [
   ...SKILL_METHODS,
   ...CLIPBOARD_METHODS,
   ...HOST_CAPABILITY_METHODS,
-  ...MOBILE_WEB_BUNDLE_METHODS,
   ...RUNTIME_CLIENT_CAPABILITY_METHODS,
   ...CLIENT_EVENT_METHODS,
   ...CLIENT_UI_METHODS,
-  ...EMULATOR_METHODS,
-  ...PAIRING_METHODS,
-  ...MOBILE_RELAY_HOSTS_METHODS,
-  ...MOBILE_PROJECT_SECTIONS_METHODS,
   // Switch point: a window-fed build publishes no sidebar input.
   ...(ORCA_SIDEBAR_INPUTS_IS_MAIN ? SIDEBAR_INPUT_METHODS : []),
   ...UPDATER_METHODS,

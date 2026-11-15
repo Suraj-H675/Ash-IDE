@@ -978,7 +978,7 @@
     },
     {
       "path": "src/main/runtime/rpc/methods/index.ts",
-      "sha256": "649e4d66b5a77db6c6b702f61b31266191aeda0171619d0ddde96ff98502f93b",
+      "sha256": "31b68cf6e18711a91d23c18ff715ceb515aa3cd0d34a753efcbf6c8f31c89d54",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1069,6 +1069,11 @@
     {
       "path": "src/main/runtime/rpc/rpc-caller-scope.ts",
       "sha256": "e69758b47897650608c0dae027402c42cf2271aef10adbd8ec2f5af0da31f56a",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/rpc-params-type-parity.ts",
+      "sha256": "4e2e3db912c8ec8964236b2f67fb089b57ce111c009f204a9797a05798fb6fa7",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
