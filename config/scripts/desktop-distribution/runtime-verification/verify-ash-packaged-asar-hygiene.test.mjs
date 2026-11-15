@@ -14,13 +14,18 @@ const {
   EXCLUDED_APP_PLUGIN_EXECUTABLES
 } = require('../../../excluded-ash-app-plugin-artifacts.cjs')
 const {
+  EXCLUDED_ASH_MOBILE_RELAY_MODULES,
+  EXCLUDED_ASH_MOBILE_SERVICE_ROOTS,
+  EXCLUDED_ASH_MOBILE_NATIVE_RESOURCE_ROOTS
+} = require('../../../excluded-ash-mobile-relay-artifacts.cjs')
+const {
   PACKAGED_RUNTIME_PACKAGE_ROOTS,
   createPackagedRuntimeNodeModuleResources
 } = require('../../../packaged-runtime-node-modules.cjs')
 
 const fixtures = []
 
-async function makeArchive(files) {
+async function makeArchive(files, overrides = {}) {
   const root = await mkdtemp(join(tmpdir(), 'ash-packaged-asar-hygiene-'))
   fixtures.push(root)
   const source = join(root, 'source')
@@ -29,7 +34,7 @@ async function makeArchive(files) {
   for (const name of files) {
     const path = join(source, name)
     await mkdir(dirname(path), { recursive: true })
-    await writeFile(path, 'synthetic data, no real user profile\n')
+    await writeFile(path, overrides[name] ?? 'synthetic data, no real user profile\n')
   }
   await createPackage(source, join(resources, 'app.asar'))
   return resources
@@ -178,6 +183,86 @@ it.each(EXCLUDED_APP_PLUGIN_EXECUTABLES)(
     const resources = await makeArchive(['package.json', 'out/main/index.js', artifact])
     expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
       `[ash-package-hygiene] excluded app-plugin executable packaged: ${artifact}`
+    )
+  }
+)
+
+it.each(EXCLUDED_ASH_MOBILE_RELAY_MODULES)(
+  'rejects retired mobile/relay compiled module %s in app.asar',
+  async (artifact) => {
+    const resources = await makeArchive(['package.json', 'out/main/index.js', artifact])
+    expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+      `[ash-package-hygiene] excluded mobile/relay module packaged: ${artifact}`
+    )
+  }
+)
+
+it('rejects a dangling CommonJS import of an excluded mobile module from retained runtime', async () => {
+  const importer = 'out/shared/retained-local-agent.js'
+  const resources = await makeArchive(['package.json', 'out/main/index.js', importer], {
+    [importer]: "const alert = require('./mobile-notification-identity')\n"
+  })
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    `retained runtime imports excluded mobile/relay module: ${importer} -> out/shared/mobile-notification-identity.js`
+  )
+})
+
+it('rejects a dangling static ESM import of an excluded relay module', async () => {
+  const importer = 'out/main/retained-subsystem.js'
+  const resources = await makeArchive(['package.json', 'out/main/index.js', importer], {
+    [importer]: "import { session } from '../shared/remote-runtime/relay/mobile-relay-status.js'\n"
+  })
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    `retained runtime imports excluded mobile/relay module: ${importer} -> out/shared/remote-runtime/relay/mobile-relay-status.js`
+  )
+})
+
+it.each([
+  'out/shared/mobile-notification-identity.js',
+  'out/shared/remote-runtime/e2ee/mobile-e2ee-legacy-fixtures.js',
+  'out/shared/remote-runtime/relay/mobile-relay-phone-protocol.js'
+])('rejects retired mobile/relay module %s in app.asar.unpacked', async (artifact) => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js'])
+  const file = join(resources, 'app.asar.unpacked', artifact)
+  await mkdir(dirname(file), { recursive: true })
+  await writeFile(file, 'synthetic retired mobile/relay fixture\n')
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    `[ash-package-hygiene] excluded mobile/relay module packaged: ${artifact}`
+  )
+})
+
+it.each(EXCLUDED_ASH_MOBILE_SERVICE_ROOTS)(
+  'rejects a reintroduced mobile/remote service root %s in app.asar',
+  async (root) => {
+    const resources = await makeArchive(['package.json', 'out/main/index.js', `${root}/index.js`])
+    expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+      `[ash-package-hygiene] excluded mobile/remote service tree packaged: ${root}`
+    )
+  }
+)
+
+it.each(['out/mobile-web', 'out/relay'])(
+  'rejects mobile/remote service root %s in app.asar.unpacked',
+  async (root) => {
+    const resources = await makeArchive(['package.json', 'out/main/index.js'])
+    const file = join(resources, 'app.asar.unpacked', root, 'index.js')
+    await mkdir(dirname(file), { recursive: true })
+    await writeFile(file, 'synthetic retired service entry\n')
+    expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+      `[ash-package-hygiene] excluded mobile/remote service tree packaged: ${root}`
+    )
+  }
+)
+
+it.each(EXCLUDED_ASH_MOBILE_NATIVE_RESOURCE_ROOTS)(
+  'rejects a separately copied native %s service',
+  async (root) => {
+    const resources = await makeArchive(['package.json', 'out/main/index.js'])
+    const file = join(resources, root, 'manifest.json')
+    await mkdir(dirname(file), { recursive: true })
+    await writeFile(file, 'synthetic retired app service resource\n')
+    expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+      `[ash-package-hygiene] excluded mobile/relay native resource: ${root}`
     )
   }
 )

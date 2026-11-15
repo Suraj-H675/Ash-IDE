@@ -5,6 +5,7 @@ const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const http = require('node:http')
 const path = require('node:path')
+const { setTimeout: delay } = require('node:timers/promises')
 
 const [mode, root, clientModule] = process.argv.slice(2)
 if (!/^\/var\/tmp\/ashx11\.[a-zA-Z0-9]{6}$/.test(root ?? '')) {
@@ -130,12 +131,42 @@ async function runJourney() {
     const { browserPageId } = JSON.parse(
       fs.readFileSync(path.join(fixture, 'local-browser-tab.json'), 'utf8')
     )
-    const tabs = await call('browser.tabList', { worktree: project })
-    const retained = tabs.tabs.find((tab) => tab.browserPageId === browserPageId)
+    // Desktop readiness does not imply the reopened Chromium tab has finished
+    // restoring its navigation URL and document. Keep the *same* page ID and
+    // full rendered-content assertions, but allow that asynchronous restore a
+    // short, bounded window instead of sampling the initial blank URL once.
+    const expectedUrl = `${url}/next`
+    const restoreDeadline = Date.now() + 12_000
+    let retained
+    let reopened
+    do {
+      const tabs = await call('browser.tabList', { worktree: project })
+      retained = tabs.tabs.find((tab) => tab.browserPageId === browserPageId)
+      if (retained?.url && retained.url !== expectedUrl) {
+        assert.equal(retained.url, expectedUrl, 'reopened tab navigated away from its original URL')
+      }
+      if (retained?.url === expectedUrl) {
+        reopened = await call('browser.snapshot', { page: browserPageId })
+        if (reopened.url && reopened.url !== expectedUrl) {
+          assert.equal(
+            reopened.url,
+            expectedUrl,
+            'reopened page navigated away from its original URL'
+          )
+        }
+        if (
+          reopened.url === expectedUrl &&
+          /Second local page/.test(JSON.stringify(reopened.snapshot))
+        ) {
+          break
+        }
+      }
+      await delay(300)
+    } while (Date.now() < restoreDeadline)
     assert.ok(retained, 'Browser tab was not retained across GUI close/reopen')
-    assert.equal(retained.url, `${url}/next`)
-    const reopened = await call('browser.snapshot', { page: browserPageId })
-    assert.equal(reopened.url, `${url}/next`)
+    assert.equal(retained.url, expectedUrl)
+    assert.ok(reopened, 'Browser page did not finish reopening')
+    assert.equal(reopened.url, expectedUrl)
     assert.match(JSON.stringify(reopened.snapshot), /Second local page/)
     console.log(
       JSON.stringify({

@@ -61,6 +61,10 @@ const {
 const { EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS } = require('./excluded-task-tracker-cli-artifacts.cjs')
 const { EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS } = require('./excluded-ash-cli-entry-artifacts.cjs')
 const {
+  EXCLUDED_ASH_MOBILE_RELAY_MODULES,
+  EXCLUDED_ASH_MOBILE_SERVICE_ROOTS
+} = require('./excluded-ash-mobile-relay-artifacts.cjs')
+const {
   EXCLUDED_APP_PLUGIN_EXECUTABLES,
   EXCLUDED_APP_PLUGIN_SOURCE_ROOT
 } = require('./excluded-ash-app-plugin-artifacts.cjs')
@@ -276,7 +280,10 @@ module.exports = {
     // The installed browser serves its allowlisted assets from the unpacked renderer.
     '!out/web{,/**/*}',
     // Ash is desktop-only: never pack stale mobile-web output from a previous Orca build.
-    '!out/mobile-web{,/**/*}',
+    ...EXCLUDED_ASH_MOBILE_SERVICE_ROOTS.map((path) => `!${path}{,/**/*}`),
+    // Remaining compatibility source emits standalone mobile/relay test and
+    // protocol files. Do not ship these unreferenced modules as executables.
+    ...EXCLUDED_ASH_MOBILE_RELAY_MODULES.map((path) => `!${path}`),
     // The retired STT worker has no registered Ash voice API. TypeScript still
     // emits its standalone entry, which must not ship as executable code.
     '!out/main/stt-worker.js',
@@ -291,8 +298,6 @@ module.exports = {
     ...EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS.map((path) => `!${path}`),
     // Local dev Electron.app caches (~270MB/branch) must not enter packaged builds.
     '!out/electron-dev{,/**/*}',
-    // Exclude the retired SSH relay even when stale output is present from an Orca build.
-    '!out/relay{,/**/*}',
     '!electron.vite.config.{js,ts,mjs,cjs}',
     '!{.oxlintrc.json,.oxfmtrc.json,components.json,opencode.json,orca.yaml,pnpm-workspace.yaml,vite.web.config.ts}',
     '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,CHANGELOG.md,README.md}',

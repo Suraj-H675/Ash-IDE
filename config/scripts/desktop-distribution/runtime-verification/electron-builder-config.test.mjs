@@ -11,9 +11,53 @@ const REPO_ROOT = join(import.meta.dirname, '../../..', '..')
 
 const require = createRequire(import.meta.url)
 const electronBuilderConfig = require('../../../electron-builder.config.cjs')
+const {
+  EXCLUDED_ASH_MOBILE_RELAY_MODULES,
+  EXCLUDED_ASH_MOBILE_SERVICE_ROOTS
+} = require('../../../excluded-ash-mobile-relay-artifacts.cjs')
 const { copyFiles, FileMatcher } = require('app-builder-lib/out/fileMatcher')
 
 describe('electron-builder config', () => {
+  it('removes unused mobile/relay protocol files but retains local messaging and browser functionality', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'ash-excluded-mobile-relay-files-'))
+    const source = join(root, 'app')
+    const destination = join(root, 'selected')
+    const excluded = [
+      ...EXCLUDED_ASH_MOBILE_RELAY_MODULES,
+      ...EXCLUDED_ASH_MOBILE_SERVICE_ROOTS.map((path) => `${path}/index.js`)
+    ]
+    const retained = [
+      'package.json',
+      'out/main/daemon-entry.js',
+      'out/main/browser-extension-native-host-supervisor-entry.js',
+      'out/cli/runtime/client.js',
+      'out/shared/mobile-markdown-document.js',
+      'out/shared/mobile-bridge-frame-bytes.js',
+      'out/shared/remote-runtime/remote-runtime-client-error.js'
+    ]
+    try {
+      for (const relativePath of [...excluded, ...retained]) {
+        const file = join(source, relativePath)
+        await mkdir(dirname(file), { recursive: true })
+        await writeFile(file, 'synthetic package fixture, not a user file\n')
+      }
+      const matcher = new FileMatcher(
+        source,
+        destination,
+        (value) => value,
+        electronBuilderConfig.files
+      )
+      await copyFiles([matcher])
+      for (const relativePath of excluded) {
+        expect(existsSync(join(destination, relativePath)), relativePath).toBe(false)
+      }
+      for (const relativePath of retained) {
+        expect(existsSync(join(destination, relativePath)), relativePath).toBe(true)
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  })
   it('does not package unregistered Jira or Linear CLI command modules while keeping local commands', async () => {
     const root = await mkdtemp(join(tmpdir(), 'ash-excluded-tracker-cli-'))
     const source = join(root, 'app')

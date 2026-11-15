@@ -1,6 +1,6 @@
 const { existsSync, readdirSync } = require('node:fs')
-const { join } = require('node:path')
-const { listPackage } = require('@electron/asar')
+const { join, posix } = require('node:path')
+const { extractFile, listPackage } = require('@electron/asar')
 const {
   EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS
 } = require('../../../excluded-task-tracker-cli-artifacts.cjs')
@@ -12,6 +12,11 @@ const {
   EXCLUDED_APP_PLUGIN_SOURCE_ROOT,
   EXCLUDED_APP_PLUGIN_NATIVE_RESOURCES_ROOT
 } = require('../../../excluded-ash-app-plugin-artifacts.cjs')
+const {
+  EXCLUDED_ASH_MOBILE_RELAY_MODULES,
+  EXCLUDED_ASH_MOBILE_SERVICE_ROOTS,
+  EXCLUDED_ASH_MOBILE_NATIVE_RESOURCE_ROOTS
+} = require('../../../excluded-ash-mobile-relay-artifacts.cjs')
 
 // The application runtime is assembled from these reviewed roots only.
 // Hidden editor/test state, generated release folders and raw source folders
@@ -78,6 +83,56 @@ function verifyAshPackagedAsarHygiene(resourcesDir) {
       existsSync(join(resourcesDir, 'app.asar.unpacked', ...artifact.split('/')))
     ) {
       throw new Error(`[ash-package-hygiene] excluded app-plugin executable packaged: ${artifact}`)
+    }
+  }
+  for (const artifact of EXCLUDED_ASH_MOBILE_RELAY_MODULES) {
+    if (
+      entries.some((entry) => entry.replace(/\\/g, '/').replace(/^\/+/, '') === artifact) ||
+      existsSync(join(resourcesDir, 'app.asar.unpacked', ...artifact.split('/')))
+    ) {
+      throw new Error(`[ash-package-hygiene] excluded mobile/relay module packaged: ${artifact}`)
+    }
+  }
+  // A new direct require/import of one of the excluded compatibility modules
+  // must fail the package, rather than producing a dangling local-runtime
+  // dependency. This checks statically named JS imports, not arbitrary
+  // computed dynamic paths; native process/browser integration remains vital.
+  const removedMobileModules = new Set(EXCLUDED_ASH_MOBILE_RELAY_MODULES)
+  const literalModuleReference =
+    /\b(?:require|import)\s*\(\s*['"](\.[^'"]+)['"]\s*\)|\b(?:import|export)\s+(?:[^\n;]*?\sfrom\s*)?['"](\.[^'"]+)['"]/g
+  for (const item of entries) {
+    const importer = item.replace(/\\/g, '/').replace(/^\/+/, '')
+    if (!importer.startsWith('out/') || !importer.endsWith('.js')) {
+      continue
+    }
+    const source = extractFile(archivePath, importer).toString('utf8')
+    literalModuleReference.lastIndex = 0
+    for (const match of source.matchAll(literalModuleReference)) {
+      const specifier = match[1] ?? match[2]
+      const resolved = posix.normalize(posix.join(posix.dirname(importer), specifier))
+      for (const candidate of [resolved, `${resolved}.js`, `${resolved}/index.js`]) {
+        if (removedMobileModules.has(candidate)) {
+          throw new Error(
+            `[ash-package-hygiene] retained runtime imports excluded mobile/relay module: ${importer} -> ${candidate}`
+          )
+        }
+      }
+    }
+  }
+  for (const root of EXCLUDED_ASH_MOBILE_SERVICE_ROOTS) {
+    if (
+      entries.some((entry) => {
+        const normalized = entry.replace(/\\/g, '/').replace(/^\/+/, '')
+        return normalized === root || normalized.startsWith(`${root}/`)
+      }) ||
+      existsSync(join(resourcesDir, 'app.asar.unpacked', ...root.split('/')))
+    ) {
+      throw new Error(`[ash-package-hygiene] excluded mobile/remote service tree packaged: ${root}`)
+    }
+  }
+  for (const root of EXCLUDED_ASH_MOBILE_NATIVE_RESOURCE_ROOTS) {
+    if (existsSync(join(resourcesDir, root))) {
+      throw new Error(`[ash-package-hygiene] excluded mobile/relay native resource: ${root}`)
     }
   }
   if (
