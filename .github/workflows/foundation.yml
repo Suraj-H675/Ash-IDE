@@ -37,6 +37,9 @@ jobs:
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-windowless-linux-native-notification.sh
           bash -n resources/linux/packaging/after-install.sh
           bash -n resources/linux/packaging/after-remove.sh
+          bash -n config/scripts/desktop-distribution/runtime-verification/ash-rootless-linux-package-fixture.sh
+          bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-rpm-rootless-install.sh
+          bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-deb-rootless-install.sh
           node --check config/scripts/desktop-distribution/runtime-verification/ash-packaged-browser-local-smoke.cjs
           node --check config/scripts/desktop-distribution/runtime-verification/ash-packaged-closed-gui-agent-hook.cjs
           node --check config/scripts/desktop-distribution/runtime-verification/ash-private-notification-setting.cjs
