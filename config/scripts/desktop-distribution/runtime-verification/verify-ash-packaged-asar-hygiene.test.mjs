@@ -8,6 +8,9 @@ const require = createRequire(import.meta.url)
 const { createPackage } = require('@electron/asar')
 const { verifyAshPackagedAsarHygiene } = require('./verify-ash-packaged-asar-hygiene.cjs')
 const {
+  EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS
+} = require('../../../excluded-ash-cli-entry-artifacts.cjs')
+const {
   PACKAGED_RUNTIME_PACKAGE_ROOTS,
   createPackagedRuntimeNodeModuleResources
 } = require('../../../packaged-runtime-node-modules.cjs')
@@ -93,7 +96,7 @@ it.each(['out/cli/handlers/jira.js', 'out/cli/specs/linear.js'])(
   async (path) => {
     const resources = await makeArchive(['package.json', 'out/main/index.js', path])
     expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
-      `[ash-package-hygiene] unregistered tracker CLI artifact packaged: ${path}`
+      `[ash-package-hygiene] excluded CLI artifact packaged: ${path}`
     )
   }
 )
@@ -105,7 +108,31 @@ it('refuses a Jira handler copied to app.asar.unpacked outside the archive', asy
   await mkdir(dirname(unpacked), { recursive: true })
   await writeFile(unpacked, 'synthetic retired handler\n')
   expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
-    `[ash-package-hygiene] unregistered tracker CLI artifact packaged: ${artifact}`
+    `[ash-package-hygiene] excluded CLI artifact packaged: ${artifact}`
+  )
+})
+
+it.each(EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS)(
+  'refuses excluded Ash CLI entrypoint %s in app.asar',
+  async (artifact) => {
+    const resources = await makeArchive(['package.json', 'out/main/index.js', artifact])
+    expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+      `[ash-package-hygiene] excluded CLI artifact packaged: ${artifact}`
+    )
+  }
+)
+
+it.each([
+  'out/cli/handlers/speech.js',
+  'out/cli/handlers/plugin-runtime.js',
+  'out/cli/specs/plugin.js'
+])('refuses excluded CLI module %s in app.asar.unpacked', async (artifact) => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js'])
+  const unpacked = join(resources, 'app.asar.unpacked', artifact)
+  await mkdir(dirname(unpacked), { recursive: true })
+  await writeFile(unpacked, 'synthetic excluded CLI fixture\n')
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    `[ash-package-hygiene] excluded CLI artifact packaged: ${artifact}`
   )
 })
 

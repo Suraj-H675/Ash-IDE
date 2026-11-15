@@ -27,7 +27,6 @@ vi.mock('./serve-orcad-launch', async (importOriginal) => ({
 }))
 
 import { serveOrcaApp } from './launch'
-import { speechRecognizerPackageName } from '../../shared/speech-recognizer-package'
 
 class FakeChildProcess extends EventEmitter {
   stdout = new EventEmitter()
@@ -95,14 +94,11 @@ describe('orca serve host selection', () => {
     }
   })
 
-  it("serves on orcad by default, handing it the app's browser client", async () => {
+  it("serves on orcad by default, handing it the app's browser client but no voice recognizer", async () => {
     const appRoot = await mkdtemp(join(tmpdir(), 'orca-serve-orcad-web-'))
     try {
       await mkdir(join(appRoot, 'out', 'web'), { recursive: true })
       await writeFile(join(appRoot, 'out', 'web', 'web-index.html'), '<html></html>')
-      const recognizer = speechRecognizerPackageName(process.platform, process.arch)
-      await mkdir(join(appRoot, 'node_modules', recognizer), { recursive: true })
-      await writeFile(join(appRoot, 'node_modules', recognizer, 'sherpa-onnx.node'), '')
       process.env.ORCA_SERVE_SUPERVISOR_APP_ROOT = appRoot
       const selection = { kind: 'orcad', runtime: '/node', entry: '/slot/orcad.js', version: '1' }
       resolveLocalServeRuntimeMock.mockResolvedValue(selection)
@@ -114,8 +110,7 @@ describe('orca serve host selection', () => {
         { json: true },
         expect.any(String),
         expect.not.objectContaining({ ELECTRON_RUN_AS_NODE: expect.anything() }),
-        join(appRoot, 'out', 'web'),
-        process.platform === 'win32' ? undefined : join(appRoot, 'node_modules', recognizer)
+        join(appRoot, 'out', 'web')
       )
       expect(spawnMock).not.toHaveBeenCalled()
       expect(stderr.join('')).toContain('[serve] running on orcad 1')

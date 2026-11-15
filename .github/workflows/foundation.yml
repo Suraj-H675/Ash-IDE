@@ -164,6 +164,7 @@ jobs:
             src/preload/ash-no-orca-feedback-surface.test.ts \
             src/preload/api/ash-excluded-skill-cloud-preload.test.ts \
             src/cli/ash-excluded-cloud-skill-publishing.test.ts \
+            src/cli/excluded-speech-plugin-command-registration.test.ts \
             src/cli/handlers/skill-installed.test.ts \
             src/cli/handlers/skill-guide-host-gate.test.ts \
             src/main/runtime/rpc/methods/skills.test.ts \

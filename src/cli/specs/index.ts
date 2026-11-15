@@ -15,7 +15,6 @@ import { AGENT_HOOK_COMMAND_SPECS } from './agent-hooks'
 import { AGENT_LAUNCH_COMMAND_SPECS } from './agent-launch'
 import { CONNECTOR_COMMAND_SPECS } from './connector'
 import { DIAGNOSTICS_COMMAND_SPECS } from './diagnostics'
-import { SPEECH_COMMAND_SPECS } from './speech'
 import { TERMINAL_DAEMON_COMMAND_SPECS } from './terminal-daemon'
 import { EMULATOR_COMMAND_SPECS } from './emulator'
 import { INTROSPECTION_COMMAND_SPECS } from './introspection'
@@ -26,8 +25,6 @@ import { SEARCH_COMMAND_SPECS } from './search'
 import { PROFILE_STATE_COMMAND_SPECS } from './profile-state'
 import { REFERENCE_COMMAND_SPECS } from './reference'
 import { PORTS_COMMAND_SPECS } from './ports'
-import { PLUGIN_AUTHORING_COMMAND_SPECS, PLUGIN_RUNTIME_COMMAND_SPECS } from './plugin'
-import { PLUGIN_VIEW_COMMAND_SPECS } from './plugin-view'
 import { RUNTIME_COMMAND_SPECS } from './runtime'
 
 export const COMMAND_SPECS: CommandSpec[] = [
@@ -46,7 +43,6 @@ export const COMMAND_SPECS: CommandSpec[] = [
   ...CHAT_COMMAND_SPECS,
   ...CONNECTOR_COMMAND_SPECS,
   ...DIAGNOSTICS_COMMAND_SPECS,
-  ...SPEECH_COMMAND_SPECS,
   ...TERMINAL_DAEMON_COMMAND_SPECS,
   ...INTROSPECTION_COMMAND_SPECS,
   ...ENVIRONMENT_COMMAND_SPECS,
@@ -57,9 +53,6 @@ export const COMMAND_SPECS: CommandSpec[] = [
   ...SEARCH_COMMAND_SPECS,
   ...PROFILE_STATE_COMMAND_SPECS,
   ...PORTS_COMMAND_SPECS,
-  ...PLUGIN_AUTHORING_COMMAND_SPECS,
-  ...PLUGIN_RUNTIME_COMMAND_SPECS,
-  ...PLUGIN_VIEW_COMMAND_SPECS,
   ...RUNTIME_COMMAND_SPECS
 ]
 

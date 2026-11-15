@@ -63,6 +63,7 @@ const {
   verifyAshPackagedAsarHygiene
 } = require('./scripts/desktop-distribution/runtime-verification/verify-ash-packaged-asar-hygiene.cjs')
 const { EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS } = require('./excluded-task-tracker-cli-artifacts.cjs')
+const { EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS } = require('./excluded-ash-cli-entry-artifacts.cjs')
 const {
   appImageNodeRuntimeFpmArgs,
   placeAppImageNodeRuntime,
@@ -291,6 +292,9 @@ module.exports = {
     // Remove unregistered legacy Jira/Linear CLI command modules, but retain shared
     // issue-reference helpers used by active Git/worktree workflows.
     ...EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS.map((path) => `!${path}`),
+    // Ash's installed CLI cannot register voice keys or general IDE plugins.
+    // Do not ship their compiled entrypoints even when tsc emits the sources.
+    ...EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS.map((path) => `!${path}`),
     // Local dev Electron.app caches (~270MB/branch) must not enter packaged builds.
     '!out/electron-dev{,/**/*}',
     // Exclude the retired SSH relay even when stale output is present from an Orca build.

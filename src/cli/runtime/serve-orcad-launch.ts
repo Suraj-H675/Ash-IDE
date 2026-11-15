@@ -68,9 +68,7 @@ export function serveWithOrcad(
   /** The caller's environment without `ELECTRON_RUN_AS_NODE`. */
   baseEnv: NodeJS.ProcessEnv,
   /** The app's browser client; the slot does not carry one, so orcad serves it from here. */
-  webClientRoot?: string,
-  /** orcad’s slot has no speech recognizer; use the app’s copy. */
-  speechRecognizerDir?: string
+  webClientRoot?: string
 ): Promise<number> {
   const spec: ProcessSpec = {
     program: selection.runtime,
@@ -84,8 +82,9 @@ export function serveWithOrcad(
       ASH_USER_DATA_PATH: userDataPath,
       ORCA_USER_DATA: userDataPath,
       ORCA_VERSION: selection.version,
-      // Always set: a value inherited from an Orca terminal would name another install's copy.
-      [SPEECH_RECOGNIZER_DIR_ENV]: speechRecognizerDir ?? '',
+      // Voice/dictation is excluded from Ash. Refuse an inherited recognizer
+      // path that could point to another application's native addon.
+      [SPEECH_RECOGNIZER_DIR_ENV]: '',
       // A service manager restarts this server, so it must not run terminals that die with it.
       [ORCA_SERVE_SUPERVISED_ENV]: args.supervise === true ? '1' : ''
     }

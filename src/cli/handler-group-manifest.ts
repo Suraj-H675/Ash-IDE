@@ -1,7 +1,6 @@
 import type { CommandHandler } from './dispatch'
 import { BROWSER_HANDLER_GROUPS } from './browser/browser-handler-groups'
 import { REFERENCE_HANDLER_GROUP } from './reference-handler-group'
-import { PLUGIN_HANDLER_GROUPS } from './plugin-handler-groups'
 
 export type HandlerGroup = {
   name: string
@@ -234,11 +233,6 @@ export const HANDLER_GROUPS: readonly HandlerGroup[] = [
     load: async () => (await import('./handlers/diagnostics.js')).DIAGNOSTICS_HANDLERS
   },
   {
-    name: 'speech',
-    keys: ['speech openai-key status', 'speech openai-key set', 'speech openai-key clear'],
-    load: async () => (await import('./handlers/speech.js')).SPEECH_HANDLERS
-  },
-  {
     name: 'introspection',
     keys: ['agent-context'],
     load: async () => (await import('./handlers/introspection.js')).INTROSPECTION_HANDLERS
@@ -279,7 +273,6 @@ export const HANDLER_GROUPS: readonly HandlerGroup[] = [
     keys: ['skills installed'],
     load: async () => (await import('./handlers/skill-installed.js')).SKILL_DISCOVERY_HANDLERS
   },
-  ...PLUGIN_HANDLER_GROUPS,
   {
     name: 'skills',
     keys: ['skills list', 'skills get', 'skills install', 'skills update'],

@@ -4,6 +4,9 @@ const { listPackage } = require('@electron/asar')
 const {
   EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS
 } = require('../../../excluded-task-tracker-cli-artifacts.cjs')
+const {
+  EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS
+} = require('../../../excluded-ash-cli-entry-artifacts.cjs')
 
 // The application runtime is assembled from these reviewed roots only.
 // Hidden editor/test state, generated release folders and raw source folders
@@ -53,14 +56,15 @@ function verifyAshPackagedAsarHygiene(resourcesDir) {
   if (!roots.has('out') || !roots.has('package.json')) {
     throw new Error('[ash-package-hygiene] packaged runtime entry roots are incomplete')
   }
-  for (const artifact of EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS) {
+  for (const artifact of [
+    ...EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS,
+    ...EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS
+  ]) {
     if (
       entries.some((entry) => entry.replace(/\\/g, '/').replace(/^\/+/, '') === artifact) ||
       existsSync(join(resourcesDir, 'app.asar.unpacked', ...artifact.split('/')))
     ) {
-      throw new Error(
-        `[ash-package-hygiene] unregistered tracker CLI artifact packaged: ${artifact}`
-      )
+      throw new Error(`[ash-package-hygiene] excluded CLI artifact packaged: ${artifact}`)
     }
   }
   for (const packageName of EXCLUDED_VENDOR_NODE_MODULES) {
