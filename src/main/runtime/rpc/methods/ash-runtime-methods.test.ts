@@ -3,11 +3,19 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { ALL_RPC_METHODS, ASH_RPC_METHODS } from './index'
 import { ASH_RUNTIME_CONTROL_METHODS } from './ash-runtime-control'
+import { MANAGED_SERVER_METHODS } from './managed-server'
 import { EMULATOR_METHODS } from './emulator'
 import { MOBILE_PROJECT_SECTIONS_METHODS } from './mobile-project-sections'
 import { MOBILE_RELAY_HOSTS_METHODS } from './mobile-relay-hosts'
 import { MOBILE_WEB_BUNDLE_METHODS } from './mobile-web-bundle'
 import { PAIRING_METHODS } from './pairing'
+import { PLUGIN_DEV_EMIT_METHODS } from './plugin-dev-emit'
+import { PLUGIN_DEV_REQUEST_METHODS } from './plugin-dev-request'
+import { PLUGIN_METHODS } from './plugins'
+import { PLUGIN_VIEW_METHODS } from './plugin-view'
+import { SKILL_METHODS } from './skills'
+import { SPEECH_METHODS } from './speech'
+import { SSH_METHODS } from './ssh'
 
 const methodNames = new Set<string>(ASH_RPC_METHODS.map(({ name }) => name))
 const allMethodNames = new Set<string>(ALL_RPC_METHODS.map(({ name }) => name))
@@ -44,6 +52,53 @@ describe('Ash authenticated RPC surface', () => {
     }
     expect(allMethodNames.has('browser.tabCreate')).toBe(true)
     expect(allMethodNames.has('orchestration.run')).toBe(true)
+  })
+
+  it('does not load or register excluded SSH, managed server, speech, plugin, or skill RPC groups', () => {
+    const excludedGroups = [
+      { symbol: 'SSH_METHODS', prefix: 'ssh.', methods: SSH_METHODS },
+      {
+        symbol: 'MANAGED_SERVER_METHODS',
+        prefix: 'managedServer.',
+        methods: MANAGED_SERVER_METHODS
+      },
+      { symbol: 'SPEECH_METHODS', prefix: 'speech.', methods: SPEECH_METHODS },
+      { symbol: 'PLUGIN_METHODS', prefix: 'plugins.', methods: PLUGIN_METHODS },
+      { symbol: 'PLUGIN_VIEW_METHODS', prefix: 'plugins.', methods: PLUGIN_VIEW_METHODS },
+      {
+        symbol: 'PLUGIN_DEV_EMIT_METHODS',
+        prefix: 'plugins.',
+        methods: PLUGIN_DEV_EMIT_METHODS
+      },
+      {
+        symbol: 'PLUGIN_DEV_REQUEST_METHODS',
+        prefix: 'plugins.',
+        methods: PLUGIN_DEV_REQUEST_METHODS
+      },
+      { symbol: 'SKILL_METHODS', prefix: 'skills.', methods: SKILL_METHODS }
+    ]
+    const fullManifestSource = readFileSync(
+      resolve(process.cwd(), 'src/main/runtime/rpc/methods/index.ts'),
+      'utf8'
+    )
+    for (const { symbol, prefix, methods } of excludedGroups) {
+      expect(fullManifestSource, `${symbol} import`).not.toContain(`import { ${symbol} } from`)
+      expect(fullManifestSource, `${symbol} registration`).not.toContain(`...${symbol}`)
+      for (const { name } of methods) {
+        expect(name.startsWith(prefix), `${symbol} must contain only excluded methods`).toBe(true)
+        expect(allMethodNames.has(name), `${name} must not enter the full server manifest`).toBe(
+          false
+        )
+        expect(methodNames.has(name), `${name} must not enter Ash RPC`).toBe(false)
+      }
+    }
+    expect(allMethodNames.has('browser.tabCreate')).toBe(true)
+    expect(methodNames.has('browser.tabCreate')).toBe(true)
+    expect(allMethodNames.has('orchestration.run')).toBe(true)
+    expect(methodNames.has('orchestration.run')).toBe(true)
+    expect([...methodNames].some((name) => name.startsWith('terminal.'))).toBe(true)
+    expect(allMethodNames.has('git.status')).toBe(true)
+    expect(methodNames.has('git.status')).toBe(true)
   })
 
   it('retains local status, terminal, Git, and agent launch methods', () => {

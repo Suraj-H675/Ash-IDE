@@ -34,18 +34,10 @@ import { GIT_METHODS } from './git'
 import { GITHUB_METHODS } from './github'
 import { GITLAB_METHODS } from './gitlab'
 import { HOSTED_REVIEW_METHODS } from './hosted-review'
-import { SSH_METHODS } from './ssh'
-import { MANAGED_SERVER_METHODS } from './managed-server'
-import { SPEECH_METHODS } from './speech'
 import { CLIENT_UI_METHODS } from './client-ui'
 import { CLIENT_EVENT_METHODS } from './client-events'
 import { WORKSPACE_PORT_METHODS } from './workspace-ports'
 import { LINK_PREVIEW_METHODS } from './link-preview'
-import { PLUGIN_METHODS } from './plugins'
-import { PLUGIN_VIEW_METHODS } from './plugin-view'
-import { PLUGIN_DEV_EMIT_METHODS } from './plugin-dev-emit'
-import { PLUGIN_DEV_REQUEST_METHODS } from './plugin-dev-request'
-import { SKILL_METHODS } from './skills'
 import { CLIPBOARD_METHODS } from './clipboard'
 import { HOST_CAPABILITY_METHODS } from './host-capabilities'
 import { RUNTIME_CLIENT_CAPABILITY_METHODS } from './runtime-client-capabilities'
@@ -120,16 +112,8 @@ export const ALL_RPC_METHODS = [
   ...GITHUB_METHODS,
   ...GITLAB_METHODS,
   ...HOSTED_REVIEW_METHODS,
-  ...SSH_METHODS,
-  ...MANAGED_SERVER_METHODS,
-  ...SPEECH_METHODS,
   ...WORKSPACE_PORT_METHODS,
   ...LINK_PREVIEW_METHODS,
-  ...PLUGIN_METHODS,
-  ...PLUGIN_VIEW_METHODS,
-  ...PLUGIN_DEV_EMIT_METHODS,
-  ...PLUGIN_DEV_REQUEST_METHODS,
-  ...SKILL_METHODS,
   ...CLIPBOARD_METHODS,
   ...HOST_CAPABILITY_METHODS,
   ...RUNTIME_CLIENT_CAPABILITY_METHODS,
