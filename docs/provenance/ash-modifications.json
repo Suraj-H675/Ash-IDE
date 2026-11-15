@@ -803,7 +803,7 @@
     },
     {
       "path": "src/main/orcad/orcad-host-adapters.ts",
-      "sha256": "fec55b2447174ba936223b0adc5b6dae9b8135d3f5faf8e6e2248d4fe1481d54",
+      "sha256": "e061ec66dafc1d3ac7715ea5879855bd7394fe67350e4fcefcb8e47f421f7f5c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2633,7 +2633,7 @@
     },
     {
       "path": "src/shared/orcad-artifacts.ts",
-      "sha256": "fb24d2fdd1675d62c5faf7d42848d0d224500bba9ed494aa0dd8294d71cea690",
+      "sha256": "f61824454cd9d8af1ebc19d9681d7b40e286bf3c2dce83a5e56df7ac21967410",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2698,7 +2698,7 @@
     },
     {
       "path": "config/electron-builder.config.cjs",
-      "sha256": "b2ffff9b9e05a7416b0e310f1c02bd613d563f82dd5acaa4094cdfe25be4ef29",
+      "sha256": "0413dd115fab1d338edcffa7da92ee97b1d3c530c63b89c35d37c36535e01ebd",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2849,6 +2849,11 @@
     {
       "path": "config/scripts/orcad-distribution/server-bundle/orcad-artifact-version.mjs",
       "sha256": "0a3a46a7def3241eb367f87bdb96bb09136f606a7db3f1ce6692fab15ace5aa0",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/orcad-distribution/server-bundle/orcad-entry-build.mjs",
+      "sha256": "13b2d741ab9b6d8cd1f51d59463a0ba79634723163f3200a6d91043f6e1103a2",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

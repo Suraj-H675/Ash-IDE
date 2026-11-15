@@ -7,6 +7,7 @@ import {
   orcadArtifactFilenames,
   orcadTemplateCommonFilenames
 } from '../../../../src/shared/orcad-artifacts.ts'
+import { ORCAD_CHILD_ENTRY_POINTS } from './orcad-entry-build.mjs'
 import { verifyPackagedOrcadTemplate } from '../template/verify-packaged-orcad-template.cjs'
 import { writeOrcadTemplateTestFixture } from '../template/orcad-template-test-fixture.mjs'
 
@@ -25,6 +26,19 @@ describe('Ash server bundle exclusions', () => {
     }
   })
 
+  it('does not build or distribute the retired dictation worker', () => {
+    expect(Object.values(ORCAD_CHILD_ENTRY_POINTS)).not.toContain('src/main/speech/stt-worker.ts')
+    for (const files of [
+      ORCAD_ARTIFACTS.map((artifact) => artifact.filename),
+      orcadArtifactFilenames('linux-x64-glibc'),
+      orcadArtifactFilenames('win32-x64'),
+      orcadTemplateCommonFilenames()
+    ]) {
+      expect(files).not.toContain('stt-worker.js')
+      expect(files.some((file) => file.startsWith('node_modules/sherpa-onnx-'))).toBe(false)
+    }
+  })
+
   it('rejects excluded files when verifying a real server-template inventory', async () => {
     const fixtureRoot = mkdtempSync(join(tmpdir(), 'ash-orcad-exclusions-'))
     try {
@@ -33,7 +47,9 @@ describe('Ash server bundle exclusions', () => {
 
       for (const excluded of [
         'node_modules/@linear/sdk/index.js',
-        'out/mobile-web/manifest.json'
+        'out/mobile-web/manifest.json',
+        'stt-worker.js',
+        'node_modules/sherpa-onnx-linux-x64/sherpa-onnx.node'
       ]) {
         const unexpected = join(templateDir, ...excluded.split('/'))
         mkdirSync(dirname(unexpected), { recursive: true })

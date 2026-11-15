@@ -289,6 +289,9 @@ module.exports = {
     '!out/web{,/**/*}',
     // Ash is desktop-only: never pack stale mobile-web output from a previous Orca build.
     '!out/mobile-web{,/**/*}',
+    // The retired STT worker has no registered Ash voice API. TypeScript still
+    // emits its standalone entry, which must not ship as executable code.
+    '!out/main/stt-worker.js',
     // Remove unregistered legacy Jira/Linear CLI command modules, but retain shared
     // issue-reference helpers used by active Git/worktree workflows.
     ...EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS.map((path) => `!${path}`),

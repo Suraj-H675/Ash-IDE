@@ -125,6 +125,7 @@ jobs:
             src/main/ipc/m8-local-only-report-ipc.test.ts \
             src/main/orcad/orcad-scheduled-automation-exclusion.test.ts \
             src/main/orcad/orcad-ash-local-only-network.test.ts \
+            src/main/orcad/ash-excluded-speech-service.test.ts \
             src/main/startup/ash-excluded-mobile-cloud-relay-startup.test.ts \
             src/main/runtime/rpc/server/ash-mobile-pairing-entrypoints-retirement.test.ts \
             src/main/runtime/rpc/server/ash-mobile-relay-provider-hooks-retirement.test.ts \
@@ -200,5 +201,6 @@ jobs:
             --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
             --no-file-parallelism \
             config/scripts/desktop-distribution/runtime-verification/electron-builder-config.test.mjs \
-            config/scripts/desktop-distribution/runtime-verification/verify-ash-packaged-asar-hygiene.test.mjs
+            config/scripts/desktop-distribution/runtime-verification/verify-ash-packaged-asar-hygiene.test.mjs \
+            config/scripts/orcad-distribution/server-bundle/orcad-excluded-artifacts.test.mjs
           node config/scripts/runtime-verification/skills-cli/verify-skills-cli-runtime.cjs out

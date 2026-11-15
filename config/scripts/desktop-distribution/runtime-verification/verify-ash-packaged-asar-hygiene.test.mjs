@@ -91,6 +91,39 @@ it('refuses a package lacking the compiled runtime entry', async () => {
   )
 })
 
+it('rejects the excluded native speech worker in the desktop ASAR', async () => {
+  const resources = await makeArchive([
+    'package.json',
+    'out/main/index.js',
+    'out/main/stt-worker.js'
+  ])
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(/excluded speech worker/)
+})
+
+it('rejects the excluded native speech worker in unpacked runtime files', async () => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js'])
+  const worker = join(resources, 'app.asar.unpacked', 'out', 'main', 'stt-worker.js')
+  await mkdir(dirname(worker), { recursive: true })
+  await writeFile(worker, 'synthetic excluded speech worker\n')
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(/excluded speech worker/)
+})
+
+it.each([
+  'node_modules/sherpa-onnx-linux-x64/sherpa-onnx.node',
+  'node_modules/sherpa-onnx-win-x64/sherpa-onnx.node'
+])('rejects packaged native speech dependency %s in the ASAR', async (artifact) => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js', artifact])
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(/excluded speech native/)
+})
+
+it('rejects a native speech dependency copied beside app.asar', async () => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js'])
+  const native = join(resources, 'node_modules', 'sherpa-onnx-linux-x64', 'sherpa-onnx.node')
+  await mkdir(dirname(native), { recursive: true })
+  await writeFile(native, 'synthetic excluded speech addon\n')
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(/excluded speech native/)
+})
+
 it.each(['out/cli/handlers/jira.js', 'out/cli/specs/linear.js'])(
   'refuses unregistered task-tracker CLI artifact %s in app.asar',
   async (path) => {

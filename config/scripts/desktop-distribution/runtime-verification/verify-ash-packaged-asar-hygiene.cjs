@@ -1,4 +1,4 @@
-const { existsSync } = require('node:fs')
+const { existsSync, readdirSync } = require('node:fs')
 const { join } = require('node:path')
 const { listPackage } = require('@electron/asar')
 const {
@@ -65,6 +65,28 @@ function verifyAshPackagedAsarHygiene(resourcesDir) {
       existsSync(join(resourcesDir, 'app.asar.unpacked', ...artifact.split('/')))
     ) {
       throw new Error(`[ash-package-hygiene] excluded CLI artifact packaged: ${artifact}`)
+    }
+  }
+  const speechWorker = 'out/main/stt-worker.js'
+  if (
+    entries.some((entry) => entry.replace(/\\/g, '/').replace(/^\/+/, '') === speechWorker) ||
+    existsSync(join(resourcesDir, 'app.asar.unpacked', ...speechWorker.split('/')))
+  ) {
+    throw new Error('[ash-package-hygiene] excluded speech worker packaged: stt-worker.js')
+  }
+  // No installed speech recognizer is needed by an Ash release; protect both
+  // ASAR and separate extraResources/native dependency copy paths on all OSes.
+  if (
+    entries.some((entry) => /^\/?node_modules\/sherpa-onnx(?:\/|-)/.test(entry.replace(/\\/g, '/')))
+  ) {
+    throw new Error('[ash-package-hygiene] excluded speech native dependency in app.asar')
+  }
+  for (const root of [
+    join(resourcesDir, 'node_modules'),
+    join(resourcesDir, 'app.asar.unpacked', 'node_modules')
+  ]) {
+    if (existsSync(root) && readdirSync(root).some((name) => /^sherpa-onnx(?:$|-)/.test(name))) {
+      throw new Error('[ash-package-hygiene] excluded speech native dependency in resources')
     }
   }
   for (const packageName of EXCLUDED_VENDOR_NODE_MODULES) {
