@@ -220,6 +220,7 @@ it('rejects a dangling static ESM import of an excluded relay module', async () 
 it.each([
   'out/shared/mobile-notification-identity.js',
   'out/shared/remote-runtime/e2ee/mobile-e2ee-legacy-fixtures.js',
+  'out/shared/remote-runtime/e2ee/paired-e2ee-framing-policy.js',
   'out/shared/remote-runtime/relay/mobile-relay-phone-protocol.js'
 ])('rejects retired mobile/relay module %s in app.asar.unpacked', async (artifact) => {
   const resources = await makeArchive(['package.json', 'out/main/index.js'])

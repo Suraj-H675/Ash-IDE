@@ -11,6 +11,7 @@ const EXCLUDED_ASH_MOBILE_RELAY_MODULES = Object.freeze([
   'out/shared/remote-runtime/e2ee/mobile-e2ee-legacy-fixtures.js',
   'out/shared/remote-runtime/e2ee/mobile-e2ee-v2-fixtures.js',
   'out/shared/remote-runtime/e2ee/paired-e2ee-fixed-key-test-fixture.js',
+  'out/shared/remote-runtime/e2ee/paired-e2ee-framing-policy.js',
   'out/shared/remote-runtime/host-store/runtime-environment-shipped-store.test-fixture.js',
   'out/shared/remote-runtime/pairing/mobile-pairing-connection-mode.js',
   'out/shared/remote-runtime/relay/mobile-relay-close-codes.js',

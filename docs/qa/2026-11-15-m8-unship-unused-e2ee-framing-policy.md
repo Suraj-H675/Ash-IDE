@@ -1,0 +1,22 @@
+# M8 / EX-01, PK-08 — exclude unused standalone E2EE framing policy
+
+**Date:** 2026-11-15 (Asia/Kolkata). **Base:** clean canonical `main` at `820756de142d091d584827ed0805e49c62e1c5bc`; [CI 43724581878](https://github.com/Suraj-H675/Ash-IDE/actions/runs/43724581878) completed successfully. **Branch:** `fix/m8-unship-dormant-mobile-e2ee-compat`, isolated Git worktree. **Source:** separate read-only Orca `55697aec91390357540103f49991458f756b41cc`, original MIT license and source ledger unchanged.
+
+## Dependency decision
+
+The preceding 16-module package exclusion left `out/shared/remote-runtime/e2ee/paired-e2ee-framing-policy.js` as a standalone compiled module. A production-source reference scan found no importer of `createPairedE2EEFramingPolicy` or `paired-e2ee-framing-policy` beyond its defining file. The compiled-module inspection likewise found no direct standalone JS importer. The explicit electron-builder exclusion and independent afterPack ASAR verifier now reject this path. The parametrized package tests reject it both in ASAR and `app.asar.unpacked`; existing checks reject a new retained compiled runtime import of an excluded path.
+
+**Three similarly named modules were deliberately retained:** `paired-e2ee-compressed-frame.js` is referenced by runtime RPC compression, `paired-e2ee-handshake-deadline.js` by the E2EE channel, and `paired-e2ee-v2-key-schedule.js` by web-renderer E2EE. No source TypeScript, protocol implementation, shared local IPC, browser extension or Git SSH transport was removed. Static import checks cannot certify arbitrary computed runtime loading, so this is not full E2EE or EX-01/EX-02 removal.
+
+## Executed verification
+
+- Before change, two focused package test files: **96/96 PASS**. After change, the same suite: **98/98 PASS** (the new ASAR and unpacked assertions); Node syntax checks **PASS**.
+- `pnpm run build:release:javascript`: **PASS** with sandbox preload, renderer and **1,083-file CLI closure** checks. `pnpm run typecheck`, focused Oxlint and Oxfmt, and `git diff --check`: **PASS**.
+- A direct first AppImage attempt could not rebuild the Wayland clipboard helper because Docker was unavailable. Verified identical seven helper source/build inputs and matching SHA-256 build fingerprint `e94ecd267f31e7d3c45b23e3080196adc2857ef7a30687584ef70adc05c9b637`, then copied the existing built helper from canonical `main` to this worktree's ignored native build directory. The helper passed its glibc floor check; **it was reused, not recompiled**. A subsequent packaging attempt reached afterPack but lacked the generated `out/package.json` boundary; the existing `verify-cli-bin.mjs --fix-executable --fix-package-json` prepack command generated it, with no tracked source change.
+- Fresh `pnpm exec electron-builder --config config/electron-builder.config.cjs --linux AppImage --x64`: **PASS**. Real `app.asar` contains **5,151 entries**, down one from the preceding 5,152-entry baseline. The framing-policy file is absent, and all three retained E2EE modules are present. Packaged plain-Node daemon, Node PTY and **15 Linux native binaries** passed; no new release was published.
+- Unsigned engineering AppImage: `dist/ash-ide-linux.AppImage`, **224,051,519 bytes**, SHA-256 `1bded338ce32a788de147704bcdcd772ded6223abb9d9dfd6c5a5343730b41a9`. Staged `app.asar` SHA-256 `dc75ecb3a4b37dbde93d1734e0270338575357e7fb930826a070d41e99a39a24`.
+- Native **X11/Xvfb** disposable AppImage test with local-only browser and authenticated GUI-closed notification: **PASS**. Private log root `/var/tmp/ashx11.fSDTfO`; runtime `650b32f6-71a7-48f3-847e-5f246e97f2c9`, PTY PID `1784760`; local browser before/after checks and real private D-Bus notification verified. Native **Wayland/KWin** close/reopen PTY lifecycle: **PASS** in `/var/tmp/ashwl.Rtmwj8`; runtime `c60fe555-5896-4fb3-a396-15e330aea074`, PTY PID `1786650`. Both test-owned runtimes and daemons were explicitly stopped.
+
+## Acceptance boundary
+
+This is **one further package-only exclusion**, not full EX-01, EX-02 or PK-08 closure, provider-authenticated completion, updater rollback, complete Orca visual parity, or macOS/Windows release certification. No user project repo, existing provider sign-in, Ash/Orca installation, or user browser profile was modified. Source-file removal and wider legacy mobile/remote-runtime pruning remain separate dependency-reviewed tasks. Final Git integration and new exact-commit CI require evidence after merging; the prior successful run belongs to the base commit.
