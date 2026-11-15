@@ -59,7 +59,10 @@ const {
   verifyAshPackagedAsarHygiene
 } = require('./scripts/desktop-distribution/runtime-verification/verify-ash-packaged-asar-hygiene.cjs')
 const { EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS } = require('./excluded-task-tracker-cli-artifacts.cjs')
-const { EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS } = require('./excluded-ash-cli-entry-artifacts.cjs')
+const {
+  EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS,
+  EXCLUDED_ASH_CLI_ARTIFACT_ROOTS
+} = require('./excluded-ash-cli-entry-artifacts.cjs')
 const {
   EXCLUDED_ASH_MOBILE_RELAY_MODULES,
   EXCLUDED_ASH_MOBILE_SERVICE_ROOTS
@@ -296,6 +299,9 @@ module.exports = {
     // Ash's installed CLI cannot register voice keys or general IDE plugins.
     // Do not ship their compiled entrypoints even when tsc emits the sources.
     ...EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS.map((path) => `!${path}`),
+    // Unregistered general app-plugin authoring/watch support is emitted
+    // separately by tsc but no longer has a packaged CLI importer.
+    ...EXCLUDED_ASH_CLI_ARTIFACT_ROOTS.map((path) => `!${path}{,/**/*}`),
     // Local dev Electron.app caches (~270MB/branch) must not enter packaged builds.
     '!out/electron-dev{,/**/*}',
     '!electron.vite.config.{js,ts,mjs,cjs}',

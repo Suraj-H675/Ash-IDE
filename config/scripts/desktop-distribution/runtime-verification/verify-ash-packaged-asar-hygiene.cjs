@@ -5,7 +5,8 @@ const {
   EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS
 } = require('../../../excluded-task-tracker-cli-artifacts.cjs')
 const {
-  EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS
+  EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS,
+  EXCLUDED_ASH_CLI_ARTIFACT_ROOTS
 } = require('../../../excluded-ash-cli-entry-artifacts.cjs')
 const {
   EXCLUDED_APP_PLUGIN_EXECUTABLES,
@@ -77,6 +78,16 @@ function verifyAshPackagedAsarHygiene(resourcesDir) {
       throw new Error(`[ash-package-hygiene] excluded CLI artifact packaged: ${artifact}`)
     }
   }
+  for (const root of EXCLUDED_ASH_CLI_ARTIFACT_ROOTS) {
+    const artifact = entries
+      .map((entry) => entry.replace(/\\/g, '/').replace(/^\/+/, ''))
+      .find((entry) => entry === root || entry.startsWith(`${root}/`))
+    if (artifact || existsSync(join(resourcesDir, 'app.asar.unpacked', ...root.split('/')))) {
+      throw new Error(
+        `[ash-package-hygiene] excluded app-plugin CLI tree packaged: ${artifact ?? root}`
+      )
+    }
+  }
   for (const artifact of EXCLUDED_APP_PLUGIN_EXECUTABLES) {
     if (
       entries.some((entry) => entry.replace(/\\/g, '/').replace(/^\/+/, '') === artifact) ||
@@ -110,6 +121,13 @@ function verifyAshPackagedAsarHygiene(resourcesDir) {
     for (const match of source.matchAll(literalModuleReference)) {
       const specifier = match[1] ?? match[2]
       const resolved = posix.normalize(posix.join(posix.dirname(importer), specifier))
+      for (const root of EXCLUDED_ASH_CLI_ARTIFACT_ROOTS) {
+        if (resolved === root || resolved.startsWith(`${root}/`)) {
+          throw new Error(
+            `[ash-package-hygiene] retained runtime imports excluded app-plugin CLI tree: ${importer} -> ${resolved}`
+          )
+        }
+      }
       for (const candidate of [resolved, `${resolved}.js`, `${resolved}/index.js`]) {
         if (removedMobileModules.has(candidate)) {
           throw new Error(

@@ -8,7 +8,8 @@ const require = createRequire(import.meta.url)
 const { createPackage } = require('@electron/asar')
 const { verifyAshPackagedAsarHygiene } = require('./verify-ash-packaged-asar-hygiene.cjs')
 const {
-  EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS
+  EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS,
+  EXCLUDED_ASH_CLI_ARTIFACT_ROOTS
 } = require('../../../excluded-ash-cli-entry-artifacts.cjs')
 const {
   EXCLUDED_APP_PLUGIN_EXECUTABLES
@@ -44,6 +45,13 @@ afterEach(async () => {
   for (const root of fixtures.splice(0)) {
     await rm(root, { recursive: true, force: true })
   }
+})
+
+it('tracks exactly the retired standalone general app-plugin CLI trees', () => {
+  expect(EXCLUDED_ASH_CLI_ARTIFACT_ROOTS).toEqual([
+    'out/cli/plugin-authoring',
+    'out/cli/plugin-dev-watch'
+  ])
 })
 
 it('does not select retired Linear/telemetry SDKs in Linux or macOS runtime dependency closure', () => {
@@ -162,6 +170,52 @@ it.each(EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS)(
     )
   }
 )
+
+it.each([
+  'out/cli/plugin-authoring/plugin-cli-output.js',
+  'out/cli/plugin-dev-watch/plugin-dev-watch-check.js'
+])('rejects retired app-plugin CLI directory artifact %s in app.asar', async (artifact) => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js', artifact])
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    `[ash-package-hygiene] excluded app-plugin CLI tree packaged: ${artifact.split('/').slice(0, 3).join('/')}`
+  )
+})
+
+it.each([
+  'out/cli/plugin-authoring/plugin-cli-output.js',
+  'out/cli/plugin-dev-watch/plugin-dev-watch-check.js'
+])(
+  'rejects retired app-plugin CLI directory artifact %s in app.asar.unpacked',
+  async (artifact) => {
+    const resources = await makeArchive(['package.json', 'out/main/index.js'])
+    const unpacked = join(resources, 'app.asar.unpacked', artifact)
+    await mkdir(dirname(unpacked), { recursive: true })
+    await writeFile(unpacked, 'synthetic excluded app-plugin CLI fixture\n')
+    expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+      `[ash-package-hygiene] excluded app-plugin CLI tree packaged: ${artifact.split('/').slice(0, 3).join('/')}`
+    )
+  }
+)
+
+it('rejects a dangling CommonJS import of a retired app-plugin CLI authoring module', async () => {
+  const importer = 'out/cli/handlers/local-status.js'
+  const resources = await makeArchive(['package.json', 'out/main/index.js', importer], {
+    [importer]: "const authoring = require('../plugin-authoring/plugin-cli-output')\n"
+  })
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    `[ash-package-hygiene] retained runtime imports excluded app-plugin CLI tree: ${importer} -> out/cli/plugin-authoring/plugin-cli-output`
+  )
+})
+
+it('rejects a dangling static dynamic import of a retired app-plugin CLI watcher', async () => {
+  const importer = 'out/cli/runtime/retained-status.js'
+  const resources = await makeArchive(['package.json', 'out/main/index.js', importer], {
+    [importer]: "const watcher = import('../plugin-dev-watch/plugin-dev-watch-check.js')\n"
+  })
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    `[ash-package-hygiene] retained runtime imports excluded app-plugin CLI tree: ${importer} -> out/cli/plugin-dev-watch/plugin-dev-watch-check.js`
+  )
+})
 
 it.each([
   'out/cli/handlers/speech.js',

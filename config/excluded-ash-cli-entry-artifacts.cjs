@@ -24,4 +24,14 @@ const EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS = Object.freeze([
   'out/cli/handlers/plugin-view.js'
 ])
 
-module.exports = { EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS }
+// The public Ash CLI registers none of the general application-plugin
+// authoring/dev-watch commands. Their TypeScript-emitted implementation
+// directories are reachable only from excluded plugin CLI entrypoints or
+// each other, so do not ship them as standalone executables. Chromium
+// extension management and provider-native skill/MCP flows are unrelated.
+const EXCLUDED_ASH_CLI_ARTIFACT_ROOTS = Object.freeze([
+  'out/cli/plugin-authoring',
+  'out/cli/plugin-dev-watch'
+])
+
+module.exports = { EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS, EXCLUDED_ASH_CLI_ARTIFACT_ROOTS }
