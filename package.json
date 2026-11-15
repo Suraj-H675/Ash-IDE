@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "A local desktop IDE for coding agents",
   "homepage": "https://github.com/Suraj-H675/Ash-IDE",
+  "license": "MIT",
   "bin": {
     "ash-ide": "./out/cli/index.js",
     "ash-ide-dev": "./config/scripts/development/launch/ash-dev.mjs"

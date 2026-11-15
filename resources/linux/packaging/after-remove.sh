@@ -13,7 +13,7 @@ link="/usr/bin/ash-ide"
 if [ -L "$link" ]; then
   target="$(readlink "$link" || true)"
   case "$target" in
-    /opt/ash-ide/*)
+    "/opt/Ash IDE/resources/bin/ash-ide" | /opt/ash-ide/resources/bin/ash-ide)
       rm -f "$link"
       ;;
   esac

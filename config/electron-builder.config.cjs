@@ -69,6 +69,9 @@ const {
   verifyAppImageNodeRuntimeServesPty
 } = require('./scripts/desktop-distribution/linux/appimage-node-runtime.cjs')
 const {
+  normalizeLinuxPackagedFilePermissions
+} = require('./scripts/desktop-distribution/linux/linux-package-file-permissions.cjs')
+const {
   signWindowsUninstallerViaSignPath
 } = require('./scripts/desktop-distribution/windows/windows-uninstaller-signing.cjs')
 const {
@@ -493,6 +496,12 @@ module.exports = {
         context.packager
       )
       await packageMacTerminalHost(join(resourcesDir, '..', '..'), context)
+    }
+    if (context.electronPlatformName === 'linux') {
+      // All Linux targets share this bundle. RPM/DEB must never inherit the
+      // 0777/0666 modes from Electron's zip; sandbox setuid is installed only
+      // by our narrowly scoped package postinstall script.
+      normalizeLinuxPackagedFilePermissions(context.appOutDir)
     }
   },
   win: {

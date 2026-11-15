@@ -35,9 +35,15 @@ jobs:
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-x11-lifecycle.sh
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-network-audit.sh
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-windowless-linux-native-notification.sh
+          bash -n resources/linux/packaging/after-install.sh
+          bash -n resources/linux/packaging/after-remove.sh
           node --check config/scripts/desktop-distribution/runtime-verification/ash-packaged-browser-local-smoke.cjs
           node --check config/scripts/desktop-distribution/runtime-verification/ash-packaged-closed-gui-agent-hook.cjs
           node --check config/scripts/desktop-distribution/runtime-verification/ash-private-notification-setting.cjs
+      - name: Verify deb and RPM installation and removal scripts in a private test root
+        run: node config/scripts/desktop-distribution/runtime-verification/verify-linux-package-maintainer-scripts.mjs
+      - name: Reject group/world-writable files in Linux packages
+        run: node config/scripts/desktop-distribution/linux/linux-package-file-permissions.test.cjs
       - name: Verify retained desktop localization references
         run: pnpm run verify:localization-catalog
       - name: Build retained workspace packages

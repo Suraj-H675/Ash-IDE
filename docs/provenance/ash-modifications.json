@@ -2693,7 +2693,7 @@
     },
     {
       "path": "config/electron-builder.config.cjs",
-      "sha256": "e66015a66848bd02a1b61caa9dcf9519b0eeed63fcc93a46446da65d6ab48085",
+      "sha256": "5075972e585300aa3a371600cb3ac16c118586f69e3f5879fed1aa5b0f96248c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2883,12 +2883,12 @@
     },
     {
       "path": "resources/linux/packaging/after-install.sh",
-      "sha256": "bf8910096f2f8aa611c6a6276d4dabc0df2cc9f0408b561366c605e18c9f13fb",
+      "sha256": "2e57bcf132f985a69da6e8f9c0031a41de88e7a8a39431e929dc6a375b2880f2",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "resources/linux/packaging/after-remove.sh",
-      "sha256": "baa67973419494f22a96985e1a12f7b5bbb9f10dbad071c6d6f1791a8fc065fb",
+      "sha256": "82bf7cc26b359f3a165117ccf1ec64e35aa6101ec9a688b99131f09590c86b1a",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2913,7 +2913,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "0b9b4a94fd6387509d7bb4bb564a127b6742b25d9a388eaf8f4188f0e04bd8f1",
+      "sha256": "d068a0ccafc9c73de6bec9a1299b47435f543a72a32a84b6e7a7a33e51455e6c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
