@@ -410,8 +410,8 @@ NODE
     encoded="$(printf '%s' "$clipboard_value" | base64 -w0)"
     command="sleep 4; printf '\\033]52;c;$encoded\\007'; sleep 120"
     (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command "$command" --focus --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
-  elif [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
-    if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' ]]; then
+  elif [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' || "${ASH_TEST_WAYLAND_GUARD_HOLD:-}" == '1' ]]; then
+    if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' || "${ASH_TEST_WAYLAND_GUARD_HOLD:-}" == '1' ]]; then
       # XTest can confirm Ash's legitimate running-work dialog in X11.
       (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --focus --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
     else
@@ -423,6 +423,16 @@ NODE
     (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
   fi
   (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --json >"$test_root/terminal-before.json" 2>"$test_root/terminal-before.err")
+  if [[ "${ASH_TEST_WAYLAND_GUARD_HOLD:-}" == '1' ]]; then
+    # CLI terminal creation returns before its renderer tab projection is
+    # guaranteed to have committed. A close during that gap can be a normal
+    # close of Landing, not a test of the running-work guard.
+    sleep 3
+    local focused_terminal
+    focused_terminal="$("$packaged_node" -e 'console.log(require(process.argv[1]).result.terminal.handle)' "$test_root/terminal-create.json")"
+    (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal switch --terminal "$focused_terminal" --json >"$test_root/wayland-terminal-focus.json" 2>"$test_root/wayland-terminal-focus.err")
+    sleep 2
+  fi
   if [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
     # Establish a real Claude-format working state while GUI presentation
     # exists. No provider login is needed: the isolated test owns its hook
@@ -457,13 +467,64 @@ NODE
 var matches = workspace.windowList().filter(function(w) {
   return w.normalWindow && String(w.resourceClass || '').toLowerCase() === 'com.ashide.desktop';
 });
-if (matches.length === 1 && matches[0].closeable) matches[0].closeWindow();
+if (matches.length === 1 && matches[0].closeable) {
+  workspace.activeWindow = matches[0];
+  matches[0].closeWindow();
+}
 JS
     local script_result script_id
     script_result="$(busctl --user call org.kde.KWin /Scripting org.kde.kwin.Scripting loadScript s "$test_root/close-ash.js")"
     script_id="$(awk '$1 == "i" { print $2 }' <<<"$script_result")"
     [[ "$script_id" =~ ^[0-9]+$ ]] || { echo 'KWin rejected close script' >&2; return 1; }
     busctl --user call org.kde.KWin "/Scripting/Script$script_id" org.kde.kwin.Script run >"$test_root/kwin-script.log" 2>&1
+  fi
+  if [[ "${ASH_TEST_WAYLAND_GUARD_HOLD:-}" == '1' ]]; then
+    sleep 2
+    "$packaged_node" "$packaged_cli" status --json >"$test_root/status-running-work-guard.json" 2>"$test_root/status-running-work-guard.err"
+    assert_cli_state "$test_root/status-running-work-guard.json" ready available
+    "$packaged_node" - "$test_root" <<'NODE'
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const path = require('node:path')
+const root = process.argv[2]
+const read = name => JSON.parse(fs.readFileSync(path.join(root, `${name}.json`), 'utf8'))
+const initial = read('status-before')
+const guard = read('status-running-work-guard')
+const terminal = read('terminal-create').result.terminal
+const focus = read('wayland-terminal-focus')
+assert.equal(initial.ok, true)
+assert.equal(guard.ok, true)
+assert.equal(guard.result.runtime.state, 'ready')
+assert.equal(guard.result.app.desktopWindowStatus, 'available')
+assert.equal(initial.result.runtime.runtimeId, guard.result.runtime.runtimeId)
+assert.equal(initial.result.app.pid, guard.result.app.pid)
+assert.equal(focus.result.focus.navigated, true)
+assert.equal(focus.result.focus.handle, terminal.handle)
+process.kill(terminal.processId, 0)
+const protocol = fs.readFileSync(path.join(root, 'app.log'), 'utf8')
+const toplevel = protocol.match(/get_toplevel\(new id xdg_toplevel#(\d+)\)/)
+assert.ok(toplevel, 'real Wayland top-level must exist')
+assert.match(protocol, /set_app_id\("com\.ashide\.desktop"\)/)
+assert.match(
+  protocol,
+  new RegExp(`xdg_toplevel#${toplevel[1]}\\.close\\(\\)`),
+  'KWin must really deliver a close event to this exact Ash native top-level'
+)
+assert.doesNotMatch(
+  protocol,
+  new RegExp(`-> xdg_toplevel#${toplevel[1]}\\.destroy\\(\\)`),
+  'The Wayland renderer may not destroy the guarded top-level'
+)
+console.log(JSON.stringify({
+  status: 'PASS', nativeWaylandCloseEvent: true,
+  nativeWaylandCloseHeld: true, windowStatus: 'available',
+  appPid: guard.result.app.pid, runtimeId: guard.result.runtime.runtimeId,
+  terminalHandle: terminal.handle, terminalPid: terminal.processId
+}))
+NODE
+    # Do not bypass the user confirmation to force a green close/reopen test.
+    # The owned runtime is stopped explicitly by the existing EXIT cleanup.
+    return 0
   fi
   if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' && ( "${ASH_TEST_BROWSER_SMOKE:-}" == '1' || "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' || "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ) ]]; then
     # The local live PTY is now represented in the workbench; unlike Landing,
@@ -586,6 +647,13 @@ if [[ ( "${ASH_TEST_BROWSER_SMOKE:-}" == '1' || "${ASH_TEST_OSC52_CLIPBOARD:-}" 
 fi
 if [[ "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ]]; then
   require_command base64
+fi
+if [[ "${ASH_TEST_WAYLAND_GUARD_HOLD:-}" == '1' ]]; then
+  [[ "$display_server" == 'wayland' && "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" != '1' &&
+     "${ASH_TEST_NOTIFICATIONS_DISABLED:-}" != '1' && "${ASH_TEST_AGENT_COMPLETION_DISABLED:-}" != '1' ]] || {
+    echo 'Focused guard-hold test requires native Wayland without notification test flags' >&2
+    exit 2
+  }
 fi
 if [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
   require_command pkg-config
