@@ -55,8 +55,6 @@ if (process.env.ASH_TEST_WINDOWLESS_NOTIFICATION === '1') {
   const sourceDisabled = process.env.ASH_TEST_AGENT_COMPLETION_DISABLED === '1'
   const disabled = globalDisabled || sourceDisabled
   const native = read(disabled ? 'no-native-notification' : 'native-notification')
-  const guard = read('status-running-work-guard')
-  const confirmed = read('x11-close-confirm-return')
   assert.equal(started.ok, true)
   assert.equal(started.phase, 'working')
   assert.equal(started.authenticatedHookSubmitted, true)
@@ -87,9 +85,13 @@ if (process.env.ASH_TEST_WINDOWLESS_NOTIFICATION === '1') {
     assert.equal(native.appNameMatched, true)
     assert.equal(native.exactContentMatched, true)
   }
-  assert.equal(guard.result.runtime.state, 'ready')
-  assert.equal(confirmed.ok, true)
-  assert.equal(confirmed.returnSent, true)
+  if (process.env.ASH_TEST_DISPLAY_SERVER === 'x11') {
+    const guard = read('status-running-work-guard')
+    const confirmed = read('x11-close-confirm-return')
+    assert.equal(guard.result.runtime.state, 'ready')
+    assert.equal(confirmed.ok, true)
+    assert.equal(confirmed.returnSent, true)
+  }
 }
 if (process.env.ASH_TEST_BROWSER_SMOKE === '1') {
   const visited = read('local-browser-before')
@@ -290,11 +292,6 @@ NODE
         "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-x11-clipboard-probe.c" \
         -lX11 -o "$test_root/ash-x11-clipboard-probe"
     fi
-    if [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
-      cc -std=c11 -Wall -Wextra -Werror -O2 \
-        "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-private-desktop-notification-sink.c" \
-        $(pkg-config --cflags --libs gio-2.0) -o "$test_root/ash-private-notification-sink"
-    fi
   else
     kwin_wayland --virtual --socket ash-private --no-lockscreen --no-global-shortcuts --no-kactivities >"$test_root/kwin.log" 2>&1 &
     kwin_pid=$!
@@ -304,6 +301,11 @@ NODE
     done
     [[ -S "$XDG_RUNTIME_DIR/ash-private" ]] || { echo 'Private KWin socket unavailable' >&2; return 1; }
     export WAYLAND_DISPLAY=ash-private XDG_SESSION_TYPE=wayland QT_QPA_PLATFORM=wayland
+  fi
+  if [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
+    cc -std=c11 -Wall -Wextra -Werror -O2 \
+      "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-private-desktop-notification-sink.c" \
+      $(pkg-config --cflags --libs gio-2.0) -o "$test_root/ash-private-notification-sink"
   fi
   export ASH_USER_DATA_PATH="$test_root/profile" ORCA_USER_DATA_PATH="$test_root/profile"
   export ASH_APP_EXECUTABLE="$appimage"
@@ -409,7 +411,14 @@ NODE
     command="sleep 4; printf '\\033]52;c;$encoded\\007'; sleep 120"
     (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command "$command" --focus --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
   elif [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
-    (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --focus --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
+    if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' ]]; then
+      # XTest can confirm Ash's legitimate running-work dialog in X11.
+      (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --focus --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
+    else
+      # Without synthetic Wayland input, keep the PTY alive but leave the
+      # workbench on Landing: KWin can deliver a real close without a dialog.
+      (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
+    fi
   else
     (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
   fi
@@ -456,7 +465,7 @@ JS
     [[ "$script_id" =~ ^[0-9]+$ ]] || { echo 'KWin rejected close script' >&2; return 1; }
     busctl --user call org.kde.KWin "/Scripting/Script$script_id" org.kde.kwin.Script run >"$test_root/kwin-script.log" 2>&1
   fi
-  if [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' || "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' || "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
+  if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' && ( "${ASH_TEST_BROWSER_SMOKE:-}" == '1' || "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' || "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ) ]]; then
     # The local live PTY is now represented in the workbench; unlike Landing,
     # the real close flow correctly shows an explicit running-work dialog.
     # Test its deliberate user confirmation instead of bypassing the guard.
@@ -520,6 +529,29 @@ JS
         return 1
       }
     fi
+    # Hook state persistence is asynchronous and independent of D-Bus. Require
+    # the exact pane to reach a durable `claude/done` row while the GUI is
+    # still closed, rather than racing an immediate filesystem read on Wayland.
+    local persisted_agent_done=0
+    for ((i=0; i<40; i++)); do
+      if "$packaged_node" - "$test_root/profile/agent-hooks/last-status.json" "$test_root/terminal-create.json" <<'NODE' >/dev/null 2>&1
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const row = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'))
+const terminal = JSON.parse(fs.readFileSync(process.argv[3], 'utf8')).result.terminal
+assert.equal(row.entries?.[terminal.paneKey]?.payload?.agentType, 'claude')
+assert.equal(row.entries?.[terminal.paneKey]?.payload?.state, 'done')
+NODE
+      then
+        persisted_agent_done=1
+        break
+      fi
+      sleep .2
+    done
+    ((persisted_agent_done == 1)) || {
+      echo 'Agent completion never became durable while the GUI was closed' >&2
+      return 1
+    }
   fi
 
   "$packaged_node" "$packaged_cli" open --json >"$test_root/open.json" 2>"$test_root/open.err"
@@ -548,8 +580,8 @@ display_server="${ASH_TEST_DISPLAY_SERVER:-wayland}"
   echo 'ASH_TEST_DISPLAY_SERVER must be wayland or x11' >&2
   exit 2
 }
-if [[ ( "${ASH_TEST_BROWSER_SMOKE:-}" == '1' || "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' || "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ) && "$display_server" != 'x11' ]]; then
-  echo 'Optional packaged browser, X11 clipboard and closed-GUI notification fixtures currently require native X11' >&2
+if [[ ( "${ASH_TEST_BROWSER_SMOKE:-}" == '1' || "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ) && "$display_server" != 'x11' ]]; then
+  echo 'Optional packaged browser and X11 clipboard fixtures currently require native X11' >&2
   exit 2
 fi
 if [[ "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ]]; then

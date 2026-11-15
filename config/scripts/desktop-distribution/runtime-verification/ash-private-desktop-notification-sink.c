@@ -133,7 +133,10 @@ int main(int argc, char **argv) {
     return 2;
   }
   const gchar *prefix = argc > 1 && g_str_has_prefix(argv[1], "/var/tmp/ashx11.")
-                            ? "/var/tmp/ashx11." : "/var/tmp/ashnotify.";
+                            ? "/var/tmp/ashx11."
+                            : argc > 1 && g_str_has_prefix(argv[1], "/var/tmp/ashwl.")
+                              ? "/var/tmp/ashwl."
+                              : "/var/tmp/ashnotify.";
   const size_t prefix_len = strlen(prefix);
   if (argc != 4 || !g_str_has_prefix(argv[1], prefix) ||
       strlen(argv[1]) != prefix_len + 6 ||

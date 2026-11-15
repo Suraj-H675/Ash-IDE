@@ -1,4 +1,4 @@
-// Only a marker-verified, private native-X11 AppImage fixture can submit these
+// Only a marker-verified, private native-X11 or native-Wayland AppImage fixture can submit these
 // deterministic provider-format lifecycle hooks to the *packaged* hook server.
 // This deliberately does not start Claude or use any real provider account.
 const assert = require('node:assert/strict')
@@ -7,7 +7,7 @@ const path = require('node:path')
 
 const [phase, root] = process.argv.slice(2)
 assert.ok(phase === 'working' || phase === 'finished' || phase === 'forged', 'supported test phase')
-assert.match(root ?? '', /^\/var\/tmp\/ashx11\.[A-Za-z0-9]{6}$/)
+assert.match(root ?? '', /^\/var\/tmp\/ash(?:x11|wl)\.[A-Za-z0-9]{6}$/)
 const fixture = fs.statSync(root)
 assert.equal(fixture.uid, process.getuid())
 assert.equal(fixture.mode & 0o777, 0o700)
