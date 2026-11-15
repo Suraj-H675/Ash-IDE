@@ -51,7 +51,10 @@ if (process.env.ASH_TEST_WINDOWLESS_NOTIFICATION === '1') {
   assert.equal(forged.wrongTokenRejected, true)
   const started = read('hook-working')
   const finished = read('hook-finished')
-  const native = read('native-notification')
+  const globalDisabled = process.env.ASH_TEST_NOTIFICATIONS_DISABLED === '1'
+  const sourceDisabled = process.env.ASH_TEST_AGENT_COMPLETION_DISABLED === '1'
+  const disabled = globalDisabled || sourceDisabled
+  const native = read(disabled ? 'no-native-notification' : 'native-notification')
   const guard = read('status-running-work-guard')
   const confirmed = read('x11-close-confirm-return')
   assert.equal(started.ok, true)
@@ -61,9 +64,29 @@ if (process.env.ASH_TEST_WINDOWLESS_NOTIFICATION === '1') {
   assert.equal(finished.phase, 'finished')
   assert.equal(finished.authenticatedHookSubmitted, true)
   assert.equal(native.ok, true)
-  assert.equal(native.nativeDBusReceived, true)
-  assert.equal(native.appNameMatched, true)
-  assert.equal(native.exactContentMatched, true)
+  if (disabled) {
+    const seeded = read('private-profile-seed')
+    const loaded = read('private-settings-loaded')
+    const retained = read('private-settings-after')
+    assert.equal(seeded.seededPrivateProfile, true)
+    assert.equal(seeded.preference, globalDisabled ? 'global' : 'agent-complete')
+    assert.equal(seeded.notificationsEnabled, !globalDisabled)
+    assert.equal(seeded.agentTaskComplete, !sourceDisabled)
+    assert.equal(loaded.loadedDisabledPreference, true)
+    assert.equal(loaded.preference, seeded.preference)
+    assert.equal(loaded.notificationsEnabled, !globalDisabled)
+    assert.equal(loaded.agentTaskComplete, !sourceDisabled)
+    assert.equal(retained.loadedDisabledPreference, true)
+    assert.equal(retained.notificationsEnabled, !globalDisabled)
+    assert.equal(retained.agentTaskComplete, !sourceDisabled)
+    assert.equal(native.nativeNotificationSuppressed, true)
+    assert.equal(native.observationWindowMs, 4000)
+    assert.equal(fs.existsSync(path.join(root, 'native-notification-attempted')), false)
+  } else {
+    assert.equal(native.nativeDBusReceived, true)
+    assert.equal(native.appNameMatched, true)
+    assert.equal(native.exactContentMatched, true)
+  }
   assert.equal(guard.result.runtime.state, 'ready')
   assert.equal(confirmed.ok, true)
   assert.equal(confirmed.returnSent, true)
@@ -284,6 +307,12 @@ NODE
   fi
   export ASH_USER_DATA_PATH="$test_root/profile" ORCA_USER_DATA_PATH="$test_root/profile"
   export ASH_APP_EXECUTABLE="$appimage"
+  if [[ "${ASH_TEST_NOTIFICATIONS_DISABLED:-}" == '1' || "${ASH_TEST_AGENT_COMPLETION_DISABLED:-}" == '1' ]]; then
+    local preference='global'
+    if [[ "${ASH_TEST_AGENT_COMPLETION_DISABLED:-}" == '1' ]]; then preference='agent-complete'; fi
+    "$packaged_node" "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-private-notification-setting.cjs" \
+      seed "$test_root" "$test_root/private-settings-defaults.cjs" "$preference" >"$test_root/private-profile-seed.json" 2>"$test_root/private-profile-seed.err"
+  fi
   local -a app_args=(--ozone-platform="${ASH_TEST_DISPLAY_SERVER:-wayland}")
   if [[ "${ASH_TEST_CHROMIUM_NETLOG:-}" == '1' ]]; then
     # Chromium's default net-log mode omits raw cookies and sensitive request headers.
@@ -306,6 +335,10 @@ NODE
   if ! assert_cli_state "$test_root/status-before.json" ready available; then
     grep -E 'Failed to start local RPC transport|listen EINVAL|FATAL' "$test_root/app.log" | tail -6 >&2 || true
     return 1
+  fi
+  if [[ "${ASH_TEST_NOTIFICATIONS_DISABLED:-}" == '1' || "${ASH_TEST_AGENT_COMPLETION_DISABLED:-}" == '1' ]]; then
+    "$packaged_node" "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-private-notification-setting.cjs" \
+      verify "$test_root" "$test_root/private-settings-defaults.cjs" "$preference" >"$test_root/private-settings-loaded.json" 2>"$test_root/private-settings-loaded.err"
   fi
 
   if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' ]]; then
@@ -459,20 +492,34 @@ JS
     }
     "$packaged_node" "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-packaged-closed-gui-agent-hook.cjs" \
       finished "$test_root" >"$test_root/hook-finished.json" 2>"$test_root/hook-finished.err"
-    local native_notification_observed=0
-    for ((i=0; i<55; i++)); do
-      if [[ -s "$test_root/native-notification.json" ]]; then
-        native_notification_observed=1
-        break
-      fi
-      kill -0 "$notification_sink_pid" 2>/dev/null || break
-      sleep .1
-    done
-    ((native_notification_observed == 1)) || {
-      echo 'No native Linux agent completion notification after GUI closure' >&2
-      tail -9 "$test_root/notification-sink.log" >&2 || true
-      return 1
-    }
+    if [[ "${ASH_TEST_NOTIFICATIONS_DISABLED:-}" == '1' || "${ASH_TEST_AGENT_COMPLETION_DISABLED:-}" == '1' ]]; then
+      # The turn-end quiet window is 1500ms; observe well past it without
+      # polling the user's session. A single attempted Notify fails the test
+      # regardless of the message's title or body.
+      sleep 4
+      [[ ! -e "$test_root/native-notification-attempted" && ! -e "$test_root/native-notification.json" ]] || {
+        echo 'Disabled notifications still attempted native D-Bus delivery' >&2
+        return 1
+      }
+      printf '{"ok":true,"nativeNotificationSuppressed":true,"observationWindowMs":4000}\n' >"$test_root/no-native-notification.json"
+      "$packaged_node" "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-private-notification-setting.cjs" \
+        verify "$test_root" "$test_root/private-settings-defaults.cjs" "$preference" >"$test_root/private-settings-after.json" 2>"$test_root/private-settings-after.err"
+    else
+      local native_notification_observed=0
+      for ((i=0; i<55; i++)); do
+        if [[ -s "$test_root/native-notification.json" ]]; then
+          native_notification_observed=1
+          break
+        fi
+        kill -0 "$notification_sink_pid" 2>/dev/null || break
+        sleep .1
+      done
+      ((native_notification_observed == 1)) || {
+        echo 'No native Linux agent completion notification after GUI closure' >&2
+        tail -9 "$test_root/notification-sink.log" >&2 || true
+        return 1
+      }
+    fi
   fi
 
   "$packaged_node" "$packaged_cli" open --json >"$test_root/open.json" 2>"$test_root/open.err"
@@ -511,6 +558,17 @@ fi
 if [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' ]]; then
   require_command pkg-config
   pkg-config --exists gio-2.0 || { echo 'Native GIO D-Bus dev package required' >&2; exit 2; }
+fi
+if [[ ( "${ASH_TEST_NOTIFICATIONS_DISABLED:-}" == '1' || "${ASH_TEST_AGENT_COMPLETION_DISABLED:-}" == '1' ) && "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" != '1' ]]; then
+  echo 'Disabled-notification QA requires the packaged windowless notification fixture' >&2
+  exit 2
+fi
+if [[ "${ASH_TEST_NOTIFICATIONS_DISABLED:-}" == '1' && "${ASH_TEST_AGENT_COMPLETION_DISABLED:-}" == '1' ]]; then
+  echo 'Run independent disabled-global and disabled-source fixture cases' >&2
+  exit 2
+fi
+if [[ "${ASH_TEST_NOTIFICATIONS_DISABLED:-}" == '1' || "${ASH_TEST_AGENT_COMPLETION_DISABLED:-}" == '1' ]]; then
+  require_command pnpm
 fi
 
 if [[ "${1:-}" == '--inner' ]]; then
@@ -557,6 +615,10 @@ fi
 mkdir -p "$test_root/home/.config" "$test_root/home/.cache" "$test_root/home/.local/share" "$test_root/home/.local/state" "$test_root/home/.codex" "$test_root/home/.claude" "$test_root/run" "$test_root/profile" "$test_root/project"
 chmod 700 "$test_root" "$test_root/run"
 printf '%s\n' 'Test-owned disposable Ash IDE native desktop fixture' >"$test_root/.ash-desktop-lifecycle-fixture"
+if [[ "${ASH_TEST_NOTIFICATIONS_DISABLED:-}" == '1' || "${ASH_TEST_AGENT_COMPLETION_DISABLED:-}" == '1' ]]; then
+  (cd "$script_root" && pnpm exec esbuild src/shared/constants.ts --bundle --platform=node --format=cjs --log-level=error \
+    "--outfile=$test_root/private-settings-defaults.cjs")
+fi
 
 set +e
 env -u DISPLAY -u WAYLAND_DISPLAY -u XAUTHORITY -u SSH_AUTH_SOCK -u ORCA_PAIRING_CODE -u ORCA_REMOTE_PAIRING \

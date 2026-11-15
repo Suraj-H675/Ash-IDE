@@ -52,6 +52,11 @@ static void on_call(GDBusConnection *connection, const gchar *sender,
     return;
   }
   if (g_str_equal(method, "Notify")) {
+    // Keep only a boolean: a disabled-notification test must detect *any*
+    // attempted native call, not merely a call with our expected text.
+    gchar *attempted = g_build_filename(fixture_root, "native-notification-attempted", NULL);
+    g_file_set_contents(attempted, "attempted\n", -1, NULL);
+    g_free(attempted);
     GVariant *app = g_variant_get_child_value(args, 0);
     GVariant *title = g_variant_get_child_value(args, 3);
     GVariant *body = g_variant_get_child_value(args, 4);

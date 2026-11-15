@@ -37,6 +37,7 @@ jobs:
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-windowless-linux-native-notification.sh
           node --check config/scripts/desktop-distribution/runtime-verification/ash-packaged-browser-local-smoke.cjs
           node --check config/scripts/desktop-distribution/runtime-verification/ash-packaged-closed-gui-agent-hook.cjs
+          node --check config/scripts/desktop-distribution/runtime-verification/ash-private-notification-setting.cjs
       - name: Verify retained desktop localization references
         run: pnpm run verify:localization-catalog
       - name: Build retained workspace packages
