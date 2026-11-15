@@ -978,7 +978,7 @@
     },
     {
       "path": "src/main/runtime/rpc/methods/index.ts",
-      "sha256": "9a658ff09a404ff7014f63f40cedd5fbe26dd4947369627831ca4656eef82ab0",
+      "sha256": "06d3132258981ac50d65810862d2b8a73c3a1ecb130beb3db67f05660b79f978",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

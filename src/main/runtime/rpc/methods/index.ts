@@ -16,7 +16,6 @@ import { BROWSER_SCREENCAST_METHODS } from './browser-screencast'
 import { BROWSER_CLIENT_HOST_METHODS } from './browser-client-host'
 import { DESKTOP_BROWSER_BRIDGE_RPC_METHODS } from './desktop-browser-bridge'
 import { BROWSER_CLIENT_FILE_CHANNEL_METHODS } from './browser-client-file-channel'
-import { BROWSER_NETWORK_TUNNEL_METHODS } from './browser-network-tunnel'
 import { ORCHESTRATION_METHODS } from './orchestration'
 import { NOTIFICATION_METHODS } from './notifications'
 import { STATS_METHODS } from './stats'
@@ -42,7 +41,6 @@ import { CLIPBOARD_METHODS } from './clipboard'
 import { HOST_CAPABILITY_METHODS } from './host-capabilities'
 import { RUNTIME_CLIENT_CAPABILITY_METHODS } from './runtime-client-capabilities'
 import { UPDATER_METHODS } from './updater'
-import { AUTOMATIC_WORK_METHODS } from './automatic-work'
 import { ASH_RUNTIME_CONTROL_METHODS } from './ash-runtime-control'
 import { AGENT_SESSION_METHODS } from './agent-session'
 import { STRUCTURED_AGENT_SESSION_METHODS } from './structured-agent-session'
@@ -53,7 +51,6 @@ import { MANAGED_RUNTIME_INSTALL_METHODS } from './managed-runtime-install'
 import { ARTIFACT_METHODS } from './artifacts'
 import { AGENT_HOOK_METHODS } from './agent-hooks'
 import { AGENT_LAUNCH_METHODS } from './agent-launch'
-import { CONNECTOR_METHODS } from './connector'
 import {
   LAYOUT_APPLY_METHODS,
   LAYOUT_VIEW_REPORT_METHODS,
@@ -81,7 +78,6 @@ export const ALL_RPC_METHODS = [
   ...STRUCTURED_AGENT_SESSION_AGENTS_METHODS,
   ...MANAGED_RUNTIME_INSTALL_METHODS,
   ...AGENT_LAUNCH_METHODS,
-  ...CONNECTOR_METHODS,
   ...TERMINAL_METHODS,
   ...TERMINAL_ORPHAN_METHODS,
   ...BROWSER_CORE_METHODS,
@@ -91,7 +87,6 @@ export const ALL_RPC_METHODS = [
   ...BROWSER_CLIENT_HOST_METHODS,
   ...DESKTOP_BROWSER_BRIDGE_RPC_METHODS,
   ...BROWSER_CLIENT_FILE_CHANNEL_METHODS,
-  ...BROWSER_NETWORK_TUNNEL_METHODS,
   ...ORCHESTRATION_METHODS,
   ...NOTIFICATION_METHODS,
   ...STATS_METHODS,
@@ -121,8 +116,7 @@ export const ALL_RPC_METHODS = [
   ...CLIENT_UI_METHODS,
   // Switch point: a window-fed build publishes no sidebar input.
   ...(ORCA_SIDEBAR_INPUTS_IS_MAIN ? SIDEBAR_INPUT_METHODS : []),
-  ...UPDATER_METHODS,
-  ...AUTOMATIC_WORK_METHODS
+  ...UPDATER_METHODS
 ]
 
 const ASH_UNAVAILABLE_RPC_PREFIXES = [

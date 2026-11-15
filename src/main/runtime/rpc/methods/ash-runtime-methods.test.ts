@@ -3,6 +3,9 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { ALL_RPC_METHODS, ASH_RPC_METHODS } from './index'
 import { ASH_RUNTIME_CONTROL_METHODS } from './ash-runtime-control'
+import { AUTOMATIC_WORK_METHODS } from './automatic-work'
+import { BROWSER_NETWORK_TUNNEL_METHODS } from './browser-network-tunnel'
+import { CONNECTOR_METHODS } from './connector'
 import { MANAGED_SERVER_METHODS } from './managed-server'
 import { EMULATOR_METHODS } from './emulator'
 import { MOBILE_PROJECT_SECTIONS_METHODS } from './mobile-project-sections'
@@ -99,6 +102,42 @@ describe('Ash authenticated RPC surface', () => {
     expect([...methodNames].some((name) => name.startsWith('terminal.'))).toBe(true)
     expect(allMethodNames.has('git.status')).toBe(true)
     expect(methodNames.has('git.status')).toBe(true)
+  })
+
+  it('does not load or register cloud connectors, paired browser tunnels, or automatic-work RPCs', () => {
+    const excludedGroups = [
+      { symbol: 'CONNECTOR_METHODS', prefix: 'connector.', methods: CONNECTOR_METHODS },
+      {
+        symbol: 'BROWSER_NETWORK_TUNNEL_METHODS',
+        prefix: 'network.browserTunnel',
+        methods: BROWSER_NETWORK_TUNNEL_METHODS
+      },
+      {
+        symbol: 'AUTOMATIC_WORK_METHODS',
+        prefix: 'runtime.automaticWork.',
+        methods: AUTOMATIC_WORK_METHODS
+      }
+    ]
+    const fullManifestSource = readFileSync(
+      resolve(process.cwd(), 'src/main/runtime/rpc/methods/index.ts'),
+      'utf8'
+    )
+    for (const { symbol, prefix, methods } of excludedGroups) {
+      expect(fullManifestSource, symbol).not.toContain(symbol)
+      expect(methods.length, symbol).toBeGreaterThan(0)
+      for (const { name } of methods) {
+        expect(name.startsWith(prefix), `${symbol}: unexpected live method ${name}`).toBe(true)
+        expect(allMethodNames.has(name), `${name}: broad server manifest`).toBe(false)
+        expect(methodNames.has(name), `${name}: Ash authenticated manifest`).toBe(false)
+      }
+    }
+    for (const retained of ['browser.tabCreate', 'orchestration.run', 'git.status']) {
+      expect(allMethodNames.has(retained), `${retained}: must remain in server manifest`).toBe(true)
+      expect(methodNames.has(retained), `${retained}: must remain in Ash manifest`).toBe(true)
+    }
+    expect(allMethodNames.has('desktopBrowserBridge.attach')).toBe(true)
+    expect(allMethodNames.has('updater.getStatus')).toBe(true)
+    expect([...methodNames].some((name) => name.startsWith('terminal.'))).toBe(true)
   })
 
   it('retains local status, terminal, Git, and agent launch methods', () => {
