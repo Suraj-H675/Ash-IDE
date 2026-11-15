@@ -11,6 +11,9 @@ const {
   EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS
 } = require('../../../excluded-ash-cli-entry-artifacts.cjs')
 const {
+  EXCLUDED_APP_PLUGIN_EXECUTABLES
+} = require('../../../excluded-ash-app-plugin-artifacts.cjs')
+const {
   PACKAGED_RUNTIME_PACKAGE_ROOTS,
   createPackagedRuntimeNodeModuleResources
 } = require('../../../packaged-runtime-node-modules.cjs')
@@ -61,7 +64,7 @@ it('allows only the reviewed runtime roots in a real ASAR archive', async () => 
     'package.json',
     'out/main/index.js',
     'out/renderer/index.html',
-    'resources/plugins/launch.json',
+    'resources/icons/ash.png',
     'scripts/ash-runtime-launcher.sh'
   ])
   expect(verifyAshPackagedAsarHygiene(resources)).toMatchObject({
@@ -166,6 +169,72 @@ it.each([
   await writeFile(unpacked, 'synthetic excluded CLI fixture\n')
   expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
     `[ash-package-hygiene] excluded CLI artifact packaged: ${artifact}`
+  )
+})
+
+it.each(EXCLUDED_APP_PLUGIN_EXECUTABLES)(
+  'rejects general app-plugin executable %s in app.asar',
+  async (artifact) => {
+    const resources = await makeArchive(['package.json', 'out/main/index.js', artifact])
+    expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+      `[ash-package-hygiene] excluded app-plugin executable packaged: ${artifact}`
+    )
+  }
+)
+
+it.each(EXCLUDED_APP_PLUGIN_EXECUTABLES)(
+  'rejects general app-plugin executable %s in app.asar.unpacked',
+  async (artifact) => {
+    const resources = await makeArchive(['package.json', 'out/main/index.js'])
+    const file = join(resources, 'app.asar.unpacked', artifact)
+    await mkdir(dirname(file), { recursive: true })
+    await writeFile(file, 'synthetic excluded app-plugin host\n')
+    expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+      `[ash-package-hygiene] excluded app-plugin executable packaged: ${artifact}`
+    )
+  }
+)
+
+it.each([
+  'resources/plugins/launch/bundled-plugins.json',
+  'resources/plugins/launch/orca-marketplace.json',
+  'resources/plugins/declarative/orca-runtime.mjs',
+  'resources/plugins/types/orca-host.d.ts'
+])('rejects application-plugin authoring/marketplace file %s in app.asar', async (artifact) => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js', artifact])
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    '[ash-package-hygiene] excluded app-plugin marketplace/authoring tree packaged'
+  )
+})
+
+it('rejects unpacked application-plugin source resources', async () => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js'])
+  const file = join(
+    resources,
+    'app.asar.unpacked',
+    'resources',
+    'plugins',
+    'declarative',
+    'orca-runtime.mjs'
+  )
+  await mkdir(dirname(file), { recursive: true })
+  await writeFile(file, 'synthetic app-plugin runtime\n')
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    '[ash-package-hygiene] excluded app-plugin marketplace/authoring tree packaged'
+  )
+})
+
+it.each([
+  'plugins/launch/bundled-plugins.json',
+  'plugins/launch/orca-marketplace.json',
+  'plugins/types/orca-host.d.ts'
+])('rejects native extraResources application-plugin tree %s', async (artifact) => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js'])
+  const file = join(resources, artifact)
+  await mkdir(dirname(file), { recursive: true })
+  await writeFile(file, 'synthetic native plugin tree\n')
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    '[ash-package-hygiene] excluded app-plugin marketplace/authoring tree packaged'
   )
 })
 

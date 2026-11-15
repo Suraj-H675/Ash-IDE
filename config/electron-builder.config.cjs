@@ -40,10 +40,6 @@ const {
   writeMacBuildCompatibility
 } = require('./scripts/desktop-distribution/macos/mac-build-compatibility.cjs')
 const {
-  verifyPackagedPluginResources,
-  verifyPackagedPluginTypings
-} = require('./scripts/desktop-distribution/runtime-verification/verify-packaged-plugin-resources.cjs')
-const {
   assertBundledRipgrepInstalled,
   bundledRipgrepExtraResources,
   bundledRipgrepMacSignIgnore,
@@ -64,6 +60,10 @@ const {
 } = require('./scripts/desktop-distribution/runtime-verification/verify-ash-packaged-asar-hygiene.cjs')
 const { EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS } = require('./excluded-task-tracker-cli-artifacts.cjs')
 const { EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS } = require('./excluded-ash-cli-entry-artifacts.cjs')
+const {
+  EXCLUDED_APP_PLUGIN_EXECUTABLES,
+  EXCLUDED_APP_PLUGIN_SOURCE_ROOT
+} = require('./excluded-ash-app-plugin-artifacts.cjs')
 const {
   appImageNodeRuntimeFpmArgs,
   placeAppImageNodeRuntime,
@@ -118,21 +118,11 @@ const agentBrowserSkillResources = [
   { from: 'node_modules/agent-browser/skills/agent-browser', to: 'skills/agent-browser' },
   { from: 'node_modules/agent-browser/skill-data', to: 'skill-data' }
 ]
-// Native agents load plugins by path and cannot read inside app.asar.
+// Native provider integrations and Chromium browser extensions are separate
+// from Orca's excluded general IDE application plugin host/marketplace.
 const nativeChatVisualsResource = {
   from: 'resources/native-chat-visuals',
   to: 'native-chat-visuals'
-}
-// Bootstrap verifies/publishes immutable plugin bytes from ordinary directories.
-const bundledPluginResources = {
-  from: 'resources/plugins/launch',
-  to: 'plugins/launch'
-}
-// electron-builder always drops `*.d.ts` from app files, so `orca plugin types` reads these copies.
-const pluginAuthorTypingsResources = {
-  from: 'resources/plugins',
-  to: 'plugins',
-  filter: ['declarative/*.d.ts', 'types/*.d.ts']
 }
 // Packaged main/CLI paths lack pnpm links; copy their runtime closure so bare requires cannot fall through to checkout dependencies.
 // Ship only the 166KB emoji dataset used by worktree naming, not all 49MB of emojibase-data.
@@ -142,8 +132,6 @@ const emojiShortcodeDatasetResource = {
 }
 const commonExtraResources = [
   ...bundledRipgrepExtraResources,
-  bundledPluginResources,
-  pluginAuthorTypingsResources,
   skillFreshnessResources,
   ...agentBrowserSkillResources,
   nativeChatVisualsResource,
@@ -268,7 +256,7 @@ module.exports = {
     '!skill-guides{,/**/*}',
     '!skill-stubs{,/**/*}',
     '!tests{,/**/*}',
-    // Examples have no runtime consumer and include adversarial hostile-panel; ship only resources/plugins/launch.
+    // Application-plugin authoring examples are not part of Ash's desktop runtime.
     '!examples{,/**/*}',
     // Exclude gitignored local screenshot evidence defensively so packaging cannot pick up stray captures.
     '!pr-evidence{,/**/*}',
@@ -292,6 +280,9 @@ module.exports = {
     // The retired STT worker has no registered Ash voice API. TypeScript still
     // emits its standalone entry, which must not ship as executable code.
     '!out/main/stt-worker.js',
+    // Ash excludes the general app-plugin worker, marketplace, and authoring
+    // runtime. Keep browser-extension native hosts and provider-native tools.
+    ...EXCLUDED_APP_PLUGIN_EXECUTABLES.map((path) => `!${path}`),
     // Remove unregistered legacy Jira/Linear CLI command modules, but retain shared
     // issue-reference helpers used by active Git/worktree workflows.
     ...EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS.map((path) => `!${path}`),
@@ -311,8 +302,9 @@ module.exports = {
     '!resources/onboarding/feature-wall/**',
     '!resources/skills/**',
     '!resources/native-chat-visuals/**',
-    // extraResources already ships plugin bytes; exclude source duplicates.
-    '!resources/plugins/launch/**',
+    // The onboarding theme gallery compiles selected JSON fixtures into the
+    // renderer; no runtime application-plugin tree or marketplace is needed.
+    `!${EXCLUDED_APP_PLUGIN_SOURCE_ROOT}{,/**/*}`,
     // Platform extraResources selects speech natives; asar would duplicate it and ship other variants.
     '!node_modules/sherpa-onnx*{,/**/*}',
     // CLI shim belongs beside resources/bin/ash-ide.exe; unpacking source creates a second .cmd without its executable (#7351).
@@ -340,16 +332,12 @@ module.exports = {
     'out/main/filesystem/macos-tree-clone.js',
     'out/main/orca-profiles/profile-index-store.js',
     'out/main/persistence/profile-state/**',
-    'out/main/plugins/plugin-authoring-checks.js',
-    // `orca plugin test` and `orca plugin check` load the runtime, kit and hooks in Node.
-    'resources/plugins/declarative/*.mjs',
     'out/main/skills/bundled-skill-install/cli-entry.js',
     'out/main/startup/http1-compatibility-marker.js',
     'out/main/daemon-entry.js',
     'out/main/session-scanner-service-entry.js',
     'out/main/wsl-transcript-fs-process-entry.js',
     'out/main/foreign-sqlite-reader-entry.js',
-    'out/main/plugin-host-entry.js',
     'out/main/browser-extension-native-host-supervisor-entry.js',
     'out/main/computer-sidecar.js',
     'out/main/parcel-watcher-process-entry.js',
@@ -464,9 +452,8 @@ module.exports = {
         `[verify-packaged-daemon-entry] skipped boot on cross-arch slice (target ${context.arch}, host ${process.arch})`
       )
     }
-    // Validate real electron-builder output so broken extraResources mappings fail before shipping.
-    verifyPackagedPluginResources(resourcesDir)
-    verifyPackagedPluginTypings(resourcesDir)
+    // verifyAshPackagedAsarHygiene rejects the retired app-plugin host and
+    // resources in both app.asar and external native-resource locations.
     finalizePackagedRipgrep(resourcesDir)
     for (const filename of readdirSync(resourcesDir)) {
       if (!filename.startsWith('agent-browser-')) {

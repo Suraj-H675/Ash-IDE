@@ -69,6 +69,66 @@ describe('electron-builder config', () => {
     }
   })
 
+  it('removes general app-plugin host and marketplace files without removing browser extensions or local runtime', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'ash-excluded-application-plugins-'))
+    const source = join(root, 'app')
+    const destination = join(root, 'selected')
+    const excluded = [
+      'out/main/plugin-host-entry.js',
+      'out/main/plugins/plugin-authoring-checks.js',
+      'resources/plugins/launch/bundled-plugins.json',
+      'resources/plugins/launch/orca-marketplace.json',
+      'resources/plugins/declarative/orca-runtime.mjs',
+      'resources/plugins/types/orca-host.d.ts'
+    ]
+    const retained = [
+      'out/main/daemon-entry.js',
+      'out/main/browser-extension-native-host-supervisor-entry.js',
+      'out/main/agent-hooks/ash-hook.js',
+      'out/renderer/assets/onboarding-theme-gallery.js'
+    ]
+    try {
+      for (const relativePath of [...excluded, ...retained]) {
+        const file = join(source, relativePath)
+        await mkdir(dirname(file), { recursive: true })
+        await writeFile(file, 'synthetic packaging path, not real user data\n')
+      }
+      const matcher = new FileMatcher(
+        source,
+        destination,
+        (value) => value,
+        electronBuilderConfig.files
+      )
+      await copyFiles([matcher])
+      for (const relativePath of excluded) {
+        expect(existsSync(join(destination, relativePath)), relativePath).toBe(false)
+      }
+      for (const relativePath of retained) {
+        expect(existsSync(join(destination, relativePath)), relativePath).toBe(true)
+      }
+      for (const platform of ['linux', 'mac', 'win']) {
+        const resources = electronBuilderConfig[platform].extraResources
+        expect(
+          resources.some(
+            ({ from, to }) =>
+              from.startsWith('resources/plugins') || to === 'plugins' || to.startsWith('plugins/')
+          )
+        ).toBe(false)
+        expect(resources.some(({ to }) => to === 'native-chat-visuals')).toBe(true)
+      }
+      expect(electronBuilderConfig.asarUnpack).toContain(
+        'out/main/browser-extension-native-host-supervisor-entry.js'
+      )
+      expect(electronBuilderConfig.asarUnpack).not.toContain('out/main/plugin-host-entry.js')
+      expect(electronBuilderConfig.asarUnpack).not.toContain(
+        'out/main/plugins/plugin-authoring-checks.js'
+      )
+      expect(electronBuilderConfig.asarUnpack).not.toContain('resources/plugins/declarative/*.mjs')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  })
+
   it('keeps Linux Wayland app_id, desktop entry and window association on Ash identity', async () => {
     const manifest = JSON.parse(await readFile(join(REPO_ROOT, 'package.json'), 'utf8'))
     const desktopName = manifest.desktopName

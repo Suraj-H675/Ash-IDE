@@ -7,6 +7,11 @@ const {
 const {
   EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS
 } = require('../../../excluded-ash-cli-entry-artifacts.cjs')
+const {
+  EXCLUDED_APP_PLUGIN_EXECUTABLES,
+  EXCLUDED_APP_PLUGIN_SOURCE_ROOT,
+  EXCLUDED_APP_PLUGIN_NATIVE_RESOURCES_ROOT
+} = require('../../../excluded-ash-app-plugin-artifacts.cjs')
 
 // The application runtime is assembled from these reviewed roots only.
 // Hidden editor/test state, generated release folders and raw source folders
@@ -66,6 +71,27 @@ function verifyAshPackagedAsarHygiene(resourcesDir) {
     ) {
       throw new Error(`[ash-package-hygiene] excluded CLI artifact packaged: ${artifact}`)
     }
+  }
+  for (const artifact of EXCLUDED_APP_PLUGIN_EXECUTABLES) {
+    if (
+      entries.some((entry) => entry.replace(/\\/g, '/').replace(/^\/+/, '') === artifact) ||
+      existsSync(join(resourcesDir, 'app.asar.unpacked', ...artifact.split('/')))
+    ) {
+      throw new Error(`[ash-package-hygiene] excluded app-plugin executable packaged: ${artifact}`)
+    }
+  }
+  if (
+    entries.some((entry) => {
+      const normalized = entry.replace(/\\/g, '/').replace(/^\/+/, '')
+      return (
+        normalized === EXCLUDED_APP_PLUGIN_SOURCE_ROOT ||
+        normalized.startsWith(`${EXCLUDED_APP_PLUGIN_SOURCE_ROOT}/`)
+      )
+    }) ||
+    existsSync(join(resourcesDir, 'app.asar.unpacked', EXCLUDED_APP_PLUGIN_SOURCE_ROOT)) ||
+    existsSync(join(resourcesDir, EXCLUDED_APP_PLUGIN_NATIVE_RESOURCES_ROOT))
+  ) {
+    throw new Error('[ash-package-hygiene] excluded app-plugin marketplace/authoring tree packaged')
   }
   const speechWorker = 'out/main/stt-worker.js'
   if (
