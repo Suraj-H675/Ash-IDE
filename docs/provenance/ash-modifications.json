@@ -632,6 +632,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/ipc/pty/ipc/spawn-run.ts",
+      "sha256": "f184b712d0e244e4e142c1ec7d27b99dfbb54a6f17e52375c69429c07100b5d3",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/ipc/pty/runtime/spawn-options.ts",
       "sha256": "80b71e0d5badd39ff3f49a74db94ebe6f0015fd06796e3ca358e2530ada4da43",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -648,7 +653,7 @@
     },
     {
       "path": "src/main/ipc/pty/runtime/spawn.ts",
-      "sha256": "6bf972135c5d2f3650b3312818b34da39865952f5f53855690d45399cb677026",
+      "sha256": "7b6d347eba4fc3550eb94d5d10786cc56f52df1e61cf8cff745fa2705f750ded",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -659,6 +664,11 @@
     {
       "path": "src/main/ipc/register-core-handlers/register-core-handlers.ts",
       "sha256": "27eca47d09229b1dc9a7c17828b7ad0cb4571920bf1c6ff9d714a06a063d3f65",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/repos/folder-workspace-handlers.ts",
+      "sha256": "703fc62ca08476f19f84304c1c363e4df20e908b91bce1665693a5387cb42820",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -689,6 +699,11 @@
     {
       "path": "src/main/ipc/ui.ts",
       "sha256": "ab0bcf72821b1c11168185bb97f4ce9f676f69cf3bc7b494703948f97d4fca9a",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/worktrees/create/register-worktree-create-handlers.ts",
+      "sha256": "18cb67b967c799c4c3aee06bb0b76f9c82cb18c52ba0f517b3d463889816b9e7",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -942,6 +957,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/repositories/runtime-project-group-controller.ts",
+      "sha256": "89c92f5a5bee605fe6419bfd74f1b28d08d8fbe4974b79f37ffae11bd6d3b487",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/rpc/device-key-auth.test.ts",
       "sha256": "2f3f9c83430a84fddb6791834a05712e269594ab2d3c0a71200ad6cc95481ce3",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1162,6 +1182,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/rpc/worktree-rm-cli.integration.test.ts",
+      "sha256": "7193eea44da6244ba5adee963b5cf1343b575c4233cc0b79b68e6f5ac3c724bb",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/runtime-edge-command-controller.ts",
       "sha256": "fcf18b55d7ae652c151321e0b46984098c4428f731eeb4ee92b581e134410bdf",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1194,6 +1219,11 @@
     {
       "path": "src/main/runtime/terminal-agent-phone-push.ts",
       "sha256": "ccf9a05665e858e13a8e2a3e56c8a6276cd82b8033d908b426c6e1e1adca892c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/workspaces/creation/workspace-creation.ts",
+      "sha256": "866302d14fece10d601e34cfdbc66b7b0e61693f9f04fe19113fe5bc17ae564e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1257,6 +1287,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/startup/main-process-pty-startup.ts",
+      "sha256": "a21469664238f79488c00186b9655a62a8a60153ef02c29fc6e7d6b02c1957e8",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/startup/main-process-quit-pending-writer.test.ts",
       "sha256": "ecf40f7f9c8aa511950f03b057699cfe3a5695487a91b3c39e75a0c321bd3565",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1268,7 +1303,7 @@
     },
     {
       "path": "src/main/startup/main-process-quit.ts",
-      "sha256": "5182e98315299acc984cd76fc4ba64e0f9e8f7c15b4d588cfdc42b44f87ed448",
+      "sha256": "1125c6992e6cf3c6e516c35eade8965b6ac02b759c711660cb3aa00a0c1681d1",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1308,7 +1343,7 @@
     },
     {
       "path": "src/main/startup/main-process-state.ts",
-      "sha256": "a5bae4b174a9e0c5ee276c72e78bb75e99af1e7f2e0ea357e20ac0d0dfae2bfa",
+      "sha256": "34762838f90963e0792e683d257b15872ad780d25638887b12120944c348f580",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

@@ -1,5 +1,4 @@
 import { app } from 'electron'
-import { parseWorkspaceKey } from '../../shared/workspace-scope'
 import { isLocalExecutionHost } from '../../shared/execution-host'
 import { classifyError } from '../telemetry/classify-error'
 import { track } from '../telemetry/client'
@@ -31,28 +30,7 @@ import {
 import { startFirstWindowStartupServices } from './first-window-startup-services'
 import { logStartupMilestone } from './startup-diagnostics'
 import type { WindowsDesktopStartupServices } from './windows-desktop-shell-path-startup'
-import type { RuntimeWorktreeLifecycleEvent } from '../runtime/workspaces/lifecycle/worktree-lifecycle-event'
 import { mainProcessState as state } from './main-process-state'
-import { shortPluginBranchName } from '../../shared/plugins/events/plugin-events'
-import { notifyWorkspaceCreatedPluginHook } from '../plugins/hooks/workspace-create-plugin-hook'
-
-export function emitPluginWorktreeLifecycle(event: RuntimeWorktreeLifecycleEvent): void {
-  const identity = { workspaceId: event.worktreeId, kind: 'worktree', path: event.path }
-  const folder = parseWorkspaceKey(event.worktreeId)?.type === 'folder'
-  if (event.kind === 'created') {
-    notifyWorkspaceCreatedPluginHook({ ...event, folder })
-  }
-  // Public worktree events retain their Git-only scope.
-  if (folder) {
-    return
-  }
-  state.pluginService?.emitEvent(
-    event.kind === 'created' ? 'workspace.created' : 'workspace.removed',
-    event.kind === 'created'
-      ? { ...identity, branch: shortPluginBranchName(event.branch) }
-      : identity
-  )
-}
 
 export function handleCodexHomePtySpawned(args: {
   id: string

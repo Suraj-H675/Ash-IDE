@@ -150,7 +150,10 @@ beforeEach(async () => {
   stopped.mockClear()
   afterShow = () => {}
   beforeStatus = () => {}
-  vi.stubEnv('ORCA_USER_DATA_PATH', directory)
+  // Ash's CLI metadata lookup reads ASH_USER_DATA_PATH. The inherited Orca
+  // variable would instead inspect the default user profile, bypassing this
+  // test's disposable runtime socket.
+  vi.stubEnv('ASH_USER_DATA_PATH', directory)
   vi.stubEnv('ORCA_PAIRING_CODE', '')
   vi.stubEnv('ORCA_REMOTE_PAIRING', '')
   vi.stubEnv('ORCA_ENVIRONMENT', '')

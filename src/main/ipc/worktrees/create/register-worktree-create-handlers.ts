@@ -33,7 +33,6 @@ import { workspaceLifecycleKey } from '../../../runtime/workspaces/lifecycle/wor
 import type { WorktreeIpcContext } from '../worktree-ipc-context'
 import { beginWorkspaceCreateTelemetry } from '../../../workspaces/creation/workspace-create-telemetry'
 import { assertWslMoveRepoWritable } from '../../../persistence/moving-wsl-projects/wsl-move-scope-guard'
-import { applyWorkspaceCreatePluginHook } from '../../../plugins/hooks/workspace-create-plugin-hook'
 import { withProjectWorktreeCreate } from '../../../workspaces/creation/worktree-create-in-flight'
 
 export function registerWorktreeCreateHandlers(context: WorktreeIpcContext): void {
@@ -57,12 +56,11 @@ export function registerWorktreeCreateHandlers(context: WorktreeIpcContext): voi
             repo,
             request: args.automationProvenanceRequest
           })
-          let createArgs: CreateWorktreeArgsWithSystemProvenance = { ...args, automationProvenance }
-          try {
-            createArgs = await applyWorkspaceCreatePluginHook(createArgs, repo)
-          } catch (error) {
-            releaseAutomationWorkspaceProvenanceRequest(args.automationProvenanceRequest)
-            throw error
+          // General application-plugin workspace rewrites are excluded in Ash.
+          // Keep the original request and the approved automation provenance.
+          const createArgs: CreateWorktreeArgsWithSystemProvenance = {
+            ...args,
+            automationProvenance
           }
 
           let result: CreateWorktreeResult

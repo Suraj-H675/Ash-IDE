@@ -21,7 +21,6 @@ import {
   runtimeVisibleProjectGroups
 } from '../workspaces/catalog/runtime-visible-catalog'
 import { folderWorkspaceKey } from '../../../shared/workspace-scope'
-import { createFolderWorkspaceWithPluginHooks } from '../../plugins/hooks/workspace-create-plugin-hook'
 import {
   assertWslMoveProjectWritable,
   assertWslMoveRepoWritable,
@@ -199,12 +198,10 @@ export class RuntimeProjectGroupController {
     if (pathRefusal) {
       throw new FolderWorkspaceCreateRefusedError(pathRefusal)
     }
-    const workspace = await createFolderWorkspaceWithPluginHooks(input, (request) =>
-      createFolder({
-        ...request,
-        creatorProvenance: request.creatorProvenance ?? { kind: 'host' }
-      })
-    )
+    const workspace = createFolder({
+      ...input,
+      creatorProvenance: input.creatorProvenance ?? { kind: 'host' }
+    })
     this.deps.notifyReposChanged()
     return workspace
   }

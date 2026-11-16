@@ -125,24 +125,11 @@ function installWillQuitHandler(): void {
     // Remove the Windows tray icon only after renderer vetoes are past.
     destroySystemTray()
     // Final stats flush closes working sessions synchronously; quit supplies no terminating hook to preserve their duration.
-    // Why: plugin hosts are forked children; dispose sends shutdown and
-    // escalates to SIGKILL so they cannot outlive the app. The promise joins
-    // the teardown barrier below — quitting before it resolves would let
-    // Electron exit first and orphan the hosts.
-    state.pluginKillListService?.dispose()
-    state.pluginKillListService = null
-    state.pluginMarketplaceService = null
-    state.pluginMarketplaceInstaller = null
-    state.pluginAutoUpdater?.dispose()
-    state.pluginAutoUpdater = null
-    state.pluginUpdateReviewNotices = null
-    const pluginHostShutdown = state.pluginService?.dispose() ?? Promise.resolve()
     const codexBackfillRecoveryShutdown = stopCodexStateDbBackfillRecoveries()
     stopCodexAccountSessionBridges()
     // Stamp resume reasons before stopping sessions; an update restart was not a user quit.
     setStructuredAgentSessionTeardownTrigger(updateQuitInProgress ? 'update' : 'quit')
     const structuredAgentSessionShutdown = stopStructuredAgentSessionRuntime()
-    state.pluginService = null
     setUnreadDockBadgeCount(0)
     // Wait briefly for ref maintenance instead of killing mid-prune and stranding its lock; an orphan can finish safely.
     const refMaintenanceShutdown = settleWithinMs(
@@ -246,7 +233,6 @@ function installWillQuitHandler(): void {
       { name: 'browser-client-hosts', promise: browserClientHostShutdown },
       { name: 'local-ssh-browser-routes', promise: localSshRouteShutdown },
       { name: 'ssh', promise: sshShutdown },
-      { name: 'plugin-hosts', promise: pluginHostShutdown },
       { name: 'ref-maintenance', promise: refMaintenanceShutdown },
       { name: 'codex-backfill-recovery', promise: codexBackfillRecoveryShutdown },
       { name: 'structured-agent-session', promise: structuredAgentSessionShutdown },

@@ -9,6 +9,16 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/main/plugins/hooks/workspace-create-plugin-hook.ts",
+      "sourceSha256": "3dce5ede06268ea1d3fc9cd525881cf023d7e9f60eca5e3ded111900a7e5f3c2",
+      "reason": "Ash M8 exclusion: removed general application-plugin before/after interception of worktree and folder creation. Preserve local workspace creation, host provenance, and approved project checks without plugin control."
+    },
+    {
+      "path": "src/main/ipc/pty/spawn-agent-launch-plugin-hook.ts",
+      "sourceSha256": "8b3eef25d815078832516b63e3670f4b6b1355c60b2ad7c7e5a185e9d5d3413e",
+      "reason": "Ash M8 exclusion: remove general application-plugin command/env rewrites from terminal-first agent spawn; retain PTY admission, launch preflight and provider-native integrations."
+    },
+    {
       "path": "src/preload/api/plugins-bridge.ts",
       "sourceSha256": "a6e6fa108413185e1f695470d5234c46860fad122b976033c225d01b5a18535f",
       "reason": "Ash M8: unexpose the general application-plugin preload IPC namespace; remove the obsolete bridge instead of leaving callable installer/worker methods."
