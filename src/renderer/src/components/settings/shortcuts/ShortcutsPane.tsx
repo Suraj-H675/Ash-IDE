@@ -37,7 +37,6 @@ import {
 } from './shortcut-binding-list-mutations'
 import { useMountedRef } from '@/hooks/useMountedRef'
 import { translate } from '@/i18n/i18n'
-import { useEditablePluginCommands } from '@/store/plugin-panels'
 import { buildShortcutDefinitionCatalog } from './shortcut-definition-catalog'
 import { getClientCreationActionPolicy } from '@/lib/client-creation-action-policy'
 import { buildShortcutRowVisibility } from './shortcut-row-visibility'
@@ -67,7 +66,6 @@ export function ShortcutsPane(): React.JSX.Element {
   const setKeybindingOverride = useAppStore((state) => state.setKeybindingOverride)
   const resetKeybindingOverride = useAppStore((state) => state.resetKeybindingOverride)
   const disableKeybindingAction = useAppStore((state) => state.disableKeybindingAction)
-  const pluginCommands = useEditablePluginCommands()
   const [managedBrowserCreationEnabled, mobileEmulatorCreationEnabled] = useAppStore(
     useShallow((state) => {
       const policy = getClientCreationActionPolicy(state, state.activeWorktreeId)
@@ -106,19 +104,12 @@ export function ShortcutsPane(): React.JSX.Element {
       () =>
         buildShortcutDefinitionCatalog({
           disabledTuiAgents,
-          pluginCommands,
           keybindings,
           platform,
           macCapturedDigitChords,
           missionControlConflictMessage
         }),
-      [
-        disabledTuiAgents,
-        keybindings,
-        macCapturedDigitChords,
-        missionControlConflictMessage,
-        pluginCommands
-      ]
+      [disabledTuiAgents, keybindings, macCapturedDigitChords, missionControlConflictMessage]
     )
   const definitionForAction = (actionId: KeybindingActionId): KeybindingDefinition | null =>
     definitionsByAction.get(actionId) ?? getKeybindingDefinition(actionId)

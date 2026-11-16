@@ -9,6 +9,16 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/renderer/src/lib/plugin-command-keybindings.ts",
+      "sourceSha256": "cb331f1e434951c587ae5b1a458804563bb52d97d015dbdde9165d3cb1411187",
+      "reason": "Ash M8: remove dynamic app-plugin shortcut definitions and worker command chord matching after disconnecting Shortcut Settings and runtime keyboard dispatch. Retain built-in keybinding registry, user remapping, terminal ownership and conflict diagnostics."
+    },
+    {
+      "path": "src/renderer/src/components/cmd-j/plugin-quick-actions.ts",
+      "sourceSha256": "2d8a5177ab29fb4b5094809e122555bebc64108f075368ba0eb64dbd9231ea71",
+      "reason": "Ash M8: remove excluded general application-plugin command and plugin-provided new-file quick actions after detaching their only Cmd+J palette importer. Retain built-in workspace, Markdown, browser, terminal and native-chat quick actions."
+    },
+    {
       "path": "src/renderer/src/lib/plugin-command-replacements.ts",
       "sourceSha256": "280591258321dcfe8d186ab8d7d11f9ee9774038e6c33ee489756f122f2fcabf",
       "reason": "Ash M8: remove general application-plugin commands that could replace native Ash shortcut and Main menu actions; retain direct built-in dispatch, keybinding remapping, terminal/floating input ownership and native-chat toggle."

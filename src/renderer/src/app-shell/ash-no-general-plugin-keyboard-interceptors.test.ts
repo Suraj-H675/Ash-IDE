@@ -110,8 +110,8 @@ describe('Ash retains its own keyboard commands without general-plugin overrides
     expect(helper).toContain('isFloatingWorkspaceTerminalInputTarget')
     expect(helper).toContain('matchFloatingWorkspacePanelChord')
     expect(helper).not.toMatch(/ActivePluginCommand|findPluginCommandForKeybinding/)
-    expect(source(`${root}lib/plugin-command-keybindings.ts`)).not.toContain(
-      'export function globalShortcutTargetYields'
+    expect(existsSync(resolve(process.cwd(), `${root}lib/plugin-command-keybindings.ts`))).toBe(
+      false
     )
   })
 })
