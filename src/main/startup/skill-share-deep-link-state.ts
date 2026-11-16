@@ -1,4 +1,3 @@
-import { pluginInstallLinkFromArguments } from '../../shared/plugins/catalog/plugin-install-link'
 import { skillShareIdFromArguments } from '../../shared/skill-share-link'
 
 const REPEAT_WINDOW_MS = 3_000
@@ -41,11 +40,5 @@ export class PendingDeepLinkState {
 export class SkillShareDeepLinkState extends PendingDeepLinkState {
   constructor() {
     super(skillShareIdFromArguments)
-  }
-}
-
-export class PluginInstallLinkState extends PendingDeepLinkState {
-  constructor(now?: () => number) {
-    super(pluginInstallLinkFromArguments, now)
   }
 }

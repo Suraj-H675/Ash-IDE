@@ -1,7 +1,6 @@
 import { ActiveSettingsSectionProvider } from '../section-layout/SettingsSection'
 import { SettingsContentScrollElementProvider } from './settings-content-scroll-element'
 import { SettingsSidebar } from '../navigation/SettingsSidebar'
-import { PluginInstallTrustDialogHost } from '../../plugins/dialogs/PluginInstallTrustDialog'
 import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
 import type { SettingsInteractionController } from './use-settings-interaction-controller'
@@ -163,8 +162,6 @@ export function renderSettingsPage(context: SettingsRenderContext): React.JSX.El
           </div>
         </div>
       </div>
-      {/* Why page level: Plugins and the Appearance theme pickers both install through it. */}
-      <PluginInstallTrustDialogHost />
     </div>
   )
 }

@@ -1242,6 +1242,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/startup/main-process-ipc-bootstrap.ts",
+      "sha256": "7682784224765fe02cac57d3b1b3a703d120357b861207c841c22c9ed3e085f6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/startup/main-process-observers.ts",
       "sha256": "85bbc5c2c956786867696c9e13384e2834b5201e91156bc5d3ffeb4453f2e0a5",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1303,7 +1308,7 @@
     },
     {
       "path": "src/main/startup/main-process-state.ts",
-      "sha256": "4346deaf3611ad16a8013e3dea63fb3ae4608ae66f671f403149425396db7344",
+      "sha256": "a5bae4b174a9e0c5ee276c72e78bb75e99af1e7f2e0ea357e20ac0d0dfae2bfa",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1328,7 +1333,7 @@
     },
     {
       "path": "src/main/startup/plugin-install-link-state.test.ts",
-      "sha256": "72b73e5954917ab5fad7de5b4a94382e5831186ee95909fff54a0740cd9444aa",
+      "sha256": "be063e686603119a0c0f9537fc1bf2c4f1b9aa17d6c53408c95b4e8eff9508e3",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1349,6 +1354,11 @@
     {
       "path": "src/main/startup/single-instance-lock.ts",
       "sha256": "e559351cf98c7f48c3c59b294ca38ceb87c53a82594d323a45a366c4b5e52883",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/skill-share-deep-link-state.ts",
+      "sha256": "8dc59f319c5a6d0b438574796fe7d8984ccbdde745d31dbfc88e5c832df1711a",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1532,6 +1542,16 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/window/macos-desktop-handoff.test.ts",
+      "sha256": "f27a97be5dadd8eda56e60b4280e718a2bbfe6fd2415ccf3763941346a474482",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/window/macos-desktop-handoff.ts",
+      "sha256": "e55d28f6356689c80db8784416903a9e3bda03855dd2357abfc8f5566d5fc25e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/zcode/zcode-plan-api-key-store.ts",
       "sha256": "8eb2e92a2865dca5f19575bfdf8b11080fc285e0eda61f50bbd59ae65664238d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1568,12 +1588,12 @@
     },
     {
       "path": "src/preload/api/ui-bridge-state-and-menu-commands.ts",
-      "sha256": "7c34cd3ee98a1c106dc680ae8b611dadde559ac81e3818e900d041c8cf63fe26",
+      "sha256": "8a23d1008649043e92e0ff19f9f6cf39a8d1bed6c2eed7a3b6ff4fed3c893827",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/preload/api/ui-command-event-api.ts",
-      "sha256": "7fda6915d52ff6d210617002569a9421b04e4fcb9407a3d23be8517ba0e5ae3b",
+      "sha256": "9947d857b28c629d6b70c4e48facce3437364bb98aba9225e3523294dae249d4",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1842,6 +1862,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/settings/appearance/themes/AppearanceThemeControl.tsx",
+      "sha256": "2eae584158851cce6ee6b13f781e0677148d2d402afbfc972c06d10f005ebf86",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/settings/automations/AutomationsSettingsPane.tsx",
       "sha256": "aa8b2c6dc9f32ac0b410e2af39de45ed2de8c7581bc309a90fb6e2bae76b69f3",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1888,7 +1913,7 @@
     },
     {
       "path": "src/renderer/src/components/settings/page/settings-page-renderer.tsx",
-      "sha256": "373d1d106f3bf23a846fee697b262ca3b4f24ee8be460b810291a42be2f21c9b",
+      "sha256": "1ce7cd2d417849fd866905505fc2031a7617ba6d276f09d3455a5d6eee9ae4ef",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2273,7 +2298,12 @@
     },
     {
       "path": "src/renderer/src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts",
-      "sha256": "d26c7b45a8ec030c1cfd4ac4791685603268389fd0d05db683aa5d640beda14d",
+      "sha256": "7e686321a4e9b3324218049d37df599a71cc7b44a28e9a8e01c30855c638d6c2",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/hooks/ipc-events-test-harness.ts",
+      "sha256": "fd1dc148bd8eff162b0c72817c1106353d91bbfab2842cd8b48ef57b29eff4d7",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2578,7 +2608,7 @@
     },
     {
       "path": "src/renderer/src/web/preload-api/web-ui-api.ts",
-      "sha256": "e947c11fe7d6c579e364d5f3c39a1a2136e89b4a5c153f1537173737a45c56f7",
+      "sha256": "32ac42441325f3b9e33d8dc965ff659afacb957d6f65c5300205053655a58067",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

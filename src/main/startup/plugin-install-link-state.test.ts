@@ -1,37 +1,40 @@
-import { describe, expect, it, vi } from 'vitest'
-import { PluginInstallLinkState } from './skill-share-deep-link-state'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { describe, expect, it } from 'vitest'
 
-const LINK = 'orca://plugins/acme.dusk?catalog=community'
+function source(path: string): string {
+  return readFileSync(resolve(process.cwd(), path), 'utf8')
+}
 
-describe('PluginInstallLinkState', () => {
-  it('queues a cold-start link until the renderer pulls it', () => {
-    const state = new PluginInstallLinkState()
-    expect(state.capture(['/Applications/Orca.app/Contents/MacOS/Orca', LINK])).toBe(true)
-    expect(state.consume()).toBe(LINK)
-    expect(state.consume()).toBeNull()
-  })
-
-  it('publishes a second-instance link and keeps malformed ones for the error toast', () => {
-    const state = new PluginInstallLinkState()
-    const publish = vi.fn()
-    expect(state.capture(['orca.exe', 'orca://plugins/not valid'], publish)).toBe(true)
-    expect(publish).toHaveBeenCalledWith('orca://plugins/not valid')
-    expect(state.capture(['orca.exe', '--flag'], publish)).toBe(false)
-  })
-
-  it('drops repeats and bursts', () => {
-    let now = 0
-    const state = new PluginInstallLinkState(() => now)
-    const publish = vi.fn()
-    state.capture([LINK], publish)
-    state.capture([LINK], publish)
-    expect(publish).toHaveBeenCalledTimes(1)
-    for (let index = 0; index < 10; index += 1) {
-      state.capture([`orca://plugins/acme.p${index}`], publish)
+describe('Ash general application-plugin deep-link exclusion', () => {
+  it('never buffers or forwards retired plugin install links from Main', () => {
+    const paths = [
+      'src/main/startup/skill-share-deep-link-state.ts',
+      'src/main/startup/main-process-state.ts',
+      'src/main/startup/main-process-ipc-bootstrap.ts',
+      'src/main/window/macos-desktop-handoff.ts'
+    ]
+    for (const path of paths) {
+      expect(source(path), path).not.toMatch(
+        /PluginInstallLinkState|pluginInstallLinks|ui:consumePendingPluginInstallLink/
+      )
     }
-    expect(publish).toHaveBeenCalledTimes(5)
-    now = 5_000
-    state.capture([LINK], publish)
-    expect(publish).toHaveBeenCalledTimes(6)
+    expect(source('src/main/startup/main-process-state.ts')).toContain(
+      'skillShareDeepLinks: new SkillShareDeepLinkState()'
+    )
+  })
+
+  it('does not expose the legacy plugin link IPC in desktop preload', () => {
+    for (const path of [
+      'src/preload/api/ui-command-event-api.ts',
+      'src/preload/api/ui-bridge-state-and-menu-commands.ts'
+    ]) {
+      expect(source(path), path).not.toMatch(
+        /onOpenPluginInstallLink|consumePendingPluginInstallLink|ui:openPluginInstallLink/
+      )
+    }
+    expect(source('src/preload/api/ui-command-event-api.ts')).toContain(
+      'consumePendingOpenSettings'
+    )
   })
 })

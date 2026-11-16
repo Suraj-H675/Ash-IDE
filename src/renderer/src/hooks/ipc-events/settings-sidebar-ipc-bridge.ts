@@ -3,7 +3,6 @@ import { runBuiltInOrReplacement } from '@/lib/plugin-command-replacements'
 import { showTerminalShortcutCaptureNotification } from '@/lib/terminal-shortcut-capture-notification'
 import { TOGGLE_FLOATING_TERMINAL_EVENT } from '@/lib/floating-terminal'
 import { useAppStore } from '../../store'
-import { openPluginInstallLink } from '../../store/plugin-preview-request'
 
 function getShortcutPlatform(): NodeJS.Platform {
   if (navigator.userAgent.includes('Mac')) {
@@ -31,18 +30,6 @@ export function registerSettingsAndSidebarIpcBridge(unsubs: (() => void)[]): voi
       }
     })
     .catch(() => {})
-
-  unsubs.push(window.api.ui.onOpenPluginInstallLink?.(openPluginInstallLink) ?? (() => {}))
-  const pendingPluginLink = window.api.ui.consumePendingPluginInstallLink?.()
-  if (pendingPluginLink && typeof pendingPluginLink.then === 'function') {
-    void pendingPluginLink
-      .then((link) => {
-        if (link) {
-          openPluginInstallLink(link)
-        }
-      })
-      .catch(() => {})
-  }
 
   unsubs.push(
     window.api.ui.onOpenSetupGuide?.(() => {

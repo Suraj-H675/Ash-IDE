@@ -12,7 +12,19 @@ vi.mock('electron', () => ({
 }))
 vi.mock('@orca/process-host', () => ({ spawnProcess: spawnProcessMock }))
 
-const { createDesktopHandoff, handOffToDesktopApp } = await import('./macos-desktop-handoff')
+const { createDesktopHandoff, desktopHandoffArguments, handOffToDesktopApp } =
+  await import('./macos-desktop-handoff')
+
+it('hands off retained shared skills and documents without an app-plugin link state', () => {
+  const pending = {
+    skillShareDeepLinks: { consume: () => 'shared-skill' },
+    osOpenedDocuments: { consume: () => ['/Users/me/notes.md'] }
+  }
+  expect(desktopHandoffArguments(pending)).toEqual([
+    'orca://skills/share/shared-skill',
+    '/Users/me/notes.md'
+  ])
+})
 
 function makeChild(): EventEmitter & { unref: ReturnType<typeof vi.fn> } {
   return Object.assign(new EventEmitter(), { unref: vi.fn() })
