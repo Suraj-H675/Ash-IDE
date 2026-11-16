@@ -1698,7 +1698,7 @@
     },
     {
       "path": "src/renderer/src/App.tsx",
-      "sha256": "80784c2c60f790c2c867d0cb2d19b3aafdd0dd488ca479893ff6c85fc9f2bd01",
+      "sha256": "01087fd753e7ebdf02877bc2dfc066fbb33642fb88d1724394971cf94b6b286f",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1713,7 +1713,7 @@
     },
     {
       "path": "src/renderer/src/app-shell/AppWorkspaceShell.tsx",
-      "sha256": "309aa18b0e20c9d0dc7ec2a483371451012edcfe66d2b49b1a156402dafa637a",
+      "sha256": "3754579dd5920ed1c5a6d25b1ebf93dc17323914bfeee4452feb3f0f6df5a138",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2014,6 +2014,11 @@
     {
       "path": "src/renderer/src/components/plugins/state/use-plugin-rollback-version.ts",
       "sha256": "99347e73b03a5748a806e2cb8b6ca0f907f68ccaa9eaa33001784eb9b85b3e69",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/index.tsx",
+      "sha256": "035093383c152d2d297530f3c21d54ed18e8b3e1521b5542665368832a2da5eb",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2524,6 +2529,11 @@
     {
       "path": "src/renderer/src/hooks/use-audio-capture.ts",
       "sha256": "067f7cddb5d2aa478a4d8be40daf507f71bc0a33fc9a14192848972e8123bfcd",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/hooks/use-document-dark-theme.ts",
+      "sha256": "f989ad3943b8a93d54a3570c56569887244e1fa8b8200ca7a219e7fffeadf11c",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

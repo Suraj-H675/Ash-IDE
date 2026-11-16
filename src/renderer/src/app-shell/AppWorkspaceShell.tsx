@@ -2,7 +2,6 @@ import { memo, Suspense, useCallback, useRef } from 'react'
 import { lazyWithRetry as lazy } from '@/lib/lazy-with-retry'
 import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
-import { usePluginViewCaptureStore } from '@/store/plugin-view-capture'
 import { pendingCreationOpensNativeChat } from '@/lib/pending-worktree-creation'
 import Sidebar from '../components/Sidebar'
 import RightSidebar from '../components/right-sidebar'
@@ -116,8 +115,6 @@ export function AppWorkspaceShell(props: {
   const scrollAnchorRef = useRef<VirtualizedScrollAnchor>(null)
   const sidebarScrollRefs = { scrollOffsetRef, scrollAnchorRef }
   const { setOpenWithFocus } = floatingWorkspace
-  // `orca plugin shot` captures the right sidebar, which the parked launcher floats over.
-  const capturingPluginShot = usePluginViewCaptureStore((s) => s.capturing)
   const toggleFloatingWorkspace = useCallback(
     () => setOpenWithFocus((open) => !open),
     [setOpenWithFocus]
@@ -235,7 +232,7 @@ export function AppWorkspaceShell(props: {
                     </RecoverableRenderErrorBoundary>
                   </Suspense>
                 </div>
-                {floatingWorkspace.showToggleButton && !capturingPluginShot ? (
+                {floatingWorkspace.showToggleButton ? (
                   <MemoFloatingTerminalToggleButton
                     open={floatingWorkspace.open}
                     onToggle={toggleFloatingWorkspace}

@@ -9,6 +9,101 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-workspace-pick.ts",
+      "sourceSha256": "63addb10a0b66c02be26c8a30818747293fa5b2507bf86a996a196f6d6c0abb3",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-workspace-pick.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-shown.ts",
+      "sourceSha256": "6fcac8355c2ae92137cbb93bc3f40f338b1502816c1b5af221a5a7fd4807da21",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-shown.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-request-handler.ts",
+      "sourceSha256": "72ca0a976e0ad8109d03c99683ca0629b6ae576bbde1f2a825fea80ecbaf0011",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-request-handler.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-replay.ts",
+      "sourceSha256": "dc2322f0b6bd3174a29f267f68da56036704e1908029516a6a7d72c31a55e09e",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-replay.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-panel-settle.ts",
+      "sourceSha256": "4e617e650bc0bd7bbbdb591d3040ba89e9523abf0e38fd58684cefe04e667057",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-panel-settle.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-host-actions.ts",
+      "sourceSha256": "29b7b075761f297afc8d445f655ce44a0dc08e6efbf0127d6a25121cabaf92a8",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-host-actions.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-editor-workspace.ts",
+      "sourceSha256": "08ddd2644626855ef5cd6534c80dbeac43251eaff9121a6c9e20cd51763441ee",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-editor-workspace.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-editor-shot-cleanup.ts",
+      "sourceSha256": "fd29a0f243701fd9143a8ce594055a80a0bb218241d1e34961cd9336608d8867",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-editor-shot-cleanup.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-editor-capture.ts",
+      "sourceSha256": "22de8240076ad8787b06a0ca966c73f6fe3146f863bd5ee51dde0a6da09f4d8f",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-editor-capture.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-data-acts.ts",
+      "sourceSha256": "84df5626b04fc520959157360db9854064d26607eed1e11433d9821fb3bf5268",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-data-acts.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-chrome-capture.ts",
+      "sourceSha256": "5b0aebcf0c6e51c152e4d347e1773f9053c4df5fc91df8060128447bf8f9e062",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-chrome-capture.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-capture-acts.ts",
+      "sourceSha256": "d722feb1cda35ea5591989686f17b76f1ada353a3032eec4192042665804c2d3",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-capture-acts.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-acts.ts",
+      "sourceSha256": "a53430031944446fba2135a1b4096e9388cc00596ffc356ee795d2685d496099",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-acts.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/plugin-view-act-test-harness.tsx",
+      "sourceSha256": "b229b4b78cff2e4f72c8414b6c570b5c435fb587c7ca6de215183602cb0326c7",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-act-test-harness.tsx after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/PluginShotReplaySurface.tsx",
+      "sourceSha256": "89149481257a70578aa1b3093eb563c2ff27e3e46949df89c8b2ee29d8ee26c1",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module PluginShotReplaySurface.tsx after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/view/PluginShotReplayMount.tsx",
+      "sourceSha256": "652870af6ff70cee82eaf31aac12163242adf3d3e3bded646a9cb499f3b761cd",
+      "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module PluginShotReplayMount.tsx after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."
+    },
+    {
+      "path": "src/renderer/src/components/editor/plugin-editor-capture-status.ts",
+      "sourceSha256": "e4669e7e91e1efc4af96d50a49583291c0d5dc1d4ad9c4b6e2854d5c5312a074",
+      "reason": "Ash M8: remove orphan plugin iframe screenshot-load status reporting; the custom editor frame and plugin view request listener are excluded, normal Monaco/file viewers remain."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-shot-replay.ts",
+      "sourceSha256": "b0fea5c11106ecc3f1d2679e5ad6f5e1955e6f19f4a57e97a280f7a3c5b2b1a5",
+      "reason": "Ash M8: remove obsolete global application-plugin scenario screenshot replay overlay state after detaching the unregistered root mount."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-view-capture.ts",
+      "sourceSha256": "90b4823667c8335cfc582da1d19ebf696249e76e1c270287e96c8e7951710d61",
+      "reason": "Ash M8: remove excluded general application-plugin screenshot capture state that overrode live appearance, sidebar width and Floating Workspace controls; retain user-owned appearance and layout."
+    },
+    {
       "path": "src/renderer/src/components/editor/PluginBytesCustomEditorSurface.tsx",
       "sourceSha256": "ab0a4aa4a91e7b222178fc790f02d56d41730c617ea4caa894ab4fe353e5106b",
       "reason": "Ash M8: remove orphan general app-plugin byte-editor frame surface after normal file UI detached; keep built-in binary/media viewers and recovery-safe byte draft queue."
