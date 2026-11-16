@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { toast } from 'sonner'
-import { requestEditorFileSave } from '../../autosave/editor-autosave'
+import { requestEditorFileSave, type EditorSaveFileTarget } from '../../autosave/editor-autosave'
 import { attemptEditorFileSave } from './editor-file-save-attempt'
 import {
   EDITOR_NOT_UTF8_SAVE_MESSAGE,
@@ -19,7 +19,7 @@ vi.mock('@/i18n/i18n', () => ({
 
 const save = vi.mocked(requestEditorFileSave)
 const errorToast = vi.mocked(toast.error)
-const target = { fileId: 'original-source', filePath: '/repo/source.ts' } as never
+const target: EditorSaveFileTarget = { fileId: 'original-source' }
 
 beforeEach(() => {
   save.mockReset()
