@@ -52,7 +52,8 @@ export function pluginReplacementFor(actionId: string): ActivePluginCommand | nu
  */
 export function runBuiltInOrReplacement(actionId: string, builtIn: () => void): void {
   const command = pluginReplacementFor(actionId)
-  if (!command) {
+  const invoke = window.api.plugins?.invokeCommand
+  if (!command || !invoke) {
     builtIn()
     return
   }
@@ -65,24 +66,22 @@ export function runBuiltInOrReplacement(actionId: string, builtIn: () => void): 
   }
   const timer = setTimeout(fallBack, PLUGIN_REPLACEMENT_TIMEOUT_MS)
   // Why the timeout too: a worker that starts after the fallback must not run the command as well.
-  window.api.plugins
-    .invokeCommand({
-      pluginKey: command.pluginKey,
-      commandId: command.id,
-      timeoutMs: PLUGIN_REPLACEMENT_TIMEOUT_MS
-    })
-    .then(
-      () => {
-        clearTimeout(timer)
-        settled = true
-      },
-      (error: unknown) => {
-        clearTimeout(timer)
-        console.warn(
-          `[plugins] ${command.pluginKey}/${command.id} failed; running ${actionId}`,
-          error
-        )
-        fallBack()
-      }
-    )
+  invoke({
+    pluginKey: command.pluginKey,
+    commandId: command.id,
+    timeoutMs: PLUGIN_REPLACEMENT_TIMEOUT_MS
+  }).then(
+    () => {
+      clearTimeout(timer)
+      settled = true
+    },
+    (error: unknown) => {
+      clearTimeout(timer)
+      console.warn(
+        `[plugins] ${command.pluginKey}/${command.id} failed; running ${actionId}`,
+        error
+      )
+      fallBack()
+    }
+  )
 }

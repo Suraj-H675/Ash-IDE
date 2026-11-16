@@ -85,6 +85,44 @@ it('allows only the reviewed runtime roots in a real ASAR archive', async () => 
   })
 })
 
+it('allows the retained browser/terminal/provider channels in a packaged preload', async () => {
+  const resources = await makeArchive(
+    ['package.json', 'out/main/index.js', 'out/preload/index.js'],
+    {
+      'out/preload/index.js':
+        'const allowed = ["browser:listProfiles", "pty:create", "skills:list", "hooks:list"]\n'
+    }
+  )
+  expect(() => verifyAshPackagedAsarHygiene(resources)).not.toThrow()
+})
+
+it.each([
+  'plugins:list',
+  'plugins:install',
+  'plugins:installMarketplacePlugin',
+  'plugins:panelPush',
+  'plugins:invokeCommand',
+  'plugins:editorSaveHook'
+])('refuses excluded application-plugin IPC %s in the packaged preload', async (channel) => {
+  const resources = await makeArchive(
+    ['package.json', 'out/main/index.js', 'out/preload/index.js'],
+    { 'out/preload/index.js': `ipcRenderer.invoke("${channel}")\n` }
+  )
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    /excluded application-plugin IPC in packaged preload/
+  )
+})
+
+it('refuses excluded application-plugin IPC in an unpacked preload', async () => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js'])
+  const preload = join(resources, 'app.asar.unpacked', 'out', 'preload', 'index.js')
+  await mkdir(dirname(preload), { recursive: true })
+  await writeFile(preload, 'ipcRenderer.on("plugins:changed", () => {})\n')
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    /excluded application-plugin IPC in packaged preload/
+  )
+})
+
 it.each([
   '.cache/private-home/provider.json',
   '.audit/private-qa-data.json',

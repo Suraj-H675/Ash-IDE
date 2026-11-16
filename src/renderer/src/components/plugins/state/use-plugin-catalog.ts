@@ -1,3 +1,4 @@
+import { requireLegacyAppPluginsApi } from '@/lib/legacy-app-plugins-api'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type {
   PluginMarketplaceHostInstallPreview,
@@ -22,7 +23,7 @@ function marketplaceError(cause: unknown, fallback: string): string {
 /** Reads each listing's install preview once; a failed read is retried on the next ask. */
 export function createPluginPagePreviewCache(): PluginPreviewCache {
   return new PluginPreviewCache((listing) =>
-    window.api.plugins
+    requireLegacyAppPluginsApi()
       .previewMarketplacePlugin({
         marketplaceSourceId: listing.marketplaceSourceId,
         pluginKey: listing.pluginKey
@@ -61,8 +62,8 @@ export function usePluginCatalog({
     requestPluginInstallCounts()
     try {
       const [nextSources, nextListings] = await Promise.all([
-        window.api.plugins.listMarketplaces(),
-        window.api.plugins.listMarketplacePlugins()
+        requireLegacyAppPluginsApi().listMarketplaces(),
+        requireLegacyAppPluginsApi().listMarketplacePlugins()
       ])
       if (mountedRef.current && requestId === requestRef.current) {
         setSources(nextSources)
@@ -102,7 +103,10 @@ export function usePluginCatalog({
     setRefreshBusy(true)
     setError(null)
     try {
-      await Promise.all([window.api.plugins.refreshMarketplaces({}), onRefreshInstalled?.()])
+      await Promise.all([
+        requireLegacyAppPluginsApi().refreshMarketplaces({}),
+        onRefreshInstalled?.()
+      ])
       await loadMarketplaceData()
     } catch (cause) {
       if (mountedRef.current) {

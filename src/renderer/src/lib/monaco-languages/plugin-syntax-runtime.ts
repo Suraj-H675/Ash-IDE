@@ -15,7 +15,13 @@ function slotPool(): PluginSyntaxSlotPool<PluginSyntaxEngine> {
       return createPluginSyntaxEngine({
         monaco,
         languageId,
-        load: async () => parsePluginSyntaxPayload(await window.api.plugins.loadSyntax(syntaxId)),
+        load: async () => {
+          const loadSyntax = window.api.plugins?.loadSyntax
+          if (!loadSyntax) {
+            throw new Error('Application-plugin syntax providers are unavailable in Ash IDE')
+          }
+          return parsePluginSyntaxPayload(await loadSyntax(syntaxId))
+        },
         createWorker: () =>
           new Worker(new URL('./plugin-grammar.worker.ts', import.meta.url), { type: 'module' }),
         onFailure: (reason) => recordPluginSyntaxFailure(key, reason)

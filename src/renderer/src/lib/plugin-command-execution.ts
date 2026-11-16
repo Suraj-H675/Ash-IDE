@@ -12,7 +12,11 @@ export async function executePluginCommand(
     }
     return undefined
   }
-  return window.api.plugins.invokeCommand({
+  const invoke = window.api.plugins?.invokeCommand
+  if (!invoke) {
+    throw new Error('Application plugin commands are not supported in Ash IDE')
+  }
+  return invoke({
     pluginKey: command.pluginKey,
     commandId: command.id
   })

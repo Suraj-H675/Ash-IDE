@@ -1,3 +1,4 @@
+import { requireLegacyAppPluginsApi } from '@/lib/legacy-app-plugins-api'
 import { useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react'
 import type { PluginHostListEntry } from '../../../../../preload/api-types'
 import { translate } from '@/i18n/i18n'
@@ -46,7 +47,7 @@ export function usePluginMarketplaceLifecycle({
   const reloadAfterMutation = async (pluginKeys: string | readonly string[]): Promise<void> => {
     const changed = new Set(typeof pluginKeys === 'string' ? [pluginKeys] : pluginKeys)
     try {
-      const nextPlugins = await window.api.plugins.list()
+      const nextPlugins = await requireLegacyAppPluginsApi().list()
       if (!mountedRef.current) {
         return
       }
@@ -67,7 +68,7 @@ export function usePluginMarketplaceLifecycle({
     setBusyPluginKeys((current) => new Set(current).add(pluginKey))
     setRollbackError(null)
     try {
-      const result = await window.api.plugins.rollbackMarketplacePlugin({ pluginKey })
+      const result = await requireLegacyAppPluginsApi().rollbackMarketplacePlugin({ pluginKey })
       if (!result.ok) {
         throw new Error(result.error)
       }

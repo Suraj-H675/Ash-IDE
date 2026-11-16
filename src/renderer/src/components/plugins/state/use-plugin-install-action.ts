@@ -1,3 +1,4 @@
+import { requireLegacyAppPluginsApi } from '@/lib/legacy-app-plugins-api'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import type {
@@ -136,7 +137,7 @@ export function usePluginInstallAction({
       }
       const execution = listing.release?.execution ?? pluginExecutionProfile(preview.manifest)
       try {
-        const result = await window.api.plugins.installMarketplacePlugin({
+        const result = await requireLegacyAppPluginsApi().installMarketplacePlugin({
           marketplaceSourceId: preview.marketplaceSourceId,
           marketplaceCommit: preview.marketplaceCommit,
           pluginKey,
@@ -157,7 +158,7 @@ export function usePluginInstallAction({
           execution !== 'data' &&
           preview.manifest.contributes.vmRecipes.length === 0
         ) {
-          await window.api.plugins
+          await requireLegacyAppPluginsApi()
             .consent({
               pluginKey,
               reviewedFingerprint: approve.preview.consentFingerprint,

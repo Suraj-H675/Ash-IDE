@@ -9,6 +9,26 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/preload/api/plugins-bridge.ts",
+      "sourceSha256": "a6e6fa108413185e1f695470d5234c46860fad122b976033c225d01b5a18535f",
+      "reason": "Ash M8: unexpose the general application-plugin preload IPC namespace; remove the obsolete bridge instead of leaving callable installer/worker methods."
+    },
+    {
+      "path": "src/preload/api/plugin-panel-push-bridge.ts",
+      "sourceSha256": "66d8ad782d76695bd994a217a6114114021073cfc899784e24e5e907d896ddd1",
+      "reason": "Ash M8: remove plugin frame push preload transport after its only caller, the excluded general plugin bridge, was removed."
+    },
+    {
+      "path": "src/renderer/src/web/preload-api/web-plugins-api.ts",
+      "sourceSha256": "8931e592fd115e80a4712ec92281e8a8df25b1e4db50e709b95c978a7767bec8",
+      "reason": "Ash M8: remove the archived web client's synthetic general application-plugin API."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/PluginPanel.fixture.tsx",
+      "sourceSha256": "e640967bc17c23ed6b5380a53cf35edbb0811a93ea2873d87afa1845a49b8297",
+      "reason": "Ash M8: remove the obsolete plugin-contributed sidebar visual fixture; it required a fictitious app-plugin preload API incompatible with the excluded product."
+    },
+    {
       "path": "src/renderer/src/hooks/ipc-events/plugin-view-ipc-bridge.ts",
       "sourceSha256": "695e07713abc8cb1a92627d341a404adff9fca3d644609dd035e43a1fd259a27",
       "reason": "Ash M8 exclusion: removed renderer listener for the unsupported general application-plugin CLI view request/reply protocol. Retained browser, terminal, and Settings lifecycle IPC remain."

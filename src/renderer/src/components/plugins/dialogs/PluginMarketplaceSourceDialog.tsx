@@ -1,3 +1,4 @@
+import { requireLegacyAppPluginsApi } from '@/lib/legacy-app-plugins-api'
 import { useRef, useState } from 'react'
 import { Loader2, RefreshCw, Trash2 } from 'lucide-react'
 import type { PluginMarketplaceHostSourceState } from '../../../../../preload/api-types'
@@ -55,7 +56,7 @@ export function PluginMarketplaceSourceDialog({
     setBusyAction('add')
     setError(null)
     try {
-      await window.api.plugins.addMarketplace({
+      await requireLegacyAppPluginsApi().addMarketplace({
         kind: 'git',
         url: url.trim(),
         ref: gitRef.trim()
@@ -82,7 +83,7 @@ export function PluginMarketplaceSourceDialog({
     setBusyAction(`refresh:${sourceId}`)
     setError(null)
     try {
-      await window.api.plugins.refreshMarketplaces({ sourceId })
+      await requireLegacyAppPluginsApi().refreshMarketplaces({ sourceId })
       await onChanged()
     } catch (cause) {
       setError(
@@ -103,7 +104,7 @@ export function PluginMarketplaceSourceDialog({
     setBusyAction(`remove:${sourceId}`)
     setError(null)
     try {
-      await window.api.plugins.removeMarketplace({ sourceId })
+      await requireLegacyAppPluginsApi().removeMarketplace({ sourceId })
       await onChanged()
     } catch (cause) {
       setError(

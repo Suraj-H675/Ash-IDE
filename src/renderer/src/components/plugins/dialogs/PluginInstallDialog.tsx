@@ -1,3 +1,4 @@
+import { requireLegacyAppPluginsApi } from '@/lib/legacy-app-plugins-api'
 import { useRef, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import type { PluginHostInstallSource } from '../../../../../preload/api-types'
@@ -38,7 +39,7 @@ function resolveGitSourceInMain(args: {
   url: string
   ref: string
 }): Promise<PluginGitSourceResolution> {
-  return window.api.plugins.resolveGitSource(args)
+  return requireLegacyAppPluginsApi().resolveGitSource(args)
 }
 
 export function PluginInstallDialog({

@@ -124,9 +124,9 @@ describe('excluded app-plugin editor entrypoints', () => {
         resolve(process.cwd(), 'src/renderer/src/hooks/ipc-events/plugin-view-ipc-bridge.ts')
       )
     ).toBe(false)
-    const bridge = readFileSync(resolve(process.cwd(), 'src/preload/api/plugins-bridge.ts'), 'utf8')
-    expect(bridge).not.toMatch(
-      /onViewRequest|answerViewRequest|PLUGIN_VIEW_REQUEST_CHANNEL|PLUGIN_VIEW_REPLY_CHANNEL/
+    expect(existsSync(resolve(process.cwd(), 'src/preload/api/plugins-bridge.ts'))).toBe(false)
+    expect(existsSync(resolve(process.cwd(), 'src/preload/api/plugin-panel-push-bridge.ts'))).toBe(
+      false
     )
   })
 

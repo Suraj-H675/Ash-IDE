@@ -1,3 +1,4 @@
+import { requireLegacyAppPluginsApi } from '@/lib/legacy-app-plugins-api'
 import { useEffect, useState } from 'react'
 
 /** The version "Roll back" would restore, read when asked; null while loading or when there is none. */
@@ -9,7 +10,7 @@ export function usePluginRollbackVersion(pluginKey: string | null): string | nul
       return
     }
     let stale = false
-    window.api.plugins
+    requireLegacyAppPluginsApi()
       .getRollbackVersion({ pluginKey })
       .then((version) => {
         if (!stale) {

@@ -11,9 +11,13 @@ export function withFallback<T extends object>(target: T, path: string[]): T {
         }
         return value
       }
-      // The archived web client must not fabricate a working-looking Jira or
-      // Linear connector when Ash has intentionally removed both namespaces.
-      if (path.length === 0 && (property === 'jira' || property === 'linear')) {
+      // Do not manufacture a callable fallback for excluded app-wide namespaces.
+      // In particular, app-plugin installers and workers must not appear
+      // available when Ash's desktop preload deliberately omits them.
+      if (
+        path.length === 0 &&
+        (property === 'jira' || property === 'linear' || property === 'plugins')
+      ) {
         return undefined
       }
       return createFallbackProxy([...path, String(property)])

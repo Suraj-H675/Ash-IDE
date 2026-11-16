@@ -1,3 +1,4 @@
+import { requireLegacyAppPluginsApi } from '@/lib/legacy-app-plugins-api'
 import { isPluginAutoUpdateOn } from '../../../../../shared/plugins/catalog/plugin-update-policy'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -116,7 +117,7 @@ export function PluginsSettingsSection({
   }
 
   const loadPluginListForSubscription = useEffectEvent(async (): Promise<void> => {
-    await loadPluginList(window.api.plugins.list())
+    await loadPluginList(requireLegacyAppPluginsApi().list())
     if (mountedRef.current) {
       setLoading(false)
     }
@@ -148,7 +149,7 @@ export function PluginsSettingsSection({
     settings,
     updateSettings,
     mountedRef,
-    rediscover: () => loadPluginList(window.api.plugins.refresh())
+    rediscover: () => loadPluginList(requireLegacyAppPluginsApi().refresh())
   })
 
   useEffect(() => {
@@ -176,7 +177,7 @@ export function PluginsSettingsSection({
     }
     setLoading(true)
     void loadPluginListForSubscription()
-    const unsubscribe = window.api.plugins.onChanged(() => {
+    const unsubscribe = requireLegacyAppPluginsApi().onChanged(() => {
       void loadPluginListForSubscription()
     })
     return () => {
@@ -208,14 +209,14 @@ export function PluginsSettingsSection({
     if (!(await confirmPluginInstallTrust(sourceInstallTrustPrompt(source)))) {
       return
     }
-    const result = await window.api.plugins.install(source)
+    const result = await requireLegacyAppPluginsApi().install(source)
     if (!result.ok) {
       throw new Error(result.error)
     }
     // Why: installation is not consent; select by id and wait for the authoritative list.
     setInstallKind(null)
     review.show(result.pluginKey)
-    await loadPluginList(window.api.plugins.refresh())
+    await loadPluginList(requireLegacyAppPluginsApi().refresh())
   }
 
   const decideConsent = async (
@@ -227,7 +228,7 @@ export function PluginsSettingsSection({
     // Why: re-approving an update keeps the user's current choice; a first Enable shows the theme.
     const firstEnable = !plugins.find((plugin) => plugin.pluginKey === pluginKey)?.needsReconsent
     try {
-      const nextPlugins = await window.api.plugins.consent({
+      const nextPlugins = await requireLegacyAppPluginsApi().consent({
         pluginKey,
         reviewedFingerprint,
         decision
@@ -249,7 +250,7 @@ export function PluginsSettingsSection({
     setBusyPluginKeys((current) => new Set(current).add(plugin.pluginKey))
     try {
       const nextEnabled = !enabled
-      const nextPlugins = await window.api.plugins.setEnabled({
+      const nextPlugins = await requireLegacyAppPluginsApi().setEnabled({
         pluginKey: plugin.pluginKey,
         enabled: nextEnabled
       })
@@ -275,12 +276,16 @@ export function PluginsSettingsSection({
   const restart = async (pluginKey: string): Promise<void> => {
     setBusyPluginKeys((current) => new Set(current).add(pluginKey))
     try {
-      applyCompletedMutation(await window.api.plugins.setEnabled({ pluginKey, enabled: false }))
-      applyCompletedMutation(await window.api.plugins.setEnabled({ pluginKey, enabled: true }))
+      applyCompletedMutation(
+        await requireLegacyAppPluginsApi().setEnabled({ pluginKey, enabled: false })
+      )
+      applyCompletedMutation(
+        await requireLegacyAppPluginsApi().setEnabled({ pluginKey, enabled: true })
+      )
     } catch (cause) {
       if (mountedRef.current) {
         // Why: the stop may have landed before the start failed; show what is true now.
-        void loadPluginList(window.api.plugins.list())
+        void loadPluginList(requireLegacyAppPluginsApi().list())
         toast.error(
           translate(
             'auto.components.settings.PluginsSettingsSection.restartFailed',
@@ -318,7 +323,7 @@ export function PluginsSettingsSection({
 
   const remove = async (pluginKey: string): Promise<void> => {
     if (
-      (await mutateList(pluginKey, () => window.api.plugins.remove({ pluginKey }))) &&
+      (await mutateList(pluginKey, () => requireLegacyAppPluginsApi().remove({ pluginKey }))) &&
       mountedRef.current
     ) {
       setRemovePluginId(null)
@@ -326,7 +331,7 @@ export function PluginsSettingsSection({
   }
 
   const refresh = async (): Promise<void> => {
-    await loadPluginList(window.api.plugins.refresh())
+    await loadPluginList(requireLegacyAppPluginsApi().refresh())
   }
 
   const featureEnabled = settings.pluginSystemEnabled

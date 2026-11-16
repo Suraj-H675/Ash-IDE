@@ -1,4 +1,4 @@
-const { existsSync, readdirSync } = require('node:fs')
+const { existsSync, readFileSync, readdirSync } = require('node:fs')
 const { join, posix } = require('node:path')
 const { extractFile, listPackage } = require('@electron/asar')
 const {
@@ -67,6 +67,31 @@ function verifyAshPackagedAsarHygiene(resourcesDir) {
   }
   if (!roots.has('out') || !roots.has('package.json')) {
     throw new Error('[ash-package-hygiene] packaged runtime entry roots are incomplete')
+  }
+  // Application-plugin IPC must not be accessible through Electron's
+  // contextBridge even when retired renderer code is still source-compatible.
+  // Inspect the final compiled preload, including a possible unpacked copy:
+  // source-only import checks would miss a new barrel export or build transform.
+  // Browser extensions and provider-native skills use different channel roots.
+  const preloadPath = 'out/preload/index.js'
+  const normalizedEntries = new Set(
+    entries.map((entry) => entry.replace(/\\/g, '/').replace(/^\/+/, ''))
+  )
+  const preloads = []
+  if (normalizedEntries.has(preloadPath)) {
+    preloads.push(extractFile(archivePath, preloadPath).toString('utf8'))
+  }
+  const unpackedPreload = join(resourcesDir, 'app.asar.unpacked', ...preloadPath.split('/'))
+  if (existsSync(unpackedPreload)) {
+    preloads.push(readFileSync(unpackedPreload, 'utf8'))
+  }
+  for (const source of preloads) {
+    const channel = /\bplugins:[A-Za-z][A-Za-z0-9_]*/.exec(source)?.[0]
+    if (channel) {
+      throw new Error(
+        `[ash-package-hygiene] excluded application-plugin IPC in packaged preload: ${channel}`
+      )
+    }
   }
   for (const artifact of [
     ...EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS,

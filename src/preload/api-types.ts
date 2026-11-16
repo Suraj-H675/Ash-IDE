@@ -167,7 +167,8 @@ export type PreloadApi = {
   wslDriveUnc: WslDriveUncConversionApi
   pwsh: RuntimeApi['pwsh']
   gitBash: RuntimeApi['gitBash']
-  plugins: PluginsApi
+  /** Legacy Orca app-plugin API; deliberately absent in Ash desktop and web. */
+  plugins?: PluginsApi
   agentStatus: AgentStatusApi
   /** Optional legacy compatibility surface; desktop Ash does not expose mobile pairing. */
   mobile?: MobileApi
