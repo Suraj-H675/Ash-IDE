@@ -9,6 +9,51 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/renderer/src/components/editor/PluginBytesCustomEditorSurface.tsx",
+      "sourceSha256": "ab0a4aa4a91e7b222178fc790f02d56d41730c617ea4caa894ab4fe353e5106b",
+      "reason": "Ash M8: remove orphan general app-plugin byte-editor frame surface after normal file UI detached; keep built-in binary/media viewers and recovery-safe byte draft queue."
+    },
+    {
+      "path": "src/renderer/src/components/editor/PluginCustomEditorFrame.tsx",
+      "sourceSha256": "203b9b68aa1c15c523900e016f2207996b711dd02ce4862401c89a8324cc3a46",
+      "reason": "Ash M8: remove unmounted application-plugin document iframe and host integration; preserve retained source editing and runtime browser frames."
+    },
+    {
+      "path": "src/renderer/src/components/editor/PluginEditorNeedsDesktopNotice.tsx",
+      "sourceSha256": "e228b038854cb41bdd5bf531ab7263b53bb3179dfb33fbc9bdecd48e67778213",
+      "reason": "Ash M8: remove obsolete app-plugin editor availability and install notice used only by the excluded custom editor frame."
+    },
+    {
+      "path": "src/renderer/src/components/editor/plugin-custom-editor-frame-events.ts",
+      "sourceSha256": "0bbca86bc6f8bcd39680bedd8fef04fdcb8a2d323b10c61a79dade6a160ff103",
+      "reason": "Ash M8: remove orphan custom-editor guest-frame event interception used only by removed app-plugin host."
+    },
+    {
+      "path": "src/renderer/src/components/editor/plugin-custom-editor-host.ts",
+      "sourceSha256": "e967be7d33a8a7b97fa3fe40e43a68fadb7f04e34da41a75a07d4044d5bc502b",
+      "reason": "Ash M8: remove unreferenced app-plugin custom-editor document protocol and guest edit/flush/merge worker; preserve shared draft types for retained recovery paths."
+    },
+    {
+      "path": "src/renderer/src/components/editor/plugin-custom-editor-outside-merge.ts",
+      "sourceSha256": "3d849049bb2ad6d4a88d0b22ae8a1f89fc95f70390514860cdd3b5450de9c19a",
+      "reason": "Ash M8: remove plugin guest-frame-only outside-change merge acknowledgement helper. File conflict recovery stays in the built-in banner."
+    },
+    {
+      "path": "src/renderer/src/components/editor/use-custom-editor-outside-merge.ts",
+      "sourceSha256": "61dfe11faae6b30f60061d14611fe9bea26d59c3c52927282b4010748728a1cf",
+      "reason": "Ash M8: retire plugin-only outside-write merging store and its ability to hide the normal changed-on-disk warning; retained conflict reconciliation remains available."
+    },
+    {
+      "path": "src/renderer/src/components/editor/use-custom-editor-reload-flush.ts",
+      "sourceSha256": "c0ea754caecc0c335caffe4c5730080224646ab44425df67dcb31a88c72696c5",
+      "reason": "Ash M8: remove unmounted plugin custom-editor frame reload flush controller; native queued editor flush and draft recovery continue independently."
+    },
+    {
+      "path": "src/renderer/src/components/editor/external-changes/CustomEditorExternalChangeBanner.tsx",
+      "sourceSha256": "6f1e50a8156625de0794e54f576c0a89bb2689db5f79a51e035275eac99f03a3",
+      "reason": "Ash M8: route live external file changes directly to retained conflict recovery banner without a removed app-plugin merge-state suppression."
+    },
+    {
       "path": "src/renderer/src/components/editor/view-mode/custom-editor-toggle.ts",
       "sourceSha256": "f049ea674fd251884873f01dda389c01003c5b57e444ae06711fd5f52b6b65cb",
       "reason": "Ash M8 exclusion: retire general application-plugin custom-editor mode selection from the active editor panel and toggle; retain built-in Monaco, Markdown, SVG, CSV, notebook and source-control modes."

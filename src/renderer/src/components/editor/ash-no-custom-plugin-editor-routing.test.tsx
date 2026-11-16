@@ -18,12 +18,6 @@ vi.mock('./editor-lazy-views', () => ({
   MermaidViewer: () => <div>Built-in diagram viewer</div>,
   MediaViewer: () => <div>Built-in media viewer</div>
 }))
-vi.mock('./PluginCustomEditorFrame', () => ({
-  default: () => <div>Excluded injected plugin frame</div>
-}))
-vi.mock('./PluginBytesCustomEditorSurface', () => ({
-  default: () => <div>Excluded injected byte editor</div>
-}))
 vi.mock('../error-boundaries/RecoverableRenderErrorBoundary', () => ({
   RecoverableRenderErrorBoundary: ({ children }: { children: React.ReactNode }) => children
 }))
@@ -104,7 +98,7 @@ describe('Ash routes files exclusively through built-in editor/viewers', () => {
         )
       })
       expect(host.textContent).toContain('Built-in Monaco source')
-      expect(host.textContent).not.toContain('Excluded injected plugin frame')
+      expect(host.textContent).not.toContain('Dangerous Custom Editor')
     } finally {
       await act(async () => root.unmount())
       host.remove()
@@ -129,7 +123,7 @@ describe('Ash routes files exclusively through built-in editor/viewers', () => {
         )
       })
       expect(host.textContent).toContain('Binary file')
-      expect(host.textContent).not.toContain('Excluded injected byte editor')
+      expect(host.textContent).not.toContain('Dangerous Custom Editor')
     } finally {
       await act(async () => root.unmount())
       host.remove()

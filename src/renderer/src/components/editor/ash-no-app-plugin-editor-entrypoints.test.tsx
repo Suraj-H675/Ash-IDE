@@ -16,9 +16,6 @@ vi.mock('./editor-lazy-views', () => ({
   MermaidViewer: () => <div>Mermaid retained</div>,
   MediaViewer: () => <div>Media retained</div>
 }))
-vi.mock('./PluginEditorNeedsDesktopNotice', () => ({
-  PluginEditorSourceFallbackNotice: () => <div>Orca plugin editor notice</div>
-}))
 vi.mock('../error-boundaries/RecoverableRenderErrorBoundary', () => ({
   RecoverableRenderErrorBoundary: ({ children }: { children: React.ReactNode }) => children
 }))

@@ -1808,7 +1808,7 @@
     },
     {
       "path": "src/renderer/src/components/editor/EditorEditFileSurface.tsx",
-      "sha256": "fd550f397b728a8465b8a07547197ed0a4b9228b40e4f502ecdc65e74df2c9ae",
+      "sha256": "da6de3d0647537dd5238be34ce32b3ab7ff8b514565a9d38def95ff853c42e64",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
