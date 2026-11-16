@@ -1,7 +1,6 @@
 import { Suspense } from 'react'
 import { lazyWithRetry as lazy } from '@/lib/lazy-with-retry'
 import type { ActiveRightSidebarTab } from '@/store/slices/editor'
-import { isPluginPanelTabKey } from '../../../../shared/plugins/manifest/plugin-manifest'
 
 const FileExplorer = lazy(() => import('./file-explorer/panel/FileExplorer'))
 const SourceControl = lazy(() => import('./source-control/panel/SourceControl'))
@@ -12,7 +11,6 @@ const FolderWorkspaceWorktreesPanel = lazy(() => import('./FolderWorkspaceWorktr
 const FolderWorkspacePrChecksPanel = lazy(
   () => import('./hosted-review/folder-checks/FolderWorkspacePrChecksPanel')
 )
-const PluginPanel = lazy(() => import('./plugin-panels/PluginPanel'))
 
 type RightSidebarPanelContentProps = {
   effectiveTab: ActiveRightSidebarTab
@@ -24,11 +22,7 @@ export function RightSidebarPanelContent({
   rightSidebarOpen
 }: RightSidebarPanelContentProps): React.JSX.Element {
   return (
-    <div
-      className="flex min-h-0 flex-1 flex-col overflow-hidden"
-      // `orca plugin shot` captures exactly this rect.
-      data-plugin-panel-surface={isPluginPanelTabKey(effectiveTab) ? effectiveTab : undefined}
-    >
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <Suspense fallback={null}>
         {effectiveTab === 'explorer' && <FileExplorer />}
         {effectiveTab === 'source-control' && <SourceControl />}
@@ -43,10 +37,6 @@ export function RightSidebarPanelContent({
           <FolderWorkspacePrChecksPanel
             isVisible={rightSidebarOpen && effectiveTab === 'pr-checks'}
           />
-        )}
-        {/* Remount on plugin changes so an old iframe cannot post through the next plugin's rebound bridge. */}
-        {isPluginPanelTabKey(effectiveTab) && (
-          <PluginPanel key={effectiveTab} tabKey={effectiveTab} />
         )}
       </Suspense>
     </div>

@@ -5,18 +5,11 @@ import { useRepoById } from '@/store/selectors'
 import { isFolderRepo } from '../../../../shared/repo-kind'
 import { parseWorkspaceKey } from '../../../../shared/workspace-scope'
 import { getVisibleRightSidebarActivityItems } from './right-sidebar-activity-visibility'
-import { getPluginPanelActivityItems } from './plugin-panels/plugin-panel-activity-items'
 import {
   getPortsPanelOwnerKey,
   portsPanelHostForOwnerKey,
   portsPanelReachesSshHost
 } from './ports-panel-host'
-import {
-  collectInstalledPluginTabKeys,
-  usePluginPanels,
-  usePluginPanelsStore,
-  type PluginPanelsFetchStatus
-} from '@/store/plugin-panels'
 import { useShortcutLabel } from '@/hooks/useShortcutLabel'
 import { translate } from '@/i18n/i18n'
 import { useUiLanguageRevision } from '@/i18n/use-ui-language-revision'
@@ -26,9 +19,6 @@ import type { ActivityBarItem } from './activity-bar-buttons'
 export type RightSidebarActivityItems = {
   visibleItems: ActivityBarItem[]
   activeFolderWorkspaceKey: string | null
-  pluginSystemEnabled: boolean
-  pluginFetchStatus: PluginPanelsFetchStatus
-  installedPluginTabKeys: Set<string>
 }
 
 export function useRightSidebarActivityItems({
@@ -56,19 +46,6 @@ export function useRightSidebarActivityItems({
       portsPanelHostForOwnerKey(getPortsPanelOwnerKey(s, activeWorktreeId)),
       s.runtimeEnvironments
     )
-  )
-  const pluginSystemEnabled = useAppStore((s) => s.settings?.pluginSystemEnabled === true)
-  const pluginPanels = usePluginPanels()
-  const visiblePluginPanels = useMemo(
-    () => (pluginSystemEnabled ? pluginPanels : []),
-    [pluginPanels, pluginSystemEnabled]
-  )
-  const installedPlugins = usePluginPanelsStore((s) => s.plugins)
-  const pluginFetchStatus = usePluginPanelsStore((s) => s.fetchStatus)
-  const pluginPanelErrors = usePluginPanelsStore((s) => s.panelErrors)
-  const installedPluginTabKeys = useMemo(
-    () => collectInstalledPluginTabKeys(installedPlugins),
-    [installedPlugins]
   )
 
   const activityItems = useMemo<ActivityBarItem[]>(
@@ -122,20 +99,10 @@ export function useRightSidebarActivityItems({
         title: translate('auto.components.right.sidebar.index.441733b630', 'Ports'),
         shortcut: portsShortcut === 'Unassigned' ? '' : portsShortcut,
         sshOnly: true
-      },
-      // Append plugin tabs to preserve built-in navigation positions.
-      ...getPluginPanelActivityItems(visiblePluginPanels, pluginPanelErrors)
+      }
     ],
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- translate() reads the UI language implicitly.
-    [
-      checksShortcut,
-      explorerShortcut,
-      pluginPanelErrors,
-      visiblePluginPanels,
-      portsShortcut,
-      sourceControlShortcut,
-      languageRevision
-    ]
+    [checksShortcut, explorerShortcut, portsShortcut, sourceControlShortcut, languageRevision]
   )
 
   const visibleItems = useMemo(
@@ -152,9 +119,6 @@ export function useRightSidebarActivityItems({
 
   return {
     visibleItems,
-    activeFolderWorkspaceKey,
-    pluginSystemEnabled,
-    pluginFetchStatus,
-    installedPluginTabKeys
+    activeFolderWorkspaceKey
   }
 }

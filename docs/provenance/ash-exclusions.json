@@ -9,6 +9,16 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/use-installed-plugin-route-reconciliation.ts",
+      "sourceSha256": "3955bf49758f21423c8e131922339b7ec8e376795a050ba2c1a0ba104a088f49",
+      "reason": "Ash M8: remove app-plugin panel route reconciliation after eliminating plugin tabs from the live right sidebar. Deprecated saved plugin panel choices now resolve to Explorer while built-in tabs remain."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/plugin-panel-activity-items.ts",
+      "sourceSha256": "483cf0b9b9e62071c821cd13e09a83f9038c1b88e050842ad3b986e08e20434a",
+      "reason": "Ash M8: remove app-plugin-contributed right sidebar activity item/icon generation; retain built-in Explorer, Agents, workspaces, source control, Checks and Ports navigation."
+    },
+    {
       "path": "src/renderer/src/components/plugins/view/plugin-view-workspace-pick.ts",
       "sourceSha256": "63addb10a0b66c02be26c8a30818747293fa5b2507bf86a996a196f6d6c0abb3",
       "reason": "Ash M8: remove dormant general IDE application-plugin view/screenshot replay module plugin-view-workspace-pick.ts after disconnecting the unregistered plugin shot overlay/request handlers. Retain ordinary browser capture, Design Mode, workspace UI and provider-native flows."

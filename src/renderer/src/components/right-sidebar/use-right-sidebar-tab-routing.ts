@@ -1,10 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { useAppStore } from '@/store'
 import type { ActiveRightSidebarTab } from '@/store/slices/editor'
-import type { PluginPanelsFetchStatus } from '@/store/plugin-panels'
 import { normalizeRightSidebarRoute } from '@/store/right-sidebar-route'
 import { resolveRightSidebarEffectiveTab } from './right-sidebar-effective-tab'
-import { useInstalledPluginRouteReconciliation } from './plugin-panels/use-installed-plugin-route-reconciliation'
 import type { ActivityBarItem } from './activity-bar-buttons'
 
 export type RightSidebarTabRouting = {
@@ -14,16 +12,10 @@ export type RightSidebarTabRouting = {
 
 export function useRightSidebarTabRouting({
   visibleItems,
-  activeFolderWorkspaceKey,
-  pluginSystemEnabled,
-  pluginFetchStatus,
-  installedPluginTabKeys
+  activeFolderWorkspaceKey
 }: {
   visibleItems: ActivityBarItem[]
   activeFolderWorkspaceKey: string | null
-  pluginSystemEnabled: boolean
-  pluginFetchStatus: PluginPanelsFetchStatus
-  installedPluginTabKeys: Set<string>
 }): RightSidebarTabRouting {
   const rightSidebarTab = useAppStore((s) => s.rightSidebarTab)
   const rightSidebarRouteRequestId = useAppStore((s) => s.rightSidebarRouteRequestId)
@@ -34,11 +26,8 @@ export function useRightSidebarTabRouting({
   const rememberedFolderTabByWorkspaceKeyRef = useRef<Record<string, ActiveRightSidebarTab>>({})
   const lastRightSidebarRouteRequestIdRef = useRef(rightSidebarRouteRequestId)
 
-  // Preserve stored routes when hidden; folder effective-tab memory keeps parent overviews, while authoritative installed-panel keys discard uninstalled plugin routes.
-  const normalizedActiveTab = normalizeRightSidebarRoute(rightSidebarTab, undefined, {
-    installedPluginTabKeys:
-      pluginSystemEnabled && pluginFetchStatus === 'ready' ? installedPluginTabKeys : undefined
-  }).rightSidebarTab
+  // Keep folder tab memory but never restore a removed general application-plugin tab.
+  const normalizedActiveTab = normalizeRightSidebarRoute(rightSidebarTab).rightSidebarTab
   const rememberedFolderTab = activeFolderWorkspaceKey
     ? rememberedFolderTabByWorkspaceKeyRef.current[activeFolderWorkspaceKey]
     : null
@@ -54,13 +43,11 @@ export function useRightSidebarTabRouting({
     rememberedFolderTab: requestedFolderTab ?? rememberedFolderTab
   })
 
-  useInstalledPluginRouteReconciliation({
-    pluginSystemEnabled,
-    fetchStatus: pluginFetchStatus,
-    storedTab: rightSidebarTab,
-    normalizedTab: normalizedActiveTab,
-    setStoredTab: setRightSidebarTab
-  })
+  useEffect(() => {
+    if (rightSidebarTab.startsWith('plugin:')) {
+      setRightSidebarTab('explorer')
+    }
+  }, [rightSidebarTab, setRightSidebarTab])
 
   // Watch the displayed panel, including fallbacks for hidden stored tabs.
   useEffect(() => {
