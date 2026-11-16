@@ -20,15 +20,6 @@ import {
 } from './markdown/render-mode/markdown-render-mode'
 import { getCachedMarkdownRichModeEligibility } from './markdown/render-mode/markdown-rich-mode-eligibility-cache'
 import { exceedsMarkdownRichModeSizeLimit } from './markdown/render-mode/markdown-rich-size-limit'
-import {
-  customEditorToggleValue,
-  resolveCustomEditorToggle,
-  type CustomEditorToggle
-} from './view-mode/custom-editor-toggle'
-import type {
-  ActivePluginCustomEditor,
-  CustomEditorViewChoice
-} from '@/store/plugin-custom-editors'
 
 type StoreState = ReturnType<typeof useAppStore.getState>
 
@@ -43,9 +34,6 @@ type EditorPanelRenderModelParams = {
   markdownRichModeSizeOverridden: boolean
   isChangesMode: boolean
   canOpenWorkspaceFileBrowser: boolean
-  /** Enabled plugins' editors for this file, in priority order. */
-  customEditors?: readonly ActivePluginCustomEditor[]
-  customEditorChoice?: CustomEditorViewChoice
 }
 
 export function getEditorPanelRenderModel({
@@ -58,9 +46,7 @@ export function getEditorPanelRenderModel({
   markdownDefaultViewMode,
   markdownRichModeSizeOverridden,
   isChangesMode,
-  canOpenWorkspaceFileBrowser,
-  customEditors = [],
-  customEditorChoice
+  canOpenWorkspaceFileBrowser
 }: EditorPanelRenderModelParams) {
   const isSingleDiff =
     activeFile.mode === 'diff' &&
@@ -139,36 +125,11 @@ export function getEditorPanelRenderModel({
       ? editorToggleModes.filter((mode) => mode !== 'changes')
       : editorToggleModes
   const inlineFileContent = activeFile.mode === 'edit' ? fileContents[activeFile.id] : undefined
-  const customEditorContentReady =
-    activeFile.mode === 'edit' &&
-    inlineFileContent !== undefined &&
-    !inlineFileContent.loadError &&
-    inlineFileContent.csvPreview === undefined &&
-    activeFile.conflict === undefined
-  // Read-only tabs keep raw source, as for every other rich view.
-  const textEditorEligible =
-    customEditorContentReady && !rawReadOnly && inlineFileContent?.isBinary !== true
-  // Bytes editors honor read-only themselves, so they open read-only tabs too; they need a pageable route.
-  const bytesEditorEligible =
-    customEditorContentReady && inlineFileContent?.byteSource !== undefined
-  const eligibleCustomEditors = customEditors.filter((editor) =>
-    editor.contentKind === 'bytes' ? bytesEditorEligible : textEditorEligible
-  )
-  const customEditorToggle: CustomEditorToggle | null = resolveCustomEditorToggle({
-    editors: eligibleCustomEditors,
-    choice: customEditorChoice,
-    eligible: eligibleCustomEditors.length > 0,
-    sourceModes: availableEditorToggleModes
-  })
-  const activeCustomEditor = isChangesMode ? null : (customEditorToggle?.active ?? null)
   const effectiveToggleValue: EditorToggleValue = isChangesMode
     ? 'changes'
-    : activeCustomEditor
-      ? customEditorToggleValue(activeCustomEditor)
-      : hasViewModeToggle
-        ? mdViewMode
-        : 'edit'
-  const toggleModes = customEditorToggle?.modes ?? availableEditorToggleModes
+    : hasViewModeToggle
+      ? mdViewMode
+      : 'edit'
   const inlineMarkdownContent =
     activeFile.mode === 'edit'
       ? (editorDrafts[activeFile.id] ?? fileContents[activeFile.id]?.content ?? null)
@@ -246,24 +207,15 @@ export function getEditorPanelRenderModel({
       (activeFile.mode === 'edit' || (isSingleDiff && openFileState.canOpen)),
     mdViewMode,
     hasViewModeToggle,
-    availableEditorToggleModes: toggleModes,
-    hasEditorToggle: toggleModes.length > 1,
+    availableEditorToggleModes,
+    hasEditorToggle: availableEditorToggleModes.length > 1,
     effectiveToggleValue,
-    customEditors: customEditorToggle?.editors ?? [],
-    customEditorTitles: Object.fromEntries(
-      (customEditorToggle?.editors ?? []).map((editor) => [
-        customEditorToggleValue(editor),
-        editor.title
-      ])
-    ),
-    activeCustomEditor,
     isMarkdownTableOfContentsDisabled: hasViewModeToggle && mdViewMode === 'source',
     shouldShowMarkdownExportAction,
     canExportMarkdownToPdf,
     inlineMarkdownRenderState,
     canShowMarkdownTableOfContents:
       viewerLanguage === 'markdown' &&
-      activeCustomEditor === null &&
       (hasViewModeToggle || activeFile.mode === 'markdown-preview'),
     canShowMarkdownPreview: canOpenMarkdownPreview({
       language: viewerLanguage,

@@ -51,7 +51,6 @@ const base = {
   isMermaid: false,
   isCsv: false,
   isNotebook: false,
-  customEditor: null,
   mdViewMode: 'source' as const,
   inlineMarkdownRenderState: null,
   isChangesMode: false,

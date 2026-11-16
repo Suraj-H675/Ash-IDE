@@ -107,7 +107,6 @@ export function EditorPanelShell({
           isCsv={model.isCsv}
           isNotebook={model.isNotebook}
           isSvg={model.isSvg}
-          customEditorTitles={model.customEditorTitles}
           hasEditorToggle={model.hasEditorToggle}
           availableEditorToggleModes={model.availableEditorToggleModes}
           effectiveToggleValue={model.effectiveToggleValue}
@@ -149,7 +148,6 @@ export function EditorPanelShell({
           isSvg={model.isSvg}
           isCsv={model.isCsv}
           isNotebook={model.isNotebook}
-          customEditor={model.activeCustomEditor}
           mdViewMode={model.mdViewMode}
           inlineMarkdownRenderState={model.inlineMarkdownRenderState}
           isChangesMode={model.isDiffSurface && !model.isSingleDiff}

@@ -22,9 +22,6 @@ import { CustomEditorExternalChangeBanner } from './external-changes/CustomEdito
 import type { useMarkdownDocuments } from './markdown/documents/useMarkdownDocuments'
 import { EditorMarkdownFileSurface } from './EditorMarkdownFileSurface'
 import type { MarkdownRenderState } from './markdown/render-mode/markdown-render-mode'
-import type { ActivePluginCustomEditor } from '@/store/plugin-custom-editors'
-import PluginCustomEditorFrame from './PluginCustomEditorFrame'
-import PluginBytesCustomEditorSurface from './PluginBytesCustomEditorSurface'
 
 // Retry is a user act: it may start a stopped WSL distro.
 const USER_RETRY = { wakeWslDistro: true }
@@ -51,7 +48,6 @@ export function EditorEditFileSurface({
   isSvg = false,
   isCsv,
   isNotebook,
-  customEditor,
   mdViewMode,
   inlineMarkdownRenderState,
   isChangesMode,
@@ -85,7 +81,6 @@ export function EditorEditFileSurface({
   isSvg?: boolean
   isCsv: boolean
   isNotebook: boolean
-  customEditor?: ActivePluginCustomEditor | null
   mdViewMode: MarkdownViewMode
   inlineMarkdownRenderState: MarkdownRenderState | null
   isChangesMode: boolean
@@ -136,18 +131,6 @@ export function EditorEditFileSurface({
         worktreeId={activeFile.worktreeId}
         onRetry={() => reloadContent(activeFile, USER_RETRY)}
         onHostStarted={() => reloadContent(activeFile)}
-      />
-    )
-  }
-  if (customEditor?.contentKind === 'bytes') {
-    return (
-      <PluginBytesCustomEditorSurface
-        key={`${activeFile.id}\u0000${customEditor.key}`}
-        editor={customEditor}
-        file={activeFile}
-        fileContent={fileContent}
-        onSave={handleSave}
-        reloadContent={reloadContent}
       />
     )
   }
@@ -283,18 +266,7 @@ export function EditorEditFileSurface({
     </RecoverableRenderErrorBoundary>
   )
 
-  const editorSurface = customEditor ? (
-    <PluginCustomEditorFrame
-      key={`${activeFile.id}\u0000${customEditor.key}`}
-      editor={customEditor}
-      fileId={activeFile.id}
-      content={currentContent}
-      readOnly={activeFile.readOnly === true}
-      onContentChange={handleContentChange}
-      onSave={handleSave}
-      onDirtyHint={handleDirtyStateHint}
-    />
-  ) : isMarkdown ? (
+  const editorSurface = isMarkdown ? (
     <EditorMarkdownFileSurface
       activeFile={activeFile}
       viewStateScopeId={viewStateScopeId}

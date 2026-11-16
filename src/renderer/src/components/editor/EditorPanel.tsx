@@ -31,8 +31,6 @@ import {
 } from './editor-artifact-upload'
 import { useEditorPanelSave } from './save/commands/useEditorPanelSave'
 import { isMarkdownReviewNotesEnabled } from '@/lib/markdown-review-notes-setting'
-import { useFileCustomEditors } from '@/store/plugin-custom-editors'
-import { applyCustomEditorToggle } from './view-mode/custom-editor-toggle'
 import { runAfterEditorFramesFlush } from './save/flush/editor-pending-flush'
 
 function EditorPanelInner({
@@ -89,7 +87,6 @@ function EditorPanelInner({
   )
   const editorDrafts = useAppStore(editorDraftSelector)
   const diffDefaultView = useAppStore((s) => s.settings?.diffDefaultView)
-  const customEditors = useFileCustomEditors(activeFileId, activeFile?.filePath)
   const markdownReviewNotesEnabled = useAppStore((s) => isMarkdownReviewNotesEnabled(s.settings))
   const panelRef = useRef<HTMLDivElement>(null)
   const [copiedPathToast, setCopiedPathToast] = useState<{ fileId: string; token: number } | null>(
@@ -237,8 +234,7 @@ function EditorPanelInner({
     markdownDefaultViewMode,
     markdownRichModeSizeOverridden,
     isChangesMode,
-    canOpenWorkspaceFileBrowser,
-    ...customEditors
+    canOpenWorkspaceFileBrowser
   })
 
   const handleOpenPreviewToSide = (): void => {
@@ -273,7 +269,7 @@ function EditorPanelInner({
     }
   }
   const handleEditorToggleChange = (next: EditorToggleValue): void => {
-    // Why: leaving a custom editor unmounts its frame, which may still hold debounced edits.
+    // Flush pending editor changes before switching between retained source and rich views.
     runAfterEditorFramesFlush(useAppStore.getState(), [activeFile.id], () =>
       applyEditorToggle(next)
     )
@@ -289,9 +285,8 @@ function EditorPanelInner({
       return
     }
     setEditorViewMode(fileId, 'edit')
-    const markdownMode = applyCustomEditorToggle(fileId, next, model.customEditors.length > 0)
-    if (markdownMode) {
-      setMarkdownViewMode(fileId, markdownMode)
+    if (next !== 'edit') {
+      setMarkdownViewMode(fileId, next)
     }
   }
   const handleOpenMarkdownPreview = (): void => {

@@ -1,5 +1,4 @@
 import { useAppStore } from '@/store'
-import type { ActivePluginCustomEditor } from '@/store/plugin-custom-editors'
 import type { MarkdownViewMode, OpenFile, PendingEditorReveal } from '@/store/slices/editor'
 import type { GitDiffResult } from '../../../../shared/git/diff/git-diff-compare-types'
 import type { GitStatusEntry } from '../../../../shared/git/status/git-status-types'
@@ -54,7 +53,6 @@ export function EditorContent({
   isSvg = false,
   isCsv,
   isNotebook,
-  customEditor = null,
   mdViewMode,
   inlineMarkdownRenderState,
   isChangesMode,
@@ -84,7 +82,6 @@ export function EditorContent({
   isSvg?: boolean
   isCsv: boolean
   isNotebook: boolean
-  customEditor?: ActivePluginCustomEditor | null
   mdViewMode: MarkdownViewMode
   inlineMarkdownRenderState: MarkdownRenderState | null
   isChangesMode: boolean
@@ -266,7 +263,6 @@ export function EditorContent({
         isSvg={isSvg}
         isCsv={isCsv}
         isNotebook={isNotebook}
-        customEditor={customEditor}
         mdViewMode={mdViewMode}
         inlineMarkdownRenderState={inlineMarkdownRenderState}
         isChangesMode={isChangesMode}
