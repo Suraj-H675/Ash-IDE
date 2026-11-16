@@ -11,11 +11,6 @@ import {
   PLUGIN_STATUS_BAR_CHANGED_CHANNEL,
   type PluginStatusBarOverrides
 } from '../../shared/plugins/contributions/plugin-status-bar-state'
-import {
-  PLUGIN_VIEW_REPLY_CHANNEL,
-  PLUGIN_VIEW_REQUEST_CHANNEL,
-  type PluginViewRequest
-} from '../../shared/plugins/view/plugin-view-protocol'
 import type {
   PluginAutoUpdateEvent,
   PluginHostInstallResult,
@@ -97,15 +92,6 @@ export const pluginsApi = {
       ipcRenderer.removeListener('plugins:changed', listener)
     }
   },
-  onViewRequest: (callback): (() => void) => {
-    const listener = (_event: Electron.IpcRendererEvent, request: PluginViewRequest): void =>
-      callback(request)
-    ipcRenderer.on(PLUGIN_VIEW_REQUEST_CHANNEL, listener)
-    return () => {
-      ipcRenderer.removeListener(PLUGIN_VIEW_REQUEST_CHANNEL, listener)
-    }
-  },
-  answerViewRequest: (reply) => ipcRenderer.send(PLUGIN_VIEW_REPLY_CHANNEL, reply),
   getAutoUpdateState: () => ipcRenderer.invoke('plugins:getAutoUpdateState'),
   takeUpdateReviewNotices: () => ipcRenderer.invoke('plugins:takeUpdateReviewNotices'),
   getInstallCounts: () => ipcRenderer.invoke('plugins:getInstallCounts'),

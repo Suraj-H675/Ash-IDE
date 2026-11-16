@@ -101,6 +101,10 @@ export function isSettingsNavigationTarget(value: unknown): value is SettingsNav
   const target = value as Record<string, unknown>
   return (
     typeof target.pane === 'string' &&
+    // General application-plugin Settings no longer exists in Ash. Keep the
+    // legacy typed target for unmounted Orca compatibility callers until
+    // their source is removed, but reject externally hydrated deep links.
+    target.pane !== 'plugins' &&
     SETTINGS_NAV_TARGET_SET.has(target.pane) &&
     (typeof target.repoId === 'string' || target.repoId === null) &&
     (target.hostId === undefined ||

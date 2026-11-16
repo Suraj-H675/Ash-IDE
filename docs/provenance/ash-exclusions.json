@@ -9,6 +9,16 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/renderer/src/hooks/ipc-events/plugin-view-ipc-bridge.ts",
+      "sourceSha256": "695e07713abc8cb1a92627d341a404adff9fca3d644609dd035e43a1fd259a27",
+      "reason": "Ash M8 exclusion: removed renderer listener for the unsupported general application-plugin CLI view request/reply protocol. Retained browser, terminal, and Settings lifecycle IPC remain."
+    },
+    {
+      "path": "src/renderer/src/components/editor/PluginFileTypeSuggestion.tsx",
+      "sourceSha256": "89d927d6c78c5e6f8ec3427dd1983a7c65d00bf70ce151f751f6f79b185df20c",
+      "reason": "Ash M8 exclusion: removed obsolete application-plugin marketplace file-type prompts; retained native binary-file fallback, Monaco and built-in editor syntax."
+    },
+    {
       "path": "src/cli/handlers/skill-sharing.ts",
       "sourceSha256": "bf5845add572551a6f280cef5225e865991df4c45c19494c49ea524f1092ec44",
       "reason": "Ash M8 exclusion: retired CLI handler exposing unsupported vendor Cloud skills.share; replaced with native-only skills installed command in skill-installed.ts."

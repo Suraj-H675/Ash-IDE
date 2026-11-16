@@ -19,12 +19,10 @@ import { EditorFileLoadErrorView } from './EditorFileLoadErrorView'
 import { RecoverableRenderErrorBoundary } from '../error-boundaries/RecoverableRenderErrorBoundary'
 import type { FileContent } from './editor-panel-content-types'
 import { CustomEditorExternalChangeBanner } from './external-changes/CustomEditorExternalChangeBanner'
-import { PluginFileTypeSuggestion } from './PluginFileTypeSuggestion'
 import type { useMarkdownDocuments } from './markdown/documents/useMarkdownDocuments'
 import { EditorMarkdownFileSurface } from './EditorMarkdownFileSurface'
 import type { MarkdownRenderState } from './markdown/render-mode/markdown-render-mode'
 import type { ActivePluginCustomEditor } from '@/store/plugin-custom-editors'
-import { PluginEditorSourceFallbackNotice } from './PluginEditorNeedsDesktopNotice'
 import PluginCustomEditorFrame from './PluginCustomEditorFrame'
 import PluginBytesCustomEditorSurface from './PluginBytesCustomEditorSurface'
 
@@ -185,8 +183,6 @@ export function EditorEditFileSurface({
     }
     return (
       <div className="flex h-full flex-col">
-        <PluginEditorSourceFallbackNotice fileId={activeFile.id} filePath={activeFile.filePath} />
-        <PluginFileTypeSuggestion filePath={activeFile.filePath} />
         <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
           {translate(
             'auto.components.editor.EditorContent.b9de81ba52',
@@ -362,15 +358,6 @@ export function EditorEditFileSurface({
   return (
     <div className="flex flex-1 min-h-0 flex-col">
       {externalChangeBanner}
-      {customEditor ? null : (
-        <PluginEditorSourceFallbackNotice fileId={activeFile.id} filePath={activeFile.filePath} />
-      )}
-      {customEditor ? null : (
-        <PluginFileTypeSuggestion
-          filePath={activeFile.filePath}
-          purpose={monacoLanguage === 'plaintext' ? 'open' : 'editor'}
-        />
-      )}
       {activeFile.conflict && (
         <ConflictBanner
           file={activeFile}
