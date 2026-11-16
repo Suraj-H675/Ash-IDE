@@ -10,6 +10,7 @@ const {
 } = require('../../../excluded-ash-cli-entry-artifacts.cjs')
 const {
   EXCLUDED_APP_PLUGIN_EXECUTABLES,
+  EXCLUDED_APP_PLUGIN_SHARED_CJS_ROOTS,
   EXCLUDED_APP_PLUGIN_SOURCE_ROOT,
   EXCLUDED_APP_PLUGIN_NATIVE_RESOURCES_ROOT
 } = require('../../../excluded-ash-app-plugin-artifacts.cjs')
@@ -96,6 +97,16 @@ function verifyAshPackagedAsarHygiene(resourcesDir) {
       throw new Error(`[ash-package-hygiene] excluded app-plugin executable packaged: ${artifact}`)
     }
   }
+  for (const root of EXCLUDED_APP_PLUGIN_SHARED_CJS_ROOTS) {
+    const artifact = entries
+      .map((entry) => entry.replace(/\\/g, '/').replace(/^\/+/, ''))
+      .find((entry) => entry === root || entry.startsWith(`${root}/`))
+    if (artifact || existsSync(join(resourcesDir, 'app.asar.unpacked', ...root.split('/')))) {
+      throw new Error(
+        `[ash-package-hygiene] excluded shared app-plugin tree packaged: ${artifact ?? root}`
+      )
+    }
+  }
   for (const artifact of EXCLUDED_ASH_MOBILE_RELAY_MODULES) {
     if (
       entries.some((entry) => entry.replace(/\\/g, '/').replace(/^\/+/, '') === artifact) ||
@@ -125,6 +136,13 @@ function verifyAshPackagedAsarHygiene(resourcesDir) {
         if (resolved === root || resolved.startsWith(`${root}/`)) {
           throw new Error(
             `[ash-package-hygiene] retained runtime imports excluded app-plugin CLI tree: ${importer} -> ${resolved}`
+          )
+        }
+      }
+      for (const root of EXCLUDED_APP_PLUGIN_SHARED_CJS_ROOTS) {
+        if (resolved === root || resolved.startsWith(`${root}/`)) {
+          throw new Error(
+            `[ash-package-hygiene] retained runtime imports excluded shared app-plugin tree: ${importer} -> ${resolved}`
           )
         }
       }

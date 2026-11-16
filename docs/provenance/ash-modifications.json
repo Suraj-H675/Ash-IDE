@@ -2703,7 +2703,7 @@
     },
     {
       "path": "config/electron-builder.config.cjs",
-      "sha256": "2a5b20255ac7baf491c09ab2c3117edab4ec1846bd580aceba351d149811212c",
+      "sha256": "c863cc026af7b4c590e81a74654da027ced545e0297e01aac4b8841bfddfc4cf",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

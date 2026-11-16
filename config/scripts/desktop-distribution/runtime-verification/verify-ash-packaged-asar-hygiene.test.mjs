@@ -241,6 +241,51 @@ it.each(EXCLUDED_APP_PLUGIN_EXECUTABLES)(
   }
 )
 
+it.each([
+  'out/shared/plugins/approval/plugin-cli-approval.js',
+  'out/shared/plugins/declarative/runtime/declarative-sdk.js',
+  'out/shared/plugins/declarative/testing/testing-host.js'
+])('rejects dormant standalone general app-plugin module %s in ASAR', async (artifact) => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js', artifact])
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    '[ash-package-hygiene] excluded shared app-plugin tree packaged:'
+  )
+})
+
+it.each([
+  'out/shared/plugins/approval/plugin-cli-approval.js',
+  'out/shared/plugins/declarative/runtime/declarative-sdk.js',
+  'out/shared/plugins/declarative/testing/testing-host.js'
+])('rejects dormant standalone general app-plugin module %s in unpacked ASAR', async (artifact) => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js'])
+  const unpacked = join(resources, 'app.asar.unpacked', artifact)
+  await mkdir(dirname(unpacked), { recursive: true })
+  await writeFile(unpacked, 'synthetic retired app-plugin fixture\n')
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    '[ash-package-hygiene] excluded shared app-plugin tree packaged:'
+  )
+})
+
+it('rejects retained CommonJS imports of excluded standalone plugin approval helpers', async () => {
+  const importer = 'out/shared/retained-runtime.js'
+  const resources = await makeArchive(['package.json', 'out/main/index.js', importer], {
+    [importer]: "const x = require('./plugins/approval/plugin-consent-state')\n"
+  })
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    `[ash-package-hygiene] retained runtime imports excluded shared app-plugin tree: ${importer} -> out/shared/plugins/approval/plugin-consent-state`
+  )
+})
+
+it('rejects retained static import() of excluded standalone plugin testing helpers', async () => {
+  const importer = 'out/shared/retained-runtime.js'
+  const resources = await makeArchive(['package.json', 'out/main/index.js', importer], {
+    [importer]: "const x = import('./plugins/declarative/testing/testing-host.js')\n"
+  })
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    `[ash-package-hygiene] retained runtime imports excluded shared app-plugin tree: ${importer} -> out/shared/plugins/declarative/testing/testing-host.js`
+  )
+})
+
 it.each(EXCLUDED_ASH_MOBILE_RELAY_MODULES)(
   'rejects retired mobile/relay compiled module %s in app.asar',
   async (artifact) => {

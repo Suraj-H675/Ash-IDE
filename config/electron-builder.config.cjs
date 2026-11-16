@@ -69,6 +69,7 @@ const {
 } = require('./excluded-ash-mobile-relay-artifacts.cjs')
 const {
   EXCLUDED_APP_PLUGIN_EXECUTABLES,
+  EXCLUDED_APP_PLUGIN_SHARED_CJS_ROOTS,
   EXCLUDED_APP_PLUGIN_SOURCE_ROOT
 } = require('./excluded-ash-app-plugin-artifacts.cjs')
 const {
@@ -293,6 +294,9 @@ module.exports = {
     // Ash excludes the general app-plugin worker, marketplace, and authoring
     // runtime. Keep browser-extension native hosts and provider-native tools.
     ...EXCLUDED_APP_PLUGIN_EXECUTABLES.map((path) => `!${path}`),
+    // Independent CommonJS copies of excluded app-plugin host helpers have
+    // no incoming imports from retained packaged runtime JS.
+    ...EXCLUDED_APP_PLUGIN_SHARED_CJS_ROOTS.map((path) => `!${path}{,/**/*}`),
     // Remove unregistered legacy Jira/Linear CLI command modules, but retain shared
     // issue-reference helpers used by active Git/worktree workflows.
     ...EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS.map((path) => `!${path}`),
