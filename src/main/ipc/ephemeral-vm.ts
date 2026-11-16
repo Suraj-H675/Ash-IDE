@@ -32,8 +32,6 @@ import {
   type EphemeralVmRecipeCatalogEntry
 } from './ephemeral-vm-recipe-context'
 import { registerEphemeralVmRuntimeHandlers } from './ephemeral-vm-runtime-handlers'
-import type { PluginService } from '../plugins/plugin-service'
-import { getApprovedPluginVmRecipes } from '../plugins/plugin-approved-vm-recipes'
 import { resolveProvisionedRootSource } from '../ephemeral-vm/provisioned-root-source'
 import { getRuntimeEnvironmentRegistryRoot } from './runtime-environments/runtime-environment-registry-root'
 import {
@@ -70,7 +68,7 @@ export type EphemeralVmProvisionIpcResult =
       stdout: string
     } & EphemeralVmFailure)
 
-export function registerEphemeralVmHandlers(store: Store, pluginService?: PluginService): void {
+export function registerEphemeralVmHandlers(store: Store): void {
   ipcMain.removeHandler('ephemeralVm:listRecipes')
   ipcMain.removeHandler('ephemeralVm:listRecipeCatalog')
   ipcMain.removeHandler('ephemeralVm:doctor')
@@ -79,13 +77,13 @@ export function registerEphemeralVmHandlers(store: Store, pluginService?: Plugin
   registerEphemeralVmRuntimeHandlers(store)
 
   ipcMain.handle('ephemeralVm:listRecipes', async (_event, args: { repoId: string }) => {
-    return listRecipes(store, args.repoId, await getApprovedPluginVmRecipes(pluginService))
+    return listRecipes(store, args.repoId)
   })
 
   ipcMain.handle(
     'ephemeralVm:listRecipeCatalog',
     async (): Promise<EphemeralVmRecipeCatalogEntry[]> => {
-      return listRecipeCatalog(store, await getApprovedPluginVmRecipes(pluginService))
+      return listRecipeCatalog(store)
     }
   )
 
@@ -99,11 +97,10 @@ export function registerEphemeralVmHandlers(store: Store, pluginService?: Plugin
       if (!repo.ok) {
         return repo.doctor(args.recipeId)
       }
-      const pluginRecipes = await getApprovedPluginVmRecipes(pluginService)
       return doctorEphemeralVmRecipe({
         repoPath: repo.repo.path,
         recipeId: args.recipeId,
-        recipes: listRecipes(store, args.repoId, pluginRecipes).recipes,
+        recipes: listRecipes(store, args.repoId).recipes,
         localExecutionSupported: true
       })
     }
@@ -128,11 +125,7 @@ export function registerEphemeralVmHandlers(store: Store, pluginService?: Plugin
       if (!repo.ok) {
         return provisionFailure(repo.failure)
       }
-      const recipe = resolveRecipeForRepo(
-        repo.repo.path,
-        args.recipeId,
-        await getApprovedPluginVmRecipes(pluginService)
-      )
+      const recipe = resolveRecipeForRepo(repo.repo.path, args.recipeId)
       if (!recipe) {
         return provisionFailure(ephemeralVmFailure('recipeNotFound', { recipeId: args.recipeId }))
       }

@@ -9,6 +9,31 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/main/plugins/hooks/plugin-hook-dispatch.ts",
+      "sourceSha256": "63631e5423741ecd0ba48ff96126752a5f9890c83a6842f6729259be429113c5",
+      "reason": "Ash M8: remove the unbound general app-plugin hook dispatch/denial layer after eliminating its last live RPC error-mapping dependency. Retain normal invalid-argument and runtime error mapping."
+    },
+    {
+      "path": "src/main/plugins/hooks/plugin-hook-participants.ts",
+      "sourceSha256": "4980049aac1894ce4c8be60621f82751450238e0eb0a2e8b80b7ec8e51931f0d",
+      "reason": "Ash M8: remove orphan general application-plugin worker hook participant registry; retained Claude/Codex status handling never installs the plugin runner."
+    },
+    {
+      "path": "src/main/agent-hooks/agent-tool-call-reader.ts",
+      "sourceSha256": "c3afb7d881dcf5ae37407d779beaf732d47a20af53909b2219582a66c0a8bd16",
+      "reason": "Ash M8: remove unused app-plugin agent-tool event parser and terminal resolver after removing tool decision dispatch and hook participant registration."
+    },
+    {
+      "path": "src/main/ipc/plugin-editor-save-hook-ipc.ts",
+      "sourceSha256": "3c1731d4d51cd6e7208129d563ffe36be8a9c77b71572a9ba7754de7fb4a06e1",
+      "reason": "Ash M8: remove retired application-plugin editor-save hook IPC handler from the dormant app-plugin registration root. Native editor save remains unchanged."
+    },
+    {
+      "path": "src/main/plugins/plugin-approved-vm-recipes.ts",
+      "sourceSha256": "400fd3ead3615878219a0f416b6ff6900caa10a57addff02dcc5a0e052067608",
+      "reason": "Ash M8: remove app-plugin VM recipe augmentation from registered recipe handlers; preserve repository-owned YAML recipes and saved runtime snapshots."
+    },
+    {
       "path": "src/main/agent-hooks/agent-tool-plugin-hooks.ts",
       "sourceSha256": "7f25d6151e73094ca995a35c13ceb331f8d9dbf7574bc1fcf16bd79d636028e2",
       "reason": "Ash M8 exclusion: remove application-plugin agent.tool.before/after decisions and Claude PreToolUse rewrites; retain authenticated provider-native status/ownership and provider approvals."

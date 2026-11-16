@@ -19,7 +19,6 @@ import { registerPluginFrameEntryHandlers, rendererPanelOwner } from './plugin-f
 import { registerPluginPanelPushHandlers } from './plugin-panel-push-ipc'
 import { registerPluginSettingsHandlers } from './plugin-settings-ipc'
 import { registerPluginStatusBarHandlers } from './plugin-status-bar-ipc'
-import { registerPluginEditorSaveHookHandler } from './plugin-editor-save-hook-ipc'
 import { readPluginPanelImage } from '../plugins/panels/plugin-panel-image'
 import {
   bindPluginFrameGuests,
@@ -158,7 +157,6 @@ export function registerPluginHandlers(
   registerPluginFrameEntryHandlers(store, pluginService)
   registerPluginPanelPushHandlers(pluginService)
   registerPluginStatusBarHandlers(pluginService)
-  registerPluginEditorSaveHookHandler()
   registerPluginSettingsHandlers(pluginService)
 
   ipcMain.handle('plugins:readNewFileTemplate', async (_event, args: unknown) => {

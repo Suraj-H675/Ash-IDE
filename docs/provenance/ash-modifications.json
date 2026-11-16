@@ -637,8 +637,23 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/ipc/ephemeral-vm-recipe-context.ts",
+      "sha256": "bb68fd9cf137311f635e1eaf6f496d02d2255538b1196f13dd9aae53c0e30eeb",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/ephemeral-vm.ts",
+      "sha256": "aee70de669258e9694024c70c5c0db24f467db99cba08296094fa6d6a875254c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/ipc/notification-system-settings-link.ts",
       "sha256": "835f151637b2269125ea7c6d459cf1f1406f5aa3d24195618fd5c0177528cd13",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/ipc/plugins.ts",
+      "sha256": "24225b5888ed0acb66f9dba74111c707ba9fd61ecd3cd5035ee587ac7d847130",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -897,6 +912,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/plugins/plugin-runtime-binding.ts",
+      "sha256": "ca16969b3e6087130ce9da3c550be83354f53024c2af58e4360626a2548fe0b3",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/preflight/agent-detection.ts",
       "sha256": "52e4ffc50348b98eee77493075ab9b45ee5a4e3d96949194cb4ddd4de83f3d96",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -984,6 +1004,11 @@
     {
       "path": "src/main/runtime/rpc/device-key-auth.test.ts",
       "sha256": "2f3f9c83430a84fddb6791834a05712e269594ab2d3c0a71200ad6cc95481ce3",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/rpc/dispatcher-error-response.ts",
+      "sha256": "c7346dbc3f022781880d6ed2abc0998ea1fc3fb4dba2238d6c9b4957cc52d7b0",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
