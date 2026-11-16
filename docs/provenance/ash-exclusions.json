@@ -9,6 +9,61 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/health/use-plugin-panel-draw-report.ts",
+      "sourceSha256": "5d2b5307663d561dd9abe0feb039a01696e4678267e3ebf6cea01188747603cf",
+      "reason": "Ash M8 / EX-03, EX-10: Remove guest-frame-only plugin panel draw reporter; preserve provider status hooks and ordinary runtime diagnostics."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/health/plugin-panel-draw-status.ts",
+      "sourceSha256": "6b7c8efd0706fa8eefb66bfd1f1cf11c321dddf49719951d5796c5c97d761447",
+      "reason": "Ash M8 / EX-03, EX-10: Remove plugin panel guest-draw status module no longer used by an Ash renderer entrypoint."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/health/plugin-panel-act-driver.ts",
+      "sourceSha256": "f7715cab9f2a23a13dee313f245c4e1c79cfcee1fbf81d9e9970a250e44a51d4",
+      "reason": "Ash M8 / EX-03, EX-10: Remove unregistered plugin panel action driver after excluding plugin panel iframe and declarative renderer."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/declarative/use-plugin-declarative-tree.ts",
+      "sourceSha256": "c86ea805ab51add93d158d64c7ba60e8e8d8e12b381ccdd9f51d2f643b74122a",
+      "reason": "Ash M8 / EX-03, EX-10: Remove orphan general application-plugin declarative panel tree controller; retain native built-in panel rendering."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/declarative/use-plugin-declarative-state.ts",
+      "sourceSha256": "cfcd5f03f54b1239434a7e052791b2dd7487939ede4e1f01a9862b18916dcacc",
+      "reason": "Ash M8 / EX-03, EX-10: Remove orphan application-plugin panel guest state controller and retain normal Ash sidebar state."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/declarative/use-plugin-declarative-images.ts",
+      "sourceSha256": "fefacb99efa49edd8115dad1f569b87b0c9632de71f3f20a08ff2148f8f5b4bb",
+      "reason": "Ash M8 / EX-03, EX-10: Remove plugin guest-provided declarative panel image loader; preserve native editor and browser image handling."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/declarative/plugin-declarative-retained-memory.ts",
+      "sourceSha256": "b25a8ac4cfe0868a41aca74fcc2c13f53fdb3547bb7345cf60165aa0cf781bd3",
+      "reason": "Ash M8 / EX-03, EX-10: Remove plugin-only retained declarative guest memory no longer used by the Ash application."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/declarative/plugin-declarative-gesture-stability.ts",
+      "sourceSha256": "09c3b90ad3a92f1b025591c62aefbcb4e7d6fd51a4790a9242d0f658b7c7229c",
+      "reason": "Ash M8 / EX-03, EX-10: Remove plugin-only declarative guest gesture stabilization after excluding panel rendering and its actions."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/declarative/PluginDeclarativePanelNotices.tsx",
+      "sourceSha256": "0889220171b756428d5715b465030faea90940042a2f595cb65dd9693cd94c5b",
+      "reason": "Ash M8 / EX-03, EX-10: Remove plugin-only declarative panel notices no longer reachable from Ash sidebar rendering."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/declarative/PluginDeclarativePanel.tsx",
+      "sourceSha256": "07b6605e087af8dc38e45a5b151fcb7917cc4601e85ecaa865ad13fea9e9d81a",
+      "reason": "Ash M8 / EX-03, EX-10: Remove orphan application-plugin declarative panel renderer and guest-frame mount after removing the only panel entrypoint."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/PluginPanel.tsx",
+      "sourceSha256": "c8f6a7308b5019aec2f06efdedf0ca28f4b271e93d14191548061aaab0245085",
+      "reason": "Ash M8 / EX-03, EX-10: Remove unmounted general application-plugin right-sidebar panel selector, iframe guest and lifecycle host after its live route was detached."
+    },
+    {
       "path": "src/renderer/src/components/right-sidebar/plugin-panels/use-installed-plugin-route-reconciliation.ts",
       "sourceSha256": "3955bf49758f21423c8e131922339b7ec8e376795a050ba2c1a0ba104a088f49",
       "reason": "Ash M8: remove app-plugin panel route reconciliation after eliminating plugin tabs from the live right sidebar. Deprecated saved plugin panel choices now resolve to Explorer while built-in tabs remain."

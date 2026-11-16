@@ -143,7 +143,7 @@ describe('Ash right sidebar excludes general application-plugin panels', () => {
       'plugin-panels/use-installed-plugin-route-reconciliation.ts',
       'plugin-panels/plugin-panel-activity-items.ts'
     ]) {
-      expect(existsSync(resolve(process.cwd(), root + file)), file).toBe(false)
+      expect(existsSync(resolve(process.cwd(), `${root}${file}`)), file).toBe(false)
     }
     expect(source('src/renderer/src/store/right-sidebar-route.ts')).not.toMatch(
       /isPluginPanelTabKey|installedPluginTabKeys/
@@ -151,5 +151,36 @@ describe('Ash right sidebar excludes general application-plugin panels', () => {
     expect(
       source('src/main/persistence/applying-settings/ui-selection-normalization.ts')
     ).not.toMatch(/isPluginPanelTabKey/)
+  })
+
+  it('contains no legacy app-plugin panel component or declarative guest renderer', () => {
+    const root = 'src/renderer/src/components/right-sidebar/plugin-panels/'
+    for (const file of [
+      'PluginPanel.tsx',
+      'declarative/PluginDeclarativePanel.tsx',
+      'declarative/PluginDeclarativePanelNotices.tsx',
+      'declarative/plugin-declarative-gesture-stability.ts',
+      'declarative/plugin-declarative-retained-memory.ts',
+      'declarative/use-plugin-declarative-images.ts',
+      'declarative/use-plugin-declarative-state.ts',
+      'declarative/use-plugin-declarative-tree.ts',
+      'health/plugin-panel-act-driver.ts',
+      'health/plugin-panel-draw-status.ts',
+      'health/use-plugin-panel-draw-report.ts'
+    ]) {
+      expect(existsSync(resolve(process.cwd(), root + file)), file).toBe(false)
+    }
+    // This is a separate importer: do not remove this helper before detaching
+    // the generic legacy frame host with its own tests.
+    expect(existsSync(resolve(process.cwd(), `${root}health/plugin-panel-watchdog.ts`))).toBe(true)
+    expect(source('src/renderer/src/components/plugins/frames/use-plugin-frame-host.ts')).toContain(
+      'createPanelWatchdog'
+    )
+    expect(
+      source('src/renderer/src/components/right-sidebar/right-sidebar-panel-content.tsx')
+    ).toContain('<FileExplorer')
+    expect(
+      source('src/renderer/src/components/right-sidebar/right-sidebar-panel-content.tsx')
+    ).toContain('<AiVaultSidebarPanel')
   })
 })
