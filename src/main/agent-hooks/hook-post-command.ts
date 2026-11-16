@@ -40,7 +40,6 @@ export function buildPosixHookMetadataCacheLines(): string[] {
 type PosixAgentHookPostOptions = {
   curlCommand?: string
   indent?: string
-  decisionHeaderVar?: string
   /** Take the header from `buildPosixHookMetadataCacheLines` instead of packing it every event. */
   cachedMetadata?: boolean
 }
@@ -53,10 +52,6 @@ export function buildPosixAgentHookPostCommand(
   const indent = options.indent ?? '  '
   // Only Claude's capture sets this; the host checks the attachment itself before trusting it.
   const tmux = source === 'claude'
-  // Names the decision format the script prints; absent, Orca never waits on plugins.
-  const decision = options.decisionHeaderVar
-    ? [`  ${indent}-H "X-Orca-Hook-Decision: \${${options.decisionHeaderVar}:-}" \\`]
-    : []
   const url = `"http://127.0.0.1:\${ORCA_AGENT_HOOK_PORT}/hook/${source}"`
   const packMetadata = options.cachedMetadata
     ? ['  orca_hook_pack_metadata && \\']
@@ -76,7 +71,6 @@ export function buildPosixAgentHookPostCommand(
     `  ${indent}-H "X-Orca-Agent-Hook-Meta: \${orca_hook_metadata}" \\`,
     `  ${indent}-H "X-Orca-Agent-Process: \${orca_agent_process:-}" \\`,
     ...(tmux ? [`  ${indent}-H "X-Orca-Tmux-Pane: \${orca_tmux_pane:-}" \\`] : []),
-    ...decision,
     `  ${indent}--data-binary @-`,
     'else',
     `  printf '%s' "$payload" | ${curlCommand} -sS -X POST ${url} \\`,
@@ -84,7 +78,6 @@ export function buildPosixAgentHookPostCommand(
     `  ${indent}--noproxy "127.0.0.1" \\`,
     `  ${indent}-H "Content-Type: application/x-www-form-urlencoded" \\`,
     `  ${indent}-H "X-Orca-Agent-Hook-Token: \${ORCA_AGENT_HOOK_TOKEN}" \\`,
-    ...decision,
     `  ${indent}--data-urlencode "paneKey=\${ORCA_PANE_KEY}" \\`,
     `  ${indent}--data-urlencode "tabId=\${ORCA_TAB_ID}" \\`,
     `  ${indent}--data-urlencode "launchToken=\${ORCA_AGENT_LAUNCH_TOKEN}" \\`,

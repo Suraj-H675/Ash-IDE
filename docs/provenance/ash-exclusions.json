@@ -9,6 +9,16 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/main/agent-hooks/agent-tool-plugin-hooks.ts",
+      "sourceSha256": "7f25d6151e73094ca995a35c13ceb331f8d9dbf7574bc1fcf16bd79d636028e2",
+      "reason": "Ash M8 exclusion: remove application-plugin agent.tool.before/after decisions and Claude PreToolUse rewrites; retain authenticated provider-native status/ownership and provider approvals."
+    },
+    {
+      "path": "src/main/claude/claude-hook-decision-script.ts",
+      "sourceSha256": "d89253ec4286d7caba3dd5ecc8226319268cc8456ae40d118a57eba9f837e88d",
+      "reason": "Ash M8 exclusion: remove obsolete POSIX plugin decision response and delayed hook output; retain neutral output and provider-native status event POST/spooling."
+    },
+    {
       "path": "src/main/runtime/terminal/input/terminal-send-plugin-hook.ts",
       "sourceSha256": "cf3f8d7545b1b99e64da68176b724dd24a1daf750050de01d49ff279c2da4e28",
       "reason": "Ash M8: general application-plugin terminal.send and agent.prompt.before rewrites and their plugin-only ordering queue are excluded. PTY generation, permission, and prompt-submission ordering are retained downstream."

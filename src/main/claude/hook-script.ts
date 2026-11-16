@@ -24,11 +24,6 @@ import {
   POSIX_HOOK_STDIN_EXEC
 } from '../agent-hooks/hook-stdin-contract'
 import {
-  buildPosixClaudeDecisionModeLines,
-  buildPosixClaudeDecisionPreludeLines,
-  wrapPosixClaudeDecisionPost
-} from './claude-hook-decision-script'
-import {
   WINDOWS_CLAUDE_BACKGROUND_JOB_GUARD,
   buildPosixClaudeBackgroundJobGuardLines
 } from '../agent-hooks/claude-background-job-guard'
@@ -40,8 +35,6 @@ export function getManagedScript(
     skipWhenDevinImportsClaude?: boolean
     skipWhenGrokImportsClaude?: boolean
     skipWhenCursorImportsClaude?: boolean
-    // Only Claude Code itself reads PreToolUse decisions; compatible CLIs keep print-then-post.
-    decidesPreToolUse?: boolean
   } = {}
 ): string {
   const source = options.source ?? 'claude'
@@ -73,15 +66,14 @@ export function getManagedScript(
     ].join('\r\n')
   }
 
-  const decides = options.decidesPreToolUse === true
   return [
     '#!/bin/sh',
-    // Permission hooks fail closed on empty stdout, including skip paths.
-    ...(decides ? buildPosixClaudeDecisionPreludeLines() : ['printf "{}\\n"']),
+    // Keep Claude's own native approval policy authoritative: no app-plugin
+    // decision or deny response is interpreted by this managed status hook.
+    'printf "{}\\n"',
     // CLAUDE_CODE_SUBPROCESS_ENV_SCRUB drops ORCA_PANE_KEY; restore it before any guard or spool reads it.
     ...buildPosixScrubSafeEnvRestoreLines(),
     ...buildPosixHookPayloadCapture('exit', POSIX_HOOK_STDIN_EXEC),
-    ...(decides ? buildPosixClaudeDecisionModeLines() : []),
     ...(options.skipWhenGrokImportsClaude ? buildPosixGrokReplayGuardLines() : []),
     ...(options.skipWhenCursorImportsClaude ? buildPosixCursorReplayGuardLines() : []),
     ...buildPosixHookSpoolLines(source),
@@ -106,17 +98,9 @@ export function getManagedScript(
     'fi',
     ...buildPosixHookMetadataCacheLines(),
     // Keep hook JSON off argv and avoid URL-encoded paths that trigger IDS rules.
-    ...(decides
-      ? wrapPosixClaudeDecisionPost(
-          buildPosixAgentHookPostCommand(source, {
-            decisionHeaderVar: 'orca_hook_decides',
-            cachedMetadata: true
-          })
-        )
-      : buildPosixAgentHookPostCommand(source, { cachedMetadata: true }).map(
-          (line, index, lines) =>
-            index === lines.length - 1 ? `${line} >/dev/null 2>&1 || spool_hook_event` : line
-        )),
+    ...buildPosixAgentHookPostCommand(source, { cachedMetadata: true }).map((line, index, lines) =>
+      index === lines.length - 1 ? `${line} >/dev/null 2>&1 || spool_hook_event` : line
+    ),
     'exit 0',
     ''
   ].join('\n')
