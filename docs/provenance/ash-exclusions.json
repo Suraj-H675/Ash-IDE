@@ -9,6 +9,21 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/main/runtime/terminal/input/terminal-send-plugin-hook.ts",
+      "sourceSha256": "cf3f8d7545b1b99e64da68176b724dd24a1daf750050de01d49ff279c2da4e28",
+      "reason": "Ash M8: general application-plugin terminal.send and agent.prompt.before rewrites and their plugin-only ordering queue are excluded. PTY generation, permission, and prompt-submission ordering are retained downstream."
+    },
+    {
+      "path": "src/main/runtime/terminal/input/terminal-plugin-hooked-input.ts",
+      "sourceSha256": "ea086c7c9dae95952e6c0631d2998fcb7f65e1afb62df69f8ccb796cef671a92",
+      "reason": "Ash M8: replace the inherited application-plugin terminal interception layer with direct validated PTY and agent-prompt dispatch."
+    },
+    {
+      "path": "src/main/runtime/terminal/input/terminal-send-plugin-hook.test.ts",
+      "sourceSha256": "7e714222897df953c30b3f5be53bbe94a942408e6aaf9baea4e6755ce034457a",
+      "reason": "Ash M8: retire tests of excluded application-plugin input-decision queues; replace them with direct input and retained generation/permission regression coverage."
+    },
+    {
       "path": "src/main/plugins/hooks/workspace-create-plugin-hook.ts",
       "sourceSha256": "3dce5ede06268ea1d3fc9cd525881cf023d7e9f60eca5e3ded111900a7e5f3c2",
       "reason": "Ash M8 exclusion: removed general application-plugin before/after interception of worktree and folder creation. Preserve local workspace creation, host provenance, and approved project checks without plugin control."

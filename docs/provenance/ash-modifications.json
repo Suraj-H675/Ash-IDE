@@ -1207,6 +1207,16 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/runtime/terminal/input/terminal-agent-status-and-submission.ts",
+      "sha256": "5fa2d7395617ebafe50dd8787cd78d07fd1f890bf812d6df6b98f6f681ff7e6d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/terminal/input/terminal-input-dispatch.ts",
+      "sha256": "88c77ff936ca5d24004deb2996511a776d8f2b84e98f16aa4f437085097e80c0",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/main/runtime/terminal/launch/claude-agent-teams-shim-env.ts",
       "sha256": "f153512101a2b254329e678f6cc03fbdb61080d97a8e3619fc07af66b0c9b778",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."

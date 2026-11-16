@@ -132,8 +132,8 @@ export abstract class OrcaRuntimeWithControllerKnowsPtyIsLive extends OrcaRuntim
     )
   }
 
-  /** sendTerminal once plugin hooks decided (terminal-plugin-hooked-input.ts). */
-  protected async sendTerminalAfterPluginHooks(
+  /** Deliver original terminal input after resolving/restoring the target PTY. */
+  protected async deliverTerminalSend(
     handle: string,
     action: { text?: string; enter?: boolean; interrupt?: boolean },
     options: RuntimeTerminalWriteOptions
@@ -144,7 +144,7 @@ export abstract class OrcaRuntimeWithControllerKnowsPtyIsLive extends OrcaRuntim
       : null
     if (starting) {
       const target = await starting
-      return { ...(await this.sendTerminalAfterPluginHooks(target, action, options)), handle }
+      return { ...(await this.deliverTerminalSend(target, action, options)), handle }
     }
     // Before resolving the target: a terminal closed or replaced during the wait is then refused, not written.
     await this.waitForPtyEndpointReattach(this.handlePtyId(handle), options.signal)
@@ -226,8 +226,8 @@ export abstract class OrcaRuntimeWithControllerKnowsPtyIsLive extends OrcaRuntim
     )
   }
 
-  /** sendTerminalAgentPrompt once plugin hooks decided. */
-  protected async sendAgentPromptAfterPluginHooks(
+  /** Deliver the original prompt through the permission and generation-aware path. */
+  protected async deliverTerminalAgentPrompt(
     handle: string,
     prompt: string,
     options: RuntimeAgentPromptWriteOptions
@@ -251,7 +251,7 @@ export abstract class OrcaRuntimeWithControllerKnowsPtyIsLive extends OrcaRuntim
       : null
     if (starting) {
       const target = await starting
-      return { ...(await this.sendAgentPromptAfterPluginHooks(target, prompt, options)), handle }
+      return { ...(await this.deliverTerminalAgentPrompt(target, prompt, options)), handle }
     }
     await this.waitForPtyEndpointReattach(
       this.handlePtyId(handle),
