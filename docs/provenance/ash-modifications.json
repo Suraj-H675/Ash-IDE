@@ -652,11 +652,6 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
-      "path": "src/main/ipc/plugins.ts",
-      "sha256": "24225b5888ed0acb66f9dba74111c707ba9fd61ecd3cd5035ee587ac7d847130",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
       "path": "src/main/ipc/preflight.ts",
       "sha256": "443ff2c093db5bac434953c610841bba52f906ddff551b68ccc752365bee846e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."

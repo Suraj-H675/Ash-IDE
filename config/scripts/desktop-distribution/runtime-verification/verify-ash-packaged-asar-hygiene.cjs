@@ -93,6 +93,29 @@ function verifyAshPackagedAsarHygiene(resourcesDir) {
       )
     }
   }
+  // A dormant installer/marketplace registrar must not be reintroduced via a
+  // Main import even when the sandbox preload is correctly unexposed.
+  // Match the reviewed channel names rather than every "plugins:" substring:
+  // minified non-IPC code may contain similarly named keys.
+  const mainEntry = 'out/main/index.js'
+  const mainSources = []
+  if (normalizedEntries.has(mainEntry)) {
+    mainSources.push(extractFile(archivePath, mainEntry).toString('utf8'))
+  }
+  const unpackedMain = join(resourcesDir, 'app.asar.unpacked', ...mainEntry.split('/'))
+  if (existsSync(unpackedMain)) {
+    mainSources.push(readFileSync(unpackedMain, 'utf8'))
+  }
+  const excludedAppPluginIpc =
+    /\bplugins:(?:addMarketplace|closePanelPush|consent|getAutoUpdateState|getInstallCounts|getInstalledManifest|getLogs|getRollbackVersion|getSettings|install|installMarketplacePlugin|invokeCommand|list|listIconThemes|listLanguagePacks|listMarketplacePlugins|listMarketplaces|listSyntaxes|listTerminalThemes|listThemes|loadIconTheme|loadSyntax|openPanelPush|panelAction|panelImage|panelPush|panelState|previewMarketplacePlugin|previewMarketplaceUpdate|readCustomEditorEntry|readNewFileTemplate|readPanelEntry|refresh|refreshMarketplaces|remove|removeMarketplace|resolveGitSource|rollbackMarketplacePlugin|setEnabled|setSetting|statusBarState|suggestForFileType|takeUpdateReviewNotices)\b/
+  for (const source of mainSources) {
+    const channel = excludedAppPluginIpc.exec(source)?.[0]
+    if (channel) {
+      throw new Error(
+        `[ash-package-hygiene] excluded application-plugin IPC in packaged Main: ${channel}`
+      )
+    }
+  }
   for (const artifact of [
     ...EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS,
     ...EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS

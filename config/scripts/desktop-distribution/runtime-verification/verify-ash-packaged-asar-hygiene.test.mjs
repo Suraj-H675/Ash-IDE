@@ -124,6 +124,34 @@ it('refuses excluded application-plugin IPC in an unpacked preload', async () =>
 })
 
 it.each([
+  'plugins:install',
+  'plugins:remove',
+  'plugins:listMarketplaces',
+  'plugins:installMarketplacePlugin',
+  'plugins:readCustomEditorEntry',
+  'plugins:panelPush',
+  'plugins:statusBarState'
+])('refuses the excluded Main application-plugin IPC channel %s', async (channel) => {
+  const resources = await makeArchive(
+    ['package.json', 'out/main/index.js', 'out/preload/index.js'],
+    { 'out/main/index.js': `ipcMain.handle("${channel}", () => {})\n` }
+  )
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    /excluded application-plugin IPC in packaged Main/
+  )
+})
+
+it('checks an unpacked Main entry for excluded plugin IPC registrations', async () => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js'])
+  const entry = join(resources, 'app.asar.unpacked', 'out', 'main', 'index.js')
+  await mkdir(dirname(entry), { recursive: true })
+  await writeFile(entry, 'ipcMain.handle("plugins:invokeCommand", () => {})\n')
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
+    /excluded application-plugin IPC in packaged Main/
+  )
+})
+
+it.each([
   '.cache/private-home/provider.json',
   '.audit/private-qa-data.json',
   '.tmp/temporary-auth.json',

@@ -9,6 +9,41 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/main/ipc/plugins.ts",
+      "sourceSha256": "efc31e6342a72639b5d60600f590245e2cff47b7bb563f52c61c4827f79d309e",
+      "reason": "Ash M8 exclusion: delete the unregistered general application-plugin installer, enablement, marketplace, worker command, frame and panel IPC registrar; preserve retained Main IPC registration and browser extensions."
+    },
+    {
+      "path": "src/main/ipc/plugin-frame-entry-ipc.ts",
+      "sourceSha256": "e9fe1225e85e024951eff5e55e7d661a7e5dc1b98779e89da0f87f0aa24c52e4",
+      "reason": "Ash M8 exclusion: delete the plugin custom-editor and panel guest-frame entry IPC handler which was called only by the unregistered general plugin registrar."
+    },
+    {
+      "path": "src/main/ipc/plugin-marketplaces.ts",
+      "sourceSha256": "2bbb8363876887b7567fd59828b0572be7e6608bf97fbe9500a4faa1820d498d",
+      "reason": "Ash M8 exclusion: remove general IDE plugin marketplace discovery, preview, install, rollback and update IPC service binding; browser extensions are separate."
+    },
+    {
+      "path": "src/main/ipc/plugin-panel-push-ipc.ts",
+      "sourceSha256": "ad4e595cdfe6e5b1a5d7f51ca675fac468bedc626f07fecd8cb4588e72268f44",
+      "reason": "Ash M8 exclusion: remove unregistered general-plugin panel push session transport and host notification bridge."
+    },
+    {
+      "path": "src/main/ipc/plugin-settings-ipc.ts",
+      "sourceSha256": "266be3829570e524c0bd894d08caae479283dacfc1f6e5085771e2db21498d45",
+      "reason": "Ash M8 exclusion: remove obsolete per-application-plugin settings read/write IPC; retain Ash and provider-native settings."
+    },
+    {
+      "path": "src/main/ipc/plugin-status-bar-ipc.ts",
+      "sourceSha256": "12c8c235de6b7d5a9cfad743575068ea815307e86dbc23fab8ea4059300f07ee",
+      "reason": "Ash M8 exclusion: remove plugin-contributed status-bar IPC listener and push registration from dormant general plugin manager."
+    },
+    {
+      "path": "src/main/plugins/__mocks__/plugin-uninstall-log-test-fixture.ts",
+      "sourceSha256": "4698ebaa5446d0642dc4035fd11852a4779f1869540be703fe9768ff0ee8ac63",
+      "reason": "Ash M8 exclusion: remove unreferenced Orca app-plugin uninstall integration fixture that bootstrapped the deleted application-plugin IPC registration root."
+    },
+    {
       "path": "src/main/plugins/hooks/plugin-hook-dispatch.ts",
       "sourceSha256": "63631e5423741ecd0ba48ff96126752a5f9890c83a6842f6729259be429113c5",
       "reason": "Ash M8: remove the unbound general app-plugin hook dispatch/denial layer after eliminating its last live RPC error-mapping dependency. Retain normal invalid-argument and runtime error mapping."

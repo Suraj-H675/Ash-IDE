@@ -14,8 +14,7 @@ describe('Ash Main excludes orphaned application-plugin hooks and recipe provide
   it('does not bind a plugin worker hook runner to the runtime or expose editor save-hook IPC', () => {
     const binding = source('src/main/plugins/plugin-runtime-binding.ts')
     expect(binding).not.toMatch(/installPluginHookRunner|installPluginResidentWorkerWarmer/)
-    const pluginIpc = source('src/main/ipc/plugins.ts')
-    expect(pluginIpc).not.toMatch(/registerPluginEditorSaveHookHandler|plugin-editor-save-hook-ipc/)
+    expect(existsSync(resolve(process.cwd(), 'src/main/ipc/plugins.ts'))).toBe(false)
     const hooks = source('src/main/agent-hooks/server/server-lifecycle.ts')
     expect(hooks).toContain('this.checkHookOwner(source, aliasedBody)')
     expect(hooks).toContain('this.applyObservedLocalHook(event, normalized.onAccepted)')
