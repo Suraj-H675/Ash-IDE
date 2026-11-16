@@ -9,6 +9,11 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/renderer/src/components/editor/save/transforms/editor-save-plugin-hook.ts",
+      "sourceSha256": "5031500f7bc2f7a656a716f80892e5aff6c1cffa3e763746b2273bd94c974463",
+      "reason": "Ash M8 exclusion: remove active editor.save.before general application-plugin save interception, text rewriting and plugin refusal. Retain normal format-on-save, stale-write and conversion safeguards."
+    },
+    {
       "path": "src/main/ipc/plugins.ts",
       "sourceSha256": "efc31e6342a72639b5d60600f590245e2cff47b7bb563f52c61c4827f79d309e",
       "reason": "Ash M8 exclusion: delete the unregistered general application-plugin installer, enablement, marketplace, worker command, frame and panel IPC registrar; preserve retained Main IPC registration and browser extensions."

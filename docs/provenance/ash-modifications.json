@@ -1807,6 +1807,16 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/editor/save/commands/editor-file-save-attempt.ts",
+      "sha256": "9607b39feeb07cefc57255d9fa8259c15834427ef78e2e7ed066f09de117c138",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/editor/save/transforms/editor-save-transform-pipeline.ts",
+      "sha256": "57d2d79b98e542ffb8876fe4ce699ad570ef57aaac84b6e40dd7b39e6918084c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/feature-wall/ConnectIntegrationsList.tsx",
       "sha256": "fd9696167fbbb1bd970f01ad01b15bc4e31a81b8a5389c56ba1a1a2079833960",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
