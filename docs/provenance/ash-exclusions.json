@@ -9,6 +9,11 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/renderer/src/components/tab-bar/use-plugin-new-file-menu-options.ts",
+      "sourceSha256": "10f3b56b30acdfbec825a24b85f1b5d98734d9ae9b8010da4858803398fd5bc3",
+      "reason": "Ash M8: remove general application-plugin created-file injection in the searchable New Tab quick-create menu after the static New Tab and command palette paths were excluded. Retain built-in terminal, browser, Markdown and platform shell options and preserve editor draft/save contracts."
+    },
+    {
       "path": "src/renderer/src/lib/plugin-command-keybindings.ts",
       "sourceSha256": "cb331f1e434951c587ae5b1a458804563bb52d97d015dbdde9165d3cb1411187",
       "reason": "Ash M8: remove dynamic app-plugin shortcut definitions and worker command chord matching after disconnecting Shortcut Settings and runtime keyboard dispatch. Retain built-in keybinding registry, user remapping, terminal ownership and conflict diagnostics."

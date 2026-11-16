@@ -2392,6 +2392,16 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/tab-bar/TabBar.tsx",
+      "sha256": "1b38d01b1feb9e1e4cc8fd0bca538d8931e1dfa1e1a0abb9cc3987862ad26a02",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/tab-bar/TabBarCreateEntryRow.tsx",
+      "sha256": "e9f48c3338318f9a1f42874a1fab910c92a354e9d14b41f3c84160399a8258f0",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/tab-bar/tab-bar-static-create-menu.tsx",
       "sha256": "97d19204ceebbb77862f6b80f08abde0b23f0a354027ed781e4655de19c1b8ff",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -2399,6 +2409,16 @@
     {
       "path": "src/renderer/src/components/tab-bar/tab-bar-surface.tsx",
       "sha256": "f576958420a4345d02a6a27280ee483963ace22a83612c19f72d56c822c7e06e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/tab-bar/tab-create-menu-options.ts",
+      "sha256": "50b12fe0ce7d25337dcdb1b2198501c70993060cf53c541e98d4eaeb34c7e548",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/tab-bar/use-tab-bar-create-menu-controller.ts",
+      "sha256": "4de1c8ba05d52077eb4afe0aa7349ef6951a45f9b84974f5e66bea7bec2fa7e4",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
