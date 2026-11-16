@@ -19,9 +19,7 @@ import {
 import { useAppStore } from '../store'
 import type { usePluginCommands } from '@/store/plugin-panels'
 import { isGitRepoKind } from '../../../shared/repo-kind'
-import { openPluginsSettings } from '@/lib/open-plugins-settings'
 import { resolveActiveTabRenameTarget } from './active-tab-rename-target'
-import { createPluginsSettingsShortcutHandler } from './plugin-settings-shortcut-handler'
 import type {
   KeybindingActionId,
   KeybindingContext,
@@ -260,12 +258,6 @@ export function createAppCommandHandlers(
         }
         return claim('view.tasks', () => store.openTaskPage())
       }
-    ],
-    [
-      'view.plugins',
-      createPluginsSettingsShortcutHandler(input?.target, () =>
-        claim('view.plugins', openPluginsSettings)
-      )
     ],
     [
       'sidebar.right.toggle',

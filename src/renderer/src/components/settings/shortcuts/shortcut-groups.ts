@@ -33,6 +33,11 @@ export function groupDefinitions(
   )
   const groups = new Map<string, KeybindingDefinition[]>()
   for (const definition of [...KEYBINDING_DEFINITIONS, ...additionalDefinitions]) {
+    // Keep the legacy action ID parseable for existing user overrides, but do
+    // not advertise or rebind a shortcut to the removed application-plugin UI.
+    if (definition.id === 'view.plugins') {
+      continue
+    }
     if (hiddenAgentActionIds.has(definition.id)) {
       continue
     }

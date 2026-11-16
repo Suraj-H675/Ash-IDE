@@ -19,8 +19,6 @@ import { StatusBarUsageChangeNotices } from './StatusBarUsageChangeNotices'
 import { UpdateStatusSegment } from './UpdateStatusSegment'
 import { NativeChatResumeStatusSegment } from './NativeChatResumeStatusSegment'
 import { CaffeinateStatusSegment } from './CaffeinateStatusSegment'
-import { PluginsStatusSegment } from './PluginsStatusSegment'
-import { PluginStatusBarItems } from './PluginStatusBarItems'
 import { RemoteServerUpdateStatusSegment } from './RemoteServerUpdateStatusSegment'
 import { TOGGLE_FLOATING_TERMINAL_EVENT } from '@/lib/floating-terminal'
 import { FloatingTerminalIconContextMenu } from '@/components/floating-terminal/FloatingTerminalIconContextMenu'
@@ -306,11 +304,7 @@ export function StatusBarSurface({
       >
         <div ref={segmentsRef} className="flex w-max items-center gap-3">
           {!isPairedWebClientWindow() ? (
-            <>
-              <PluginsStatusSegment />
-              <PluginStatusBarItems iconOnly={segmentsIconOnly} />
-              <CaffeinateStatusSegment iconOnly={segmentsIconOnly} />
-            </>
+            <CaffeinateStatusSegment iconOnly={segmentsIconOnly} />
           ) : null}
           <RemoteServerUpdateStatusSegment iconOnly={segmentsIconOnly} />
           <NativeChatResumeStatusSegment iconOnly={segmentsIconOnly} />
