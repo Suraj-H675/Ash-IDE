@@ -9,6 +9,11 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/renderer/src/lib/plugin-command-replacements.ts",
+      "sourceSha256": "280591258321dcfe8d186ab8d7d11f9ee9774038e6c33ee489756f122f2fcabf",
+      "reason": "Ash M8: remove general application-plugin commands that could replace native Ash shortcut and Main menu actions; retain direct built-in dispatch, keybinding remapping, terminal/floating input ownership and native-chat toggle."
+    },
+    {
       "path": "src/renderer/src/components/right-sidebar/plugin-panels/health/use-plugin-panel-draw-report.ts",
       "sourceSha256": "5d2b5307663d561dd9abe0feb039a01696e4678267e3ebf6cea01188747603cf",
       "reason": "Ash M8 / EX-03, EX-10: Remove guest-frame-only plugin panel draw reporter; preserve provider status hooks and ordinary runtime diagnostics."

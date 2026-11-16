@@ -1728,7 +1728,7 @@
     },
     {
       "path": "src/renderer/src/app-shell/app-command-handlers.ts",
-      "sha256": "8113587b5ec7887f72d04906fe57be63e5c42917172657019822cb1e380a7fe8",
+      "sha256": "041a47ff3e772bcba9656a7b1140732694c9f6c93722d54510e99d38ed798a69",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1748,7 +1748,7 @@
     },
     {
       "path": "src/renderer/src/app-shell/use-global-keybindings.ts",
-      "sha256": "57a59110c60281c7cee787d0e43782f4e922fe09026f77640dc9010066dad14d",
+      "sha256": "41ae805c1f3afeabfb67135637d2eee13c5c9ef9b21ed7803c137759b68308ba",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1889,6 +1889,11 @@
     {
       "path": "src/renderer/src/components/maintenance/update-card/update-card-visibility.ts",
       "sha256": "5ab57253ea4944aef78439ec54f99db864c2d437e3e25a20cceed9e6f4f6e133",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/native-chat/use-native-chat-toggle-shortcut.ts",
+      "sha256": "5ef84ef886076d576ccb5d5b688e8928112e12de1e43918df8ef87d4da665167",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2523,7 +2528,12 @@
     },
     {
       "path": "src/renderer/src/hooks/ipc-events/settings-sidebar-ipc-bridge.ts",
-      "sha256": "7e686321a4e9b3324218049d37df599a71cc7b44a28e9a8e01c30855c638d6c2",
+      "sha256": "c104b650845ee75e8d72f407e0713111bec4515338091c8a5446d469f80cbcb5",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/hooks/ipc-events/workspace-shortcut-ipc-bridge.ts",
+      "sha256": "8a80985cd6f306dacf36ba005911da9f36d7628615c388429433e533dff4b28d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2662,8 +2672,8 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
-      "path": "src/renderer/src/lib/plugin-command-replacements.ts",
-      "sha256": "584e291961a4da9b06e07013e6e42e4c8b36edfe90f6b12c393801222f27ae3a",
+      "path": "src/renderer/src/lib/plugin-command-keybindings.ts",
+      "sha256": "94a638d8467c1f162387c150dfe70f800fd23a8313bc2ab6cf3cc3c4d711ca97",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

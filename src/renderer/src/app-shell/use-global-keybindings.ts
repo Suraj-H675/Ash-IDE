@@ -1,22 +1,14 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
-import { toast } from 'sonner'
-import { translate } from '@/i18n/i18n'
 import { canShowRightSidebarForView } from '@/lib/right-sidebar-visibility'
 import { getSelectedTextForFileSearch } from '../lib/file-search-selection'
 import { registerAppCommandDispatcher } from '@/lib/app-command-dispatch'
-import { executePluginCommand } from '@/lib/plugin-command-execution'
-import { runBuiltInOrReplacement } from '@/lib/plugin-command-replacements'
-import {
-  findPluginCommandForKeybinding,
-  globalShortcutTargetYields
-} from '@/lib/plugin-command-keybindings'
+import { globalShortcutTargetYields } from '@/lib/global-shortcut-target-yields'
 import { shouldMinimizeFloatingWorkspacePanelOnCloseShortcut } from '@/lib/floating-workspace-terminal-actions'
 import { showTerminalShortcutCaptureNotification } from '@/lib/terminal-shortcut-capture-notification'
 import {
   folderRelativePathToIncludeGlob,
   selectedExplorerFolderRelativePath
 } from '../components/right-sidebar/file-explorer/content-search/file-search-include-pattern'
-import { usePluginCommands } from '@/store/plugin-panels'
 import { useAppStore } from '../store'
 import { keybindingMatchesAction, type KeybindingActionId } from '../../../shared/keybindings'
 import { PLUGIN_COMMAND_ALIAS_ACTION_IDS } from '../../../shared/plugins/contributions/plugin-command-actions'
@@ -47,7 +39,6 @@ export function useGlobalKeybindings(args: {
   const actions = useAppShortcutActions()
   const keybindings = useAppStore((s) => s.keybindings)
   const terminalShortcutPolicy = useAppStore((s) => s.settings?.terminalShortcutPolicy)
-  const pluginCommands = usePluginCommands()
 
   const shortcutState: Omit<AppShortcutState, 'activeWorktreeId'> = {
     activeView: layout.activeView,
@@ -58,7 +49,6 @@ export function useGlobalKeybindings(args: {
     floatingVisibleTabCount: floatingWorkspace.visibleTabCount,
     keybindings,
     openFloatingWorkspaceMaximized: floatingWorkspace.openMaximized,
-    pluginCommands,
     setFloatingTerminalOpen: floatingWorkspace.setOpenWithFocus,
     terminalShortcutPolicy,
     workspaceChromeActive: layout.workspaceChromeActive
@@ -77,15 +67,8 @@ export function useGlobalKeybindings(args: {
       ...shortcutStateRef.current,
       activeWorktreeId: useAppStore.getState().activeWorktreeId
     })
-    const unregisterAppCommandDispatcher = registerAppCommandDispatcher((actionId, source) =>
-      (
-        createAppCommandHandlers(
-          readShortcutState(),
-          undefined,
-          'app',
-          source === 'plugin-host'
-        ).get(actionId) ?? (() => false)
-      )()
+    const unregisterAppCommandDispatcher = registerAppCommandDispatcher((actionId) =>
+      (createAppCommandHandlers(readShortcutState()).get(actionId) ?? (() => false))()
     )
 
     const dispatchShortcutInput = (input: ShortcutDispatchInput): void => {
@@ -100,7 +83,6 @@ export function useGlobalKeybindings(args: {
         floatingVisibleTabCount,
         keybindings,
         openFloatingWorkspaceMaximized,
-        pluginCommands,
         setFloatingTerminalOpen,
         terminalShortcutPolicy
       } = state
@@ -147,11 +129,9 @@ export function useGlobalKeybindings(args: {
         if (selectedFolderRelativePath !== null && activeWorktreeId) {
           input.preventDefault()
           notifyTerminalCapture('sidebar.search.toggle')
-          runBuiltInOrReplacement('sidebar.search.toggle', () =>
-            actions.showRightSidebarSearch({
-              includePattern: folderRelativePathToIncludeGlob(selectedFolderRelativePath)
-            })
-          )
+          actions.showRightSidebarSearch({
+            includePattern: folderRelativePathToIncludeGlob(selectedFolderRelativePath)
+          })
           return
         }
 
@@ -159,9 +139,7 @@ export function useGlobalKeybindings(args: {
         if (selectedText) {
           input.preventDefault()
           notifyTerminalCapture('sidebar.search.toggle')
-          runBuiltInOrReplacement('sidebar.search.toggle', () =>
-            actions.showRightSidebarSearch({ query: selectedText })
-          )
+          actions.showRightSidebarSearch({ query: selectedText })
           return
         }
       }
@@ -189,7 +167,7 @@ export function useGlobalKeybindings(args: {
         floatingTerminalEnabled
       ) {
         input.preventDefault()
-        runBuiltInOrReplacement('floatingWorkspace.maximize', openFloatingWorkspaceMaximized)
+        openFloatingWorkspaceMaximized()
         return
       }
 
@@ -198,26 +176,6 @@ export function useGlobalKeybindings(args: {
         globalShortcutTargetYields(input, shortcutPlatform, keybindings, matchOptions, actionId)
       const matchAppShortcut = (actionId: KeybindingActionId): boolean =>
         matchShortcut(actionId) && !targetYields(actionId)
-
-      // Reviewed plugin chords beat built-in defaults only in app focus; terminal/editor/browser retain their own authority.
-      if (context === 'app' && !targetYields()) {
-        const pluginCommand = findPluginCommandForKeybinding(
-          pluginCommands,
-          input,
-          shortcutPlatform,
-          keybindings,
-          Boolean(activeWorktreeId)
-        )
-        if (pluginCommand) {
-          input.preventDefault()
-          void executePluginCommand(pluginCommand, 'plugin-keybinding').catch(() => {
-            toast.error(
-              translate('auto.App.pluginCommandFailed', 'Could not run the plugin command.')
-            )
-          })
-          return
-        }
-      }
 
       const handlers = createAppCommandHandlers(state, input, context)
       if (matchAppShortcut('workspace.delete') && handlers.get('workspace.delete')?.()) {

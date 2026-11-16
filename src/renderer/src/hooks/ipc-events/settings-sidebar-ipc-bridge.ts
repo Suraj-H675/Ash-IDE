@@ -1,5 +1,4 @@
 import { canShowRightSidebarForView } from '@/lib/right-sidebar-visibility'
-import { runBuiltInOrReplacement } from '@/lib/plugin-command-replacements'
 import { showTerminalShortcutCaptureNotification } from '@/lib/terminal-shortcut-capture-notification'
 import { TOGGLE_FLOATING_TERMINAL_EVENT } from '@/lib/floating-terminal'
 import { useAppStore } from '../../store'
@@ -95,7 +94,7 @@ export function registerSettingsAndSidebarIpcBridge(unsubs: (() => void)[]): voi
 
   unsubs.push(
     window.api.ui.onToggleLeftSidebar(() => {
-      runBuiltInOrReplacement('sidebar.left.toggle', () => useAppStore.getState().toggleSidebar())
+      useAppStore.getState().toggleSidebar()
     })
   )
 
@@ -105,7 +104,7 @@ export function registerSettingsAndSidebarIpcBridge(unsubs: (() => void)[]): voi
       if (!canShowRightSidebarForView(store.activeView)) {
         return
       }
-      runBuiltInOrReplacement('sidebar.right.toggle', () => store.toggleRightSidebar())
+      store.toggleRightSidebar()
     })
   )
 

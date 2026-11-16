@@ -1,5 +1,4 @@
 import { canShowRightSidebarForView } from '@/lib/right-sidebar-visibility'
-import { runBuiltInOrReplacement } from '@/lib/plugin-command-replacements'
 import { isFloatingWorkspacePanelFocused } from '@/lib/floating-workspace-terminal-actions'
 import { hasVisibleOverlay } from '@/lib/visible-overlay'
 import { requestScrollToCurrentWorkspaceRevealAndRename } from '@/lib/scroll-to-current-workspace-status'
@@ -17,7 +16,6 @@ import {
   resolveHoveredWorkspaceDeleteTarget
 } from '../components/sidebar/workspace-actions/deletion/hovered-workspace-delete'
 import { useAppStore } from '../store'
-import type { usePluginCommands } from '@/store/plugin-panels'
 import { isGitRepoKind } from '../../../shared/repo-kind'
 import { resolveActiveTabRenameTarget } from './active-tab-rename-target'
 import type {
@@ -59,7 +57,6 @@ export type AppShortcutState = {
   floatingVisibleTabCount: number
   keybindings: AppStoreState['keybindings']
   openFloatingWorkspaceMaximized: () => void
-  pluginCommands: ReturnType<typeof usePluginCommands>
   setFloatingTerminalOpen: (open: boolean) => void
   terminalShortcutPolicy: NonNullable<AppStoreState['settings']>['terminalShortcutPolicy']
   workspaceChromeActive: boolean
@@ -74,9 +71,7 @@ export function getKeybindingContext(target: EventTarget | null): KeybindingCont
 export function createAppCommandHandlers(
   state: AppShortcutState,
   input?: ShortcutDispatchInput,
-  keybindingContext: KeybindingContext = 'app',
-  /** A plugin's `commands.run`: Orca's own action, never a plugin replacement (no loops). */
-  builtInOnly = false
+  keybindingContext: KeybindingContext = 'app'
 ): Map<KeybindingActionId, () => boolean> {
   const {
     activeView,
@@ -105,12 +100,7 @@ export function createAppCommandHandlers(
         keybindings
       })
     }
-    // A plugin command may replace the action; it falls back to `run`.
-    if (builtInOnly) {
-      run()
-    } else {
-      runBuiltInOrReplacement(actionId, run)
-    }
+    run()
     return true
   }
   const revealRightSidebarTab = (
