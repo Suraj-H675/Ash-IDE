@@ -1837,6 +1837,16 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/editor/save/bytes/editor-bytes-document-boxes.ts",
+      "sha256": "955beed60bc701f1e5846c94eb4045ef61ee7d3364afacb828391db1980a1f04",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/editor/save/bytes/editor-bytes-documents.ts",
+      "sha256": "3a18605306934c812ade98b27832ab3c9abcd7e78b9f58a9339c7a64bbbc1104",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
       "path": "src/renderer/src/components/editor/save/commands/editor-file-save-attempt.ts",
       "sha256": "9607b39feeb07cefc57255d9fa8259c15834427ef78e2e7ed066f09de117c138",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -2829,11 +2839,6 @@
     {
       "path": "src/renderer/src/store/plugin-panels.ts",
       "sha256": "df61b44bced56500f4c99c8d7ad3183341036330e4dd1dac96ab04c16e06f429",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/store/plugin-status-bar-items.ts",
-      "sha256": "43aa52efb080d9a0c6dfb2bf2dd440e42a5057b183ae6d5a0f81c7d17b0414b4",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

@@ -9,6 +9,61 @@
   "licenseSha256": "ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3",
   "removedUpstreamFiles": [
     {
+      "path": "src/renderer/src/components/plugins/frames/use-plugin-panel-theme-revision.ts",
+      "sourceSha256": "0369865abdc2dbc35deef405dcb3873539c77ca0a5743db68528b53379b6002b",
+      "reason": "Ash M8: exclude orphan general IDE application-plugin guest iframe/bridge/theme implementation after all plugin editor and sidebar guest mounts were retired; retained binary draft data types now live in the editor save module."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/frames/use-plugin-frame-host.ts",
+      "sourceSha256": "7eac3025e1814bfde5cb80dc29e619cef260d58539c8882df33b893b21f54fe5",
+      "reason": "Ash M8: exclude orphan general IDE application-plugin guest iframe/bridge/theme implementation after all plugin editor and sidebar guest mounts were retired; retained binary draft data types now live in the editor save module."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/frames/use-plugin-frame-entry.ts",
+      "sourceSha256": "0ba36a7820173e422375bdaf77821a0f17185fe475d62fee1e1341a399849618",
+      "reason": "Ash M8: exclude orphan general IDE application-plugin guest iframe/bridge/theme implementation after all plugin editor and sidebar guest mounts were retired; retained binary draft data types now live in the editor save module."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/frames/plugin-panel-design-token-css.ts",
+      "sourceSha256": "adf998ab28fe99dfa2872816454220a40a2873a59be23f2c5951f38f7756c0eb",
+      "reason": "Ash M8: exclude orphan general IDE application-plugin guest iframe/bridge/theme implementation after all plugin editor and sidebar guest mounts were retired; retained binary draft data types now live in the editor save module."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/frames/plugin-frame-host.ts",
+      "sourceSha256": "d75ad3e9a7d9f69937f989c4dd9f53a34a8acbce7cf5ee609a9a08637b8f714f",
+      "reason": "Ash M8: exclude orphan general IDE application-plugin guest iframe/bridge/theme implementation after all plugin editor and sidebar guest mounts were retired; retained binary draft data types now live in the editor save module."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/frames/plugin-frame-host-lanes.ts",
+      "sourceSha256": "53815ffddf08ec76bebf51b6c2921bb7df7dfd89b43180a43df6a03c39f8d955",
+      "reason": "Ash M8: exclude orphan general IDE application-plugin guest iframe/bridge/theme implementation after all plugin editor and sidebar guest mounts were retired; retained binary draft data types now live in the editor save module."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/frames/plugin-frame-element.tsx",
+      "sourceSha256": "6902371dc683fdbb3613734b7d9d8636c5d62e214cda35ce9ff0cfc1eeb23eef",
+      "reason": "Ash M8: exclude orphan general IDE application-plugin guest iframe/bridge/theme implementation after all plugin editor and sidebar guest mounts were retired; retained binary draft data types now live in the editor save module."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-status-bar-items.ts",
+      "sourceSha256": "cc320214a3236695111b102d55531c2e8d95f0f3981a2a59413439327ca85cb2",
+      "reason": "Ash M8: exclude unmounted application-plugin contributed status bar UI/overrides; retain provider-native Claude/Codex status, native chat, usage, ports and system status surfaces."
+    },
+    {
+      "path": "src/renderer/src/components/status-bar/PluginStatusBarItems.tsx",
+      "sourceSha256": "2bb0eb33e2d9b6263fda3b2c3e18755698628fa3a74f1e4baf5448cc7329cfc2",
+      "reason": "Ash M8: exclude unmounted application-plugin contributed status bar UI/overrides; retain provider-native Claude/Codex status, native chat, usage, ports and system status surfaces."
+    },
+    {
+      "path": "src/renderer/src/components/right-sidebar/plugin-panels/health/plugin-panel-watchdog.ts",
+      "sourceSha256": "10d8c6f5ab1661c079d6d27711baab080715e65fbad8c500d13da2964752676b",
+      "reason": "Ash M8: exclude application-plugin guest panel ping/pong watchdog after removing its last legacy guest-frame host importer; retained window/PTY liveness is a separate subsystem."
+    },
+    {
+      "path": "src/renderer/src/components/editor/plugin-custom-editor-host-types.ts",
+      "sourceSha256": "5990a4d8da98212e2cea17b4aca42fa63fdcae59116042471e201f2a5bf936ea",
+      "reason": "Ash M8: exclude unused application-plugin editor-frame option/channel types; preserve the exact binary document shape in the retained editor bytes draft module to protect save and rename recovery."
+    },
+    {
       "path": "src/renderer/src/components/tab-bar/use-plugin-new-file-menu-options.ts",
       "sourceSha256": "10f3b56b30acdfbec825a24b85f1b5d98734d9ae9b8010da4858803398fd5bc3",
       "reason": "Ash M8: remove general application-plugin created-file injection in the searchable New Tab quick-create menu after the static New Tab and command palette paths were excluded. Retain built-in terminal, browser, Markdown and platform shell options and preserve editor draft/save contracts."

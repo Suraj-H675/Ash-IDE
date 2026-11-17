@@ -1,4 +1,8 @@
-import type { CustomEditorBinaryDocument } from '../../plugin-custom-editor-host-types'
+/** The saved or unsaved bytes of a local editor document, independent of removed plugin frames. */
+export type CustomEditorBinaryDocument = {
+  bytes: Uint8Array<ArrayBuffer>
+  fileType: string
+}
 
 /**
  * A binary custom editor's bytes last read or saved, and the unsaved edit. Kept apart from the

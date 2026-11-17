@@ -138,11 +138,18 @@ describe('Ash external file changes always use the built-in recovery warning', (
     for (const retained of [
       'save/bytes/editor-bytes-documents.ts',
       'save/bytes/editor-bytes-document-boxes.ts',
-      'plugin-custom-editor-host-types.ts',
       'external-changes/ExternalFileChangeBanner.tsx',
       'save/queue/editor-save-queue.ts'
     ]) {
       expect(existsSync(resolve(process.cwd(), renderer, retained)), retained).toBe(true)
     }
+    expect(existsSync(resolve(process.cwd(), renderer, 'plugin-custom-editor-host-types.ts'))).toBe(
+      false
+    )
+    const box = readFileSync(
+      resolve(process.cwd(), renderer, 'save/bytes/editor-bytes-document-boxes.ts'),
+      'utf8'
+    )
+    expect(box).toContain('export type CustomEditorBinaryDocument')
   })
 })

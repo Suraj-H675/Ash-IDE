@@ -7,7 +7,6 @@ import { ensurePluginAutoUpdatesWatched } from './plugin-auto-updates'
 import { usePluginIconThemeStore, usePluginIconThemes } from './plugin-icon-themes'
 import { usePluginLanguagePackStore, usePluginLanguagePacks } from './plugin-language-packs'
 import { ensurePluginPanelsLoaded, usePluginPanels, usePluginPanelsStore } from './plugin-panels'
-import { usePluginStatusBarItems } from './plugin-status-bar-items'
 import {
   usePluginTerminalThemeStore,
   usePluginTerminalThemes,
@@ -73,7 +72,7 @@ describe('Ash application plugin host exclusion', () => {
     vi.unstubAllGlobals()
   })
 
-  it('mounts actual catalog, panel and status hooks with empty ready stores and no IPC', async () => {
+  it('mounts actual catalog and panel hooks with empty ready stores and no IPC', async () => {
     expect(ASH_APP_PLUGIN_HOST_ENABLED).toBe(false)
     let rendered: unknown[] = []
     const StartupProbe = () => {
@@ -82,8 +81,7 @@ describe('Ash application plugin host exclusion', () => {
         usePluginTerminalThemes(),
         usePluginLanguagePacks(),
         usePluginIconThemes(),
-        usePluginPanels(),
-        usePluginStatusBarItems()
+        usePluginPanels()
       ]
       return null
     }
@@ -92,7 +90,7 @@ describe('Ash application plugin host exclusion', () => {
     root = createRoot(host)
     await act(async () => root?.render(<StartupProbe />))
 
-    expect(rendered).toEqual([[], [], [], [], [], []])
+    expect(rendered).toEqual([[], [], [], [], []])
     for (const state of [
       usePluginThemeStore.getState(),
       usePluginTerminalThemeStore.getState(),

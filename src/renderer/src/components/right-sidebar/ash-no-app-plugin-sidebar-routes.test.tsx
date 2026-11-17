@@ -170,12 +170,16 @@ describe('Ash right sidebar excludes general application-plugin panels', () => {
     ]) {
       expect(existsSync(resolve(process.cwd(), root + file)), file).toBe(false)
     }
-    // This is a separate importer: do not remove this helper before detaching
-    // the generic legacy frame host with its own tests.
-    expect(existsSync(resolve(process.cwd(), `${root}health/plugin-panel-watchdog.ts`))).toBe(true)
-    expect(source('src/renderer/src/components/plugins/frames/use-plugin-frame-host.ts')).toContain(
-      'createPanelWatchdog'
-    )
+    // The now-orphaned frame host and its last watchdog consumer are retired together.
+    expect(existsSync(resolve(process.cwd(), `${root}health/plugin-panel-watchdog.ts`))).toBe(false)
+    expect(
+      existsSync(
+        resolve(
+          process.cwd(),
+          'src/renderer/src/components/plugins/frames/use-plugin-frame-host.ts'
+        )
+      )
+    ).toBe(false)
     expect(
       source('src/renderer/src/components/right-sidebar/right-sidebar-panel-content.tsx')
     ).toContain('<FileExplorer')

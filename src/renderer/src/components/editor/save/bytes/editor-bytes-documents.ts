@@ -4,7 +4,6 @@ import type { OpenFile } from '@/store/slices/editor/types/open-file'
 import { editorTabFileAccess } from '@/lib/local-file-access'
 import type { RuntimeFileOperationArgs } from '@/runtime/runtime-file-client-types'
 import { writeRuntimeFileBytes } from '@/runtime/runtime-file-bytes-write'
-import type { CustomEditorBinaryDocument } from '../../plugin-custom-editor-host-types'
 import type { EditorSaveResult, EditorSaveTrigger } from '../queue/editor-save-disk-precondition'
 import {
   clearSelfWrite,
@@ -14,7 +13,7 @@ import {
 import { markEditorSaveRefusal } from '../queue/editor-save-rebaseline'
 import { EditorSaveDiscardedError } from '../flush/editor-discard-epoch'
 import { editorBufferSiblingViewIds } from '@/store/slices/editor/buffers/editor-buffer-views'
-import { bytesDocumentBoxes } from './editor-bytes-document-boxes'
+import { bytesDocumentBoxes, type CustomEditorBinaryDocument } from './editor-bytes-document-boxes'
 
 const listeners = new Set<() => void>()
 let unsubscribeStore: (() => void) | null = null
