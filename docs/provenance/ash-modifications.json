@@ -83,8 +83,8 @@
     },
     {
       "path": "src/cli/handlers/skill-guide-host-gate.test.ts",
-      "sha256": "45b885022302cd2f1e3becca6377941d7ccc411ebf437368b310fbdc67e4fd08",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "ced0eae7854c1e159d9424636b675eeee6bf862f85341e2fd7a05d7e6d655fa0",
+      "reason": "Ash M8: update bundled CLI skill-reference expectations after retiring the app-plugin authoring guide."
     },
     {
       "path": "src/cli/handlers/skill-guide-host-gate.ts",
