@@ -29,7 +29,6 @@ const SPECIFIC_PLUGIN_ROUTES = [
     [
       `${UI}(?:review\\/|list\\/|dialogs\\/Plugin(?:UpdateAll|Remove)Dialog)`,
       `${UI}state\\/use-plugin-(?:update-dialog|page-model)`,
-      `${UI}presentation\\/plugin-(?:publisher-trust|consent-copy|access-profile|capability-presentation)`,
       `${STORE}auto-updates`,
       'src\\/main\\/plugins\\/catalog\\/plugin-(?:auto-updater|update-approval|update-review-notices|release-first-seen-store)',
       'src\\/shared\\/plugins\\/(?:approval\\/|catalog\\/plugin-update-policy|contributions\\/plugin-contribution-summary)'
@@ -40,8 +39,7 @@ const SPECIFIC_PLUGIN_ROUTES = [
     'plugins.catalog-and-page',
     ['plugin-install-link'],
     [
-      `${UI}(?:catalog\\/|list\\/|page\\/|PluginContributionIcon|dialogs\\/Plugin(?:Install|CatalogLink|MarketplaceSource)Dialog)`,
-      `${UI}presentation\\/plugin-(?:status-presentation|install-source|release-date|contributions|error-presentation)`,
+      `${UI}(?:catalog\\/|list\\/|page\\/|dialogs\\/Plugin(?:Install|CatalogLink|MarketplaceSource)Dialog)`,
       `${STORE}content-list-store`,
       'src\\/main\\/plugins\\/(?:installation\\/|catalog\\/plugin-(?:marketplace-|catalog-|one-click-enable|community-marketplace-seed|kill-list-))',
       'src\\/main\\/plugins\\/plugin-(?:list-projection|client-list|image-)',

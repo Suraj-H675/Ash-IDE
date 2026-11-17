@@ -3198,7 +3198,7 @@
     },
     {
       "path": "config/scripts/workflow/source-routing/pr-plugin-e2e-source-routes.mjs",
-      "sha256": "67d21b1bb702a62e3ea5db767b1afa4a33e43c960698ef4adb44b9fcce315b3d",
+      "sha256": "8194d8ba94edda75c0080a95c958b62a2b554d38764e774ad5a11962eed3b037",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

@@ -43724,6 +43724,96 @@
       "path": "src/renderer/src/store/plugin-install-counts.ts",
       "sourceSha256": "40bebe5dd1d3032358c2228850c04a52655d0766588c78d7103eb76cc8f28371",
       "reason": "Ash M8: remove the uncalled application-plugin marketplace install-count store after retiring its only catalog hook; preserve remaining provider and plugin-host contracts."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/PluginContributionIcon.tsx",
+      "sourceSha256": "645ad8521fb9aeb09aab2bf11db17a984acc38afca235695a4814f04bb4c28a3",
+      "reason": "Ash M8: remove the unreferenced legacy application-plugin contribution icon after retiring its presentation UI; retain declarative workspace-card icons and icon glyphs."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-access-profile.ts",
+      "sourceSha256": "df3e38d5950d8df94e5eb059913a2853b3248fc843bf73aaab257daaf441b5b1",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-capability-presentation.ts",
+      "sourceSha256": "234d4a6d6de1bd45157771b2464dbe06729860975b42f22184ad21ba50c89db9",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-consent-copy.ts",
+      "sourceSha256": "142376cc5a8c085a3ab50f1861a0c207bb290effb4d6b5e2d08b24a67d5ad94a",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-contribution-file-list.ts",
+      "sourceSha256": "cc41227ec82fb3a5004c36c6b4077bbab43114f30103a6584abe3638c4b73649",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-contribution-row-labels.ts",
+      "sourceSha256": "05f711686a214cb59f4808670133a6f8fa3111bf9a17793141ada8606257ce38",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-contributions.ts",
+      "sourceSha256": "e34fb53b2d1e4ad376f9d29d65634a50e43df02ddcc312487a625d3b234fb35c",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-custom-editor-takeover.ts",
+      "sourceSha256": "45b9cbd3cd6c71df39b6d17cb96e990a2d6c8d9443c1eba910c3aff5b27ca43a",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-error-presentation.ts",
+      "sourceSha256": "6623d61ea164dd6925d5aa21e2d32e489b7552152b8ec692c4752083771fd1c1",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-git-install-presentation.ts",
+      "sourceSha256": "9fe95132c24a6b4626122455765e52d974c8af6bce77ebbcf687b6f729192d41",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-install-source.ts",
+      "sourceSha256": "7109cd6dc6a149e7b7d5f12bc761b79d4a3e12b20c3fc5952dced8b7aa748764",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-install-trust.ts",
+      "sourceSha256": "7337012425d5d569369f5ce4c97352c20659abbcc521bfe11da36e970ecab00b",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-keybinding-conflicts.ts",
+      "sourceSha256": "a34b624137498310959ef2e558a6f767bf40cd09eec69117be759ea8b67f327a",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-official-label.ts",
+      "sourceSha256": "d803acd743435352a785a55583fd8eb6241291a31ea3d004118e0757c353e8c3",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-publisher-trust.ts",
+      "sourceSha256": "dbfaca07f5a2b992b8a163ef91ba821894a88fae376e42a2d4cf4de78bda00aa",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-release-date.ts",
+      "sourceSha256": "c47014c6a0180256d5b7dd401d20b0cf9b41370868cafea3307168cb220e465b",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-status-presentation.ts",
+      "sourceSha256": "6bdad89a44d4eebba89b3b816afa37fb0ba3be02417bd3e3f4177a0afc2aef61",
+      "reason": "Ash M8: remove orphan renderer application-plugin presentation module after retiring the general marketplace UI; no active renderer product importers remain."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-install-trust-request.ts",
+      "sourceSha256": "f2c5d17a38595780f765c888406682c7a9be7ddd52c610b5dad994a6baa23857",
+      "reason": "Ash M8: remove orphan renderer application-plugin install-trust request state; its only module dependency is the retired presentation prompt and it has no active consumers. Keep main-process installation trust intact."
     }
   ]
 }

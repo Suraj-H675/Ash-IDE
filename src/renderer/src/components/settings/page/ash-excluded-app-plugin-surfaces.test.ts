@@ -114,6 +114,43 @@ describe('Ash excluded application-plugin UI entrypoints', () => {
     expect(cardPrimitives).toContain('@/components/plugins/declarative/plugin-declarative-icons')
   })
 
+  it('removes orphan plugin presentation and trust state while retaining card and theme helpers', () => {
+    const removed = [
+      'components/plugins/presentation/plugin-access-profile.ts',
+      'components/plugins/presentation/plugin-capability-presentation.ts',
+      'components/plugins/presentation/plugin-consent-copy.ts',
+      'components/plugins/presentation/plugin-contribution-file-list.ts',
+      'components/plugins/presentation/plugin-contribution-row-labels.ts',
+      'components/plugins/presentation/plugin-contributions.ts',
+      'components/plugins/presentation/plugin-custom-editor-takeover.ts',
+      'components/plugins/presentation/plugin-error-presentation.ts',
+      'components/plugins/presentation/plugin-git-install-presentation.ts',
+      'components/plugins/presentation/plugin-install-source.ts',
+      'components/plugins/presentation/plugin-install-trust.ts',
+      'components/plugins/presentation/plugin-keybinding-conflicts.ts',
+      'components/plugins/presentation/plugin-official-label.ts',
+      'components/plugins/presentation/plugin-publisher-trust.ts',
+      'components/plugins/presentation/plugin-release-date.ts',
+      'components/plugins/presentation/plugin-status-presentation.ts',
+      'components/plugins/PluginContributionIcon.tsx',
+      'store/plugin-install-trust-request.ts'
+    ]
+    for (const path of removed) {
+      expect(existsSync(resolve(process.cwd(), 'src/renderer/src', path)), path).toBe(false)
+    }
+
+    const retained = [
+      'components/plugins/declarative/PluginDeclarativeDisplay.tsx',
+      'components/plugins/declarative/plugin-declarative-icons.ts',
+      'components/plugins/plugin-icon-glyphs.ts',
+      'components/plugins/state/plugin-theme-apply.ts',
+      'components/plugins/state/plugin-action-toast.ts'
+    ]
+    for (const path of retained) {
+      expect(existsSync(resolve(process.cwd(), 'src/renderer/src', path)), path).toBe(true)
+    }
+  })
+
   it('only offers built-in Appearance choices, not excluded app-plugin catalog installation', () => {
     const appearance = rendererSource(
       'components/settings/appearance/themes/AppearanceThemeControl.tsx'
