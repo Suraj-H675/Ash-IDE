@@ -43264,6 +43264,376 @@
       "path": "src/renderer/src/components/dashboard-popout/use-agent-dashboard-telemetry.ts",
       "sourceSha256": "808deef5e8983b743f837b564524b9068cd1bcfd6a96542232060a742d5e35f6",
       "reason": "Ash EX-09 exclusion: removed dashboard product-analytics event emission and scheduled visibility-based telemetry sampling without changing the live dashboard or pop-out behavior."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/catalog/PluginCardAction.tsx",
+      "sourceSha256": "8816ee13e9ab91a9b1ef8ff4f68073ab53dffd0c458f302306487236ede5c5ec",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/catalog/PluginCatalogGroups.tsx",
+      "sourceSha256": "4ef30694fbf0feb3a8b027f390f6305622d97ea041c92d8b4d8058e68dc8615c",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/catalog/PluginInUseAction.tsx",
+      "sourceSha256": "29342da3d6ce4346f6648f1786a832de5cae246fd69625ea47a2e9021b3b7600",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/dialogs/PluginCatalogLinkDialog.tsx",
+      "sourceSha256": "76ba4e49f9f334100b3a241cbd016773692045086b99c102e6399702df59cc29",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/dialogs/PluginDevelopmentDialog.tsx",
+      "sourceSha256": "3c876ec04db782487ffff739f5e14297a2bdb0e7c7085fdc6907ba697840ee45",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/dialogs/PluginInstallDialog.tsx",
+      "sourceSha256": "80dbfe6d565dc9a8f2cb802ad8b5c78680ea95ad129678aeef7c5486a124f347",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/dialogs/PluginInstallTrustDialog.tsx",
+      "sourceSha256": "1f6b007dd22b2246e5a447028ac6a7b8b677b7af490093e453d364ddb9ec0831",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/dialogs/PluginMarketplaceSourceDialog.tsx",
+      "sourceSha256": "1d3d65375a92c9d0b1b1508816034a7a8bc8f4e287b2579205011a7604ec4efb",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/dialogs/PluginRemoveDialog.tsx",
+      "sourceSha256": "f296847cbba05c516949386fbfaad5bfe0d85150557d57a5dacf02af2d09d1d1",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/dialogs/PluginRollbackDialog.tsx",
+      "sourceSha256": "470f7d0e1ac256bb7dd31d130b428bb287715c0d675c605866ec3f2168e5bf28",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/dialogs/PluginUpdateAllDialog.tsx",
+      "sourceSha256": "acc33fcdb2beaee4564c86298eff77148d86b7bdb32242ca119812ae75ac3c15",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginAddMenu.tsx",
+      "sourceSha256": "1c3996c8c72fc474db98f6ab3b7d4fdf4eadd29bae43768b86c0c335797606fb",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginCard.tsx",
+      "sourceSha256": "41429e5cffc3689aa6ace6d23f12fe99ccf2148158db2fb41cd3269e201ca502",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginCardArt.tsx",
+      "sourceSha256": "ad5b94d985c764d8e5f0ee0374dcdc578e5fd48a42cf2a7feee1b69de5f27c7e",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginCatalogEmptyState.tsx",
+      "sourceSha256": "7d601cf2b40c7a75d40f91e57db2f39ba17b873378cc6914a85063f028f63e71",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginCatalogLayout.tsx",
+      "sourceSha256": "2ad83f6d1a4882ebfa6d921d7065ec375cec3c73c290fd80ffa3733f655d1ac5",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginCategoryBadge.tsx",
+      "sourceSha256": "59907e30911030fb02b1b951cbf3f349399783100d0eb604ce5020c8dbfba86b",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginCategoryChips.tsx",
+      "sourceSha256": "a100abef3094aacfc15f60e6c900bd29df5ed14a4c403aebf4b6a42f77f08fd6",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginChips.tsx",
+      "sourceSha256": "9add3e55c9f10a3ed4c51adf855e83f99fbf7de8be8e65515ef26440e521cc37",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginFilterPopover.tsx",
+      "sourceSha256": "3b50f26c06b0d38a52f9bc702639657da8457af5a2fd451f941de911891d2a64",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginListEmptyStates.tsx",
+      "sourceSha256": "2a616d6a054c59c20270f93d2879089a59557bbbeaf6b40f8815691067f9371a",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginListGroup.tsx",
+      "sourceSha256": "43ceb6b066f24bb2d2493bed4429a0de23f2c94d05e12693a93e78e7163bcb39",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginListToolbar.tsx",
+      "sourceSha256": "5652edb9329d24a75e84a94691b18c68ae4f63521c5d66f6f0ba2561d9acc638",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginManager.tsx",
+      "sourceSha256": "6d1898164d631f8fbb28e624931de0e88ccaba549d6a93a70ab94a078e038dd6",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginManagerRows.tsx",
+      "sourceSha256": "44230f28e44af2a8b56b12b9fc2ecd2c8ef29134236c70fdc35cbe5f7b35428c",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginRowArt.tsx",
+      "sourceSha256": "5118196cfe25455b202d7b157cd8a6319c6e83fc100919fd25e8b116043332fc",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginRowMenu.tsx",
+      "sourceSha256": "9854adfe3d555588c2fb9f5773fd375b51f1f6e222897648e7e56538ba0708f0",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginSettingsMenu.tsx",
+      "sourceSha256": "01e98d18d48079c8e620a494ec1670016c65b752caea2736befec720f3fa47c8",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginSettingsOverview.tsx",
+      "sourceSha256": "6d6d7b881c7a54402e4713c21704e425f16a1e701159c96cae5a449a50857924",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginStatusWord.tsx",
+      "sourceSha256": "6b911ca9ad3e745a6181913e25322f36d029b31d1fd70d7e7a639fb4a21367ce",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginsAlphaNotice.tsx",
+      "sourceSha256": "7e37cb5aac18e29a3c7b1be94fd57f9ddf2ef079de38c9727d60a13ba9b09cd2",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginsSectionDescription.tsx",
+      "sourceSha256": "c1c9482c08e55ad7d69aefe5443d6f0b909e281c4e36e1743707eb187ead62df",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/PluginsSettingsSection.tsx",
+      "sourceSha256": "b5c224c36a4d5e6d4efddc40fa89c2c7cec31b1210325b8faa61a63eb8c0e6bf",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/plugin-category-icons.ts",
+      "sourceSha256": "1ef276368dfc405af5ba14ceec3ebad55975a5400ecf37e2814dda1b3cd2f1e3",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/plugin-category-label.ts",
+      "sourceSha256": "65aacace03507bab02285ec7be60d3ee6880ea6bb1be02a516cec501e6d462a2",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/plugin-display-name.ts",
+      "sourceSha256": "63b981215347c0c249b7e06f9cb9db673693c876214ea0faeb151f5459e1fe14",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/plugin-list-entries.ts",
+      "sourceSha256": "2b0e38293527cba542d44ef9d236de9bdc22eaf1235d9b3e4ec441913562698c",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/plugin-list-filter.ts",
+      "sourceSha256": "2f8f0fb5fc20a355d18446e9447b10fcba23f7e250cfe2d54cd07e32a95d9ed8",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/list/plugin-public-catalog.ts",
+      "sourceSha256": "28e22b0bb0fc797ea2d2c07a7d5e208bc849043b168298086aa5bb10d98c5d2c",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginAddsSection.tsx",
+      "sourceSha256": "97d6ba5257561f495967f1f2fc5078b0d3fdfceffc52eef8c788e6dc10148972",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginCommandReplacementRow.tsx",
+      "sourceSha256": "560d5e8d390dbf775d16950b2766ce5a00fbb930a6e576e8443d4866709c54c6",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginContributionActionCommand.tsx",
+      "sourceSha256": "dd318ddcc293e283d098a67d3804ad150c87c0c58017d97f87bdac717eb9f16b",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginContributionActionEvents.tsx",
+      "sourceSha256": "bb2ce93093fec5ee13147d37884669436b929e6336da17873c3156ba30663b86",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginContributionActionLanguage.tsx",
+      "sourceSha256": "176793f51e4646b636498741a2ed64b4fca136749c0c455492558a6641c16c8d",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginContributionActionNewFile.tsx",
+      "sourceSha256": "f9f35a03fff0ffd7e1cde388f8b00f1d82c8514754bb853f237f8b5d7f088fcb",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginContributionActionPanel.tsx",
+      "sourceSha256": "552873605924676eeb001c804e7d79844293ec1a3e188a1d36db10ab07b61ef6",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginContributionActionSyntax.tsx",
+      "sourceSha256": "8ecca8a30020aa816fa5fb1748ebe87f97bdf3cc6daa8df7c4cf3dc5fcca0ff4",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginDetailAlert.tsx",
+      "sourceSha256": "5b52b7a138fc5828d706d6988660ee062d94995c1c0e129aa2fa845c7abe125e",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginDetailInfo.tsx",
+      "sourceSha256": "31e41a48b84d6ca52b346703fa9c689fd00c2445a08a786cb50e11b8a85cf4ce",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginDetailPage.tsx",
+      "sourceSha256": "e63c0dddeda4b14b94d260afb47204d51f408f5ccae7bdc34d99b426237b4c9c",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginDetailSections.tsx",
+      "sourceSha256": "fee5ea4fc016a98586986d69f4e764742e53827b336ed510c4b2395e6d6e0ca3",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginPageAction.tsx",
+      "sourceSha256": "29bb2a63e6fafc23931deee120326a1a3c15c8739e07f30ae68cdcab85d63cba",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginPageHero.tsx",
+      "sourceSha256": "f868f0c245f1e3ba28a83e859a8c2a24a873754ab024e63cee19b99e3bc36598",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginSettingsSection.tsx",
+      "sourceSha256": "408e0537b1f1cd7a17fb4e819bfa435be4d9db236817ab2b609a0117f90e7706",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginThemeSwatch.tsx",
+      "sourceSha256": "c2f4678979de4cf5b14e9ae451593911e99afe0a50c28040f11be2fd469ad1c4",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/PluginThemeUseNow.tsx",
+      "sourceSha256": "39428ff9b766c36b23f7fc58798dfc7f03f7cddb9551f5426778513836f8843a",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/page/plugin-contribution-action-availability.ts",
+      "sourceSha256": "9d3792cee3b276435c285ead93fd0e55497b3f2f6fd8fcb21c97b1b3df78a1de",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/presentation/plugin-install-count.ts",
+      "sourceSha256": "a9075362ffc8eefba19f6bf9b6671ea97bf6d03fae9f8a8eaf772d5f5c1927bf",
+      "reason": "Ash M8: remove the marketplace-only renderer helper whose sole consumers were the retired app-plugin catalog, detail, and manager surfaces; shared plugin stores, theme registrations, and native controls remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/review/PluginConsentProvenance.tsx",
+      "sourceSha256": "1b4d997609be335e0eb489a14db0eee4063f779b23c5177f90b0ccee8dace813",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/review/PluginInstallConsent.tsx",
+      "sourceSha256": "73c6c696ad08ce731be7140880f4cd371e48e36fb6ebacabd7f9d31f0c426da7",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/review/PluginNotOfficialWarning.tsx",
+      "sourceSha256": "5b1a9b0a1018a70ec782b79ba61dbb39ccfdce0945812f7c2279b6787f5f6107",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/review/PluginUpdateCandidate.tsx",
+      "sourceSha256": "4e985b1813625a95e2c56b84e4a1480a0bf70ab99a319ffb494e87c65468475c",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/review/PluginUpdateReview.tsx",
+      "sourceSha256": "8729ec4d819a3b1c0699eeef08cc65c9c0ae5215c437cb0cc53c243efc0c84ad",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/review/PluginVmRecipeConsentPreview.tsx",
+      "sourceSha256": "6ddcdc9db9d89acffe90519c22929d2ad4bee56ed4e6ac4770e21bb9f4c25beb",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/review/PluginWarningBanner.tsx",
+      "sourceSha256": "133b5295069f84fe64bc6ca06b93d9a05f3644a7d51a53fa427d531f70620587",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/review/plugin-review-dialog-layout.tsx",
+      "sourceSha256": "09cd79703e0b68fd0a7c5e4615585849a6921a55c59611e696bac01e4d86fbd1",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/plugin-try-action.ts",
+      "sourceSha256": "9991958ed9c0c27596dfa5c6e4401db7be29810ec948e8a4fa00cd83ae829128",
+      "reason": "Ash M8: remove the marketplace-only renderer helper whose sole consumers were the retired app-plugin catalog, detail, and manager surfaces; shared plugin stores, theme registrations, and native controls remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-art-palettes.ts",
+      "sourceSha256": "e5be826afd237910b1e755169cce561393a367b4f42800423d3c6b01b5c7fdf6",
+      "reason": "Ash M8: remove the marketplace-only renderer helper whose sole consumers were the retired app-plugin catalog, detail, and manager surfaces; shared plugin stores, theme registrations, and native controls remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-browse-request.ts",
+      "sourceSha256": "da4fcdf6e328d79d95c9b210e26469bbc95eb485d8de3f151f7af3c333427048",
+      "reason": "Ash M8: remove the marketplace-only renderer helper whose sole consumers were the retired app-plugin catalog, detail, and manager surfaces; shared plugin stores, theme registrations, and native controls remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-install-action.ts",
+      "sourceSha256": "5538ca6580bfc324b7a35328301b6e7514468e91c8b363998153cf1e6d833e6d",
+      "reason": "Ash M8: remove the marketplace-only renderer helper whose sole consumers were the retired app-plugin catalog, detail, and manager surfaces; shared plugin stores, theme registrations, and native controls remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-page-model.ts",
+      "sourceSha256": "8793063bb705a582d41b5c0b16e0ff9599b56a260309fff95ba3b53e11d3e8c7",
+      "reason": "Ash M8: remove the marketplace-only renderer helper whose sole consumers were the retired app-plugin catalog, detail, and manager surfaces; shared plugin stores, theme registrations, and native controls remain."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-update-dialog.ts",
+      "sourceSha256": "1983711737f63bddf649fbc63ac3bbb0cc858bb9f6c340b1c4a107c711663c20",
+      "reason": "Ash M8: remove the marketplace-only renderer helper whose sole consumers were the retired app-plugin catalog, detail, and manager surfaces; shared plugin stores, theme registrations, and native controls remain."
+    },
+    {
+      "path": "src/renderer/src/components/settings/appearance/themes/use-catalog-app-themes.ts",
+      "sourceSha256": "3dc961412efb12569930d00d4ca55912a81c8cb9e6e46ebc240324017982bdfe",
+      "reason": "Ash M8: remove the orphan general IDE app-plugin marketplace renderer surface after it lost every active desktop mount; retain built-in Appearance, workspace-card helpers, browser extensions, provider-native controls, and plugin provenance data."
+    },
+    {
+      "path": "src/renderer/src/components/settings/plugins/plugins-search.ts",
+      "sourceSha256": "61fa6b0bdeab7925cbb713c5c1d0307df769b360d123a61bcc92be018d22e150",
+      "reason": "Ash M8: remove the marketplace-only renderer helper whose sole consumers were the retired app-plugin catalog, detail, and manager surfaces; shared plugin stores, theme registrations, and native controls remain."
     }
   ]
 }

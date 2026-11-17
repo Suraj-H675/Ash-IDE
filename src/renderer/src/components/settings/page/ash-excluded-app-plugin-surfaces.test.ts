@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { buildRemoteSettingsSections } from '../../../hooks/settings-navigation-remote-sections'
@@ -50,6 +50,47 @@ describe('Ash excluded application-plugin UI entrypoints', () => {
     expect(rendererSource('components/status-bar/StatusBarSurface.tsx')).toContain(
       '<UpdateStatusSegment'
     )
+  })
+
+  it('removes the orphan marketplace renderer groups and their only private helpers', () => {
+    const excluded = [
+      'components/plugins/catalog',
+      'components/plugins/dialogs',
+      'components/plugins/list',
+      'components/plugins/page',
+      'components/plugins/review',
+      'components/plugins/state/plugin-try-action.ts',
+      'components/plugins/state/use-plugin-art-palettes.ts',
+      'components/plugins/state/use-plugin-browse-request.ts',
+      'components/plugins/state/use-plugin-install-action.ts',
+      'components/plugins/state/use-plugin-page-model.ts',
+      'components/plugins/state/use-plugin-update-dialog.ts',
+      'components/plugins/presentation/plugin-install-count.ts',
+      'components/settings/appearance/themes/use-catalog-app-themes.ts',
+      'components/settings/plugins/plugins-search.ts'
+    ]
+    for (const path of excluded) {
+      expect(existsSync(resolve(process.cwd(), 'src/renderer/src', path)), path).toBe(false)
+    }
+
+    const activeSurfaces = [
+      'components/settings/page/settings-page-renderer.tsx',
+      'components/settings/page/settings-advanced-section-renderers.tsx',
+      'components/status-bar/StatusBarSurface.tsx',
+      'app-shell/app-command-handlers.ts',
+      'app-shell/use-global-keybindings.ts'
+    ]
+    for (const path of activeSurfaces) {
+      expect(rendererSource(path), path).not.toMatch(
+        /components\/plugins\/(catalog|dialogs|list|page|review)\/|use-catalog-app-themes/
+      )
+    }
+
+    const cardPrimitives = rendererSource(
+      'components/sidebar/workspace-card/template/card-primitives.tsx'
+    )
+    expect(cardPrimitives).toContain('@/components/plugins/declarative/PluginDeclarativeDisplay')
+    expect(cardPrimitives).toContain('@/components/plugins/declarative/plugin-declarative-icons')
   })
 
   it('only offers built-in Appearance choices, not excluded app-plugin catalog installation', () => {

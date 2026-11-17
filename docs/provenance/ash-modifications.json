@@ -1982,26 +1982,6 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
-      "path": "src/renderer/src/components/plugins/dialogs/PluginInstallDialog.tsx",
-      "sha256": "689035c33bbf1ef0f345b39cedc2bbbdfe335a37863f8f08aaa5f37e2ed104e2",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/plugins/dialogs/PluginMarketplaceSourceDialog.tsx",
-      "sha256": "4dd137fe5158b939cb43dc7185fa2de7b4f394ccb6492d86ee82f12036d94dc6",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/plugins/dialogs/PluginUpdateAllDialog.tsx",
-      "sha256": "10068b34ca1cb3331d4324aa8bd07585d5a4e4f86f5983d4569891bce15c27e1",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/plugins/list/PluginsSettingsSection.tsx",
-      "sha256": "8060b3afec94003b14046b1de2cadcf782dd848465a6129005bbf969f26db1b0",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
       "path": "src/renderer/src/components/plugins/state/use-plugin-catalog.ts",
       "sha256": "59b0395bf763da3ebae5238741290916212a7861755ccabb3e3896599c517e19",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -2009,11 +1989,6 @@
     {
       "path": "src/renderer/src/components/plugins/state/use-plugin-contribution-source.ts",
       "sha256": "e659c715f3b1c2989ae876ae4943d973502ff1f9f1c1a9f12e07e7be466e611e",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/plugins/state/use-plugin-install-action.ts",
-      "sha256": "c63dfb366c0dc0a781981a412b6b7ef5ca1ff1504df73a7563b75d3439771829",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -3295,6 +3270,11 @@
       "path": "electron.vite.config.ts",
       "sha256": "de0c0e4d5979ab2c4ec3c5fa3fc3df93e95615b6c9fc747d64f4af89a6b67700",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-preview-request.ts",
+      "sha256": "c44a8ef8047e81a2fccb23bc155df66f85ec13a4e2c78ad42e5b4c6f5b294bb6",
+      "reason": "Ash M8 removes the retired marketplace browse request while preserving the remaining plugin preview and update request state."
     }
   ]
 }
