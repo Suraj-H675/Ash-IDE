@@ -9,6 +9,30 @@ function rendererSource(path: string): string {
 }
 
 describe('Ash excluded application-plugin UI entrypoints', () => {
+  it('retires the closed renderer facades and retains draft, host, and contribution stores', () => {
+    const retired = [
+      'store/plugin-custom-editors.ts',
+      'store/plugin-frame-isolation.ts',
+      'lib/plugin-command-execution.ts',
+      'lib/legacy-app-plugins-api.ts'
+    ]
+    for (const path of retired) {
+      expect(existsSync(resolve(process.cwd(), 'src/renderer/src', path)), path).toBe(false)
+    }
+
+    const retained = [
+      'store/plugin-new-files.ts',
+      'store/plugin-panels.ts',
+      'store/plugin-auto-updates.ts',
+      'store/plugin-content-list-store.ts',
+      'components/editor/save/bytes/editor-bytes-documents.ts',
+      'components/editor/save/bytes/ash-no-plugin-frame-byte-drafts.test.ts'
+    ]
+    for (const path of retained) {
+      expect(existsSync(resolve(process.cwd(), 'src/renderer/src', path)), path).toBe(true)
+    }
+  })
+
   it('does not advertise a plugin marketplace/settings section on desktop or web', () => {
     for (const isWebClient of [false, true]) {
       const sections = buildRemoteSettingsSections(

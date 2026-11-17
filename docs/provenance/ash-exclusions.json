@@ -43814,6 +43814,21 @@
       "path": "src/renderer/src/store/plugin-install-trust-request.ts",
       "sourceSha256": "f2c5d17a38595780f765c888406682c7a9be7ddd52c610b5dad994a6baa23857",
       "reason": "Ash M8: remove orphan renderer application-plugin install-trust request state; its only module dependency is the retired presentation prompt and it has no active consumers. Keep main-process installation trust intact."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-custom-editors.ts",
+      "sourceSha256": "964c75815e7da6fa7c0bd43aa4e8a1dce44d02fc8461d7374f31007824ef0823",
+      "reason": "Ash M8: remove the orphan renderer custom application-plugin editor selection store after its editor surface retirement; retain editor byte draft/save contracts and plugin-new-files."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-frame-isolation.ts",
+      "sourceSha256": "0ce59e7416de930d825d0249c86795e279b9c9283ecdfc6150a100528a564f20",
+      "reason": "Ash M8: remove renderer-only application-plugin frame state after its sole custom-editor consumer was removed; retain main-process guest isolation policy."
+    },
+    {
+      "path": "src/renderer/src/lib/plugin-command-execution.ts",
+      "sourceSha256": "9baf203f6fdec31959b9fe00e09f65c01b880eff6a27af0f6fbef41a0026b20c",
+      "reason": "Ash M8: remove the unmounted renderer application-plugin worker command invoker; retain the active built-in command dispatcher and provider-native command surfaces."
     }
   ]
 }

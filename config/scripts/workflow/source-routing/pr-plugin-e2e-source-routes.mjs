@@ -90,7 +90,7 @@ const SPECIFIC_PLUGIN_ROUTES = [
     ['plugin-custom-editor', 'plugin-new-file'],
     [
       `${UI}page\\/PluginContributionActionNewFile`,
-      `${STORE}(?:custom-editors|new-files)`,
+      `${STORE}new-files`,
       'src\\/main\\/plugins\\/plugin-new-file-template',
       'src\\/shared\\/plugins\\/(?:contributions\\/plugin-(?:custom-editor-contribution|new-file-contribution)|frames\\/plugin-custom-editor-bridge)'
     ].join('|'),

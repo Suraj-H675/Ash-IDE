@@ -2667,11 +2667,6 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
-      "path": "src/renderer/src/lib/plugin-command-execution.ts",
-      "sha256": "e3a72a7f63d8ee17db74a12d7380c0214edadb8b13c1f76edd889c2f01229c56",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
       "path": "src/renderer/src/lib/quick-workspace-agent-selection.ts",
       "sha256": "fadeff5e5b75300ee62015292f95ec77ef295faa1b27fac1fd8f6a06e31ac8a5",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -3198,8 +3193,8 @@
     },
     {
       "path": "config/scripts/workflow/source-routing/pr-plugin-e2e-source-routes.mjs",
-      "sha256": "8194d8ba94edda75c0080a95c958b62a2b554d38764e774ad5a11962eed3b037",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "c177c26b0c207997fbd78257e5b66108f5b585705af3b66d805c18e2685fce5f",
+      "reason": "Ash M8: narrow the plugin E2E store selector to the retained new-file store after retiring the renderer custom-editor store."
     },
     {
       "path": "resources/linux/packaging/after-install.sh",
