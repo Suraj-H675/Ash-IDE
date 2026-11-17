@@ -1,8 +1,9 @@
 # M8 renderer plugin syntax runtime retirement
 
 Date: 2026-11-18
-Base: `501da99c4751548f9f6869d7acf43208f54ab713`
+Base: `f63710350d8748de70ce17a99451244ec1b8b3ca` (rebased from initial base `501da99c4751548f9f6869d7acf43208f54ab713`)
 Branch: `fix/m8-remove-plugin-syntax-runtime`
+Commit: `8eee0e43dea4bc116d3404d7e3f5e9e9b277ceac` (not yet pushed or integrated)
 
 ## Scope
 
