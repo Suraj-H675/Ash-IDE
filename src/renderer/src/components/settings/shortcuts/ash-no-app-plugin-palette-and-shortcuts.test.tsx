@@ -13,16 +13,6 @@ import { getCmdJQuickActions } from '../../cmd-j/quick-actions'
 import { buildCmdJActionResults } from '../../cmd-j/palette-results'
 import { TabBarStaticCreateMenu } from '../../tab-bar/tab-bar-static-create-menu'
 
-vi.mock('@/store/plugin-new-files', () => ({
-  usePluginNewFiles: () => [
-    {
-      key: 'untrusted.plugin/new-file',
-      title: 'Injected plugin file',
-      pluginName: 'Untrusted Plugin',
-      extension: '.evil'
-    }
-  ]
-}))
 vi.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenuItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DropdownMenuShortcut: ({ children }: { children: React.ReactNode }) => <span>{children}</span>

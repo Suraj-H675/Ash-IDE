@@ -1,5 +1,4 @@
 import { toast } from 'sonner'
-import { translate } from '@/i18n/i18n'
 import { extractIpcErrorMessage } from '@/lib/ipc-error'
 import { FLOATING_TERMINAL_WORKTREE_ID } from '../../../../../../shared/constants'
 import {
@@ -85,7 +84,7 @@ async function openSeededUntitledFile(
   readContent: () => Promise<string>,
   groupId?: string
 ): Promise<boolean> {
-  const failureMessage = translate('auto.store.pluginNewFile.failed', "Couldn't create the file.")
+  const failureMessage = "Couldn't create the file."
   // An empty floating panel's + menu passes the workspace ID in place of a group ID.
   const emptyFloatingPanel = groupId === FLOATING_TERMINAL_WORKTREE_ID
   if (
@@ -138,38 +137,11 @@ async function openSeededUntitledFile(
   )
 }
 
-export function createPluginNewFileActions(
+export function createUntitledFileActions(
   _set: EditorSet,
   get: EditorGet
-): Pick<EditorSlice, 'openNewPluginFileInActiveWorkspace' | 'openBlankFileInActiveWorkspace'> {
+): Pick<EditorSlice, 'openBlankFileInActiveWorkspace'> {
   return {
-    openNewPluginFileInActiveWorkspace: async (newFile, groupId) => {
-      const readTemplate = window.api?.plugins?.readNewFileTemplate
-      if (!readTemplate) {
-        return
-      }
-      await openSeededUntitledFile(
-        get,
-        newFile.extension,
-        async () => {
-          const content = await readTemplate({
-            pluginKey: newFile.pluginKey,
-            newFileId: newFile.id
-          })
-          if (content === null) {
-            throw new Error(
-              translate(
-                'auto.store.pluginNewFile.unavailable',
-                '{{value0}} is no longer available. Turn its plugin back on.',
-                { value0: newFile.title }
-              )
-            )
-          }
-          return content
-        },
-        groupId
-      )
-    },
     openBlankFileInActiveWorkspace: async (extension) => {
       await openSeededUntitledFile(get, extension, async () => '')
     }

@@ -43829,6 +43829,21 @@
       "path": "src/renderer/src/lib/plugin-command-execution.ts",
       "sourceSha256": "9baf203f6fdec31959b9fe00e09f65c01b880eff6a27af0f6fbef41a0026b20c",
       "reason": "Ash M8: remove the unmounted renderer application-plugin worker command invoker; retain the active built-in command dispatcher and provider-native command surfaces."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-new-files.ts",
+      "sourceSha256": "e4205002ecc7c83673dc0f6d6ba551501cee8798a825e547fa6d0e8a0c0763b2",
+      "reason": "Ash M8: remove the orphan renderer application-plugin new-file contribution store after removing its searchable menu and editor creation callers."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-panels.ts",
+      "sourceSha256": "2d5bd3187026fcbbd14061a00246cb7edb04b2174e80d1239a94a44bcf4f1401",
+      "reason": "Ash M8: remove the orphan renderer application-plugin panel contribution store after its new-file importer and active panel consumers were retired."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-auto-updates.ts",
+      "sourceSha256": "b3a3f3df9c8e6933114f20ab6de90eec97a1acaa8172eb70418a83c9ebb609f5",
+      "reason": "Ash M8: remove the orphan renderer application-plugin auto-update state store after its only renderer importer, plugin-panels, was retired."
     }
   ]
 }

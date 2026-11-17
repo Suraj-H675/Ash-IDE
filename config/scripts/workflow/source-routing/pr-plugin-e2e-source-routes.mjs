@@ -29,7 +29,6 @@ const SPECIFIC_PLUGIN_ROUTES = [
     [
       `${UI}(?:review\\/|list\\/|dialogs\\/Plugin(?:UpdateAll|Remove)Dialog)`,
       `${UI}state\\/use-plugin-(?:update-dialog|page-model)`,
-      `${STORE}auto-updates`,
       'src\\/main\\/plugins\\/catalog\\/plugin-(?:auto-updater|update-approval|update-review-notices|release-first-seen-store)',
       'src\\/shared\\/plugins\\/(?:approval\\/|catalog\\/plugin-update-policy|contributions\\/plugin-contribution-summary)'
     ].join('|'),
@@ -90,7 +89,6 @@ const SPECIFIC_PLUGIN_ROUTES = [
     ['plugin-custom-editor', 'plugin-new-file'],
     [
       `${UI}page\\/PluginContributionActionNewFile`,
-      `${STORE}new-files`,
       'src\\/main\\/plugins\\/plugin-new-file-template',
       'src\\/shared\\/plugins\\/(?:contributions\\/plugin-(?:custom-editor-contribution|new-file-contribution)|frames\\/plugin-custom-editor-bridge)'
     ].join('|'),
@@ -101,7 +99,6 @@ const SPECIFIC_PLUGIN_ROUTES = [
     ['plugin-demo', 'plugin-panel-containment'],
     [
       `${UI}page\\/PluginContributionAction(?:Panel|Command|Events)`,
-      `${STORE}panels`,
       'src\\/main\\/plugins\\/(?:panels\\/|workers\\/|plugin-(?:command-|event-delivery|agent-status-event|storage-store|secrets-store|log-buffer))',
       'src\\/shared\\/plugins\\/(?:frames\\/|workers\\/|events\\/|capabilities\\/|contributions\\/plugin-(?:command-|event-|panel-|execution-profile))',
       'examples\\/plugins\\/(?:hello-orca|test-fixtures\\/hostile-panel)\\/'

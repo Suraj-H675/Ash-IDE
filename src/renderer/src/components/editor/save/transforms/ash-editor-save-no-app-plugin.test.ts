@@ -8,14 +8,6 @@ import { editorFormatOnSave } from './editor-format-on-save'
 vi.mock('./editor-format-on-save', () => ({
   editorFormatOnSave: vi.fn()
 }))
-vi.mock('@/store/plugin-panels', () => ({
-  usePluginPanelsStore: {
-    getState: () => ({
-      plugins: [{ pluginKey: 'untrusted/plugin', status: 'running', hooks: ['editor.save.before'] }]
-    })
-  }
-}))
-
 const originalApi = Object.getOwnPropertyDescriptor(window, 'api')
 const formatter = vi.mocked(editorFormatOnSave)
 

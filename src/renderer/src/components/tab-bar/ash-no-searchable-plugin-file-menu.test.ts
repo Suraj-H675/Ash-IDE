@@ -87,17 +87,29 @@ describe('Ash searchable tab creation excludes general application-plugin file t
     ).toBe(false)
   })
 
-  it('preserves the separate editor draft/save contracts pending a no-data-loss audit', () => {
-    expect(existsSync(resolve(process.cwd(), 'src/renderer/src/store/plugin-new-files.ts'))).toBe(
-      true
+  it('retires plugin file creation while retaining generic untitled and Markdown creation', () => {
+    const rendererRoot = 'src/renderer/src/'
+    const editorActions = resolve(process.cwd(), rendererRoot, 'store/slices/editor/actions')
+    const untitledActionPath = resolve(editorActions, 'untitled-file-creation.ts')
+    const untitledAction = readFileSync(untitledActionPath, 'utf8')
+    const markdownPreview = readFileSync(
+      resolve(editorActions, 'markdown-preview-actions.ts'),
+      'utf8'
     )
-    expect(
-      existsSync(
-        resolve(
-          process.cwd(),
-          'src/renderer/src/store/slices/editor/actions/untitled-file-creation.ts'
-        )
-      )
-    ).toBe(true)
+
+    expect(existsSync(resolve(process.cwd(), rendererRoot, 'store/plugin-new-files.ts'))).toBe(
+      false
+    )
+    expect(untitledAction).toContain('export function createUntitledFileActions(')
+    expect(untitledAction).toContain('openBlankFileInActiveWorkspace')
+    expect(untitledAction).not.toMatch(/openNewPluginFileInActiveWorkspace|readNewFileTemplate/)
+    expect(markdownPreview).toContain('createUntitledFileInActiveWorkspace(')
+    expect(untitledAction).toContain('captureEditorFileOperationProvenance(')
+    expect(untitledAction).toContain(
+      'assertEditorFileOperationCurrent(get(), worktreeId, operationProvenance)'
+    )
+    expect(untitledAction).toContain(
+      'get().openFile(fileInfo, { preview: false, targetGroupId: groupId, focusEditor: true })'
+    )
   })
 })

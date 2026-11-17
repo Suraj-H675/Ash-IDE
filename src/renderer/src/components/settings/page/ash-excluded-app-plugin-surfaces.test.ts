@@ -13,6 +13,9 @@ describe('Ash excluded application-plugin UI entrypoints', () => {
     const retired = [
       'store/plugin-custom-editors.ts',
       'store/plugin-frame-isolation.ts',
+      'store/plugin-new-files.ts',
+      'store/plugin-panels.ts',
+      'store/plugin-auto-updates.ts',
       'lib/plugin-command-execution.ts',
       'lib/legacy-app-plugins-api.ts'
     ]
@@ -21,9 +24,6 @@ describe('Ash excluded application-plugin UI entrypoints', () => {
     }
 
     const retained = [
-      'store/plugin-new-files.ts',
-      'store/plugin-panels.ts',
-      'store/plugin-auto-updates.ts',
       'store/plugin-content-list-store.ts',
       'components/editor/save/bytes/editor-bytes-documents.ts',
       'components/editor/save/bytes/ash-no-plugin-frame-byte-drafts.test.ts'
@@ -114,10 +114,6 @@ describe('Ash excluded application-plugin UI entrypoints', () => {
     for (const path of excluded) {
       expect(existsSync(resolve(process.cwd(), 'src/renderer/src', path)), path).toBe(false)
     }
-    expect(rendererSource('store/plugin-auto-updates.ts')).not.toMatch(
-      /takeUpdateReviewNotices|announcePluginUpdateReviews/
-    )
-
     const activeSurfaces = [
       'components/settings/page/settings-page-renderer.tsx',
       'components/settings/page/settings-advanced-section-renderers.tsx',
