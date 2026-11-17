@@ -77,8 +77,8 @@ const SPECIFIC_PLUGIN_ROUTES = [
     'plugins.syntax-and-language-packs',
     ['plugin-syntax-smoke'],
     [
-      `${UI}page\\/PluginContributionAction(?:Syntax|Language)`,
-      `${STORE}(?:syntax-packs|syntax-failures|language-packs)`,
+      `${UI}page\\/PluginContributionActionLanguage`,
+      `${STORE}language-packs`,
       'src\\/main\\/plugins\\/contributions\\/plugin-(?:syntax|language-pack)-registry',
       'src\\/shared\\/plugins\\/(?:languages\\/|plugin-language-pack-i18n-resources|artifacts\\/plugin-(?:syntax|language-pack)-artifact)'
     ].join('|'),

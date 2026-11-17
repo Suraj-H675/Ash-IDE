@@ -26,11 +26,6 @@ import { useMonacoEditorDecorations } from './use-monaco-editor-decorations'
 import { useMonacoEditorMount } from './use-monaco-editor-mount'
 import { snapshotMonacoViewState } from './monaco-view-state-persistence'
 import { MonacoMarkdownAnnotationOverlay } from './markdown-source-tools/monaco/MonacoMarkdownAnnotationOverlay'
-import { usePluginSyntaxLanguage } from './use-plugin-syntax-language'
-import {
-  PLUGIN_SYNTAX_EDITOR_OPTIONS,
-  applyModelLanguage
-} from '@/lib/monaco-languages/plugin-syntax-editor-options'
 import { useMonacoTheme } from '@/hooks/use-monaco-theme'
 import { useEditorModelRekeyCarry } from './model-lifetime/identity/editor-model-rekey-carry'
 
@@ -88,13 +83,9 @@ export default function MonacoEditor({
   const editorContainerRef = useRef<HTMLDivElement | null>(null)
   const [mountedEditor, setMountedEditor] = useState<editor.IStandaloneCodeEditor | null>(null)
   const [autoHeightContentHeight, setAutoHeightContentHeight] = useState<number | null>(null)
-  const language = usePluginSyntaxLanguage(filePath, coreLanguage)
+  const language = coreLanguage
   const languageRef = useRef(language)
   languageRef.current = language
-  useEffect(
-    () => applyModelLanguage([mountedEditor?.getModel()], language),
-    [mountedEditor, language]
-  )
   const unregisterFileSearchSelectionRef = useRef<(() => void) | null>(null)
   const { setupCopy, toastNode } = useContextualCopySetup()
   // Cancel pending throttled writes before snapshotting final scroll on unmount.
@@ -302,7 +293,6 @@ export default function MonacoEditor({
           // Monaco 0.55 forcibly disables diff sub-editor minimaps; only file editors honor this setting.
           minimap: { enabled: settings?.editorMinimapEnabled ?? false },
           scrollBeyondLastLine: false,
-          ...PLUGIN_SYNTAX_EDITOR_OPTIONS,
           ...buildFileEditorWordWrapOptions(editorWordWrap),
           ...typographyOptions,
           lineNumbers: 'on',

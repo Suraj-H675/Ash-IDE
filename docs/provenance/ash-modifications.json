@@ -1832,6 +1832,21 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/renderer/src/components/editor/MonacoEditor.tsx",
+      "sha256": "566cc79f691358f40584bf8a2dcc3c8dd79ff6abb2ec043d7f76b513e8b36dd8",
+      "reason": "Ash M8: remove application-plugin grammar selection and editor options from ordinary file editing; use the file-detected core Monaco language and preserve built-in language behavior."
+    },
+    {
+      "path": "src/renderer/src/components/editor/diff/monaco-view/DiffViewer.tsx",
+      "sha256": "49346803409ca43ee9b20510673c719e5400a73f61556e016e855ef16d8775a1",
+      "reason": "Ash M8: use the file-detected core language for diff viewers and remove plugin grammar options and model overrides while preserving built-in Monaco behavior."
+    },
+    {
+      "path": "src/renderer/src/components/editor/diff/sections/DiffSectionBody.tsx",
+      "sha256": "0ac20a721153b15a225ada80298373ef1acf0da95d332a038955e46e79395dc6",
+      "reason": "Ash M8: use the file-detected core language for combined diff sections and remove plugin grammar options and model overrides while preserving built-in Monaco behavior."
+    },
+    {
       "path": "src/renderer/src/components/editor/editor-panel-render-model.ts",
       "sha256": "4612b5488b4385a5117ddaf4d9b6818a1c985a41bb5049103401d5c796b52ccb",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -2662,11 +2677,6 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
-      "path": "src/renderer/src/lib/monaco-languages/plugin-syntax-runtime.ts",
-      "sha256": "7c9f09473ba0dc09e8fff2e19919a4f0fb3f2ad68b402b6f4d99de99575f04cf",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
       "path": "src/renderer/src/lib/quick-workspace-agent-selection.ts",
       "sha256": "fadeff5e5b75300ee62015292f95ec77ef295faa1b27fac1fd8f6a06e31ac8a5",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -3183,8 +3193,8 @@
     },
     {
       "path": "config/scripts/workflow/source-routing/pr-plugin-e2e-source-routes.mjs",
-      "sha256": "1ff196c639d11785940cd55de6ed29bd93c878e394a6daebf72d036376dcc24b",
-      "reason": "Ash M8: remove retired renderer store selectors from plugin E2E source routing while retaining routes for plugin contribution and theme sources."
+      "sha256": "c54936a6739d0a5a347bf1a1694eb762ce0ada84d402ea99923fba7668c38be6",
+      "reason": "Ash M8: remove renderer plugin syntax selectors from plugin E2E source routing while retaining the language-pack store and main/shared registry and artifact coverage."
     },
     {
       "path": "resources/linux/packaging/after-install.sh",

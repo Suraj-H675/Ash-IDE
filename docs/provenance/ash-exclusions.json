@@ -44224,6 +44224,66 @@
       "path": "src/cli/specs/plugin.ts",
       "sourceSha256": "af2d592c0621cb9d6baad77d209a0c1d872907fa5073d6f154bc6ac0f010bb64",
       "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/renderer/src/components/editor/use-plugin-syntax-language.ts",
+      "sourceSha256": "54f81af031e0404246782ccf70d3b1d0b3ca7dff7897cab0c4859d75146d0e2c",
+      "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
+    },
+    {
+      "path": "src/renderer/src/lib/monaco-languages/plugin-grammar-protocol.ts",
+      "sourceSha256": "2a6e37c3d7973fc3ab1796c745f8a6e02f3ce7ccb7b4ccd3fbe8b1e0d8047472",
+      "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
+    },
+    {
+      "path": "src/renderer/src/lib/monaco-languages/plugin-grammar-tokenization.ts",
+      "sourceSha256": "8146ace3a2060100772fbb44ae41212e141c2e09d199dbe16d435ecd03bd48e5",
+      "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
+    },
+    {
+      "path": "src/renderer/src/lib/monaco-languages/plugin-grammar-worker-client.ts",
+      "sourceSha256": "ceb5c409b87b21501ecaa3ae3e50004b20241b4e42741795cd9e1120ecd0c11f",
+      "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
+    },
+    {
+      "path": "src/renderer/src/lib/monaco-languages/plugin-grammar.worker.ts",
+      "sourceSha256": "cd459a2d7fd92d820739a375883962cd3dd126b67f1d9d5625641ebfe1cb5c34",
+      "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
+    },
+    {
+      "path": "src/renderer/src/lib/monaco-languages/plugin-syntax-editor-options.ts",
+      "sourceSha256": "deeb5a9521933eef2f2d2b75817c08854f27760e625b1bd809ee34efea0c5f51",
+      "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
+    },
+    {
+      "path": "src/renderer/src/lib/monaco-languages/plugin-syntax-engine.ts",
+      "sourceSha256": "39520118c1a6753b2831e82e2caf4209163b679ae582c65ef104da8d59e1d00c",
+      "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
+    },
+    {
+      "path": "src/renderer/src/lib/monaco-languages/plugin-syntax-runtime.ts",
+      "sourceSha256": "1879d530cee2ecdd791749352c57cb9cf7752b4a3242bac4068ec19b3f747f77",
+      "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
+    },
+    {
+      "path": "src/renderer/src/lib/monaco-languages/plugin-syntax-slot-pool.ts",
+      "sourceSha256": "f2bb653af22a0b44acb421a3d7137a7cbf80c04631a3069395b6ed8e5ff8ce6f",
+      "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
+    },
+    {
+      "path": "src/renderer/src/lib/monaco-languages/plugin-syntax-token-legend.ts",
+      "sourceSha256": "9fe3e65b57210e1ef005f120a932e31eb2f6f58a4e795cc10eea68605728b013",
+      "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-syntax-failures.ts",
+      "sourceSha256": "73bd7c7cda486277702372d1164ed382bffdcc8a12ed6e462932c1a7d589cfd7",
+      "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-syntax-packs.ts",
+      "sourceSha256": "a0dc934efe962a6416527ffc9d8fe3f20e80780b65c48b8228a05caa4fc40e56",
+      "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
     }
   ]
 }

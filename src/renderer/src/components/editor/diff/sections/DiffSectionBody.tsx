@@ -21,11 +21,6 @@ import { monacoFindOptions } from '../../monaco-find-options'
 import { buildEditorUnicodeHighlightOptions } from '../../editor-unicode-highlight-options'
 import { installDiffEditorShiftWheelScroll } from '../monaco-view/diff-editor-shift-wheel-scroll'
 import { installCombinedDiffCursorReveal } from '../../combined-diff/scroll-viewport/combined-diff-cursor-reveal'
-import { usePluginSyntaxLanguage } from '../../use-plugin-syntax-language'
-import {
-  PLUGIN_SYNTAX_EDITOR_OPTIONS,
-  applyModelLanguage
-} from '@/lib/monaco-languages/plugin-syntax-editor-options'
 import { useMonacoTheme } from '@/hooks/use-monaco-theme'
 import { monacoTypographyOptions, type EditorTypography } from '@/lib/editor-typography'
 
@@ -70,7 +65,7 @@ export function DiffSectionBody({
   onSaveLimitedDiff,
   onMount
 }: DiffSectionBodyProps): React.JSX.Element {
-  const language = usePluginSyntaxLanguage(section.path, coreLanguage)
+  const language = coreLanguage
   const monacoTheme = useMonacoTheme(isDark)
   const renderLimit = section.largeDiffRenderLimit?.limited ? section.largeDiffRenderLimit : null
   const diffEditorRef = useRef<editor.IStandaloneDiffEditor | null>(null)
@@ -88,7 +83,6 @@ export function DiffSectionBody({
       renderSideBySide: sideBySide,
       minimap: { enabled: false },
       scrollBeyondLastLine: false,
-      ...PLUGIN_SYNTAX_EDITOR_OPTIONS,
       ...monacoTypographyOptions(typography),
       lineNumbers: 'on',
       ...buildDiffEditorWordWrapOptions(diffWordWrap),
@@ -105,13 +99,8 @@ export function DiffSectionBody({
   useLayoutEffect(() => {
     diffWordWrapRef.current = diffWordWrap
   }, [diffWordWrap])
-  useEffect(() => {
-    const models = diffEditorRef.current?.getModel()
-    applyModelLanguage([models?.original, models?.modified], language)
-  }, [language])
   const handleEditorMount: DiffOnMount = (diffEditor, monaco) => {
     diffEditorRef.current = diffEditor
-    applyModelLanguage([diffEditor.getModel()?.original, diffEditor.getModel()?.modified], language)
     const cleanupShiftWheelScroll = installDiffEditorShiftWheelScroll(diffEditor)
     const cleanupCursorReveal = installCombinedDiffCursorReveal(diffEditor)
     diffEditor.getModifiedEditor().onDidDispose(() => {

@@ -31,11 +31,6 @@ import { useDiffEditorRegistration } from '../review/diff-navigation-context'
 import { preserveDiffViewStateAcrossModelSwaps } from './diff-model-swap-view-state'
 import { monacoFindOptions } from '../../monaco-find-options'
 import { buildEditorUnicodeHighlightOptions } from '../../editor-unicode-highlight-options'
-import { usePluginSyntaxLanguage } from '../../use-plugin-syntax-language'
-import {
-  PLUGIN_SYNTAX_EDITOR_OPTIONS,
-  applyModelLanguage
-} from '@/lib/monaco-languages/plugin-syntax-editor-options'
 import { useMonacoTheme } from '@/hooks/use-monaco-theme'
 
 export default function DiffViewer({
@@ -73,7 +68,7 @@ export default function DiffViewer({
   )
   const addDiffComment = useAppStore((s) => s.addDiffComment)
   const deleteDiffComment = useAppStore((s) => s.deleteDiffComment)
-  const language = usePluginSyntaxLanguage(filePath, coreLanguage)
+  const language = coreLanguage
   const updateDiffComment = useAppStore((s) => s.updateDiffComment)
   const scrollToDiffCommentId = useAppStore((s) => s.scrollToDiffCommentId)
   const setScrollToDiffCommentId = useAppStore((s) => s.setScrollToDiffCommentId)
@@ -92,11 +87,6 @@ export default function DiffViewer({
     diffWordWrapRef.current = diffWordWrap
   }, [diffWordWrap])
   const [modifiedEditor, setModifiedEditor] = useState<editor.ICodeEditor | null>(null)
-  useEffect(() => {
-    const models = diffEditorRef.current?.getModel()
-    applyModelLanguage([models?.original, models?.modified], language)
-  }, [modifiedEditor, language])
-
   const renderLimit = useMemo(
     () => largeDiffRenderLimit ?? getLargeDiffRenderLimit({ originalContent, modifiedContent }),
     [largeDiffRenderLimit, originalContent, modifiedContent]
@@ -347,7 +337,6 @@ export default function DiffViewer({
       renderSideBySide: sideBySide,
       minimap: { enabled: false },
       scrollBeyondLastLine: false,
-      ...PLUGIN_SYNTAX_EDITOR_OPTIONS,
       ...monacoTypographyOptions(diffTypography),
       lineNumbers: 'on',
       ...buildDiffEditorWordWrapOptions(diffWordWrap),

@@ -183,6 +183,7 @@ jobs:
             src/preload/api/ash-excluded-app-plugin-namespace.test.ts \
             src/renderer/src/lib/ash-missing-plugin-api-fallbacks.test.ts \
             src/renderer/src/components/settings/page/ash-excluded-app-plugin-surfaces.test.ts \
+            src/renderer/src/components/editor/ash-no-plugin-syntax-runtime.test.ts \
             src/renderer/src/components/tab-bar/ash-no-searchable-plugin-file-menu.test.ts \
             src/renderer/src/components/editor/save/transforms/ash-editor-save-no-app-plugin.test.ts \
             src/renderer/src/components/settings/shortcuts/ash-no-app-plugin-palette-and-shortcuts.test.tsx \
