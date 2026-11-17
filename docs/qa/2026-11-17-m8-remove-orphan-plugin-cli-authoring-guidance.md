@@ -1,12 +1,13 @@
 # M8 QA — retire orphan app-plugin CLI authoring and development-watch tooling
 
-**Status:** implementation verified on an isolated feature branch; not yet integrated or accepted as complete M8.
+**Status:** implementation verified and integrated into `main` at commit `115e678d289484ca4c3092b22fb0e3a9c868c8df`; this slice does not complete M8.
 
 ## Repository and scope
 
 - Base commit: `63e059d01b1c6ec1bb393de6300b72703067823d`
-- Branch: `fix/m8-remove-orphan-plugin-cli-authoring`
-- Ash IDE canonical checkout and `main` were left unchanged during implementation.
+- Feature branch: `fix/m8-remove-orphan-plugin-cli-authoring`
+- Integrated branch: `main`
+- Integration was a fast-forward from the stated base; no force-push or history rewrite was used.
 - This slice removes the unregistered Ash app-plugin authoring/development-watch CLI implementation and its bundled authoring guidance. It does not remove the general app-plugin main backend, IPC/RPC/preload contracts, renderer contribution stores, plugin frame guest, or provider-native hooks/skills/MCP. Those remain separate M8 work.
 
 ## Changes
@@ -22,7 +23,8 @@
 ## Verification evidence
 
 - Focused Vitest: **5 files, 21 tests passed**. This includes the CLI exclusion assertions, handler registry, runtime client recovery, bundled skill-source compatibility, and generator exclusion rules.
-- Full project type-check: `node config/scripts/typecheck/project-execution/run-typecheck-projects-in-parallel.mjs` — **passed**.
+- Full project type-check: `node config/scripts/typecheck/project-execution/run-typecheck-projects-in-parallel.mjs` — **passed before and after integration**.
+- Post-integration focused Vitest and provenance checks were rerun on `main` at `115e678d` and passed.
 - Provenance: `node config/scripts/provenance/verify-source-ledger.mjs` — **passed**; 33,506 upstream records, 660 Ash modifications, 8,842 documented removals, pinned MIT license hash verified.
 - Oxfmt: changed files — **passed**.
 - Oxlint with `--deny-warnings`: changed source/test files — **0 warnings, 0 errors**.
