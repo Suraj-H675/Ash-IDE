@@ -3,7 +3,8 @@
 Date: 2026-11-18
 Base: `f63710350d8748de70ce17a99451244ec1b8b3ca` (rebased from initial base `501da99c4751548f9f6869d7acf43208f54ab713`)
 Branch: `fix/m8-remove-plugin-syntax-runtime`
-Commit: `8eee0e43dea4bc116d3404d7e3f5e9e9b277ceac` (not yet pushed or integrated)
+Code commit: `8eee0e43dea4bc116d3404d7e3f5e9e9b277ceac`
+Integrated into `main` by fast-forward at `0219277979b171b5df67b9029059959becc916d2`; the GitHub run for this integration is pending.
 
 ## Scope
 
@@ -32,7 +33,8 @@ This slice leaves the main app-plugin backend, IPC/RPC/preload surfaces, shared 
 
 ## Verification
 
-- Focused Vitest regression: 1 file, 3 tests passed. It checks all 12 paths are absent, the three editor components use `coreLanguage` without plugin syntax calls/options, and representative built-in Monaco registrations remain.
+- Focused Vitest regression: 1 file, 3 tests passed before and after integration.
+- Post-integration on `main` at `02192779`: focused test, full project type-check, provenance verification, and `git diff --check` passed again. It checks all 12 paths are absent, the three editor components use `coreLanguage` without plugin syntax calls/options, and representative built-in Monaco registrations remain.
 - No existing Monaco editor or diff viewer behavior test files were present in this worktree.
 - `node config/scripts/typecheck/project-execution/run-typecheck-projects-in-parallel.mjs`: passed.
 - `pnpm --config.manage-package-manager-versions=false run build:desktop:assets`: passed. Vite emitted chunk-size and ineffective dynamic import warnings; the build completed successfully.
