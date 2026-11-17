@@ -47,14 +47,6 @@ const RATCHET_INPUTS = {
 // runs when its own script changes.
 export const VERIFY_CHECKS = [
   {
-    name: 'rpc params catalog',
-    args: [
-      'config/scripts/plugin-authoring/rpc-catalog/generate-rpc-params-catalog.mjs',
-      '--check'
-    ],
-    inputs: ['src/main/runtime/rpc/', 'src/shared/']
-  },
-  {
     name: 'acp protocol',
     args: ['config/scripts/acp/generate-protocol.mjs', '--check'],
     inputs: ['src/main/acp/generated/', 'config/scripts/acp/']

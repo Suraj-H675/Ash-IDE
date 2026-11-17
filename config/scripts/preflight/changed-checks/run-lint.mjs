@@ -32,7 +32,6 @@ export const LINT_STEPS = [
   'audit:code-quality:native',
   'check:legacy-relay-fence-ratchet',
   'check:runtime-electron-ratchet',
-  'verify:rpc-params-catalog',
   'check:repo-host-read-ratchet',
   'test:ast-grep',
   'check:max-lines-ratchet',
@@ -47,7 +46,6 @@ export const LINT_STEPS = [
   'verify:skill-bundle-manifest',
   'check:reliability-gates',
   'verify:bundled-skill-guides',
-  'verify:plugin-authoring-skill-references',
   'check:readme-local-links',
   'check:id-only-store-write-ratchet',
   'verify:acp-protocol'

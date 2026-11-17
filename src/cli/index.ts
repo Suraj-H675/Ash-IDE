@@ -101,8 +101,7 @@ export async function main(
     const commandSpec = findCommandSpec(commandSpecs, parsed.commandPath)
     refuseConflictingSessionCallerFlags(commandSpec, parsed.flags)
     const RuntimeClientClass = await loadRuntimeClientClass()
-    const ignoreRemoteSelection =
-      isAshCommandSurface || ignoresRemoteSelection(parsed.commandPath)
+    const ignoreRemoteSelection = isAshCommandSurface || ignoresRemoteSelection(parsed.commandPath)
     const pairingCode = ignoreRemoteSelection ? null : parsed.flags.get('pairing-code')
     const environmentSelector = ignoreRemoteSelection ? null : parsed.flags.get('environment')
     // Eagerly resolve explicit --environment; stale ambient config must not break local-only commands.
@@ -176,7 +175,7 @@ export async function main(
         Boolean(process.env.ORCA_ENVIRONMENT?.trim() || process.env.ORCA_PAIRING_CODE?.trim()),
       conciseOrchestration: parsed.commandPath[0] === 'orchestration' && !parsed.flags.has('full')
     })
-    process.exitCode = cliErrorExitCode(error, parsed.commandPath)
+    process.exitCode = cliErrorExitCode()
   }
 }
 

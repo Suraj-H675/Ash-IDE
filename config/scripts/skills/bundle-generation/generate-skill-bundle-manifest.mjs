@@ -15,6 +15,7 @@ const OUTPUT_ROOT = path.join(REPO_ROOT, 'resources', 'skills')
 const CURRENT_MANIFEST_PATH = path.join(OUTPUT_ROOT, 'current-manifest.json')
 // Digest ledger is add-only or older untouched SKILL.md installs become unrecognizable.
 const RELEASED_DIGESTS_PATH = path.join(OUTPUT_ROOT, 'released-digests.json')
+export const EXCLUDED_BUNDLED_SKILL_NAMES = new Set(['orca-plugin-authoring'])
 const BUNDLED_SOURCES_PATH = path.join(
   REPO_ROOT,
   'src',
@@ -166,7 +167,7 @@ function packageDigest(files) {
 
 async function buildCurrentManifest() {
   const skillDirectories = (await readdir(SKILLS_ROOT, { withFileTypes: true }))
-    .filter((entry) => entry.isDirectory())
+    .filter((entry) => entry.isDirectory() && !EXCLUDED_BUNDLED_SKILL_NAMES.has(entry.name))
     .map((entry) => entry.name)
     .sort(compareCodeUnits)
   const skills = []

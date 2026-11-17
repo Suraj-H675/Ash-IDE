@@ -13,18 +13,18 @@
     },
     {
       "path": "src/cli/bundled-skill-guides.ts",
-      "sha256": "bf98e7a844a826a3558635b55aaf1740ef59c5bc691bc58882ce9e6f77e26464",
+      "sha256": "3d11ba480c98c99bee9bc2e039db7dceeee25e662a43f11bbf3054bf17a21ad6",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/cli/cli-error.ts",
-      "sha256": "821449abd85f128e8c92383dfdda3dfac93450b84d549ce758c448db0f5a351c",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "810080b27209077708ba726784ab33a8793457e2be905e28e43400e836ba48fa",
+      "reason": "Ash M8: remove stale help and JSON-lines error formatting for retired app-plugin CLI commands while preserving provider-native CLI behavior."
     },
     {
       "path": "src/cli/command-scoped-flag-help.ts",
-      "sha256": "930c8d65d2066ae33135573f4f7983b77425dd58bfeab816ecbe675234eb8f91",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "1194d59f6840efdfc19108365290850f3aba6b756fa6f74eff2a6c92af8e49dd",
+      "reason": "Ash M8: remove stale help and JSON-lines error formatting for retired app-plugin CLI commands while preserving provider-native CLI behavior."
     },
     {
       "path": "src/cli/flag-help-text.ts",
@@ -2948,8 +2948,8 @@
     },
     {
       "path": "src/shared/rpc-contract/rpc-params-catalog.generated.ts",
-      "sha256": "6efad48dcfa9fa558a4ba8a86ab03e288cfad272b46769753370bd62307b8f48",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "aff3be40fef4b6efa78fd5d405d6086a532b6eeca87aabfa4f52a55c70a4c74b",
+      "reason": "Ash M8: remove the stale invocation for the retired app-plugin RPC catalog generator while retaining the generated built-in RPC parameter contract."
     },
     {
       "path": "src/shared/rpc-contract/terminal-daemon-params.ts",
@@ -3183,7 +3183,7 @@
     },
     {
       "path": "config/scripts/workflow/source-routing/pr-plugin-e2e-source-routes.mjs",
-      "sha256": "86260b9469219f94811708273b7400864bd8b71a7eea9a063daadf1eb7041d2e",
+      "sha256": "1ff196c639d11785940cd55de6ed29bd93c878e394a6daebf72d036376dcc24b",
       "reason": "Ash M8: remove retired renderer store selectors from plugin E2E source routing while retaining routes for plugin contribution and theme sources."
     },
     {
@@ -3218,7 +3218,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "d068a0ccafc9c73de6bec9a1299b47435f543a72a32a84b6e7a7a33e51455e6c",
+      "sha256": "dca057d56fab0edca10ee19746444db00c2cbcc2fde2929322eae3218650a1b1",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -3248,6 +3248,61 @@
       "sourceSha256": "5e8065cd3f72ccc3607c4ccc68b5fc6e4197d14b172ac50818ce11b61a4bbc41",
       "sha256": "045b8ee90d2c58dcace8c031828e3bd4600f6c06941a78433014a2d30598da0e",
       "reason": "Ash M8: wire the generic untitled-file action factory after retiring plugin-created file creation."
+    },
+    {
+      "path": "src/cli/cli-exit-code.ts",
+      "sha256": "4caa843a97666554a2986f10cce2582cedd55e35a49f83200ab9c297035e866d",
+      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+    },
+    {
+      "path": "src/cli/index.ts",
+      "sha256": "d9d6433bae1048c16c758bcc7668c753e73a6d5aa7c0a053f98dbebe9dc61a28",
+      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+    },
+    {
+      "path": "src/cli/remote-selection-scope.ts",
+      "sha256": "e9c67588d9582a129659f363ec460ffc90d4f84eef9e4df0baa7336d32ddb7ca",
+      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+    },
+    {
+      "path": "src/cli/runtime/terminal-prompt-mutation-recovery.ts",
+      "sha256": "c4ff81d995360bb28bc58151057a48241ce9ae4f6597fe69d69cea3cf15701af",
+      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+    },
+    {
+      "path": "src/main/skills/bundled-skill-install/bundled-skill-sources.ts",
+      "sha256": "b9fcecfe3887574686a8c9a901e9aa6fb19fe53aa39c30a83cad363bf64988e7",
+      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+    },
+    {
+      "path": "config/scripts/ci/unit-selection/check-test-file-runners.mjs",
+      "sha256": "4ea2f3e9fd35f1a0235ca7d3f800e6bf0d7f3fbbfaa900b4ef688a19dba295c2",
+      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+    },
+    {
+      "path": "config/scripts/preflight/changed-checks/check-changed-selection.mjs",
+      "sha256": "80ddf42de753c27b35cebabee1c81f511e822ab74aa859f638f4ebb6581a8eec",
+      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+    },
+    {
+      "path": "config/scripts/preflight/changed-checks/run-lint.mjs",
+      "sha256": "221f91b194b762298b58220fb0623469949f6fc6ce5f764ceef56af7d475e63a",
+      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+    },
+    {
+      "path": "config/scripts/skills/bundle-generation/generate-bundled-skill-guides.mjs",
+      "sha256": "cfe5b47654f6b9cf59aa9c49d3a68a63bf8726d43b1b0922c49c5c6a950c8c90",
+      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+    },
+    {
+      "path": "config/scripts/skills/bundle-generation/generate-skill-bundle-manifest.mjs",
+      "sha256": "5d790d0f82a1c49b462d1243180adcc173de905f5db008adcddd356236e3b063",
+      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+    },
+    {
+      "path": "resources/skills/current-manifest.json",
+      "sha256": "3a1137eb253e47bee6b393fce34905edb0e08f61fe36153c98f9d64e949a6244",
+      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
     }
   ]
 }

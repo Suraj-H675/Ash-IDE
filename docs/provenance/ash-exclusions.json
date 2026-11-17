@@ -43844,6 +43844,386 @@
       "path": "src/renderer/src/store/plugin-auto-updates.ts",
       "sourceSha256": "b3a3f3df9c8e6933114f20ab6de90eec97a1acaa8172eb70418a83c9ebb609f5",
       "reason": "Ash M8: remove the orphan renderer application-plugin auto-update state store after its only renderer importer, plugin-panels, was retired."
+    },
+    {
+      "path": "config/scripts/plugin-authoring/content-validation/export-legacy-plugin-catalog.mjs",
+      "sourceSha256": "d61be790ccd8903cc4a13b232e5cb6b0b0a6758b53533d158c602d61a532ff50",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "config/scripts/plugin-authoring/content-validation/validate-plugin-files.mjs",
+      "sourceSha256": "a32508e5e466e45c0b012fad6c713d2e603b2ce67f2b2022bd421e0a415c08d1",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "config/scripts/plugin-authoring/generated-contracts/generate-plugin-author-typings.mjs",
+      "sourceSha256": "2329622a223ffa9b432f9cc39c8a5b38abf348c3a28254cd7869d2952353c12a",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "config/scripts/plugin-authoring/generated-contracts/generate-plugin-declarative-typings.mjs",
+      "sourceSha256": "e2e16a71cefa282248132a2d65539c298182afa1f90c939b960d85950d65edf8",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "config/scripts/plugin-authoring/generated-contracts/generate-plugin-schemas.mjs",
+      "sourceSha256": "a401c01166b9598faf005a8d9a9e4d59a63660f99d4b9b1f43b72beeade822de",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "config/scripts/plugin-authoring/generated-contracts/plugin-authoring-typings-outline.mjs",
+      "sourceSha256": "0069a6fc42cef833211cea1462375aa9cd49fe7da3faa16c98d796f4ccacba5b",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "config/scripts/plugin-authoring/generated-contracts/plugin-schema-module-loader.mjs",
+      "sourceSha256": "178c61037cd11c2543d253141f07cf919cf28c0f5461194b2c6dcbdce26ed4d5",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "config/scripts/plugin-authoring/rpc-catalog/generate-rpc-params-catalog.mjs",
+      "sourceSha256": "d93ea216af1ca33601f78434f3d233bc3c840ec223f9f0223d219f0a17da3521",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "config/scripts/skills/bundle-generation/generate-plugin-authoring-skill-references.mjs",
+      "sourceSha256": "6c914fcdd904d3aaf1584bf493d478a7dbcffb65ec6aa645907df4f3c1ab64dd",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-authoring.ts",
+      "sourceSha256": "64cd464c8f15ea80bd353cb7c228dd80b30274f3bb870348ef1a3d13a6c467ca",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-dev-emit.ts",
+      "sourceSha256": "9f2f35c435b07a8b26a1198a8c5b18b79bf1daf725331087a80bfbd2a92f0546",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-dev-request.ts",
+      "sourceSha256": "904711952126ff5dfe0e7f8f126d460be6457840429b1752e76993d564f13cac",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-dev-watch.test.ts",
+      "sourceSha256": "1642d1213973bf77fe46dfb8befad8f91a47cd7775d59e165fb36bd6fd5eafe4",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-dev-watch.ts",
+      "sourceSha256": "c8c7d8a61e1a9089cd4f871adeec4039e4385ec4df411a483a18326605a3309d",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-runtime.ts",
+      "sourceSha256": "9939ac41da3005718283d110583823e4d81b3c26a3ef0cb930ce3d9ce3dbfd67",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-shot-chrome.test.ts",
+      "sourceSha256": "afe5fdfeedbcd7970024d3e7f69481b6bf99b6b0093d4b8a34829ef1a899d350",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-shot-chrome.ts",
+      "sourceSha256": "b548d4d09fba1c20ab15235c3f7c1423ddfe414a1fd6c0ccbdce4a017bae9c64",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-shot-default-dir.test.ts",
+      "sourceSha256": "6611776a5aaa2cb14c840b6414e7f3c617f9a102b11aa9617c5d49438d6eb1e8",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-shot-default-dir.ts",
+      "sourceSha256": "57c763d9928711a51256edaa77e198fde341dc52e96b7afdf92826500cf1733a",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-shot-editor.test.ts",
+      "sourceSha256": "b33522faa3e683e86c82a97747e18952d321d1e540c74efc93529b5a0f4ee746",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-shot-editor.ts",
+      "sourceSha256": "c86654ffd6da55c33ffe4179d2026f6d45cd625684dd9e851057c3f33b5d2ba0",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-shot-scenario.test.ts",
+      "sourceSha256": "3ea7fad8c8834bc367d23a4725632bb765f46c77e5aacc4217c59bf40e3196d7",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-shot-scenario.ts",
+      "sourceSha256": "071ec22a8a2b0ab468083c74c75aa0dabc79fae2b5ef843e51dd502a4b534c63",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-view.test.ts",
+      "sourceSha256": "bc568694fbd5477059f1996e195cac7125140b631922ad3cb74918df5742312b",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/handlers/plugin-view.ts",
+      "sourceSha256": "460167f66f897f224bad3d3be3d419d203c33ff12e8ed488284712f4a70525a6",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-cli-output.ts",
+      "sourceSha256": "df38114f7ed71e97b3d98413b0eed1e2744b7717fde2bd2c17863830fcec0dc6",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-components-template.ts",
+      "sourceSha256": "b35b2ad1445c3fbfc8905978b408ecb6311d81078c5c026f5317e2e8017d680f",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-content-templates.ts",
+      "sourceSha256": "f5a9936d42f2d58742e1a435c6d7f38b26fb87195789a6b37dc1bc27a8169608",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-create.ts",
+      "sourceSha256": "03f175f5a96d8fb306017ca16c506bc8b895b9587b5a6e2cb7c4ced4c2c949fd",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-display-name.ts",
+      "sourceSha256": "3a8b39f7eb8bbe0b6a62e98e99366011435b784e02d3cb611b3ebdfa1cb81fa3",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-editor-check-loader-rules.test.ts",
+      "sourceSha256": "98062b643de7ad0e0487e7db4ed6a5012145c7e9b60077adcb05d60d07498d3d",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-editor-check.test.ts",
+      "sourceSha256": "355eb1396fda6a61fb6d1f7e8d71c00085b94bd1bec252467e552a9db4569549",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-editor-check.ts",
+      "sourceSha256": "728f4ce53ee5642575a3fb3c63c8fafbf2a5d5c14a5e91a954a167c0d5d7b14f",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-editor-template.test.ts",
+      "sourceSha256": "1d84d31e25b4e41e8e954e703093e59a9bb30a6a4d585d9c5606c7864fb03caf",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-editor-template.ts",
+      "sourceSha256": "d6d7547837a9c5121cfad8df44bad7a6bc9629429880fb8562377f3f99e2cbeb",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-folder-validation.ts",
+      "sourceSha256": "498beeb8666d598a347c97a1d01fdde8edfb1e1df70889e256ba4703efd017ff",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-frame-templates.ts",
+      "sourceSha256": "af279aa14c58271f24c1c6daa55b6d29776aa72d7ece8647752374af51b2ec61",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-grant-lines.ts",
+      "sourceSha256": "bd8e9e9e9deff316deb6ba6dcfe0190113a2aaf0cf7a54dcb05ae69c2074e153",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-hook-template.test.ts",
+      "sourceSha256": "e94a9b25a5254357ae70796337bc83c5ef144bc7cb54dc4e1f3aa95168d7427f",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-hook-template.ts",
+      "sourceSha256": "9b88a7c61bdabd87918b0297ae15692f0617e97a3d9edd59ba9a0d8f3b532682",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-panel-check-script.ts",
+      "sourceSha256": "cd3dbc8050bc1abb5c6b3f948d15566de0348e432f072c0f56b8d66e93fc654e",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-panel-check.ts",
+      "sourceSha256": "e05b98456ea82e888d5b667eb48a2a785602f1c93900b115442cdc9f2ecb5e94",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-release-entry.test.ts",
+      "sourceSha256": "df2e870c08bd1729980681bf275c28492cc3649e9b735aaaa4d588c09deaf290",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-release-entry.ts",
+      "sourceSha256": "ec68b91806d8b443b109337cc253de370f3c3480531daf4d3a0aa5333a2d7814",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-template-files.ts",
+      "sourceSha256": "6eddf2cd7520043bde77490b687d35b95211ddd14c65af44d453b9a025b9933a",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-template-names.ts",
+      "sourceSha256": "5ca6ca496536e9c56661371367f2bcc1accc7a4fe44a8993390fe4c5ed2e398e",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-templates.test.ts",
+      "sourceSha256": "9ac3a8a824c94b6f0505a6406c353c8e0b0d1ffcf08a28ceb42e2816e2de7f6a",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-templates.ts",
+      "sourceSha256": "c4e49663e65d9177a6e161eb7a855792cc194dc5d9ba971547265b9791c468a8",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-test-node.test.ts",
+      "sourceSha256": "2897612bef9c30bb122e692c3903452ae0c2c9e95c063c628e8fc3ae15f14d57",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-test-node.ts",
+      "sourceSha256": "3c32ecf76fdeb09f1d3924baf42689118b68b12c8dd1f7eb3496df5f158bd340",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-test-runner.test.ts",
+      "sourceSha256": "da8e2dbe80403492b56e518dc53cfecab48c4728da5c25b5af230d255d448978",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-test-runner.ts",
+      "sourceSha256": "1baa10a1a6b5c3d601dfc001ef3d8f5011d65d86c1672c28cd8ce37bfb05aad9",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-type-files-symlink.test.ts",
+      "sourceSha256": "c12764e0541303a5002e9658524bb46f5356a97ba8f539eaf062f1e8229d8507",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-type-files.test.ts",
+      "sourceSha256": "7200dfffa6675d935eb749bcd4dbd3163ba83fe97fcf51a0c72acd02cbcf88bc",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-type-files.ts",
+      "sourceSha256": "f424cd9bb3661e657884991899ec57a33b99eac19478702c7dce20337715576a",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-worker-panel-template.test.ts",
+      "sourceSha256": "4e99154dc0f369e3343254bbe117b71bdc63c5f8a1ed0362570f100fd062b8c2",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-authoring/plugin-worker-panel-template.ts",
+      "sourceSha256": "4c787878de7fc1a4e16ebc8c856310668fe76fa40ef66aecb9495c139041f01a",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-dev-watch-approval.test.ts",
+      "sourceSha256": "b8d5052f1ac35777b80c48d8e68ee165d77bfa5f9d105bbbcd55137d752ff15c",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-dev-watch-approval.ts",
+      "sourceSha256": "865ac130aba29fcf81aeb992c4318cea4652eff60548809d7666a67a3161cac1",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-dev-watch-check.test.ts",
+      "sourceSha256": "10dafada3ae2f7aef659f6c79aafb9955ef5898c16039169281a6b4118a997ec",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-dev-watch-check.ts",
+      "sourceSha256": "ac4a102c178f1e27ae3923ce76bf116962009b4b9d9cfe28acbe164bbcfe2d75",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-dev-watch-events.ts",
+      "sourceSha256": "f54fbc700161bb319447014392b62ac574e5a2592b50dcd9e82ab761427518ff",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-dev-watch-loop.test.ts",
+      "sourceSha256": "d7a9f16bc1d251acf9641b24d41cfaca4771bfdf8cf73d34e606afef2d68154c",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-dev-watch-loop.ts",
+      "sourceSha256": "76c06b719ccbc281fac55d58bdea7f3d72e2cfd69c31adbfb5dcc2a94af3eb10",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-dev-watch-process.test.ts",
+      "sourceSha256": "1e1bd6e043363e02fe6d48f9541a189ebeff241e3724e2701f8bc425bd1f15c7",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-dev-watch-process.ts",
+      "sourceSha256": "a8f85df9b7d712bcff451b2aef5fe4cc67863627a71c843ad90d897a19ab427a",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-dev-watch-shot.test.ts",
+      "sourceSha256": "622ced3b575912c6d642a591518b64cd01d434f9967763bc4f89195dd7c1f0a2",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-dev-watch-shot.ts",
+      "sourceSha256": "1a89097de654c78bd491e34334d61488a79e3c7f3a82d4ddfe3f7f56b2d91c1d",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-frame-log-dedupe.test.ts",
+      "sourceSha256": "0bdfd438d542fc270e269bb7f11b3bfb34c2c4507a524e3a6f5266df82033c2c",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-frame-log-dedupe.ts",
+      "sourceSha256": "ab5bafc9dd4d1abef5b2fc0eac9438bbee2b5785cb36336ebc395274d9a8e8fb",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-dev-watch/plugin-log-follower.ts",
+      "sourceSha256": "aeecbeab33306b14362144affeb71a00ba687e2fe4e3f40cef455c20789284d4",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/plugin-handler-groups.ts",
+      "sourceSha256": "69890853bcfa2d128b1c8e5490d462f85ef7950fc241c5518e630b38d5f283f7",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/runtime/terminal-prompt-mutation-recovery-plugin-denied.test.ts",
+      "sourceSha256": "8a07ff81629bd9c58f658114a869c4120f771f61d6d3e28cd30f8cb0e20b0587",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/specs/plugin-dev-request.ts",
+      "sourceSha256": "740fe150b9a40f5986517d01593bc550c46eb79515aaaaa5d6e3356d7cdb219e",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/specs/plugin-view.ts",
+      "sourceSha256": "e610c3be1b47f9d5da7881c5a320a70e4794c4e835b7008f4416f3ff0538e839",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
+    },
+    {
+      "path": "src/cli/specs/plugin.ts",
+      "sourceSha256": "af2d592c0621cb9d6baad77d209a0c1d872907fa5073d6f154bc6ac0f010bb64",
+      "reason": "Ash M8: remove the orphan app-plugin CLI authoring and development-watch implementation and its authoring tooling."
     }
   ]
 }

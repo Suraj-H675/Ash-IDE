@@ -144,9 +144,6 @@ function formatRuntimeUnavailableError(message: string, data: unknown): string {
   return `${message}\nAsh IDE is not running. Run 'ash-ide open' first.`
 }
 
-// Streaming commands print one JSON object per line with --json, so their failure is one line too.
-const JSON_LINES_COMMANDS = new Set(['plugin dev watch'])
-
 export function reportCliError(error: unknown, json: boolean, context: CliErrorContext = {}): void {
   const selector = contextRecovery(cliErrorCode(error), context)
   const concise = context.conciseOrchestration
@@ -155,9 +152,7 @@ export function reportCliError(error: unknown, json: boolean, context: CliErrorC
     console.log(
       concise
         ? JSON.stringify({ ok: false, error: response.error })
-        : JSON_LINES_COMMANDS.has(context.commandPath?.join(' ') ?? '')
-          ? JSON.stringify(response)
-          : JSON.stringify(response, null, 2)
+        : JSON.stringify(response, null, 2)
     )
     if (concise) {
       console.error(formatOrchestrationErrorLine(response.error.code, response.error.message))

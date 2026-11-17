@@ -2,7 +2,7 @@
 // Static gate: a checked-in test file that no runner collects passes vacuously, so every one must be collected.
 
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
@@ -80,13 +80,6 @@ const NON_UNIT_TEST_RUNNERS = [
       'dev/scripts/run-relay-tests.test.mjs',
       '../.github/actions/cloud-sql-rollout-lease/*.test.mjs'
     ]
-  },
-  {
-    // `orca plugin test` runs every example's own tests in Node; the unit test drives it.
-    name: 'example plugin tests (orca plugin test)',
-    include: ['examples/plugins/*/src/**/*.test.ts', 'examples/plugins/*/src/**/*.test.tsx'],
-    sources: ['src/cli/plugin-authoring/plugin-test-runner.test.ts'],
-    mirrors: ['readdirSync(EXAMPLES)']
   },
   {
     name: 'docs site',
@@ -253,7 +246,12 @@ function trackedCodeSources(root) {
   return new Map(
     stdout
       .split('\0')
-      .filter((file) => CODE_FILE.test(file) && !file.split('/').includes('node_modules'))
+      .filter(
+        (file) =>
+          CODE_FILE.test(file) &&
+          !file.split('/').includes('node_modules') &&
+          existsSync(path.join(root, file))
+      )
       .map((file) => [file, readFileSync(path.join(root, file), 'utf8')])
   )
 }
