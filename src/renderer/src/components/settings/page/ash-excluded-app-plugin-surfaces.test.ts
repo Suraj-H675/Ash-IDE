@@ -41,7 +41,7 @@ describe('Ash excluded application-plugin UI entrypoints', () => {
     for (const path of surfaces) {
       const source = rendererSource(path)
       expect(source, path).not.toMatch(
-        /renderPluginsSettingsSection|PluginsSettingsSection|PluginsStatusSegment|PluginStatusBarItems|openPluginsSettings|createPluginsSettingsShortcutHandler|['"]view\.plugins['"]/
+        /renderPluginsSettingsSection|PluginsSettingsSection|PluginsStatusSegment|PluginStatusBarItems|openPluginsSettings|createPluginsSettingsShortcutHandler|['"]view\.plugins['"]|pane:\s*['"]plugins['"]/
       )
     }
     expect(rendererSource('components/settings/page/settings-page-renderer.tsx')).toContain(
@@ -62,9 +62,27 @@ describe('Ash excluded application-plugin UI entrypoints', () => {
       'components/plugins/state/plugin-try-action.ts',
       'components/plugins/state/use-plugin-art-palettes.ts',
       'components/plugins/state/use-plugin-browse-request.ts',
+      'components/plugins/state/plugin-preview-cache.ts',
       'components/plugins/state/use-plugin-install-action.ts',
+      'components/plugins/state/use-plugin-catalog.ts',
+      'components/plugins/state/use-plugin-contribution-source.ts',
+      'components/plugins/state/use-plugin-declared-settings.ts',
+      'components/plugins/state/use-plugin-hover-prefetch.ts',
+      'components/plugins/state/use-plugin-in-use.ts',
+      'components/plugins/state/use-plugin-install-link.ts',
+      'components/plugins/state/use-plugin-logs.ts',
+      'components/plugins/state/use-plugin-marketplace-lifecycle.ts',
       'components/plugins/state/use-plugin-page-model.ts',
+      'components/plugins/state/use-plugin-page-navigation.ts',
+      'components/plugins/state/use-plugin-review-queue.ts',
+      'components/plugins/state/use-plugin-rollback-version.ts',
+      'components/plugins/state/use-plugin-settings-writes.ts',
       'components/plugins/state/use-plugin-update-dialog.ts',
+      'components/status-bar/PluginsStatusSegment.tsx',
+      'lib/open-plugins-settings.ts',
+      'store/plugin-install-counts.ts',
+      'store/plugin-preview-request.ts',
+      'store/plugin-update-review-toast.ts',
       'components/plugins/presentation/plugin-install-count.ts',
       'components/settings/appearance/themes/use-catalog-app-themes.ts',
       'components/settings/plugins/plugins-search.ts'
@@ -72,6 +90,9 @@ describe('Ash excluded application-plugin UI entrypoints', () => {
     for (const path of excluded) {
       expect(existsSync(resolve(process.cwd(), 'src/renderer/src', path)), path).toBe(false)
     }
+    expect(rendererSource('store/plugin-auto-updates.ts')).not.toMatch(
+      /takeUpdateReviewNotices|announcePluginUpdateReviews/
+    )
 
     const activeSurfaces = [
       'components/settings/page/settings-page-renderer.tsx',

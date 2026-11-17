@@ -43634,6 +43634,96 @@
       "path": "src/renderer/src/components/settings/plugins/plugins-search.ts",
       "sourceSha256": "61fa6b0bdeab7925cbb713c5c1d0307df769b360d123a61bcc92be018d22e150",
       "reason": "Ash M8: remove the marketplace-only renderer helper whose sole consumers were the retired app-plugin catalog, detail, and manager surfaces; shared plugin stores, theme registrations, and native controls remain."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-preview-request.ts",
+      "sourceSha256": "c4842a340824b8fdaf2f17330c0b4c80e4d8e4c20cadad8a7646dd6827d31ef6",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-update-review-toast.ts",
+      "sourceSha256": "95ca6d393ef584e7f2690c0d29362b01fa784a31bc553663f451823beb4e38ff",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/lib/open-plugins-settings.ts",
+      "sourceSha256": "405f79a0655b882bc5bfc0c22e2c4b75109ffa1879ab073dd3e844fb50fe6311",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/status-bar/PluginsStatusSegment.tsx",
+      "sourceSha256": "26e8e2ab2f6fa4e2de8ec8a49554cb3314bd4727d8e42a998a9d0da72077cb41",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/plugin-preview-cache.ts",
+      "sourceSha256": "118c833504314df8d41c914089491472144d4259f35ab4725ebfea0028e18b28",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-catalog.ts",
+      "sourceSha256": "7712ebd17d06eef51b93ac3420e0725e2dd5cf956d17bb82241b536d30193e84",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-contribution-source.ts",
+      "sourceSha256": "047021149e42fdaac0096443cf48f898189b64b775afaa73b9da81fc6b9dca56",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-declared-settings.ts",
+      "sourceSha256": "9270511f54c2df3653c6c9c14e515ca57caed4a3ef093d8f449c24788132523a",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-hover-prefetch.ts",
+      "sourceSha256": "aa223d2892f6b7f0b208f1d5713568d24f3adcd592ed4d1cde3ad68fca5921fe",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-in-use.ts",
+      "sourceSha256": "5d7e99ff232d0236d31ea9ada9040ceee7f5ec6f23c919cc92be0d487a3ba7ea",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-install-link.ts",
+      "sourceSha256": "7a25235f8a2ff1ef8c8cd6595bca62831b7474995d7bf3c4df8830a9161158a9",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-logs.ts",
+      "sourceSha256": "a464e13022fc356e1dd79916cfcbdc00f4c5c7159271c8384f2ffdc9d25502c3",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-marketplace-lifecycle.ts",
+      "sourceSha256": "e2a2e33c9ac0bd65cff79562013b6e285140b9df302b628f203bf481319403b0",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-page-navigation.ts",
+      "sourceSha256": "d882f0844e3dc7a2c6e0d56ec75626b79c417eef3591f6353315dd933c2d9b3a",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-review-queue.ts",
+      "sourceSha256": "21770e55bb3a0f1f2fda4e303dda9c08785f281ec0a472bda6dc6926095d8ee3",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-rollback-version.ts",
+      "sourceSha256": "f4b7dcdf8bda66891e15c4e947e35e79eb4befca95aded198a75fcaa29c5ccf2",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/use-plugin-settings-writes.ts",
+      "sourceSha256": "e73e601e3f3ad429ca6e30cd6450a191fa66bad04dd6306b836f876d349b9db6",
+      "reason": "Ash M8: remove unreachable application-plugin renderer UI helpers after retiring marketplace, plugin settings, and update-review surfaces; preserve built-in Appearance onboarding and workspace-card helpers."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-install-counts.ts",
+      "sourceSha256": "40bebe5dd1d3032358c2228850c04a52655d0766588c78d7103eb76cc8f28371",
+      "reason": "Ash M8: remove the uncalled application-plugin marketplace install-count store after retiring its only catalog hook; preserve remaining provider and plugin-host contracts."
     }
   ]
 }

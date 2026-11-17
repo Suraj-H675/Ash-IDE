@@ -28,9 +28,9 @@ const SPECIFIC_PLUGIN_ROUTES = [
     ['plugin-update-review', 'plugin-update-review-toast'],
     [
       `${UI}(?:review\\/|list\\/|dialogs\\/Plugin(?:UpdateAll|Remove)Dialog)`,
-      `${UI}state\\/use-plugin-(?:review-queue|update-dialog|page-model)`,
+      `${UI}state\\/use-plugin-(?:update-dialog|page-model)`,
       `${UI}presentation\\/plugin-(?:publisher-trust|consent-copy|access-profile|capability-presentation)`,
-      `${STORE}(?:update-review-toast|auto-updates)`,
+      `${STORE}auto-updates`,
       'src\\/main\\/plugins\\/catalog\\/plugin-(?:auto-updater|update-approval|update-review-notices|release-first-seen-store)',
       'src\\/shared\\/plugins\\/(?:approval\\/|catalog\\/plugin-update-policy|contributions\\/plugin-contribution-summary)'
     ].join('|'),
@@ -41,8 +41,7 @@ const SPECIFIC_PLUGIN_ROUTES = [
     ['plugin-install-link'],
     [
       `${UI}(?:catalog\\/|list\\/|page\\/|PluginContributionIcon|dialogs\\/Plugin(?:Install|CatalogLink|MarketplaceSource)Dialog)`,
-      `${UI}state\\/use-plugin-(?:catalog|install-link|install-action|marketplace-lifecycle|page-navigation|page-model|hover-prefetch|in-use|art-palettes|contribution-source)`,
-      `${UI}(?:state\\/plugin-preview-cache|presentation\\/plugin-(?:status-presentation|install-source|release-date|contributions|error-presentation))`,
+      `${UI}presentation\\/plugin-(?:status-presentation|install-source|release-date|contributions|error-presentation)`,
       `${STORE}content-list-store`,
       'src\\/main\\/plugins\\/(?:installation\\/|catalog\\/plugin-(?:marketplace-|catalog-|one-click-enable|community-marketplace-seed|kill-list-))',
       'src\\/main\\/plugins\\/plugin-(?:list-projection|client-list|image-)',
@@ -55,7 +54,6 @@ const SPECIFIC_PLUGIN_ROUTES = [
     ['plugin-file-type-suggestion'],
     [
       'src\\/renderer\\/src\\/components\\/editor\\/PluginFileTypeSuggestion\\.tsx$',
-      `${UI}state\\/use-plugin-settings-writes`,
       'src\\/main\\/plugins\\/catalog\\/plugin-file-type-suggestion',
       'src\\/shared\\/plugins\\/contributions\\/plugin-(?:file-type|file-match|custom-editor-core-file-types)'
     ].join('|'),
@@ -64,10 +62,7 @@ const SPECIFIC_PLUGIN_ROUTES = [
   pluginRoute(
     'plugins.try-it',
     ['plugin-try-it'],
-    [
-      `${UI}state\\/(?:plugin-try-action|plugin-action-toast|use-plugin-install-action)`,
-      `${STORE}preview-request`
-    ].join('|'),
+    `${UI}state\\/plugin-action-toast`,
     'plugin-git-fixture|plugin-gleam-catalog-fixture|plugin-smoke|plugin-frame-guest'
   ),
   pluginRoute(
@@ -107,7 +102,7 @@ const SPECIFIC_PLUGIN_ROUTES = [
     'plugins.panels-and-workers',
     ['plugin-demo', 'plugin-panel-containment'],
     [
-      `${UI}(?:page\\/PluginContributionAction(?:Panel|Command|Events)|state\\/use-plugin-logs)`,
+      `${UI}page\\/PluginContributionAction(?:Panel|Command|Events)`,
       `${STORE}panels`,
       'src\\/main\\/plugins\\/(?:panels\\/|workers\\/|plugin-(?:command-|event-delivery|agent-status-event|storage-store|secrets-store|log-buffer))',
       'src\\/shared\\/plugins\\/(?:frames\\/|workers\\/|events\\/|capabilities\\/|contributions\\/plugin-(?:command-|event-|panel-|execution-profile))',
@@ -203,7 +198,7 @@ const SPECIFIC_PLUGIN_ROUTES = [
       'src\\/main\\/ipc\\/plugin-(?:panel-push|settings)-ipc',
       'src\\/shared\\/plugins\\/(?:workers\\/plugin-panel-bridge-protocol|frames\\/plugin-panel-shell-facades|contributions\\/plugin-settings-)',
       'src\\/shared\\/plugins\\/declarative\\/runtime\\/declarative-(?:data-sdk|storage-sync)',
-      'src\\/renderer\\/src\\/components\\/plugins\\/(?:page\\/PluginSettingsSection|state\\/use-plugin-declared-settings)',
+      'src\\/renderer\\/src\\/components\\/plugins\\/page\\/PluginSettingsSection',
       'examples\\/plugins\\/hello-worker-panel\\/'
     ].join('|'),
     'plugin-frame-guest|plugin-smoke'
