@@ -33,7 +33,7 @@ export function handleMainProcessPreflightFailure(error: unknown, exitCode = 1):
 
   const showDialogAndExit = (): void => {
     try {
-      // Built here so Linux reads the system-language catalog loaded after ready.
+      // Build after Electron is ready so this dialog uses the same English resources as other startup surfaces.
       const message =
         formatProfileStateStartupFailure(error, translateMain) ??
         (error instanceof Error ? error.message : String(error))

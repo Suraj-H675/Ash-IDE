@@ -3,7 +3,7 @@
 import React from 'react'
 import { cleanup, render } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { i18n, loadRendererUiLanguage } from '@/i18n/i18n'
+import { i18n } from '@/i18n/i18n'
 import { AgentLaunchPaneNotice } from './AgentLaunchPaneNotice'
 import { TerminalErrorToast } from './TerminalErrorToast'
 
@@ -12,24 +12,15 @@ afterEach(async () => {
   await i18n.changeLanguage('en')
 })
 
-describe('localized startup failure surfaces', () => {
-  it.each([
-    {
-      language: 'en',
+describe('English startup failure surfaces', () => {
+  it('renders English copy for both real startup failure mappings', async () => {
+    await i18n.changeLanguage('en')
+    const copy = {
       exit: 'Codex exited while starting. Run it in a terminal in this folder to see why, then try again.',
       workspace:
         "Codex couldn't start because its workspace is no longer available. Restore the workspace folder or open an available workspace, then try again.",
       unknown: "Couldn't confirm Codex started. Check its terminal before trying again."
-    },
-    {
-      language: 'zh',
-      exit: 'Codex 在启动时退出了。 请在此文件夹的终端中运行它以查看原因，然后重试。',
-      workspace:
-        '无法启动 Codex，因为其工作区已不可用。 请恢复工作区文件夹或打开可用的工作区，然后重试。',
-      unknown: '无法确认 Codex 已启动。请先检查其终端，再重试。'
     }
-  ] as const)('renders both real mappings with the shipped $language catalog', async (copy) => {
-    await i18n.changeLanguage(await loadRendererUiLanguage(copy.language))
     for (const [code, expected, refusal] of [
       [
         'agent_session_exited_during_start',
@@ -90,8 +81,8 @@ it.each(['not-started', 'unconfirmed'] as const)(
   }
 )
 
-it('keeps translated uncertainty and the capacity fallback on the shipped Chinese surface', async () => {
-  await i18n.changeLanguage(await loadRendererUiLanguage('zh'))
+it('falls back to English copy when the global i18n instance holds a legacy locale', async () => {
+  await i18n.changeLanguage('zh')
   const pane = render(
     React.createElement(AgentLaunchPaneNotice, {
       refusal: { kind: 'unconfirmed', initialOutputDiagnostic: 'git-bash-console-capacity' },
@@ -99,7 +90,9 @@ it('keeps translated uncertainty and the capacity fallback on the shipped Chines
       tabId: 'capacity-fallback'
     })
   )
-  expect(pane.container.textContent).toContain('无法确认 Codex 已启动。请先检查其终端，再重试。')
+  expect(pane.container.textContent).toContain(
+    "Couldn't confirm Codex started. Check its terminal before trying again."
+  )
   expect(pane.container.textContent).toContain(
     'Git Bash reported its limit of 128 open terminals on this PC while starting Codex.'
   )

@@ -379,7 +379,7 @@ it('defers a Linux desktop startup failure until Electron is ready', async () =>
 
     resolveReady?.()
     await ready
-    // The dialog waits for the async system-language catalog after ready.
+    // The dialog waits until Electron is ready before showing the English startup message.
     await vi.waitFor(() => expect(mocks.app.exit).toHaveBeenCalled())
     expect(mocks.showErrorBox).toHaveBeenCalledWith(
       'Orca could not start',

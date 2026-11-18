@@ -25,7 +25,6 @@ import type {
   PluginPanelStateResult
 } from '../../shared/plugins/declarative/plugin-declarative-panel-state'
 import type { PluginConsentRequest } from '../../shared/plugins/approval/plugin-consent-request'
-import type { PluginLanguagePackRegistration } from '../../shared/plugins/artifacts/plugin-language-pack-artifact'
 import type { PluginChangeEvent } from '../../shared/plugins/events/plugin-change-event'
 import type { PluginManifest } from '../../shared/plugins/manifest/plugin-manifest'
 import type {
@@ -145,7 +144,6 @@ export type PluginMarketplaceHostInstallPreview = {
 
 export type PluginsApi = {
   list: () => Promise<PluginHostListEntry[]>
-  listLanguagePacks: () => Promise<PluginLanguagePackRegistration[]>
   listThemes: () => Promise<PluginThemeRegistration[]>
   listTerminalThemes: () => Promise<PluginTerminalThemeRegistration[]>
   listIconThemes: () => Promise<PluginIconThemeMetadata[]>

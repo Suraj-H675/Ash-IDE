@@ -1,6 +1,6 @@
 import { getIntlLocale } from './i18n'
 
-// Relative-time words follow the UI language; resolve plugin tags through getIntlLocale and cache per locale for live switches.
+// Relative-time words follow the English-only UI locale.
 let cached: { locale: string; formatter: Intl.RelativeTimeFormat } | null = null
 
 export function getUiRelativeTimeFormatter(): Intl.RelativeTimeFormat {
@@ -37,7 +37,7 @@ type NarrowTimeUnit = 'second' | 'minute' | 'hour' | 'day'
 let narrowRelativeCache: { locale: string; formatter: Intl.RelativeTimeFormat } | null = null
 const narrowDurationCache = new Map<string, Intl.NumberFormat>()
 
-// Compact relative time ("in 5m", "8h ago") in the UI language.
+// Compact relative time ("in 5m", "8h ago") in English.
 export function formatUiNarrowRelativeTime(value: number, unit: NarrowTimeUnit): string {
   const locale = getIntlLocale()
   if (!narrowRelativeCache || narrowRelativeCache.locale !== locale) {
@@ -49,7 +49,7 @@ export function formatUiNarrowRelativeTime(value: number, unit: NarrowTimeUnit):
   return narrowRelativeCache.formatter.format(value, unit)
 }
 
-// Compact duration ("5m", "3h") in the UI language.
+// Compact duration ("5m", "3h") in English.
 export function formatUiNarrowDuration(value: number, unit: NarrowTimeUnit): string {
   const locale = getIntlLocale()
   const key = `${locale}\0${unit}`

@@ -54,8 +54,7 @@ export function getStoredSettings(): GlobalSettings {
       stored.uiLanguage !== migratedStored.uiLanguage ||
       stored.pluginAppThemeLight !== migratedStored.pluginAppThemeLight ||
       stored.pluginAppThemeDark !== migratedStored.pluginAppThemeDark ||
-      needsChatUiChoiceCarry(stored) ||
-      stored.uiLanguagePortugueseMigrationApplied !== true)
+      needsChatUiChoiceCarry(stored))
   ) {
     try {
       const parsed = JSON.parse(rawStoredSettings) as unknown

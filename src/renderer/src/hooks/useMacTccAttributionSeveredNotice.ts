@@ -5,12 +5,9 @@ import type {
   PtyManagementFolderAccessMismatch,
   PtyManagementMacTccAttributionHealth
 } from '../../../preload/api-types'
-import { isPluginUiLanguage } from '../../../shared/ui-language'
 import { useAppStore } from '@/store'
-import { usePluginLanguagePackStore, usePluginLanguagePacks } from '@/store/plugin-language-packs'
 import { translate } from '@/i18n/i18n'
 import { track } from '@/lib/telemetry'
-import { resolveUiLocale } from '@/i18n/supported-languages'
 import { MANAGE_SESSIONS_SECTION_ID } from '@/components/settings/terminal/session-management/open-terminal-manage-sessions'
 import { macFolderAccessFolderName } from '@/components/shared/mac-folder-access-folder-name'
 import {
@@ -25,20 +22,8 @@ export function useMacTccAttributionSeveredNotice(): void {
   const openSettingsPage = useAppStore((s) => s.openSettingsPage)
   const openSettingsTarget = useAppStore((s) => s.openSettingsTarget)
   const setSettingsSearchQuery = useAppStore((s) => s.setSettingsSearchQuery)
-  const uiLanguage = useAppStore((s) => s.settings?.uiLanguage ?? null)
-  const pluginLanguagePacks = usePluginLanguagePacks()
-  const pluginLanguagePacksLoaded = usePluginLanguagePackStore((s) => s.loaded)
   const { i18n } = useTranslation()
-  const selectedPluginLanguage = pluginLanguagePacks.find((pack) => pack.id === uiLanguage)
-  const targetLocale =
-    uiLanguage === null || (isPluginUiLanguage(uiLanguage) && !pluginLanguagePacksLoaded)
-      ? null
-      : (selectedPluginLanguage?.resourceLanguage ??
-        (isPluginUiLanguage(uiLanguage) ? 'en' : resolveUiLocale(uiLanguage)))
-  const localeReady =
-    targetLocale !== null &&
-    i18n.language === targetLocale &&
-    i18n.hasResourceBundle(targetLocale, 'translation')
+  const localeReady = i18n.language === 'en' && i18n.hasResourceBundle('en', 'translation')
   const toastedThisSession = useRef(false)
   // Why: toast was only marked after await; a focus/effect re-run mid-check could dual-toast.
   const checkInFlight = useRef(false)

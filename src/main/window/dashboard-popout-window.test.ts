@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { setMainUiLanguage } from '../i18n/main-i18n'
-import es from '../../renderer/src/i18n/locales/es.json'
+import { mainI18n, prepareEarlyMainUiLanguage } from '../i18n/main-i18n'
 
 type Display = { workArea: { x: number; y: number; width: number; height: number } }
 
@@ -209,19 +208,20 @@ describe('createOrFocusDashboardPopout', () => {
     vi.clearAllMocks()
   })
 
-  it('updates the title after language initialization and unsubscribes when closed', async () => {
+  it('prepares the English title and unsubscribes when closed', async () => {
     // SAFETY: The fixture implements the Store methods exercised by the popout.
     createOrFocusDashboardPopout(makeStore() as never)
     const win = instances[0]
     try {
-      await setMainUiLanguage('es')
-      expect(win.options.title).toBe(es.native.dialog.dashboardTitle)
+      await mainI18n.changeLanguage('es')
+      await prepareEarlyMainUiLanguage()
+      expect(win.options.title).toBe('Orca Agent Dashboard')
       closeDashboardPopout()
       win.setTitle.mockClear()
-      await setMainUiLanguage('en')
+      await mainI18n.changeLanguage('es')
       expect(win.setTitle).not.toHaveBeenCalled()
     } finally {
-      await setMainUiLanguage('en')
+      await prepareEarlyMainUiLanguage()
     }
   })
 

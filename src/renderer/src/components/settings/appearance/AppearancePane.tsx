@@ -12,7 +12,6 @@ import { useAppStore } from '../../../store/index'
 import { USAGE_PERCENTAGE_DISPLAY_SETTING_ID } from './appearance-usage-percentage-search'
 import {
   getCodeEditorThemeEntries,
-  getLanguageEntries,
   getLayoutEntries,
   getStatusBarEntries,
   getThemeEntries,
@@ -33,7 +32,6 @@ import type { UseTerminalConfigImportReturn } from '../terminal/configuration/us
 import type { UseWarpThemeImportReturn } from '../terminal/themes/useWarpThemeImport'
 import { getRendererAppPlatform } from '@/lib/renderer-app-platform'
 import { isWebClientLocation } from '@/lib/web-client-location'
-import { SHOW_UI_LANGUAGE_SETTING } from '@/i18n/supported-languages'
 import { translate } from '@/i18n/i18n'
 
 import { resolveInterfaceSectionSummary } from './appearance-interface-summary'
@@ -132,7 +130,6 @@ export function AppearancePane({
     ...getCodeEditorThemeEntries(),
     ...getZoomEntries(),
     ...getTypographyEntries(),
-    ...(SHOW_UI_LANGUAGE_SETTING ? getLanguageEntries() : []),
     ...getTitlebarEntries(),
     ...getReduceVisualEffectsEntries(),
     ...getSystemTrayEntries({ showSystemTray: isDesktopWindows }),
@@ -261,7 +258,6 @@ export function AppearancePane({
           />
         </AppearanceSection>
       ) : null}
-
     </div>
   )
 }

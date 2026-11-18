@@ -74,13 +74,12 @@ const SPECIFIC_PLUGIN_ROUTES = [
     'plugin-smoke'
   ),
   pluginRoute(
-    'plugins.syntax-and-language-packs',
+    'plugins.syntax',
     ['plugin-syntax-smoke'],
     [
       `${UI}page\\/PluginContributionActionLanguage`,
-      `${STORE}language-packs`,
-      'src\\/main\\/plugins\\/contributions\\/plugin-(?:syntax|language-pack)-registry',
-      'src\\/shared\\/plugins\\/(?:languages\\/|plugin-language-pack-i18n-resources|artifacts\\/plugin-(?:syntax|language-pack)-artifact)'
+      'src\\/main\\/plugins\\/contributions\\/plugin-syntax-registry',
+      'src\\/shared\\/plugins\\/artifacts\\/plugin-syntax-artifact'
     ].join('|'),
     'plugin-smoke'
   ),

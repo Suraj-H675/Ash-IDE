@@ -4,7 +4,6 @@ import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ASH_APP_PLUGIN_HOST_ENABLED } from './app-plugin-host-boundary'
 import { usePluginIconThemeStore, usePluginIconThemes } from './plugin-icon-themes'
-import { usePluginLanguagePackStore, usePluginLanguagePacks } from './plugin-language-packs'
 import {
   usePluginTerminalThemeStore,
   usePluginTerminalThemes,
@@ -13,13 +12,7 @@ import {
 } from './plugin-themes'
 
 describe('Ash application plugin host exclusion', () => {
-  const forbiddenMethods = [
-    'list',
-    'listThemes',
-    'listTerminalThemes',
-    'listLanguagePacks',
-    'listIconThemes'
-  ] as const
+  const forbiddenMethods = ['list', 'listThemes', 'listTerminalThemes', 'listIconThemes'] as const
   const requests = Object.fromEntries(
     forbiddenMethods.map((name) => [
       name,
@@ -67,12 +60,7 @@ describe('Ash application plugin host exclusion', () => {
     expect(ASH_APP_PLUGIN_HOST_ENABLED).toBe(false)
     let rendered: unknown[] = []
     const StartupProbe = () => {
-      rendered = [
-        usePluginThemes(),
-        usePluginTerminalThemes(),
-        usePluginLanguagePacks(),
-        usePluginIconThemes()
-      ]
+      rendered = [usePluginThemes(), usePluginTerminalThemes(), usePluginIconThemes()]
       return null
     }
     host = document.createElement('div')
@@ -80,11 +68,10 @@ describe('Ash application plugin host exclusion', () => {
     root = createRoot(host)
     await act(async () => root?.render(<StartupProbe />))
 
-    expect(rendered).toEqual([[], [], [], []])
+    expect(rendered).toEqual([[], [], []])
     for (const state of [
       usePluginThemeStore.getState(),
       usePluginTerminalThemeStore.getState(),
-      usePluginLanguagePackStore.getState(),
       usePluginIconThemeStore.getState()
     ]) {
       expect(state).toMatchObject({ loaded: true, entries: [] })
@@ -94,7 +81,6 @@ describe('Ash application plugin host exclusion', () => {
       await Promise.all([
         usePluginThemeStore.getState().fetchEntries(),
         usePluginTerminalThemeStore.getState().fetchEntries(),
-        usePluginLanguagePackStore.getState().fetchEntries(),
         usePluginIconThemeStore.getState().fetchEntries()
       ])
     })

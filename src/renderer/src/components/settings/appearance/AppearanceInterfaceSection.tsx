@@ -1,7 +1,6 @@
 import type React from 'react'
 
 import type { GlobalSettings } from '../../../../../shared/global-settings-types'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select'
 import { UIZoomControl } from './UIZoomControl'
 import { SearchableSetting } from '../section-layout/SearchableSetting'
 import { ReduceVisualEffectsSetting } from './ReduceVisualEffectsSetting'
@@ -16,23 +15,15 @@ import { SettingsRow, SettingsSwitchRow } from '../form-controls/SettingsFormCon
 import { DEFAULT_APP_FONT_FAMILY } from '../../../../../shared/constants'
 import {
   getCodeEditorThemeEntries,
-  getLanguageEntries,
   getThemeEntries,
   getTitlebarEntries,
   getTypographyEntries,
   getZoomEntries
 } from './appearance-search'
 import { getMenuBarIconEntries, getSystemTrayEntries } from './appearance-system-presence-search'
-import {
-  getUiLanguageChoiceLabel,
-  SHOW_UI_LANGUAGE_SETTING,
-  UI_LANGUAGE_CHOICES
-} from '@/i18n/supported-languages'
 import { translate } from '@/i18n/i18n'
-import type { UiLanguage } from '../../../../../shared/ui-language'
 import { matchesSettingsSearch, normalizeSettingsSearchQuery } from '../search/settings-search'
 import { translateSearchKeyword } from '../search/settings-search-keywords'
-import { usePluginLanguagePacks } from '@/store/plugin-language-packs'
 import {
   AppearanceThemeControl,
   AppearanceThemeSlotSelect,
@@ -62,7 +53,6 @@ export function AppearanceInterfaceSection({
   forceVisiblePrimary = false
 }: AppearanceInterfaceSectionProps): React.JSX.Element {
   const searchQuery = useAppStore((state) => state.settingsSearchQuery)
-  const pluginLanguagePacks = usePluginLanguagePacks()
   const pluginIconThemes = usePluginIconThemes()
   const themeSlots = [
     {
@@ -106,7 +96,6 @@ export function AppearanceInterfaceSection({
   const isSearching = normalizeSettingsSearchQuery(searchQuery).length > 0
   const zoomInKeyCombos = useShortcutKeyComboDetails('zoom.in')
   const zoomOutKeyCombos = useShortcutKeyComboDetails('zoom.out')
-  const languageEntry = getLanguageEntries()[0]
   const menuBarIconEntry = getMenuBarIconEntries({ showMenuBarIcon: true })[0]
   const systemTrayEntry = getSystemTrayEntries({ showSystemTray: true })[0]
   const themeEntry = getThemeEntries()[0]
@@ -122,8 +111,6 @@ export function AppearanceInterfaceSection({
     ...getMenuBarIconEntries({ showMenuBarIcon: isDesktopMac })
   ]
   const showAdvanced = !isSearching || matchesSettingsSearch(searchQuery, advancedEntries)
-  const languageTitle = translate('settings.appearance.language.title', 'Language')
-
   return (
     <div className="divide-y divide-border/40">
       <SearchableSetting
@@ -247,41 +234,6 @@ export function AppearanceInterfaceSection({
                   }
                 ]}
               />
-            }
-          />
-        </SearchableSetting>
-      ) : null}
-
-      {SHOW_UI_LANGUAGE_SETTING ? (
-        <SearchableSetting
-          title={languageTitle}
-          description={languageEntry?.description}
-          keywords={languageEntry?.keywords ?? []}
-          forceVisible={forceVisiblePrimary}
-        >
-          <SettingsRow
-            label={languageTitle}
-            control={
-              <Select
-                value={settings.uiLanguage}
-                onValueChange={(value) => updateSettings({ uiLanguage: value as UiLanguage })}
-              >
-                <SelectTrigger size="sm" className="min-w-[220px]" aria-label={languageTitle}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {UI_LANGUAGE_CHOICES.map((choice) => (
-                    <SelectItem key={choice.value} value={choice.value}>
-                      {getUiLanguageChoiceLabel(choice, translate)}
-                    </SelectItem>
-                  ))}
-                  {pluginLanguagePacks.map((pack) => (
-                    <SelectItem key={pack.id} value={pack.id}>
-                      {pack.displayName ?? `${pack.locale} — ${pack.pluginKey}`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             }
           />
         </SearchableSetting>

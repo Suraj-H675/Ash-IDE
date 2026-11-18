@@ -1463,8 +1463,8 @@
     },
     {
       "path": "src/main/tray/system-tray.test.ts",
-      "sha256": "bfa3cfcc400202342dd6b5dc503d1464fb867bf63f28ef9d3dad16412bb12ee8",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "825f60f5de59dcf72e0184f5c76c13a2499d4660724609b091bb7dfd9e4a1c8d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger. Ash M8: assert legacy Main locale requests keep tray labels and tooltips English."
     },
     {
       "path": "src/main/tray/system-tray.ts",
@@ -1663,8 +1663,8 @@
     },
     {
       "path": "src/preload/api/plugin-host-api.ts",
-      "sha256": "89b8890aae17668a422eafa936cd6b5ca8b905c8549720e555aa8d7187927128",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "8f8af646d17dda414899ac0e4b7e88bdbe8ed25b292a3cf65497d8db2d436d0e",
+      "reason": "Ash M8: remove the legacy listLanguagePacks preload type from the excluded application-plugin surface."
     },
     {
       "path": "src/preload/api/preflight-api.ts",
@@ -1958,13 +1958,8 @@
     },
     {
       "path": "src/renderer/src/components/onboarding/OnboardingFlow.tsx",
-      "sha256": "21a8f45008c94e8d8d8bae427d26bbdf283335eba921e9a1032576c634aea50a",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/components/onboarding/OnboardingLanguageSwitcher.tsx",
-      "sha256": "dd92dee5fa2c1cadb52159ef61decb70a6aa40d2879cfbffb442f47297ca5cc9",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "9797afe6a5607d8c11704da47bda903fbea0f057f41136152f8c1a2c4aee244b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger. Ash M8: remove onboarding language-picker rendering and keyboard gating."
     },
     {
       "path": "src/renderer/src/components/onboarding/onboarding-feature-setup.ts",
@@ -2033,8 +2028,8 @@
     },
     {
       "path": "src/renderer/src/components/settings/appearance/AppearancePane.tsx",
-      "sha256": "39a2f468b3f625cd4e9a9885fe7b4b35711d9d9045753d7569317a2ff091008c",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "0b2645378087fc97c176acb27849130fb421c9dccb7eefd9b789d46d03356389",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger. Ash M8: remove the language entry from Appearance search."
     },
     {
       "path": "src/renderer/src/components/settings/appearance/AppearanceWindowSidebarSection.tsx",
@@ -2043,8 +2038,8 @@
     },
     {
       "path": "src/renderer/src/components/settings/appearance/appearance-search.ts",
-      "sha256": "ec844236564c5f1affabbff86a9822723ddb6da450def51a2fcb674cbf315ed8",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "2de74fe4bc148a2444289649a60d7f4e50925d7d574326495487719bcd03e31d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger. Ash M8: retire UI language search terms and entries."
     },
     {
       "path": "src/renderer/src/components/settings/appearance/appearance-sidebar-search.ts",
@@ -2908,8 +2903,8 @@
     },
     {
       "path": "src/shared/global-settings-types.ts",
-      "sha256": "dd59238b7ea99d447d84380cda962f3cd1205352fba330cef1e3362b60af981e",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "b3e967d00aae7baa93ba860a77965fdf3c5214b879a92cdda597d7189b6f2eef",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger. Ash M8: mark uiLanguage and its old migration marker as deprecated compatibility fields."
     },
     {
       "path": "src/shared/local-build-compatibility-contract.json",
@@ -3008,8 +3003,8 @@
     },
     {
       "path": "config/scripts/ci/sharding/ci-shard-timings.json",
-      "sha256": "dbfdf73d04f34a52c0c844f8b14eb4d76cf3459a0b7a9df2de3d9552f95b376c",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "edfb10efd96fa71ecc5c8c00ba3dafec97d2e481e7299a057a4823226ff54753",
+      "reason": "Ash M8: remove timing entries for retired language-pack test files."
     },
     {
       "path": "config/scripts/cli-build/verify-cli-bin.mjs",
@@ -3193,8 +3188,8 @@
     },
     {
       "path": "config/scripts/workflow/source-routing/pr-plugin-e2e-source-routes.mjs",
-      "sha256": "c54936a6739d0a5a347bf1a1694eb762ce0ada84d402ea99923fba7668c38be6",
-      "reason": "Ash M8: remove renderer plugin syntax selectors from plugin E2E source routing while retaining the language-pack store and main/shared registry and artifact coverage."
+      "sha256": "1f8cd46cc3b90861095affa00abd17eb71af7c64cd44807907f78e9c15403f8a",
+      "reason": "Ash M8: route plugin syntax coverage without the retired language-pack backend."
     },
     {
       "path": "resources/linux/packaging/after-install.sh",
@@ -3313,6 +3308,176 @@
       "path": "resources/skills/current-manifest.json",
       "sha256": "3a1137eb253e47bee6b393fce34905edb0e08f61fe36153c98f9d64e949a6244",
       "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+    },
+    {
+      "path": "src/main/i18n/main-i18n.ts",
+      "sha256": "81b6f3bf3160d42004e7aa35ae752dda4aecabdbe208f8cc5acfedb10b26de10",
+      "reason": "Ash M8: keep Main dialogs English-only and map legacy uiLanguage requests to en without lazy-loading non-English catalogs."
+    },
+    {
+      "path": "src/main/ipc/app.ts",
+      "sha256": "43f7f2538be448000dc484597e764c07f42158e38156607bcfcd1fe0ce83463c",
+      "reason": "Ash M8: remove system-locale detection IPC and its Main menu refresh path for English-only UI."
+    },
+    {
+      "path": "src/main/persistence/loading-store/normalize-loaded-global-settings.ts",
+      "sha256": "4d1ca08130d9852fe26b7b17367c28b23328d26e24da17517a20e73e2374bc63",
+      "reason": "Ash M8: preserve valid legacy uiLanguage values while the English-only UI ignores them."
+    },
+    {
+      "path": "src/main/persistence/loading-store/prepare-loaded-profile-settings.ts",
+      "sha256": "30e05fecd2fa8f61a7671055bb997257eedbaa4856616c9c1bbbe4f91c6b9356",
+      "reason": "Ash M8: retire the Portuguese uiLanguage startup migration and its save marker so valid legacy values are not rewritten."
+    },
+    {
+      "path": "src/main/startup/browser-process-user-agent-ordering.test.ts",
+      "sha256": "c5e02f71c1aa53b1dbb1d03fc1cb11b2fd7f8dfabb63272903f2e7f52fedc9a2",
+      "reason": "Ash M8: update the startup timing expectation after removing system-locale catalog loading."
+    },
+    {
+      "path": "src/main/startup/main-process-preflight-failure.ts",
+      "sha256": "9d3c38bf1a07bb1d34e6b178ba0f4af742acff459dfeb31436f4274452991d8f",
+      "reason": "Ash M8: document the English startup dialog after removing system-locale catalog loading."
+    },
+    {
+      "path": "src/main/window/dashboard-popout-window.test.ts",
+      "sha256": "0bf1e94a65eeafd271846c603bd56118c02a2df226937d938be654c88f892c74",
+      "reason": "Ash M8: assert dashboard titles remain English for legacy Main locale requests."
+    },
+    {
+      "path": "src/preload/api/app-api.ts",
+      "sha256": "69cd629007fdf6b3f3ed450f99a90bdb8222a1bf8c7bb9a7394f6bc1020d47a0",
+      "reason": "Ash M8: remove the renderer contract for retired system-locale detection IPC."
+    },
+    {
+      "path": "src/preload/api/app-bridge.ts",
+      "sha256": "f45f2d74528426892c55089c3178a4f9760786d810e943f41ad0f4e8f7f4358c",
+      "reason": "Ash M8: remove the preload bridge for retired system-locale detection IPC."
+    },
+    {
+      "path": "src/renderer/src/components/settings/appearance/AppearanceInterfaceSection.tsx",
+      "sha256": "5233c0ffb3295f7cac6e3e41b3721e6e6ea10b4679cf68e55048a76c44ee84a3",
+      "reason": "Ash M8: remove built-in and plugin language selection while preserving other appearance controls."
+    },
+    {
+      "path": "src/renderer/src/components/settings/appearance/appearance-interface-summary.ts",
+      "sha256": "f6964e6cd2626879aebdb0135ac82e1e9113f66999abc1db758fc91c81916ad2",
+      "reason": "Ash M8: remove the saved locale from the Appearance summary."
+    },
+    {
+      "path": "src/renderer/src/components/terminal-pane/agent-launch-pane-notice.test.ts",
+      "sha256": "45d1994536fb44bbb09eb8db63101d53ef038f0aa62a16ad730adec7eef55989",
+      "reason": "Ash M8: assert English fallback copy for all startup-failure surfaces when legacy locales are present."
+    },
+    {
+      "path": "src/renderer/src/hooks/useMacTccAttributionSeveredNotice.ts",
+      "sha256": "df3d66ffda5f3fe1e9babce23c00ae7024be05951c6c2480a52ef49cd242a84f",
+      "reason": "Ash M8: keep TCC notice behavior on English resources without reading settings or plugin language packs."
+    },
+    {
+      "path": "src/renderer/src/hooks/useMacosTccPromptNotice.ts",
+      "sha256": "345f1d8ce3906bf740cc47304c73d0879e12449a841adda38208d8b9c6517de8",
+      "reason": "Ash M8: keep TCC notice behavior on English resources without reading settings or plugin language packs."
+    },
+    {
+      "path": "src/renderer/src/i18n/I18nProvider.tsx",
+      "sha256": "a3a2e931a1ffe4e9dbff842d4848a000d17a80419267f31a77814206e121bef3",
+      "reason": "Ash M8: remove renderer plugin language-pack and locale-switching runtime; select English while preserving the app-shell readiness surface and saved legacy language preferences."
+    },
+    {
+      "path": "src/renderer/src/i18n/i18n.ts",
+      "sha256": "8381612a39c0954bc1c18d822c1f9fe222ea59e5fd800577a6c9cb5ae5a8f5f2",
+      "reason": "Ash M8: remove non-English catalog loading, plugin resource registration, and the renderer language-switch helper; pin Intl formatting to en."
+    },
+    {
+      "path": "src/renderer/src/i18n/language-readiness.ts",
+      "sha256": "bff70a851fa35b0369fa112c2c212fe3deab339f7c8ccd64f67f5c3f36aa950d",
+      "reason": "Ash M8: reduce readiness state to the English provider gate and remove system-locale detection."
+    },
+    {
+      "path": "src/renderer/src/i18n/relative-time-format.ts",
+      "sha256": "10478c86bd50bcc5fbd35ed7e633a1c1f61b4e9a72bd2edf0764583c50a61075",
+      "reason": "Ash M8: describe relative-time formatting as English-only."
+    },
+    {
+      "path": "src/renderer/src/i18n/ui-intl-formatters.ts",
+      "sha256": "e46b7481ca3aca26a82e473591457f8ec33e039ecdc7e2de0a283e513d013707",
+      "reason": "Ash M8: use the fixed English Intl locale without locale negotiation."
+    },
+    {
+      "path": "src/renderer/src/i18n/weekday-names.ts",
+      "sha256": "e026ba8e3588d84b0a5b3dd7a0e17e9c9cdb24574315d77107c69c5eaf6f7f59",
+      "reason": "Ash M8: describe weekday formatting as English-only."
+    },
+    {
+      "path": "src/renderer/src/web/preload-api/web-preference-normalization.ts",
+      "sha256": "27ce8bd8fe9f6a2224fd5ed9847ec150c0e4abfcfd01b3409f022f5bee58b4f6",
+      "reason": "Ash M8: normalize but preserve valid legacy uiLanguage values without the Portuguese startup migration."
+    },
+    {
+      "path": "src/renderer/src/web/preload-api/web-preferences-store.ts",
+      "sha256": "945ce130e2903a4225a9cb5c88a561947a26092f77890e06811722f6dce293b3",
+      "reason": "Ash M8: stop the retired uiLanguage migration marker from causing a settings rewrite on startup."
+    },
+    {
+      "path": "src/shared/orca-i18n-instance.ts",
+      "sha256": "6962f4b4ed81f86c6815c0a3e60ec13fae3d099e6f39c47e977f2a91e3e9eac7",
+      "reason": "Ash M8: remove catalog backends, plugin language-pack resource APIs, and resource-language resolution from shared i18n."
+    },
+    {
+      "path": "src/shared/ui-language.ts",
+      "sha256": "24fe7990a227b59ce6b31523830c5115d6e5780406c471329fbbd05c9434f59a",
+      "reason": "Ash M8: retain legacy saved UI-language values for compatibility, but default new or invalid preferences to English."
+    },
+    {
+      "path": "src/shared/ui-locale.ts",
+      "sha256": "12e6917da04222ec09a5202ee47856bc9f938f6356c47f6acff223a5fdb67b87",
+      "reason": "Ash M8: replace runtime locale detection and resolution with the fixed English UI locale."
+    },
+    {
+      "path": "src/shared/default-global-settings.ts",
+      "sha256": "2c5d76bb82fea08c14c38267970932c948a2cf05e6b5fe1cf78ec492b356205e",
+      "reason": "Ash M8: default new or missing UI-language preferences to English while retaining legacy saved values for compatibility."
+    },
+    {
+      "path": "src/main/plugins/contributions/plugin-content-pack-registry.ts",
+      "sha256": "a94a790815ae5878391ba54a63062150b66b5d7bab105f5041b2d25eae14fb31",
+      "reason": "Ash M8: remove language-pack family reconciliation from the application-plugin content registry."
+    },
+    {
+      "path": "src/main/plugins/plugin-artifact-validation.ts",
+      "sha256": "a1b1d883ae8c7897ae69f108c796cf241c18170590c8e2b70b8afc0c8f0478a6",
+      "reason": "Ash M8: stop validating and size-accounting application-plugin language-pack artifacts."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/plugins.test.ts",
+      "sha256": "b3a44fd1b4de1c42be89aa4375b492c1ff0f1447361ff4fe7384d06b8fa58e13",
+      "reason": "Ash M8: update plugin RPC fixture after removing the languagePacks manifest contribution point."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-content-pack-contributions.ts",
+      "sha256": "24166cd60ef05610031535ee0b133a3393f1b750fafaca9616116b8fcdfccfca",
+      "reason": "Ash M8: remove the language-pack manifest contribution schema and locale validation."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-contribution-points.ts",
+      "sha256": "e9e7c98b8670088c9fa37d40c3f8b68440ead7c46e687dd1163e44364c855447",
+      "reason": "Ash M8: remove languagePacks from manifest contribution points and capability policy."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-contribution-summary.ts",
+      "sha256": "ca121da5380078c7915582f6cb4ff66f9c6ce892669d1938bafb21046be516f8",
+      "reason": "Ash M8: remove language-pack entries from plugin catalog contribution summaries."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-manifest-contribution-validation.ts",
+      "sha256": "090c6d9f667e63362572ca78bc7cb8e2272fdf7500c37c2464a5330d7b768b29",
+      "reason": "Ash M8: remove duplicate-locale validation for the retired language-pack contribution point."
+    },
+    {
+      "path": "config/i18n-translation-source.md",
+      "sha256": "0fc94a96b4c364bf5ebade4bbe78da21c3f31a54eb2df6502c60728928d13c21",
+      "reason": "Ash M8: document that application-plugin language packs are outside the English-only Ash runtime."
     }
   ]
 }

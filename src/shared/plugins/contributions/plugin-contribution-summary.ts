@@ -72,7 +72,6 @@ export function pluginContributionSummary(
     ...named('commands', c.commands, (command) => command.title),
     ...named('events', c.events, (event) => event.on),
     ...named('hooks', c.hooks, (hook) => hook.event),
-    ...named('languagePacks', c.languagePacks, (pack) => pack.locale),
     ...named(
       'keybindings',
       c.keybindings,

@@ -1,6 +1,3 @@
-import { getSystemLanguageDetection } from '../i18n/system-language'
-import { setMainUiLanguage } from '../i18n/main-i18n'
-import { rebuildAppMenu } from '../menu/register-app-menu'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -20,7 +17,7 @@ import { isWslAvailableAsync } from '../wsl/discovery/wsl-availability'
 import { listWslDistrosAsync } from '../wsl/discovery/distro-catalog'
 import { isGitBashAvailable } from '../pty/shell-startup/git-bash'
 import { setUnreadDockBadgeCount } from '../dock/unread-badge'
-import { destroySystemTray, rebuildSystemTrayMenu } from '../tray/system-tray'
+import { destroySystemTray } from '../tray/system-tray'
 import {
   ensureDefaultFloatingWorkspacePath,
   trustFloatingWorkspaceDirectory,
@@ -131,23 +128,6 @@ export function registerAppHandlers(store: Store, options: RegisterAppHandlersOp
   )
   registerMacKeyboardLayoutChangeNotifications()
   ipcMain.handle('app:isProfileStateSaveDelayed', isProfileStateSaveDelayed)
-  ipcMain.handle('app:getSystemLanguageDetection', (_event, preferences: unknown) => {
-    const previous = getSystemLanguageDetection()
-    const detection = getSystemLanguageDetection(
-      Array.isArray(preferences) && preferences.every((tag) => typeof tag === 'string')
-        ? preferences
-        : undefined
-    )
-    if (detection !== previous && store.getSettings().uiLanguage === 'system') {
-      void setMainUiLanguage('system')
-        .then(() => {
-          rebuildAppMenu()
-          rebuildSystemTrayMenu()
-        })
-        .catch((error) => console.warn('[app] failed to refresh system language menus:', error))
-    }
-    return detection
-  })
   ipcMain.handle('app:getWindowsAdministratorStatus', getWindowsAdministratorStatus)
   ipcMain.handle('app:getMacosUpgradeSupport', (_event, minimumMacosVersion: unknown) =>
     getMacosUpgradeSupport(minimumMacosVersion)

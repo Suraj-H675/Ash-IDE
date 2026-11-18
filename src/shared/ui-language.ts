@@ -12,6 +12,7 @@ export const UI_LANGUAGE_RUSSIAN = 'ru'
 export const UI_LANGUAGE_TURKISH = 'tr'
 export const UI_LANGUAGE_GERMAN = 'de'
 
+/** Retained for persisted settings compatibility; Ash always renders the UI in English. */
 export type BuiltInUiLanguage =
   | typeof UI_LANGUAGE_SYSTEM
   | typeof UI_LANGUAGE_ENGLISH
@@ -26,24 +27,9 @@ export type BuiltInUiLanguage =
   | typeof UI_LANGUAGE_TURKISH
   | typeof UI_LANGUAGE_GERMAN
 
+/** Retained for old persisted plugin locale values; the English-only UI ignores these values. */
 export type PluginUiLanguage = `plugin:${string}`
 export type UiLanguage = BuiltInUiLanguage | PluginUiLanguage
-
-// Each language in its own script, so someone stuck in a language they cannot read can find theirs.
-export const UI_LANGUAGE_NATIVE_NAMES: Record<BuiltInUiLanguage, string> = {
-  [UI_LANGUAGE_SYSTEM]: 'System',
-  [UI_LANGUAGE_ENGLISH]: 'English',
-  [UI_LANGUAGE_CHINESE]: '中文（简体）',
-  [UI_LANGUAGE_CHINESE_TRADITIONAL]: '繁體中文（台灣）',
-  [UI_LANGUAGE_KOREAN]: '한국어',
-  [UI_LANGUAGE_JAPANESE]: '日本語',
-  [UI_LANGUAGE_SPANISH]: 'Español',
-  [UI_LANGUAGE_FRENCH]: 'Français',
-  [UI_LANGUAGE_PORTUGUESE]: 'Português (Brasil)',
-  [UI_LANGUAGE_RUSSIAN]: 'Русский',
-  [UI_LANGUAGE_TURKISH]: 'Türkçe',
-  [UI_LANGUAGE_GERMAN]: 'Deutsch'
-}
 
 const UI_LANGUAGE_VALUES = new Set<BuiltInUiLanguage>([
   UI_LANGUAGE_SYSTEM,
@@ -68,10 +54,11 @@ export function isPluginUiLanguage(value: unknown): value is PluginUiLanguage {
 }
 
 export function normalizeUiLanguage(value: unknown): UiLanguage {
+  // Preserve valid historic selections so loading settings never silently rewrites them.
   if (isPluginUiLanguage(value)) {
     return value
   }
   return UI_LANGUAGE_VALUES.has(value as BuiltInUiLanguage)
     ? (value as BuiltInUiLanguage)
-    : UI_LANGUAGE_SYSTEM
+    : UI_LANGUAGE_ENGLISH
 }

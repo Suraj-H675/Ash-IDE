@@ -200,6 +200,8 @@ jobs:
             src/renderer/src/components/skills/ash-excluded-cloud-publishing-components.test.ts \
             src/renderer/src/components/skills/ash-excluded-cloud-install-components.test.ts \
             src/renderer/src/components/settings/general/ash-skills-shortcut-settings.test.tsx \
+            src/renderer/src/i18n/ash-english-only-ui.test.ts \
+            src/shared/plugins/ash-excluded-language-pack-backend.test.ts \
             src/renderer/src/i18n/ash-excluded-phone-locales.test.ts \
             src/renderer/src/i18n/ash-retired-product-telemetry-locales.test.ts \
             src/renderer/src/web/preload-api/ash-no-product-telemetry.test.ts

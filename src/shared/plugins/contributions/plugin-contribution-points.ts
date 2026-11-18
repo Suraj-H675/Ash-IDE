@@ -7,13 +7,11 @@ import {
 import {
   PLUGIN_ICON_THEME_LIMIT,
   PLUGIN_KEYBINDING_LIMIT,
-  PLUGIN_LANGUAGE_PACK_LIMIT,
   PLUGIN_SYNTAX_LIMIT,
   PLUGIN_TERMINAL_THEME_LIMIT,
   PLUGIN_THEME_LIMIT,
   PLUGIN_VM_RECIPE_LIMIT,
   pluginKeybindingContributionSchema,
-  pluginLanguagePackContributionSchema,
   pluginSyntaxContributionSchema,
   pluginThemeContributionSchema,
   pluginVmRecipeContributionSchema
@@ -56,7 +54,6 @@ export const PLUGIN_CONTRIBUTION_POINTS = [
   'commands',
   'events',
   'hooks',
-  'languagePacks',
   'keybindings',
   'vmRecipes',
   'themes',
@@ -157,12 +154,6 @@ export const pluginContributesFields = {
     'Hooks the worker runs before or after Orca acts; Orca waits only on plugins that list one.',
     PLUGIN_HOOKS_SINCE
   ),
-  languagePacks: contributionList(
-    pluginLanguagePackContributionSchema,
-    PLUGIN_LANGUAGE_PACK_LIMIT,
-    'Interface translations.',
-    V1
-  ),
   keybindings: contributionList(
     pluginKeybindingContributionSchema,
     PLUGIN_KEYBINDING_LIMIT,
@@ -255,7 +246,6 @@ export const PLUGIN_CONTRIBUTION_POINT_POLICY: Record<
   events: { execution: 'trusted-worker', catalogType: null, bindsContent: false },
   // Why trusted-worker: a hook changes or refuses what Orca does, which only full access may.
   hooks: { execution: 'trusted-worker', catalogType: null, bindsContent: false },
-  languagePacks: { execution: 'data', catalogType: 'interface-language', bindsContent: false },
   keybindings: { execution: 'declarative', catalogType: 'instructions', bindsContent: true },
   vmRecipes: { execution: 'declarative', catalogType: 'instructions', bindsContent: true },
   themes: { execution: 'data', catalogType: 'app-theme', bindsContent: false },

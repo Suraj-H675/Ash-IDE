@@ -22,7 +22,6 @@ type ContributionValidationManifest = {
     })[]
     events: { on: PluginEventName }[]
     hooks: { event: string }[]
-    languagePacks: { locale: string }[]
     keybindings: { command: string; key: string; when?: 'global' | 'workspace' }[]
     vmRecipes: PathContribution[]
     themes: IdentifiedContribution[]
@@ -110,13 +109,6 @@ export function validatePluginManifestContributions(
       })
     }
   }
-  rejectDuplicateValues(
-    manifest.contributes.languagePacks,
-    (entry) => (entry as { locale: string }).locale.toLowerCase(),
-    'languagePacks',
-    'language pack locale',
-    ctx
-  )
   rejectDuplicateValues(
     manifest.contributes.settings.map((setting) => setting.key),
     String,

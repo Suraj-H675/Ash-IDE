@@ -44284,6 +44284,76 @@
       "path": "src/renderer/src/store/plugin-syntax-packs.ts",
       "sourceSha256": "a0dc934efe962a6416527ffc9d8fe3f20e80780b65c48b8228a05caa4fc40e56",
       "reason": "Ash M8: exclude the retired renderer-side application-plugin syntax grammar runtime after ordinary Monaco and diff editors use the existing file-detected core languages; built-in Monaco language registrations remain active."
+    },
+    {
+      "path": "src/main/i18n/system-language.ts",
+      "sourceSha256": "f9ae44127861ccd1ff6c6073fc6c2ec18e23535cb00db6a583e4d1bef531c1f7",
+      "reason": "Ash M8: remove system-locale detection after all UI locale selection and readiness paths were retired."
+    },
+    {
+      "path": "src/renderer/src/components/onboarding/OnboardingLanguageSwitcher.tsx",
+      "sourceSha256": "b25dd0b76ffe49634f4726455661dc5c0cff74aba1b365838fd27c0cf76e5244",
+      "reason": "Ash M8: retire onboarding language selection under product decision D-047."
+    },
+    {
+      "path": "src/renderer/src/i18n/intl-locale-support.ts",
+      "sourceSha256": "13a8d3be1a5a1a956140fbd7edcf5ee3b18fb5341df7cd0b5508f1db2e5c8577",
+      "reason": "Ash M8: remove Intl locale negotiation after renderer formatting was fixed to en."
+    },
+    {
+      "path": "src/renderer/src/i18n/supported-languages.ts",
+      "sourceSha256": "2db837902ca0c4d225b5b62c1924a961f0b2ba33e9130b9197d35720c200d48c",
+      "reason": "Ash M8: remove user-selectable locale catalogs and labels while persisted legacy values remain supported separately."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-language-packs.ts",
+      "sourceSha256": "4e18391e2a91159f228e7c4c00951275198c7a0775d423615df5a579f387acef",
+      "reason": "Ash M8: remove the renderer plugin language-pack store while retaining dormant Main registry and artifact APIs."
+    },
+    {
+      "path": "src/shared/plugins/plugin-language-pack-i18n-resources.ts",
+      "sourceSha256": "6f9639ef4530278e23ebdc8cd33c22455193a88dcd8e14542ec9aa96cd60a526",
+      "reason": "Ash M8: remove shared plugin language-pack resource registration while retaining dormant Main backend artifacts and registries."
+    },
+    {
+      "path": "src/shared/portuguese-ui-language-migration.ts",
+      "sourceSha256": "69d6569567ae215d34570be694e259ea6e1a22d5f99b599e1810af46f09f00ea",
+      "reason": "Ash M8: remove the startup migration that rewrote persisted plugin pt-BR values, preserving legacy settings under D-047."
+    },
+    {
+      "path": "src/main/plugins/contributions/plugin-language-pack-registry.ts",
+      "sourceSha256": "b5b23c60f566412d28bb773fdd2dcf92a4062ebd941cd3efb50c29d5e27a241b",
+      "reason": "Ash M8: remove the application-plugin language-pack registry after the English-only UI and plugin contribution path were retired."
+    },
+    {
+      "path": "src/shared/plugins/artifacts/plugin-language-pack-artifact.ts",
+      "sourceSha256": "718c3734da394700acd263826a11fa8411c81a1364af6decfb04bf8c82ddd36b",
+      "reason": "Ash M8: remove application-plugin language-pack parsing, validation and resource identity after language packs were excluded from the desktop product."
+    },
+    {
+      "path": "src/shared/plugins/authoring/plugin-strict-artifact-checks.ts",
+      "sourceSha256": "bf1684e64d091864e684c2144b6ccca5d513438b32ba46faed2b3c4bee8cc0a5",
+      "reason": "Ash M8: remove the orphaned strict plugin artifact authoring checker; its only consumer was the retired language-pack-aware authoring path."
+    },
+    {
+      "path": "src/shared/plugins/languages/plugin-language-pack-coverage.ts",
+      "sourceSha256": "3fd6dc918ca4a5c4446516b62f55f4eec0f0d9f43fce34c7634e6a7b7a76c354",
+      "reason": "Ash M8: remove language-pack coverage accounting after application-plugin translations were excluded."
+    },
+    {
+      "path": "src/shared/plugins/languages/plugin-protected-copy.ts",
+      "sourceSha256": "999f2c107f87e9f32a454dea6be9bd3dc6375d8aae24a17882605b4ad5faf328",
+      "reason": "Ash M8: remove the runtime protected-copy adapter used only by application-plugin language-pack validation."
+    },
+    {
+      "path": "src/shared/plugins/languages/plugin-translatable-chrome.ts",
+      "sourceSha256": "e4f18d54286abc010d791000c84993a03d9203173fd896ba4fcc6d06f428be07",
+      "reason": "Ash M8: remove the plugin-chrome translation allowlist used only by application-plugin language packs."
+    },
+    {
+      "path": "src/shared/plugins/languages/plugin-translation-string-policy.ts",
+      "sourceSha256": "e91881eb48bef5d592f3271358657f699e6ff97c01eaa59032729b9171fc13e6",
+      "reason": "Ash M8: remove plugin translation string safety policy used only by application-plugin language packs."
     }
   ]
 }

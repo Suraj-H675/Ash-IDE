@@ -12,7 +12,7 @@ import { DEFAULT_APP_ICON_ID } from './app-icon'
 import { DEFAULT_OPEN_IN_APPLICATIONS } from './open-in-applications'
 import { DEFAULT_NATIVE_CHAT_IDLE_STOP_MINUTES } from './native-chat/native-chat-idle-stop'
 import { DEFAULT_DISABLED_TUI_AGENTS } from './agent-launch/catalog/tui-agent-selection'
-import { UI_LANGUAGE_SYSTEM } from './ui-language'
+import { UI_LANGUAGE_ENGLISH } from './ui-language'
 import {
   DEFAULT_LEFT_SIDEBAR_TINT_COLOR,
   DEFAULT_LEFT_SIDEBAR_TINT_OPACITY
@@ -55,7 +55,7 @@ export function buildDefaultSettings(args: {
     leftSidebarAppearanceMode: 'default',
     leftSidebarTintColor: DEFAULT_LEFT_SIDEBAR_TINT_COLOR,
     leftSidebarTintOpacity: DEFAULT_LEFT_SIDEBAR_TINT_OPACITY,
-    uiLanguage: UI_LANGUAGE_SYSTEM,
+    uiLanguage: UI_LANGUAGE_ENGLISH,
     uiLanguagePortugueseMigrationApplied: true,
     appIcon: DEFAULT_APP_ICON_ID,
     appFontFamily: args.appFontFamily,

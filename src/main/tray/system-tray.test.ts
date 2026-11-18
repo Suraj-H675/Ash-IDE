@@ -200,8 +200,8 @@ describe('createSystemTray', () => {
 
     expect(trayInstances).toHaveLength(1)
     expect(trayInstances[0].image).toBe(resizedImage)
-    expect(trayInstances[0].setToolTip).toHaveBeenCalledWith('Orca')
-    expect(builtMenuItems().map((item) => item.label)).toEqual(['Open Orca', undefined, 'Quit'])
+    expect(trayInstances[0].setToolTip).toHaveBeenCalledWith('Ash IDE')
+    expect(builtMenuItems().map((item) => item.label)).toEqual(['Open Ash IDE', undefined, 'Quit'])
     const clickHandler = trayInstances[0].on.mock.calls.find((call) => call[0] === 'click')?.[1]
     expect(clickHandler).toBeTypeOf('function')
 
@@ -227,7 +227,7 @@ describe('createSystemTray', () => {
       dataURL: 'data:image/png;base64,mac-retina'
     })
     expect(builtMenuItems().map((item) => item.label)).toEqual([
-      'Open Orca',
+      'Open Ash IDE',
       undefined,
       'Settings',
       'Check for Updates...',
@@ -238,7 +238,7 @@ describe('createSystemTray', () => {
     expect(nativeThemeMock.on).toHaveBeenCalledWith('updated', expect.any(Function))
 
     for (const [label, callback] of [
-      ['Open Orca', options.onOpen],
+      ['Open Ash IDE', options.onOpen],
       ['Settings', options.onOpenSettings],
       ['Check for Updates...', options.onCheckForUpdates],
       ['Quit', options.onQuit]
@@ -262,7 +262,7 @@ describe('createSystemTray', () => {
       expect(builtMenuItems().map((item) => item.label)).toEqual(
         platform === 'darwin'
           ? [
-              'Open Orca',
+              'Open Ash IDE',
               undefined,
               'Settings',
               'Check for Updates...',
@@ -270,7 +270,7 @@ describe('createSystemTray', () => {
               'Quit Completely...',
               'Quit'
             ]
-          : ['Open Orca', undefined, 'Quit Completely...', 'Quit']
+          : ['Open Ash IDE', undefined, 'Quit Completely...', 'Quit']
       )
       builtMenuItems().at(-2)?.click?.()
       expect(options.onQuitAndStopAllSessions).toHaveBeenCalledOnce()
@@ -318,9 +318,9 @@ describe('dev instance indicator', () => {
     expect(devBadgeImage.setTemplateImage).toHaveBeenCalledWith(true)
     expect(trayInstances[0].image).toBe(devBadgeImage)
     expect(trayInstances[0].setTitle).not.toHaveBeenCalled()
-    expect(trayInstances[0].setToolTip).toHaveBeenCalledWith('Orca DEV (my-branch)')
+    expect(trayInstances[0].setToolTip).toHaveBeenCalledWith('Ash IDE DEV (my-branch)')
     expect(builtMenuItems()[0]).toMatchObject({
-      label: 'Orca DEV (my-branch)',
+      label: 'Ash IDE DEV (my-branch)',
       enabled: false
     })
   })
@@ -358,8 +358,8 @@ describe('dev instance indicator', () => {
 
     createSystemTray(createOptions({ isDevInstance: true }))
 
-    expect(trayInstances[0].setToolTip).toHaveBeenCalledWith('Orca DEV')
-    expect(builtMenuItems()[0]).toMatchObject({ label: 'Orca DEV', enabled: false })
+    expect(trayInstances[0].setToolTip).toHaveBeenCalledWith('Ash IDE DEV')
+    expect(builtMenuItems()[0]).toMatchObject({ label: 'Ash IDE DEV', enabled: false })
   })
 
   it('keeps the DEV marker in the tooltip across the attention toggle', async () => {
@@ -371,10 +371,10 @@ describe('dev instance indicator', () => {
 
     setTrayAttention(true)
     flushTraySceneMutation()
-    expect(created.setToolTip).toHaveBeenCalledWith('Orca DEV (my-branch) - activity waiting')
+    expect(created.setToolTip).toHaveBeenCalledWith('Ash IDE DEV (my-branch) - activity waiting')
     setTrayAttention(false)
     flushTraySceneMutation()
-    expect(created.setToolTip).toHaveBeenLastCalledWith('Orca DEV (my-branch)')
+    expect(created.setToolTip).toHaveBeenLastCalledWith('Ash IDE DEV (my-branch)')
   })
 
   it('marks the Windows tooltip without badging the icon', async () => {
@@ -383,9 +383,9 @@ describe('dev instance indicator', () => {
 
     createSystemTray(createOptions({ isDevInstance: true, devInstanceLabel: 'my-branch' }))
 
-    expect(trayInstances[0].setToolTip).toHaveBeenCalledWith('Orca DEV (my-branch)')
+    expect(trayInstances[0].setToolTip).toHaveBeenCalledWith('Ash IDE DEV (my-branch)')
     expect(stampDevBadgeMock).not.toHaveBeenCalled()
-    expect(builtMenuItems()[0]).toMatchObject({ label: 'Orca DEV (my-branch)', enabled: false })
+    expect(builtMenuItems()[0]).toMatchObject({ label: 'Ash IDE DEV (my-branch)', enabled: false })
   })
 
   it('adds no DEV marker for production instances', async () => {
@@ -396,7 +396,7 @@ describe('dev instance indicator', () => {
 
     expect(stampDevBadgeMock).not.toHaveBeenCalled()
     expect(trayInstances[0].image).toBe(baseMacImage)
-    expect(builtMenuItems()[0].label).toBe('Open Orca')
+    expect(builtMenuItems()[0].label).toBe('Open Ash IDE')
   })
 })
 
@@ -454,13 +454,13 @@ describe('setTrayAttention', () => {
     })
     expect(attentionImage.setTemplateImage).toHaveBeenCalledWith(false)
     expect(created.setImage).toHaveBeenCalledWith(attentionImage)
-    expect(created.setToolTip).toHaveBeenCalledWith('Orca - activity waiting')
+    expect(created.setToolTip).toHaveBeenCalledWith('Ash IDE - activity waiting')
 
     setTrayAttention(false)
     flushTraySceneMutation()
     expect(baseMacImage.setTemplateImage).toHaveBeenLastCalledWith(true)
     expect(created.setImage).toHaveBeenLastCalledWith(baseMacImage)
-    expect(created.setToolTip).toHaveBeenLastCalledWith('Orca')
+    expect(created.setToolTip).toHaveBeenLastCalledWith('Ash IDE')
   })
 
   it('recomposes active macOS attention when the system appearance changes', async () => {
@@ -625,7 +625,7 @@ describe('macOS hardening', () => {
     setTrayAttention(true)
     expect(() => flushTraySceneMutation()).not.toThrow()
     expect(created.setImage).toHaveBeenLastCalledWith(baseMacImage)
-    expect(created.setToolTip).toHaveBeenLastCalledWith('Orca')
+    expect(created.setToolTip).toHaveBeenLastCalledWith('Ash IDE')
     expect(warn).toHaveBeenCalledWith(
       '[system-tray] macOS attention icon failed; showing plain icon',
       expect.any(Error)
@@ -648,7 +648,7 @@ describe('macOS hardening', () => {
   })
 })
 
-describe('language changes', () => {
+describe('English-only UI language', () => {
   it.each(['darwin', 'win32'] as const)(
     'refreshes the existing %s menu and keeps its actions',
     async (platform) => {
@@ -658,18 +658,18 @@ describe('language changes', () => {
       await setMainUiLanguage('en')
       const options = { ...createOptions(), onQuitAndStopAllSessions: vi.fn() }
       createSystemTray(options)
-      expect(builtMenuItems()[0].label).toBe('Open Orca')
+      expect(builtMenuItems()[0].label).toBe('Open Ash IDE')
 
-      await setMainUiLanguage('ja')
+      await expect(setMainUiLanguage('ja')).resolves.toBe('en')
       rebuildSystemTrayMenu()
-      expect(builtMenuItems()[0].label).toBe('Open Orca')
+      expect(builtMenuItems()[0].label).toBe('Open Ash IDE')
       flushTraySceneMutation()
 
       expect(trayInstances).toHaveLength(1)
       expect(trayInstances[0].setContextMenu).toHaveBeenCalledTimes(2)
-      expect(builtMenuItems()[0].label).toBe('Orca を開く')
-      expect(builtMenuItems().at(-2)?.label).toBe('完全に終了…')
-      expect(builtMenuItems().at(-1)?.label).toBe('終了')
+      expect(builtMenuItems()[0].label).toBe('Open Ash IDE')
+      expect(builtMenuItems().at(-2)?.label).toBe('Quit Completely...')
+      expect(builtMenuItems().at(-1)?.label).toBe('Quit')
       builtMenuItems()[0].click?.()
       builtMenuItems().at(-2)?.click?.()
       builtMenuItems().at(-1)?.click?.()
@@ -677,8 +677,8 @@ describe('language changes', () => {
       expect(options.onQuitAndStopAllSessions).toHaveBeenCalledOnce()
       expect(options.onQuit).toHaveBeenCalledOnce()
       if (platform === 'darwin') {
-        expect(builtMenuItems()[2].label).toBe('設定')
-        expect(builtMenuItems()[3].label).toBe('アップデートを確認…')
+        expect(builtMenuItems()[2].label).toBe('Settings')
+        expect(builtMenuItems()[3].label).toBe('Check for Updates...')
         builtMenuItems()[2].click?.()
         builtMenuItems()[3].click?.()
         expect(options.onOpenSettings).toHaveBeenCalledOnce()
@@ -690,7 +690,7 @@ describe('language changes', () => {
     }
   )
 
-  it('refreshes the attention tooltip and replacements in the active language catalog', async () => {
+  it('keeps menu labels and the attention tooltip in English for legacy locale requests', async () => {
     setPlatform('darwin')
     const { createSystemTray, rebuildSystemTrayMenu, setTrayAttention } = await loadModule()
     const { mainI18n, setMainUiLanguage } = await import('../i18n/main-i18n')
@@ -698,19 +698,16 @@ describe('language changes', () => {
     createSystemTray(createOptions({ isDevInstance: true, devInstanceLabel: 'language-test' }))
     setTrayAttention(true)
     flushTraySceneMutation()
-    await setMainUiLanguage('ja')
+    await expect(setMainUiLanguage('ja')).resolves.toBe('en')
+    expect(mainI18n.language).toBe('en')
     rebuildSystemTrayMenu()
     flushTraySceneMutation()
     expect(trayInstances[0].setToolTip).toHaveBeenLastCalledWith(
-      'Orca DEV (language-test) - 件のアクティビティが待機中'
+      'Ash IDE DEV (language-test) - activity waiting'
     )
-    expect(builtMenuItems()[0].label).toBe('Orca DEV (language-test)')
+    expect(builtMenuItems()[0].label).toBe('Ash IDE DEV (language-test)')
     expect(composeAttentionMock).toHaveBeenCalled()
-
-    mainI18n.addResource('ja', 'translation', 'tray.openOrca', 'Orca を表示')
-    rebuildSystemTrayMenu()
-    flushTraySceneMutation()
-    expect(builtMenuItems()[2].label).toBe('Orca を表示')
+    expect(builtMenuItems().some((item) => item.label === 'Settings')).toBe(true)
   })
 
   it('does nothing without a tray or when destroyed before the deferred refresh', async () => {

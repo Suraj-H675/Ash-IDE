@@ -17,7 +17,6 @@ import { normalizeDisabledTuiAgents } from '../../../shared/agent-launch/catalog
 import { hasUnsupportedTuiAgentArgs } from '../../../shared/agent-launch/choices/tui-agent-launch-defaults'
 import { normalizeTerminalCursorStyleDefault } from '../../../shared/terminal/appearance/terminal-cursor-style-settings'
 import { normalizeTerminalLineHeight } from '../../../shared/terminal/appearance/terminal-line-height-settings'
-import { migratePortugueseUiLanguageOnLoad } from '../../../shared/portuguese-ui-language-migration'
 import { migrateAgentYoloDefaults } from '../applying-settings/terminal-settings-migrations'
 import { hasTypedAgentPermission } from '../../../shared/agent-launch/permissions/tui-agent-permission-choice'
 import { migrateAgentPermissionChoice } from '../../../shared/agent-launch/permissions/tui-agent-permission-lift'
@@ -28,10 +27,6 @@ import {
 } from '../applying-settings/onboarding-normalization'
 
 export type PreparedLoadedProfileSettings = {
-  migratedPortugueseUiLanguage: Pick<
-    GlobalSettings,
-    'uiLanguage' | 'uiLanguagePortugueseMigrationApplied'
-  >
   migratedExperimentalActivity: GlobalSettings['experimentalActivity']
   migratedAutoRenameBranchFromWork: Pick<
     GlobalSettings,
@@ -72,13 +67,6 @@ export function prepareLoadedProfileSettings(
   defaults: PersistedState,
   markNeedsSave: () => void
 ): PreparedLoadedProfileSettings {
-  const migratedPortugueseUiLanguage = migratePortugueseUiLanguageOnLoad(parsed.settings)
-  if (
-    parsed.settings?.uiLanguage !== migratedPortugueseUiLanguage.uiLanguage ||
-    parsed.settings?.uiLanguagePortugueseMigrationApplied !== true
-  ) {
-    markNeedsSave()
-  }
   const experimentalActivityDefaultedOffForAllUsers =
     parsed.settings?.experimentalActivityDefaultedOffForAllUsers === true
   // Preserve the pre-graduation Agents-tab rollout boundary.
@@ -271,7 +259,6 @@ export function prepareLoadedProfileSettings(
     markNeedsSave()
   }
   return {
-    migratedPortugueseUiLanguage,
     migratedExperimentalActivity,
     migratedAutoRenameBranchFromWork,
     migratedPluginSystemEnabled,

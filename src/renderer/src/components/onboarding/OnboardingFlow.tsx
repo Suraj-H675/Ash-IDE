@@ -1,4 +1,3 @@
-import { OnboardingLanguageSwitcher } from './OnboardingLanguageSwitcher'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { isEditableTarget } from '@/lib/editable-target'
@@ -45,20 +44,19 @@ export default function OnboardingFlow({
     (currentStep.id === 'notifications'
       ? translate('components.onboarding.flow.actions.addFirstProject', 'Add your first project')
       : translate('components.onboarding.flow.actions.continue', 'Continue'))
-  const [languagePickerOpen, setLanguagePickerOpen] = useState(false)
   const [skipConfirmOpen, setSkipConfirmOpen] = useState(false)
   const skipConfirmAdvancedViaRef = useRef<'button' | 'keyboard'>('button')
   const { next: flowNext, dismissOnboarding: flowDismissOnboarding } = flow
 
   const requestSkipConfirmation = useCallback(
     (advancedVia: 'button' | 'keyboard') => {
-      if (busyLabel || skipConfirmOpen || languagePickerOpen) {
+      if (busyLabel || skipConfirmOpen) {
         return
       }
       skipConfirmAdvancedViaRef.current = advancedVia
       setSkipConfirmOpen(true)
     },
-    [busyLabel, skipConfirmOpen, languagePickerOpen]
+    [busyLabel, skipConfirmOpen]
   )
 
   const confirmSkipOnboarding = useCallback(() => {
@@ -70,7 +68,7 @@ export default function OnboardingFlow({
   // Depend on stable callbacks/step ID so the changing flow object cannot churn the key listener.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (languagePickerOpen || skipConfirmOpen) {
+      if (skipConfirmOpen) {
         return
       }
       // Do not submit while typing in clone URL or another editable field.
@@ -86,11 +84,11 @@ export default function OnboardingFlow({
     }
     addAppKeyListener('keydown', onKeyDown)
     return () => removeAppKeyListener('keydown', onKeyDown)
-  }, [flowNext, languagePickerOpen, skipConfirmOpen])
+  }, [flowNext, skipConfirmOpen])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key !== 'Escape' || skipConfirmOpen || languagePickerOpen) {
+      if (event.key !== 'Escape' || skipConfirmOpen) {
         return
       }
       event.preventDefault()
@@ -98,7 +96,7 @@ export default function OnboardingFlow({
     }
     addAppKeyListener('keydown', onKeyDown)
     return () => removeAppKeyListener('keydown', onKeyDown)
-  }, [requestSkipConfirmation, skipConfirmOpen, languagePickerOpen])
+  }, [requestSkipConfirmation, skipConfirmOpen])
 
   return (
     <TooltipProvider delayDuration={0} skipDelayDuration={0}>
@@ -139,10 +137,6 @@ export default function OnboardingFlow({
                 />
                 <span>Ash IDE</span>
               </div>
-              <OnboardingLanguageSwitcher
-                open={languagePickerOpen}
-                onOpenChange={setLanguagePickerOpen}
-              />
             </div>
 
             <div className="mt-10 flex items-center gap-2 transition-[margin-top] duration-[760ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none">

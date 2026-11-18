@@ -22,6 +22,7 @@ import {
 } from '../applying-settings/terminal-settings-migrations'
 import { readLegacySidekickFlag } from '../applying-settings/onboarding-normalization'
 import { normalizeMachineName } from '../../../shared/machine-name'
+import { normalizeUiLanguage } from '../../../shared/ui-language'
 import type { PersistedState } from '../../../shared/persisted-state-types'
 import type { PreparedLoadedTerminalSettings } from './prepare-loaded-terminal-settings'
 import type { PreparedLoadedProfileSettings } from './prepare-loaded-profile-settings'
@@ -45,7 +46,6 @@ export function normalizeLoadedGlobalSettings(
     migratedFloatingTerminalTrustedCwds
   } = terminal
   const {
-    migratedPortugueseUiLanguage,
     migratedExperimentalActivity,
     migratedAutoRenameBranchFromWork,
     migratedPluginSystemEnabled,
@@ -80,6 +80,8 @@ export function normalizeLoadedGlobalSettings(
     ...defaults.settings,
     // Legacy stored booleans cannot distinguish opt-in from the old default; retain explicit true.
     ...expandWorkspaceDirHome(stripRetiredGlobalSettings(parsed.settings)),
+    // Keep legacy locale values readable; the English-only UI ignores them without migration writes.
+    uiLanguage: normalizeUiLanguage(parsed.settings?.uiLanguage),
     agentDefaultSurface: normalizeAgentDefaultSurface(parsed.settings?.agentDefaultSurface),
     nativeChatAppearance: normalizeNativeChatAppearanceSettings(
       parsed.settings?.nativeChatAppearance
@@ -146,7 +148,6 @@ export function normalizeLoadedGlobalSettings(
     minimizeToTrayOnClose: parsed.settings?.minimizeToTrayOnClose === true,
     // Default-on values round-trip off-platform; macOS consumers gate the actual effect.
     showMenuBarIcon: parsed.settings?.showMenuBarIcon !== false,
-    ...migratedPortugueseUiLanguage,
     nativeChatInheritShellEnvironment: parsed.settings?.nativeChatInheritShellEnvironment !== false,
     nativeChatShellEnvironmentVariables: normalizeNativeChatShellEnvironmentVariables(
       parsed.settings?.nativeChatShellEnvironmentVariables

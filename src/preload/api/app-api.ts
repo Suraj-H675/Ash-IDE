@@ -1,4 +1,3 @@
-import type { UiLanguageDetection } from '../../shared/ui-locale'
 import type { WindowMaterial } from '../../shared/window-material'
 import type { AppIdentity } from '../../shared/app-identity'
 import type { MacosUpgradeSupport } from '../../shared/macos-upgrade-support'
@@ -17,9 +16,6 @@ import type { KeyboardLayoutSnapshot } from '../../shared/keyboard-layout-snapsh
 import type { KeyboardLayoutChangeEvent } from '../../shared/keyboard-layout-events'
 
 export type AppApi = {
-  getSystemLanguageDetection?: (
-    browserPreferences?: readonly string[]
-  ) => Promise<UiLanguageDetection | null>
   isProfileStateSaveDelayed: () => Promise<boolean>
   onProfileStateSaveDelayChanged: (callback: (delayed: boolean) => void) => () => void
   getIdentity: () => Promise<AppIdentity>

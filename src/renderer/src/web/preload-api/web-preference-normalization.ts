@@ -44,7 +44,6 @@ import { normalizeOsc52ClipboardDefaultOn } from '../../../../shared/osc52-clipb
 import { normalizeTerminalCursorStyleDefault } from '../../../../shared/terminal/appearance/terminal-cursor-style-settings'
 import { normalizeDisabledTuiAgents } from '../../../../shared/agent-launch/catalog/tui-agent-selection'
 import { normalizeUiLanguage } from '../../../../shared/ui-language'
-import { migratePortugueseUiLanguageOnLoad } from '../../../../shared/portuguese-ui-language-migration'
 import { normalizeUsagePercentageDisplay } from '../../../../shared/usage-percentage-display'
 import { mergeWorkspaceCleanupUIState } from '../../../../shared/workspace-cleanup/workspace-cleanup-ui-state'
 
@@ -175,7 +174,8 @@ export function migrateStoredWebSettings(
     ...normalizeOsc52ClipboardDefaultOn(stored),
     terminalCustomThemes: normalizeTerminalCustomThemes(stored.terminalCustomThemes),
     ...splitLegacyTerminalColorOverrides(stored),
-    ...migratePortugueseUiLanguageOnLoad(stored),
+    // Retain valid legacy values for compatibility; the English-only UI ignores them.
+    uiLanguage: normalizeUiLanguage(stored.uiLanguage),
     ...(hasLegacyMatchTerminalSidebar(stored) ? syncLegacyMatchTerminalSidebar(stored, true) : {})
   }
 }

@@ -4,7 +4,6 @@ import {
   type DiscoveredPlugin,
   type ValidDiscoveredPlugin
 } from '../plugin-discovery'
-import { PluginLanguagePackRegistry } from './plugin-language-pack-registry'
 import { PluginIconThemeRegistry } from './plugin-icon-theme-registry'
 import { PluginSyntaxRegistry } from './plugin-syntax-registry'
 import {
@@ -27,7 +26,6 @@ type ContentFamily = {
 }
 
 export class PluginContentPackRegistry {
-  readonly languagePacks: PluginLanguagePackRegistry
   readonly themes: ReturnType<typeof createPluginThemeRegistry>
   readonly terminalThemes: ReturnType<typeof createPluginTerminalThemeRegistry>
   readonly iconThemes: PluginIconThemeRegistry
@@ -42,7 +40,6 @@ export class PluginContentPackRegistry {
     private readonly isKilled: (pluginKey: string) => boolean,
     private readonly appearance?: PluginAppearanceService | null
   ) {
-    this.languagePacks = new PluginLanguagePackRegistry(contentVerifier)
     this.themes = createPluginThemeRegistry(contentVerifier, appearance?.overlayAppThemes)
     this.terminalThemes = createPluginTerminalThemeRegistry(
       contentVerifier,
@@ -132,7 +129,6 @@ export class PluginContentPackRegistry {
   /** Keep contribution errors in this family order. */
   private families(keybindings: KeybindingOverrides = {}): readonly ContentFamily[] {
     return [
-      this.languagePacks,
       this.themes,
       this.terminalThemes,
       this.iconThemes,

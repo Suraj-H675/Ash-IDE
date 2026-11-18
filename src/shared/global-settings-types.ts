@@ -76,7 +76,9 @@ export type GlobalSettings = GlobalSettingsBase & {
   leftSidebarAppearanceMode: LeftSidebarAppearanceMode
   leftSidebarTintColor?: string
   leftSidebarTintOpacity?: number
+  /** Deprecated. Retained when reading/writing legacy settings; Ash always displays English. */
   uiLanguage: UiLanguage
+  /** Deprecated legacy migration marker. English-only UI startup does not change this field. */
   uiLanguagePortugueseMigrationApplied?: boolean
   appIcon: AppIconId
   appFontFamily: string

@@ -42,7 +42,6 @@ describe('plugin approval over RPC', () => {
         commands: [],
         events: [],
         hooks: [],
-        languagePacks: [],
         keybindings: [],
         vmRecipes: [],
         themes: [],

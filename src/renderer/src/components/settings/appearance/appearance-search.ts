@@ -4,7 +4,6 @@ import { getSidebarEntries } from './appearance-sidebar-search'
 import { createLocalizedCatalog } from '@/i18n/localized-catalog'
 import { translate } from '@/i18n/i18n'
 import { translateSearchKeyword } from '../search/settings-search-keywords'
-import { SHOW_UI_LANGUAGE_SETTING } from '@/i18n/supported-languages'
 import { getStatusBarToggles } from './appearance-status-bar-search'
 import { getUsagePercentageDisplayEntry } from './appearance-usage-percentage-search'
 import { getMenuBarIconEntries, getSystemTrayEntries } from './appearance-system-presence-search'
@@ -45,57 +44,6 @@ export const getCodeEditorThemeEntries = createLocalizedCatalog((): SettingsSear
       ...translateSearchKeyword('settings.appearance.editorTheme.keyword.syntax', 'syntax'),
       ...translateSearchKeyword('auto.components.settings.appearance.search.262fe1d24f', 'dark'),
       ...translateSearchKeyword('auto.components.settings.appearance.search.44d873fd18', 'light')
-    ]
-  }
-])
-
-export const getLanguageEntries = createLocalizedCatalog((): SettingsSearchEntry[] => [
-  {
-    title: translate('settings.appearance.language.title', 'Language'),
-    description: translate(
-      'settings.appearance.language.description',
-      'Choose the language used by the Orca interface.'
-    ),
-    keywords: [
-      ...translateSearchKeyword('settings.appearance.language.title', 'Language'),
-      ...translateSearchKeyword(
-        'settings.appearance.language.description',
-        'Choose the language used by the Orca interface.'
-      ),
-      ...translateSearchKeyword('settings.appearance.language.system', 'System'),
-      ...translateSearchKeyword('settings.appearance.language.english', 'English'),
-      ...translateSearchKeyword('settings.appearance.language.chinese', '中文（简体）'),
-      ...translateSearchKeyword(
-        'settings.appearance.language.chineseTraditional',
-        '繁體中文（台灣）'
-      ),
-      ...translateSearchKeyword('settings.appearance.language.korean', '한국어'),
-      ...translateSearchKeyword('settings.appearance.language.japanese', '日本語'),
-      ...translateSearchKeyword('settings.appearance.language.spanish', 'Español'),
-      ...translateSearchKeyword('settings.appearance.language.french', 'Français'),
-      ...translateSearchKeyword('settings.appearance.language.portuguese', 'Português (Brasil)'),
-      ...translateSearchKeyword('settings.appearance.language.russian', 'Русский'),
-      ...translateSearchKeyword('settings.appearance.language.turkish', 'Türkçe'),
-      ...translateSearchKeyword('settings.appearance.language.german', 'Deutsch'),
-      // Index native language words in every locale so users can find their language from an unfamiliar UI.
-      '语言',
-      '語言',
-      '언어',
-      '言語',
-      'Idioma',
-      'Langue',
-      'Язык',
-      'Dil',
-      'Sprache',
-      ...translateSearchKeyword(
-        'auto.components.settings.appearance.search.language.locale',
-        'locale'
-      ),
-      ...translateSearchKeyword('auto.components.settings.appearance.search.language.i18n', 'i18n'),
-      ...translateSearchKeyword(
-        'auto.components.settings.appearance.search.language.translation',
-        'translation'
-      )
     ]
   }
 ])
@@ -256,7 +204,6 @@ export function getAppearancePaneSearchEntries(
     ...getAppearanceSectionEntries(),
     ...getThemeEntries(),
     ...getCodeEditorThemeEntries(),
-    ...(SHOW_UI_LANGUAGE_SETTING ? getLanguageEntries() : []),
     ...getTypographyEntries(),
     ...getZoomEntries(),
     ...getTerminalAppearanceSearchEntries(options),

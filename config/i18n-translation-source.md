@@ -255,10 +255,10 @@ Two additional surfaces are in scope:
   both platforms, or emit current English under a documented platform rule.
   The intentional locale-ID mapping (JS `zh` vs native `zh-Hans`) is part of
   the projection contract. The migration covers both projections.
-- **Plugin language packs.** Language packs remain external overrides
-  validated against compiled core keys. They are consumers of the contract,
-  not another canonical source, and the compiler must leave their runtime
-  path intact.
+- **Plugin language packs.** Ash does not ship or load application-plugin
+  language packs. They are outside the desktop product's English-only UI
+  runtime; built-in locale catalogs remain source material for the retained
+  localization tooling and upstream provenance only.
 
 ## Translation automation
 
@@ -518,7 +518,7 @@ The completed system must not:
 - retranslate or rewrite complete catalogs for ordinary copy changes;
 - make generated runtime JSON another hand-edited source;
 - rename existing hashed message IDs in bulk;
-- treat plugin language packs as a canonical source;
+  - treat plugin language packs as a runtime input;
 - block feature PRs while translations catch up;
 - require runtime network access; or
 - maintain multiple canonical translation databases.

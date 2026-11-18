@@ -1,6 +1,6 @@
 import { getIntlLocale } from './i18n'
 
-// Weekday words follow the UI language; resolve plugin pack tags and cache per locale for live switches.
+// Weekday words follow the English-only UI locale.
 let cached: { locale: string; names: readonly string[] } | null = null
 
 // 2026-01-04 is Sunday: preserve cron/RRULE Sunday indexing regardless of the locale’s first weekday.

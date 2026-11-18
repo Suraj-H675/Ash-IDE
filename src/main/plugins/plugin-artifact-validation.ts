@@ -27,7 +27,6 @@ export {
   resolveContainedPluginArtifact
 }
 const PLUGIN_ICON_MAX_BYTES = 2 * 1024 * 1024
-export const PLUGIN_LANGUAGE_PACK_MAX_BYTES = 5 * 1024 * 1024
 export const PLUGIN_VM_RECIPE_MAX_BYTES = 256 * 1024
 // Why 16 KiB: a theme is a few dozen tokens or palette slots.
 export const PLUGIN_THEME_MAX_BYTES = 16 * 1024
@@ -82,9 +81,6 @@ function declaredArtifactPaths(manifest: PluginManifest): DeclaredArtifact[] {
         PLUGIN_IMAGE_RULES.icon.maxBytes
       )
     ]),
-    ...c.languagePacks.flatMap((pack) =>
-      declaredFile(`language pack "${pack.locale}"`, pack.path, PLUGIN_LANGUAGE_PACK_MAX_BYTES)
-    ),
     ...c.vmRecipes.flatMap((recipe) =>
       declaredFile('VM recipe', recipe.path, PLUGIN_VM_RECIPE_MAX_BYTES)
     ),

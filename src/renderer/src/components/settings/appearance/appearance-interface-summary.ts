@@ -1,9 +1,4 @@
 import type { GlobalSettings } from '../../../../../shared/global-settings-types'
-import {
-  getUiLanguageChoiceLabel,
-  SHOW_UI_LANGUAGE_SETTING,
-  UI_LANGUAGE_CHOICES
-} from '@/i18n/supported-languages'
 import { translate } from '@/i18n/i18n'
 
 function resolveThemeSummary(theme: GlobalSettings['theme']): string {
@@ -16,20 +11,9 @@ function resolveThemeSummary(theme: GlobalSettings['theme']): string {
   return translate('auto.components.settings.AppearancePane.7d26ccabe8', 'Dark')
 }
 
-function resolveLanguageSummary(uiLanguage: GlobalSettings['uiLanguage']): string {
-  const choice = UI_LANGUAGE_CHOICES.find((entry) => entry.value === uiLanguage)
-  if (choice == null) {
-    return translate('settings.appearance.language.system', 'System')
-  }
-  return getUiLanguageChoiceLabel(choice, translate)
-}
-
 export function resolveInterfaceSectionSummary(settings: GlobalSettings): string {
   const fontSummary =
     settings.appFontFamily ||
     translate('auto.components.settings.AppearancePane.interfaceDefaultFont', 'Default font')
-  if (!SHOW_UI_LANGUAGE_SETTING) {
-    return `${resolveThemeSummary(settings.theme)} · ${fontSummary}`
-  }
-  return `${resolveThemeSummary(settings.theme)} · ${resolveLanguageSummary(settings.uiLanguage)} · ${fontSummary}`
+  return `${resolveThemeSummary(settings.theme)} · ${fontSummary}`
 }
