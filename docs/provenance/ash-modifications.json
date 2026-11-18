@@ -3013,8 +3013,8 @@
     },
     {
       "path": "config/scripts/cli-build/verify-cli-bin.test.mjs",
-      "sha256": "95f3edff728fb46f861c477cc210c849ee6789ea03e9c49e50ad951af98423aa",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "8b5ae9729fe9d071fefdea990f8c17b93814c98168d97a0a902ac75ae9afed66",
+      "reason": "Ash M8: cover clean compiled CLI CommonJS package boundary generation with Ash identity, correcting stale Orca fixture expectations."
     },
     {
       "path": "config/scripts/desktop-distribution/appimage/static-appimage-package-contract.cjs",
@@ -3223,8 +3223,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "dca057d56fab0edca10ee19746444db00c2cbcc2fde2929322eae3218650a1b1",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "a3588d51dacb241d908dbc1369370ac6978c130953bd652b6dbb459da29e8709",
+      "reason": "Ash M8: allow an explicit AppImage-only Linux packaging target and generate the compiled CLI CommonJS package boundary during clean desktop asset builds, without global CLI installation."
     },
     {
       "path": "pnpm-lock.yaml",
@@ -3478,6 +3478,11 @@
       "path": "config/i18n-translation-source.md",
       "sha256": "0fc94a96b4c364bf5ebade4bbe78da21c3f31a54eb2df6502c60728928d13c21",
       "reason": "Ash M8: document that application-plugin language packs are outside the English-only Ash runtime."
+    },
+    {
+      "path": "config/scripts/desktop-distribution/linux/build-linux-local.mjs",
+      "sha256": "5f43f18841a8c3636baffe57584d88cf244bfb69bbb144917c30a8b6a3896310",
+      "reason": "Ash M8: permit explicit Linux AppImage-only packaging without requiring optional DEB/RPM toolchains; preserve default multi-target build."
     }
   ]
 }

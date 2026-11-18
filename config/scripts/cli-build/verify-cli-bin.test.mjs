@@ -11,12 +11,12 @@ afterEach(() => {
   }
 })
 
-/** Builds a temporary Orca-style project fixture with a compiled CLI entrypoint. */
+/** Builds a temporary Ash project fixture with a compiled CLI entrypoint. */
 function makeProjectWithCli(
   content,
   { mode = 0o755, rootPackageType, writeOutPackageJson = true } = {}
 ) {
-  const projectDir = mkdtempSync(path.join(tmpdir(), 'orca-cli-bin-'))
+  const projectDir = mkdtempSync(path.join(tmpdir(), 'ash-cli-bin-'))
   roots.push(projectDir)
   const cliPath = path.join(projectDir, 'out', 'cli', 'index.js')
   const outPackageJsonPath = path.join(projectDir, 'out', 'package.json')
@@ -63,7 +63,7 @@ describe('verifyPackageCliBin', () => {
     verifyPackageCliBin({ projectDir, fixPackageJson: true, runHelp: true })
 
     expect(JSON.parse(readFileSync(outPackageJsonPath, 'utf8'))).toEqual({
-      name: 'orca-compiled-output',
+      name: 'ash-ide-compiled-output',
       type: 'commonjs',
       private: true
     })
