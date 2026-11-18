@@ -154,9 +154,10 @@ export const VERIFY_CHECKS = [
     name: 'test file runners',
     args: ['config/scripts/ci/unit-selection/check-test-file-runners.mjs'],
     inputs: [
+      '.github/workflows/foundation.yml',
+      'config/scripts/ci/unit-selection/check-test-file-runners.mjs',
       'config/scripts/ci/unit-selection/dependency-graph/ci-unit-files.mjs',
-      'tests/playwright.config.ts',
-      'mobile/vitest.config.ts'
+      'config/scripts/test-runtime/execution-policy/run-vitest.mjs'
     ],
     matches: (files) =>
       files.some((file) => TEST_FILE.test(file) || /vitest[^/]*\.config/.test(file))

@@ -87,7 +87,10 @@ export function piOptionRefreshHost(sessionId = 'session-1') {
       const conversation = {
         child: host.live ? { fence: 2, phase: 'ready' } : null,
         params: { provider: 'pi' },
-        journal: hostTestRestingOptionsJournal()
+        journal: {
+          ...hostTestRestingOptionsJournal(),
+          statusRead: () => ({ items: [], submissions: [] })
+        }
       }
       // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the real reader accesses only these injected ports; no provider process is launched.
       const context = {

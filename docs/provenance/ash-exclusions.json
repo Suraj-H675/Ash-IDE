@@ -44354,6 +44354,16 @@
       "path": "src/shared/plugins/languages/plugin-translation-string-policy.ts",
       "sourceSha256": "e91881eb48bef5d592f3271358657f699e6ff97c01eaa59032729b9171fc13e6",
       "reason": "Ash M8: remove plugin translation string safety policy used only by application-plugin language packs."
+    },
+    {
+      "path": "config/scripts/mobile-web-app/shell/mobile-web-app-code-block-selection.mjs",
+      "sourceSha256": "3ca6b8ee38bd8c8e0c53309e97e7a42ebe2e439f9c614313ed5af487df3c228a",
+      "reason": "Ash M8 retires the orphan code-block selection registrar whose sole upstream caller tests the excluded mobile web app."
+    },
+    {
+      "path": "src/shared/plugin-git-download-binary-compatibility.test-cases.ts",
+      "sourceSha256": "1d684de23cc96d0c0ee7977f430af83e383bf79791fe88e4d074e6534df85e2d",
+      "reason": "Ash M8 retires the orphan Git download case for the excluded application-plugin marketplace. The four retained Git compatibility registrars have an Ash runner."
     }
   ]
 }

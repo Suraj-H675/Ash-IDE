@@ -51,6 +51,14 @@ jobs:
         run: pnpm run verify:localization-catalog
       - name: Build retained workspace packages
         run: node config/scripts/workspace-package-build/build-workspace-packages.mjs
+      - name: Verify runnable test collection
+        run: pnpm run check:test-file-runners
+      - name: Test the runner audit diagnostics
+        run: |
+          node node_modules/vitest/vitest.mjs run \
+            --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
+            --no-file-parallelism \
+            config/scripts/ci/unit-selection/ash-test-runner-audit.test.mjs
       - name: Check TypeScript projects
         run: node config/scripts/typecheck/project-execution/run-typecheck-projects-in-parallel.mjs
       - name: Test the persistent runtime and provider boundaries

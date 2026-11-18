@@ -797,6 +797,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/native-chat/agent-session-wire/structured-agent-session-option-refresh.test-fixture.ts",
+      "sha256": "a46994493314b150d7aa20209cb50abe0e0c63455bf2799b1a29cf70edae5144",
+      "reason": "Ash M8 supplies the empty journal status needed by the current recovery read when running the cross-layer Pi option contracts."
+    },
+    {
       "path": "src/main/orca-profiles/profile-cloud-auth-config.ts",
       "sha256": "4c7efa95c0ac6ab5681a1dedaf10a8f42ffe0a9a58a97eab46ed8e76f110b5ca",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -3007,6 +3012,11 @@
       "reason": "Ash M8: remove timing entries for retired language-pack test files."
     },
     {
+      "path": "config/scripts/ci/unit-selection/dependency-graph/ci-unit-files.mjs",
+      "sha256": "ee6d75b5e922497bdc8be91eb5df041e68424496a1147143cf642dfe68650965",
+      "reason": "Ash M8 removes absent legacy runner exclusions and preserves the retained shell and native PTY exclusions for balanced Vitest runs."
+    },
+    {
       "path": "config/scripts/cli-build/verify-cli-bin.mjs",
       "sha256": "1a568bdad3bbb522ad0b6d9570de740be792f2e99279dc7795e8a1a63c3291c6",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -3281,13 +3291,13 @@
     },
     {
       "path": "config/scripts/ci/unit-selection/check-test-file-runners.mjs",
-      "sha256": "4ea2f3e9fd35f1a0235ca7d3f800e6bf0d7f3fbbfaa900b4ef688a19dba295c2",
-      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+      "sha256": "a4607025d44313f1bac41436bfe3fc01b4258653f19fa0714369c0ccce752446",
+      "reason": "Ash M8: derive test selection from runnable Vitest configs and hosted foundation selectors, detect orphaned registrars and mandatory hosted-test drift, and protect the non-conditional, non-failure-tolerant audit quality gate itself."
     },
     {
       "path": "config/scripts/preflight/changed-checks/check-changed-selection.mjs",
-      "sha256": "80ddf42de753c27b35cebabee1c81f511e822ab74aa859f638f4ebb6581a8eec",
-      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
+      "sha256": "e86cb79231288eb82330b0eaf65ab5fcfca596bcb2059ab0fcfeca7424cd7166",
+      "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries. Ash M8 triggers the test collection audit on its implementation, actual foundation workflow, and Vitest wrapper."
     },
     {
       "path": "config/scripts/preflight/changed-checks/run-lint.mjs",
