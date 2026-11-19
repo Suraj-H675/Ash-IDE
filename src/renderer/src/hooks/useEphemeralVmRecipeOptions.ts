@@ -99,17 +99,6 @@ export function useEphemeralVmRecipeOptions(args: EphemeralVmRecipeOptionsArgs):
     }
   }, [load])
 
-  useEffect(() => {
-    if (!window.api.plugins?.onChanged) {
-      return
-    }
-    return window.api.plugins.onChanged((event) => {
-      if (event?.contentPacksChanged ?? true) {
-        load(false)
-      }
-    })
-  }, [load])
-
   useUiLanguageRevision()
   const error = errors.map(ephemeralVmErrorText).filter(Boolean).join('\n') || null
   return { recipes, selectedRecipeId, setSelectedRecipeId, error }

@@ -4,7 +4,6 @@ import {
   WORKTREE_CARD_PROPERTIES,
   normalizeWorktreeCardProperties
 } from '../worktree/card-properties'
-import { isPluginPanelTabKey } from '../plugins/manifest/plugin-manifest'
 import { isFeatureInteractionId } from '../feature-interactions'
 import type { FeatureInteractionId } from '../feature-interactions'
 import { ACTIVITY_GROUP_BY_VALUES, THREAD_READ_FILTER_VALUES } from '../agents-view-thread-filters'
@@ -47,15 +46,7 @@ export const STATIC_RIGHT_SIDEBAR_TABS = [
   'ports'
 ] as const
 
-// Plugin panels are open-ended `plugin:<publisher>.<id>/<panel>` keys, so the
-// schema validates their shape rather than enumerating them.
-export const RightSidebarTabParam = z.custom<StaticRightSidebarTab | `plugin:${string}`>(
-  (value) =>
-    typeof value === 'string' &&
-    (STATIC_RIGHT_SIDEBAR_TABS.includes(value as StaticRightSidebarTab) ||
-      isPluginPanelTabKey(value)),
-  { message: 'Unknown right sidebar tab' }
-)
+export const RightSidebarTabParam = z.enum(STATIC_RIGHT_SIDEBAR_TABS)
 
 export const AgentActivityDisplayMode = z.enum(['compact', 'full'])
 

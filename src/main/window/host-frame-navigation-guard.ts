@@ -1,12 +1,11 @@
 import type { WebContents, WebFrameMain } from 'electron'
 import { NATIVE_CHAT_VISUAL_FRAME_NAME_PREFIX } from '../../shared/native-chat/native-chat-visual-shell'
-import { PLUGIN_PANEL_FRAME_NAME_PREFIX } from '../../shared/plugins/frames/plugin-frame-bridge'
 
 type NavigationFrame = Pick<WebFrameMain, 'frameTreeNodeId' | 'isDestroyed' | 'name'>
 
-/** Host-marked srcdoc classes contain navigation only; registration grants no plugin identity or action authority. */
+// Keep the retired frame marker so an outdated renderer cannot grant it a document.
 const HOST_FRAME_KINDS = [
-  { kind: 'plugin-panel', namePrefix: PLUGIN_PANEL_FRAME_NAME_PREFIX },
+  { kind: 'retired-panel', namePrefix: 'orca-plugin-panel:' },
   { kind: 'chat-visual', namePrefix: NATIVE_CHAT_VISUAL_FRAME_NAME_PREFIX }
 ] as const
 
@@ -39,7 +38,7 @@ export class HostFrameNavigationRegistry {
 
   register(frame: NavigationFrame): void {
     const kind = hostFrameKindForName(frame.name)
-    if (kind) {
+    if (kind && !this.frames.has(frame)) {
       this.frames.set(frame, { kind, initialSrcdocPending: true })
       hostFrameKinds.set(frame, kind)
     }
@@ -50,10 +49,17 @@ export class HostFrameNavigationRegistry {
     initiator: NavigationFrame | null,
     destinationUrl: string
   ): boolean {
+    if (/^orca-plugin-frame:/i.test(destinationUrl.trimStart())) {
+      return true
+    }
     const registeredTarget = frame ? this.frames.get(frame) : undefined
     if (registeredTarget && frame && !frame.isDestroyed()) {
       // Registration precedes srcdoc commit; allow its initial document only, then contain all navigation.
-      if (registeredTarget.initialSrcdocPending && destinationUrl === 'about:srcdoc') {
+      if (
+        registeredTarget.kind === 'chat-visual' &&
+        registeredTarget.initialSrcdocPending &&
+        destinationUrl === 'about:srcdoc'
+      ) {
         registeredTarget.initialSrcdocPending = false
         return false
       }

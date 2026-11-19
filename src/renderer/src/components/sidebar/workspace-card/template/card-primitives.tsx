@@ -1,7 +1,7 @@
 import React from 'react'
-import { PluginDeclarativeBadge } from '@/components/plugins/declarative/PluginDeclarativeDisplay'
-import { PluginDeclarativeIconGlyph } from '@/components/plugins/declarative/plugin-declarative-icons'
-import type { PluginDeclarativeTone } from '../../../../../../shared/plugins/declarative/plugin-declarative-catalog'
+import { CircleDashed } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { resolveCardIconGlyph } from './card-icon-glyphs'
 import { cn } from '@/lib/utils'
 import { cardElement, type CardHostElement } from './card-template-compiler'
 
@@ -94,7 +94,6 @@ const TEXT_SIZE: Readonly<Record<string, string>> = {
   meta: 'text-2xs leading-none',
   micro: 'text-3xs leading-none'
 }
-// Same tone vocabulary as components panels; colour only carries state.
 const TONE: Readonly<Record<string, string>> = {
   neutral: 'text-foreground',
   accent: 'text-primary',
@@ -102,13 +101,40 @@ const TONE: Readonly<Record<string, string>> = {
   warning: 'text-status-warning-text',
   danger: 'text-destructive'
 }
-const BADGE_TONES: readonly PluginDeclarativeTone[] = [
-  'neutral',
-  'accent',
-  'success',
-  'warning',
-  'danger'
-]
+const BADGE_TONES = ['neutral', 'accent', 'success', 'warning', 'danger'] as const
+
+/** Badge tone: success and warning have no badge colour, so they carry a status dot. */
+function CardBadge({
+  tone,
+  children
+}: {
+  tone: (typeof BADGE_TONES)[number] | undefined
+  children: React.ReactNode
+}): React.JSX.Element {
+  switch (tone) {
+    case 'accent':
+      return <Badge variant="default">{children}</Badge>
+    case 'danger':
+      return <Badge variant="destructive">{children}</Badge>
+    case 'success':
+      return (
+        <Badge variant="outline">
+          <span aria-hidden className="size-1.5 rounded-full bg-status-success" />
+          {children}
+        </Badge>
+      )
+    case 'warning':
+      return (
+        <Badge variant="outline">
+          <span aria-hidden className="size-1.5 rounded-full bg-status-warning" />
+          {children}
+        </Badge>
+      )
+    case 'neutral':
+    case undefined:
+      return <Badge variant="secondary">{children}</Badge>
+  }
+}
 
 function toText(value: unknown): string {
   return typeof value === 'string' || typeof value === 'number' ? String(value) : ''
@@ -136,16 +162,13 @@ function text(props: Props): React.ReactNode {
 
 function badge(props: Props): React.ReactNode {
   const tone = BADGE_TONES.find((candidate) => candidate === props.tone)
-  return <PluginDeclarativeBadge tone={tone}>{toText(props.text)}</PluginDeclarativeBadge>
+  return <CardBadge tone={tone}>{toText(props.text)}</CardBadge>
 }
 
 function icon(props: Props): React.ReactNode {
-  return (
-    <PluginDeclarativeIconGlyph
-      name={typeof props.name === 'string' ? props.name : ''}
-      className={cn('size-3 shrink-0', pick(TONE, props.tone) ?? 'text-muted-foreground')}
-    />
-  )
+  return React.createElement(resolveCardIconGlyph(toText(props.name), CircleDashed), {
+    className: cn('size-3 shrink-0', pick(TONE, props.tone) ?? 'text-muted-foreground')
+  })
 }
 
 /** Primitives draw from props alone, so they work under any context. */

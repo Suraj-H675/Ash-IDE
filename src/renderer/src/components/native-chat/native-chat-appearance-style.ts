@@ -50,6 +50,7 @@ export function selectNativeChatAppearanceSettings(
     terminalCustomThemes: settings?.terminalCustomThemes,
     terminalPluginPalettes: settings?.terminalPluginPalettes,
     pluginSystemEnabled: settings?.pluginSystemEnabled,
+    pluginSystemDefaultedOn: settings?.pluginSystemDefaultedOn,
     disabledPlugins: settings?.disabledPlugins,
     terminalColorOverrides: settings?.terminalColorOverrides,
     terminalColorOverridesLight: settings?.terminalColorOverridesLight,
@@ -185,6 +186,7 @@ export function nativeChatAppearanceStyle(
         terminalCustomThemes: settings?.terminalCustomThemes,
         terminalPluginPalettes: settings?.terminalPluginPalettes,
         pluginSystemEnabled: settings?.pluginSystemEnabled,
+        pluginSystemDefaultedOn: settings?.pluginSystemDefaultedOn,
         disabledPlugins: settings?.disabledPlugins,
         terminalColorOverrides: settings?.terminalColorOverrides,
         terminalColorOverridesLight: settings?.terminalColorOverridesLight

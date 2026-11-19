@@ -11,7 +11,15 @@ export function sanitizeRendererSettingsUpdate(
   const { terminalScrollbackBytes: _legacyScrollbackBytes, ...sanitizedArgs } =
     args as LegacyTerminalScrollbackSettingsUpdate
   void _legacyScrollbackBytes
-  // Plugin consent and enablement require main's reviewed-fingerprint handlers.
+  // Keep inherited app-plugin records read-only across generic renderer updates.
+  delete sanitizedArgs.pluginSystemEnabled
+  delete sanitizedArgs.pluginSystemDefaultedOn
+  delete sanitizedArgs.devPluginPaths
+  delete sanitizedArgs.pluginReplacementsOff
+  delete sanitizedArgs.pluginFullAccessEnabled
+  delete sanitizedArgs.pluginFileTypeSuggestions
+  delete sanitizedArgs.pluginDismissedFileTypes
+  delete sanitizedArgs.pluginUpdatePolicy
   delete sanitizedArgs.pluginConsents
   delete sanitizedArgs.disabledPlugins
   delete sanitizedArgs.pluginExternalHostGrants

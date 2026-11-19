@@ -20,7 +20,6 @@ export const CLI_MAIN_ENTRY_NAMES = [
   'skills/bundled-skill-install/cli-entry',
   'filesystem/macos-tree-clone',
   'orcad/orcad-stale-lock-reclaim',
-  'plugins/plugin-authoring-checks',
   ...[
     'access',
     'active-location',
@@ -36,7 +35,6 @@ export const CLI_MAIN_ENTRY_NAMES = [
   'startup/http1-compatibility-marker'
 ] as const
 
-// Plain-Node processes and CLI modules cannot load Electron's API.
 const PLAIN_NODE_ENTRY_NAMES = [
   'browser-extension-native-host-supervisor-entry',
   'daemon-entry',
@@ -45,8 +43,6 @@ const PLAIN_NODE_ENTRY_NAMES = [
   'computer-sidecar',
   'wsl-transcript-fs-process-entry',
   'orcad/orcad-local-serve-selection-entry',
-  // ELECTRON_RUN_AS_NODE plugin worker host; it now bundles sucrase for TypeScript workers.
-  'plugin-host-entry',
   ...CLI_MAIN_ENTRY_NAMES
 ] as const
 
@@ -61,8 +57,7 @@ const WORKER_THREAD_ENTRY_NAMES = [
   'worker-thread-child-process-entry',
   ...(['usage-scan', 'workspace-space-scan'] as const).map((n) => `${n}-worker-entry` as const),
   'claude-profile-setup-worker-entry',
-  ...(['backup', 'writer'] as const).map((kind) => `profile-state-${kind}-worker-entry` as const),
-  'plugin-source-transpile-worker-entry'
+  ...(['backup', 'writer'] as const).map((kind) => `profile-state-${kind}-worker-entry` as const)
 ] as const
 
 export const GUARDED_ENTRY_NAMES = [
@@ -175,7 +170,6 @@ function assertDaemonExternalsAreMirrored(
   }
 }
 
-// Owned by the argv parser in src/main/daemon/launch/daemon-command-arguments.ts — keep in sync.
 const DAEMON_USAGE_PREFIX = 'Usage: daemon-entry'
 
 export type SmokeTimings = {
@@ -268,16 +262,15 @@ async function smokeLoadDaemonEntry(outputDir: string, timings: SmokeTimings): P
         `empty argv under plain Node, so the smoke killed it.`
     )
   }
-  if (result.signal) {
+  const { signal, stderr } = result
+  if (signal) {
     throw new Error(
-      `[plain-node-entry-guard] daemon-entry.js was killed by ${result.signal} under plain Node.`
+      `[plain-node-entry-guard] daemon-entry.js was killed by ${signal} under plain Node.`
     )
   }
-  const stderr = result.stderr
   if (/Cannot find module|MODULE_NOT_FOUND/.test(stderr)) {
-    throw new Error(
-      `[plain-node-entry-guard] daemon-entry.js failed to load under plain Node:\n${stderr}`
-    )
+    throw new Error(`[plain-node-entry-guard] daemon-entry.js failed to load under plain Node:
+${stderr}`)
   }
   if (result.status === 0 || (!inheritStderr && !stderr.includes(DAEMON_USAGE_PREFIX))) {
     throw new Error(
@@ -307,12 +300,9 @@ export function createPlainNodeEntryGuardPlugin(
         (item): item is OutputChunk => item.type === 'chunk'
       )
       const byFileName = new Map(chunks.map((chunk) => [chunk.fileName, chunk]))
-      const entryByName = new Map<string, OutputChunk>()
-      for (const chunk of chunks) {
-        if (chunk.isEntry && chunk.name) {
-          entryByName.set(chunk.name, chunk)
-        }
-      }
+      const entryByName = new Map(
+        chunks.filter((chunk) => chunk.isEntry && chunk.name).map((chunk) => [chunk.name, chunk])
+      )
 
       const electronFreeChunkCode = new Map<OutputChunk, string>()
       for (const entryName of PLAIN_NODE_ENTRY_NAMES) {
@@ -344,10 +334,7 @@ export function createPlainNodeEntryGuardPlugin(
       const daemonEntry = entryByName.get('daemon-entry')
       if (daemonEntry) {
         assertDaemonExternalsAreMirrored(daemonEntry, byFileName)
-      }
-
-      if (entryByName.has('daemon-entry') && options.dir) {
-        daemonOutputDir = options.dir
+        daemonOutputDir = options.dir ?? daemonOutputDir
       }
     },
     async closeBundle() {

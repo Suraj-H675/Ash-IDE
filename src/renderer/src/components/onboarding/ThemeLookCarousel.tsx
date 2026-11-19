@@ -1,18 +1,11 @@
 import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { Check, ChevronLeft, ChevronRight, ExternalLink, Puzzle } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
 import { Button } from '@/components/ui/button'
 import type { ThemeLook } from './onboarding-theme-looks'
 import { ThemeLookCardPreview } from './ThemeLookPreview'
-
-export const THEME_PLUGINS_URL = 'https://onorca.dev/plugins?kind=themes'
-
-export function openThemePluginDirectory(): void {
-  // Why the system browser: onboarding has no workspace browser to host the directory.
-  void window.api.shell.openUrl(THEME_PLUGINS_URL)
-}
 
 type ScrollEdges = { start: boolean; end: boolean }
 
@@ -155,20 +148,6 @@ export function ThemeLookCarousel({
             </button>
           )
         })}
-        <button
-          type="button"
-          className="flex w-40 shrink-0 snap-start flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border p-1.5 text-center text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
-          onClick={openThemePluginDirectory}
-        >
-          <Puzzle className="size-4" />
-          <span className="text-xs font-medium">
-            {translate('components.onboarding.theme.looks.moreThemes', 'More themes')}
-          </span>
-          <span className="flex items-center gap-1 text-2xs">
-            {translate('components.onboarding.theme.looks.browsePlugins', 'Browse plugins')}
-            <ExternalLink className="size-2.5" />
-          </span>
-        </button>
       </div>
     </section>
   )

@@ -1,18 +1,16 @@
 import type { ITheme } from '@xterm/xterm'
 import type { GlobalSettings } from '../../../shared/global-settings-types'
-import {
-  completePluginAppThemeTokens,
-  type PluginThemeTokenColorRule
-} from '../../../shared/plugins/artifacts/plugin-theme-artifact'
-import { pluginAppThemeCssFallback } from '../../../shared/plugins/artifacts/plugin-theme-css-fallbacks'
+import { completeAppThemeTokens } from './app-theme-tokens'
+import { appThemeCssFallback } from './app-theme-css-fallbacks'
+import type { MonacoTokenColorRule } from './monaco-token-rules'
 import { MATCH_TERMINAL_APP_THEME } from '../../../shared/plugin-theme-settings'
 import {
   resolveTerminalPalette,
   type TerminalPaletteSettings as TerminalAppThemeSettings
 } from '../../../shared/terminal-themes/terminal-theme-selection'
 import type { AppThemePaint } from './document-theme'
-import { hashThemeContent } from './plugin-monaco-theme'
-import { contrastRatio, type ColorProbe, type Rgba } from './plugin-theme-tokens'
+import { hashThemeContent } from './monaco-palette-theme'
+import { contrastRatio, type ColorProbe, type Rgba } from './app-theme-colors'
 import { getSystemPrefersDark } from './terminal-theme'
 import {
   isTerminalBackgroundLight,
@@ -21,7 +19,7 @@ import {
 
 export type TerminalAppTheme = AppThemePaint & {
   id: typeof MATCH_TERMINAL_APP_THEME
-  tokenColors: PluginThemeTokenColorRule[]
+  tokenColors: MonacoTokenColorRule[]
 }
 
 const MIN_TEXT_CONTRAST = 4.5
@@ -138,9 +136,7 @@ const SYNTAX_SCOPES: readonly (readonly [keyof ITheme, string[]])[] = [
 let last: { content: string; theme: TerminalAppTheme } | null = null
 
 /**
- * An app theme from the terminal palette, shaped like a plugin theme so it goes through the same
- * derivation, contrast gate, startup cache and Monaco theme. Null when the palette has no
- * readable background or foreground.
+ * The app and Monaco palette for Match Terminal. Returns null without readable terminal colors.
  */
 export function synthesizeTerminalAppTheme(
   settings: TerminalAppThemeSettings,
@@ -177,7 +173,7 @@ export function synthesizeTerminalAppTheme(
     : surfacesToward(light ? [255, 255, 255, 1] : [0, 0, 0, 1])
   const text = legible(foreground, [background, ...Object.values(surfaces)], light)
   // Why: the host pill paints muted text on the accent, tinted in dark over the sidebar (= background).
-  const hostBadgeRule = pluginAppThemeCssFallback('--host-badge', base)
+  const hostBadgeRule = appThemeCssFallback('--host-badge', base)
   const hostBadge = mix(
     surfaces.accent,
     background,
@@ -199,7 +195,7 @@ export function synthesizeTerminalAppTheme(
     const color = ansi(key)
     return color ? [[`--chart-${index + 1}`, hex(color)] as const] : []
   })
-  const tokens = completePluginAppThemeTokens({
+  const tokens = completeAppThemeTokens({
     '--background': hex(background),
     '--foreground': hex(text),
     '--popover': hex(surfaces.popover),

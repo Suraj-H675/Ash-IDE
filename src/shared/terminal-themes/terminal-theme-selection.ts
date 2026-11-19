@@ -1,6 +1,5 @@
 import type { ITheme } from '@xterm/xterm'
 import type { GlobalSettings } from '../global-settings-types'
-import { isPluginContentSwitchedOff } from '../plugins/plugin-system-settings'
 import {
   hasTerminalColorOverrides,
   TERMINAL_COLOR_OVERRIDES_SETTING,
@@ -52,7 +51,9 @@ export type TerminalThemeLookupSettings = Pick<
   GlobalSettings,
   'terminalCustomThemes' | 'terminalPluginPalettes'
 > &
-  Partial<Pick<GlobalSettings, 'pluginSystemEnabled' | 'disabledPlugins'>>
+  Partial<
+    Pick<GlobalSettings, 'pluginSystemEnabled' | 'pluginSystemDefaultedOn' | 'disabledPlugins'>
+  >
 
 /** A selection names a plugin, user-imported or built-in theme; one lookup for all three. */
 export function lookupTerminalTheme(
@@ -60,11 +61,14 @@ export function lookupTerminalTheme(
   selection: string
 ): TerminalThemeMap[string] | null {
   if (selection.startsWith('plugin:')) {
-    // Why: like app and icon themes, a switched-off plugin's palette falls back to the default
-    // but stays saved, so turning the plugin back on restores it.
-    return isPluginContentSwitchedOff(settings, selection)
+    // A saved false from before the marker was introduced was the old default.
+    const disabled =
+      settings?.pluginSystemDefaultedOn === true && settings.pluginSystemEnabled === false
+    const key = selection.slice('plugin:'.length, selection.lastIndexOf('/'))
+    return disabled ||
+      (Array.isArray(settings?.disabledPlugins) && settings.disabledPlugins.includes(key))
       ? null
-      : pluginPalette(settings?.terminalPluginPalettes, selection)
+      : legacyTerminalPalette(settings?.terminalPluginPalettes, selection)
   }
   const customId = parseCustomTerminalThemeSelection(selection)
   const custom =
@@ -79,7 +83,10 @@ export function lookupTerminalTheme(
 }
 
 // Why re-validate: settings are persisted and synced, so a snapshot is untrusted input here.
-function pluginPalette(palettes: unknown, selection: string): TerminalThemeMap[string] | null {
+function legacyTerminalPalette(
+  palettes: unknown,
+  selection: string
+): TerminalThemeMap[string] | null {
   if (!Array.isArray(palettes)) {
     return null
   }

@@ -1,9 +1,7 @@
 import type { CodeEditorThemeChoice } from '../../../shared/plugin-appearance-settings-types'
-import type { PluginThemeRegistration } from '../../../shared/plugins/artifacts/plugin-theme-artifact'
-import { pluginAppThemeCssFallback } from '../../../shared/plugins/artifacts/plugin-theme-css-fallbacks'
-import { derivePluginMonacoTheme, type PluginMonacoTheme } from './plugin-monaco-theme'
-import type { AppThemePaint } from './document-theme'
-import { safePluginThemeTokens, type ColorProbe } from './plugin-theme-tokens'
+import { deriveMonacoTheme, type MonacoPaletteTheme } from './monaco-palette-theme'
+import type { TerminalAppTheme } from './terminal-app-theme'
+import type { ColorProbe } from './app-theme-colors'
 
 type ThemeBase = 'light' | 'dark'
 
@@ -20,7 +18,7 @@ export type CodeEditorThemeOverride = { base: ThemeBase; colors: CodeEditorColor
 
 export type CodeEditorTheme = {
   /** Null keeps Monaco's built-in vs / vs-dark. */
-  monaco: PluginMonacoTheme | null
+  monaco: MonacoPaletteTheme | null
   /** Null while the editor follows the app theme. */
   override: CodeEditorThemeOverride | null
 }
@@ -41,109 +39,36 @@ const BUILT_IN_COLORS: Record<ThemeBase, CodeEditorColors> = {
   }
 }
 
-/** A saved choice's theme; null follows the app, also for a disabled or removed plugin. */
 export function findCodeEditorTheme(
-  choice: CodeEditorThemeChoice | null | undefined,
-  themes: readonly PluginThemeRegistration[]
-): ThemeBase | PluginThemeRegistration | null {
-  if (choice === 'light' || choice === 'dark') {
-    return choice
-  }
-  return themes.find((theme) => theme.id === choice) ?? null
-}
-
-/** A token as main.css would paint it from these tokens: the theme's value, else its CSS fallback. */
-function readThemeToken(
-  tokens: Readonly<Record<string, string>>,
-  base: ThemeBase,
-  token: string
-): string {
-  if (tokens[token]) {
-    return tokens[token]
-  }
-  const rule = pluginAppThemeCssFallback(token, base)
-  const read = (source: string): string => readThemeToken(tokens, base, source)
-  if (!rule) {
-    return ''
-  }
-  if ('tint' in rule) {
-    const hue = read(rule.tint)
-    return hue ? `color-mix(in srgb, ${hue} ${rule.percent}%, transparent)` : ''
-  }
-  if ('mixForeground' in rule) {
-    const foreground = read('--foreground')
-    const into = read(rule.into ?? '--background')
-    return foreground && into
-      ? `color-mix(in srgb, ${foreground} ${rule.mixForeground}%, ${into})`
-      : ''
-  }
-  return rule.map(read).find(Boolean) ?? ''
-}
-
-function monacoColors(theme: PluginMonacoTheme, base: ThemeBase): CodeEditorColors {
-  const colors = theme.data.colors
-  const fallback = BUILT_IN_COLORS[base]
-  return {
-    background: colors['editor.background'] ?? fallback.background,
-    foreground: colors['editor.foreground'] ?? fallback.foreground,
-    mutedForeground: colors['editorLineNumber.foreground'] ?? fallback.mutedForeground,
-    border: colors['editorWidget.border'] ?? fallback.border
-  }
+  choice: CodeEditorThemeChoice | null | undefined
+): ThemeBase | null {
+  return choice === 'light' || choice === 'dark' ? choice : null
 }
 
 /** The theme every Monaco surface uses for the app's current mode. */
 export function resolveCodeEditorTheme(input: {
   dark: boolean
-  /** The app theme painted for this mode (a plugin's or Match Terminal's), if any. */
-  appTheme: (AppThemePaint & Pick<PluginThemeRegistration, 'tokenColors'>) | null
-  selected: ThemeBase | PluginThemeRegistration | null
-  /** The tokens the app theme painted, after its contrast check. */
+  appTheme: TerminalAppTheme | null
+  selected: ThemeBase | null
   appPainted: Readonly<Record<string, string>>
-  /** A painted document CSS variable, for following the app theme. */
   readDocument: (token: string) => string
   probe: ColorProbe
 }): CodeEditorTheme {
   const { appTheme, selected } = input
-  const appBase: ThemeBase = input.dark ? 'dark' : 'light'
-  const sameAsApp =
-    selected === null ||
-    (typeof selected === 'string'
-      ? selected === appBase && !appTheme
-      : selected.id === appTheme?.id)
-  if (sameAsApp) {
-    return {
-      // Why read the document: a followed editor matches what was painted, built-ins included.
-      monaco: appTheme
-        ? derivePluginMonacoTheme({
-            base: appTheme.base,
-            read: input.readDocument,
-            painted: input.appPainted,
-            probe: input.probe,
-            tokenColors: appTheme.tokenColors
-          })
-        : null,
-      override: null
-    }
-  }
-  if (typeof selected === 'string') {
+  if (selected && (appTheme || selected !== (input.dark ? 'dark' : 'light'))) {
     return { monaco: null, override: { base: selected, colors: BUILT_IN_COLORS[selected] } }
   }
-  // Why the theme's own tokens: the document shows the app theme. The same contrast gate as an
-  // app theme drops unreadable ones; no built-ins, as the derivation has its own fallbacks.
-  const tokens = safePluginThemeTokens(selected.tokens, selected.base, {}, input.probe)
-  const monaco = derivePluginMonacoTheme({
-    base: selected.base,
-    read: (token) => readThemeToken(tokens, selected.base, token),
-    painted: tokens,
-    probe: input.probe,
-    tokenColors: selected.tokenColors
-  })
   return {
-    monaco,
-    override: {
-      base: selected.base,
-      colors: monaco ? monacoColors(monaco, selected.base) : BUILT_IN_COLORS[selected.base]
-    }
+    monaco: appTheme
+      ? deriveMonacoTheme({
+          base: appTheme.base,
+          read: input.readDocument,
+          painted: input.appPainted,
+          probe: input.probe,
+          tokenColors: appTheme.tokenColors
+        })
+      : null,
+    override: null
   }
 }
 

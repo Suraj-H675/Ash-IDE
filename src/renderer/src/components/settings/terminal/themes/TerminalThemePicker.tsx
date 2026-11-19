@@ -76,10 +76,6 @@ export function ThemePicker({
       themes: matchingThemes
         .filter((theme) => theme.group === 'imported')
         .slice(0, MAX_THEME_RESULTS)
-    },
-    {
-      label: translate('auto.components.settings.SettingsFormControls.plugin_themes', 'Plugins'),
-      themes: matchingThemes.filter((theme) => theme.group === 'plugin').slice(0, MAX_THEME_RESULTS)
     }
   ].filter((group) => group.themes.length > 0)
   const visibleThemeCount = groupedThemes.reduce((sum, group) => sum + group.themes.length, 0)
@@ -160,17 +156,11 @@ export function ThemePicker({
                           <span className="block truncate">{theme.label}</span>
                           {theme.sourceLabel ? (
                             <span className="block truncate text-[11px] font-normal text-muted-foreground">
-                              {theme.group === 'plugin'
-                                ? translate(
-                                    'auto.components.settings.SettingsFormControls.from_plugin',
-                                    'From {{value0}}',
-                                    { value0: theme.sourceLabel }
-                                  )
-                                : translate(
-                                    'auto.components.settings.SettingsFormControls.imported_from',
-                                    'Imported from {{value0}}',
-                                    { value0: theme.sourceLabel }
-                                  )}
+                              {translate(
+                                'auto.components.settings.SettingsFormControls.imported_from',
+                                'Imported from {{value0}}',
+                                { value0: theme.sourceLabel }
+                              )}
                               {theme.mode && theme.mode !== 'unknown' ? ` · ${theme.mode}` : ''}
                             </span>
                           ) : null}

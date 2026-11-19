@@ -1,10 +1,5 @@
 import type { ITheme } from '@xterm/xterm'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
-import {
-  completePluginAppThemeTokens,
-  type PluginThemeRegistration
-} from '../../../../shared/plugins/artifacts/plugin-theme-artifact'
-import type { PluginTerminalThemeRegistration } from '../../../../shared/plugins/artifacts/plugin-terminal-theme-artifact'
 import { resolveTerminalPalette } from '../../../../shared/terminal-themes/terminal-theme-selection'
 import { TERMINAL_THEME_CATALOG } from '../../../../shared/terminal-themes/terminal-theme-catalog'
 
@@ -38,15 +33,7 @@ export type ThemeLook = {
   source: string
   base: ThemeLookBase
   palette: ThemeLookPalette
-} & (
-  | { kind: 'built-in' }
-  | {
-      kind: 'plugin'
-      theme: PluginThemeRegistration
-      terminal: PluginTerminalThemeRegistration | null
-    }
-  | { kind: 'terminal'; terminalThemeName: string }
-)
+} & ({ kind: 'built-in' } | { kind: 'terminal'; terminalThemeName: string })
 
 // Popular community palettes Orca ships; Match Terminal turns each into a whole-app theme.
 const TERMINAL_LOOKS: Record<ThemeLookBase, readonly string[]> = {
@@ -137,48 +124,6 @@ function currentTerminal(
   )
 }
 
-function pluginTerminalFor(
-  theme: PluginThemeRegistration,
-  terminals: readonly PluginTerminalThemeRegistration[]
-): PluginTerminalThemeRegistration | null {
-  const own = terminals.filter(
-    (terminal) =>
-      terminal.pluginKey === theme.pluginKey &&
-      (terminal.mode === theme.base || terminal.mode === 'unknown')
-  )
-  return (
-    own.find((terminal) => terminal.label === theme.label) ?? (own.length === 1 ? own[0] : null)
-  )
-}
-
-function pluginLook(
-  theme: PluginThemeRegistration,
-  terminals: readonly PluginTerminalThemeRegistration[],
-  baseline: GlobalSettings
-): ThemeLook {
-  const tokens = completePluginAppThemeTokens(theme.tokens)
-  const terminal = pluginTerminalFor(theme, terminals)
-  return {
-    kind: 'plugin',
-    id: theme.id,
-    label: theme.label,
-    source: theme.pluginName,
-    base: theme.base,
-    theme,
-    terminal,
-    palette: {
-      background: tokens['--background'],
-      sidebar: tokens['--worktree-sidebar'] ?? tokens['--sidebar'] ?? tokens['--background'],
-      foreground: tokens['--foreground'],
-      mutedForeground: tokens['--muted-foreground'] ?? tokens['--foreground'],
-      border: tokens['--border'] ?? mixInto(tokens['--foreground'], tokens['--background'], 16),
-      accent: tokens['--accent'] ?? mixInto(tokens['--foreground'], tokens['--background'], 12),
-      primary: tokens['--primary'] ?? tokens['--foreground'],
-      terminal: terminalPalette(terminal?.terminal) ?? currentTerminal(baseline, theme.base)
-    }
-  }
-}
-
 function terminalLook(name: string, base: ThemeLookBase, source: string): ThemeLook | null {
   const terminal = terminalPalette(TERMINAL_THEME_CATALOG[name])
   if (!terminal) {
@@ -206,16 +151,13 @@ function terminalLook(name: string, base: ThemeLookBase, source: string): ThemeL
   }
 }
 
-/** Every look the theme step offers for one mode: Orca's own first, then installed plugin
- *  themes, then popular terminal palettes painted through Match Terminal. */
+/** Built-in and Match Terminal previews for one mode. */
 export function buildThemeLooks(options: {
   base: ThemeLookBase
-  pluginThemes: readonly PluginThemeRegistration[]
-  pluginTerminalThemes: readonly PluginTerminalThemeRegistration[]
   baseline: GlobalSettings
   labels: { orca: string; builtIn: (base: ThemeLookBase) => string; community: string }
 }): ThemeLook[] {
-  const { base, pluginThemes, pluginTerminalThemes, baseline, labels } = options
+  const { base, baseline, labels } = options
   const builtIn: ThemeLook = {
     kind: 'built-in',
     id: builtInThemeLookId(base),
@@ -224,11 +166,8 @@ export function buildThemeLooks(options: {
     base,
     palette: { ...BUILT_IN_CHROME[base], terminal: currentTerminal(baseline, base) }
   }
-  const plugins = pluginThemes
-    .filter((theme) => theme.base === base)
-    .map((theme) => pluginLook(theme, pluginTerminalThemes, baseline))
   const terminals = TERMINAL_LOOKS[base].flatMap(
     (name) => terminalLook(name, base, labels.community) ?? []
   )
-  return [builtIn, ...plugins, ...terminals]
+  return [builtIn, ...terminals]
 }

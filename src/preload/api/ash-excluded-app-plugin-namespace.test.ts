@@ -36,7 +36,10 @@ describe('Ash excluded application-plugin preload namespace', () => {
   })
 
   it('has no retired plugin IPC transport or web plugin namespace implementation to ship', () => {
+    expect(source('src/preload/api-types.ts')).not.toMatch(/PluginsApi|^\s*plugins\??\s*:/m)
     for (const path of [
+      'src/preload/api/plugin-host-api.ts',
+      'src/preload/plugin-frame-guest.ts',
       'src/preload/api/plugins-bridge.ts',
       'src/preload/api/plugin-panel-push-bridge.ts',
       'src/renderer/src/web/preload-api/web-plugins-api.ts',

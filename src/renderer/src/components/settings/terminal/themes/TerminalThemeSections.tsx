@@ -1,5 +1,3 @@
-import { usePluginTerminalThemes } from '@/store/plugin-themes'
-import { withTerminalPluginPalettes } from '@/lib/terminal-plugin-palettes'
 import { useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import { toast } from 'sonner'
 import { useAppStore } from '@/store/index'
@@ -120,8 +118,7 @@ export function TerminalThemeCatalogSection({
     rememberTerminalThemeTarget(nextTarget)
     setTargetState(nextTarget)
   }
-  const pluginTerminalThemes = usePluginTerminalThemes()
-  const themeOptions = getAvailableTerminalThemeOptions(settings, pluginTerminalThemes)
+  const themeOptions = getAvailableTerminalThemeOptions(settings)
   const isLightTarget = target === 'light'
   const matchDarkMode = !settings.terminalUseSeparateLightTheme
   const lightModeMatchesDark = isLightTarget && matchDarkMode
@@ -305,18 +302,12 @@ export function TerminalThemeCatalogSection({
                   onSelectTheme={(theme) => {
                     rememberTerminalThemeTarget(target)
                     // A selected theme must replace its slot's overrides or they mask the picker.
-                    updateSettings(
-                      withTerminalPluginPalettes(
-                        settings,
-                        {
-                          [isLightTarget ? 'terminalThemeLight' : 'terminalThemeDark']: theme,
-                          ...(hasTerminalColorOverrides(settings, target)
-                            ? { [TERMINAL_COLOR_OVERRIDES_SETTING[target]]: undefined }
-                            : {})
-                        },
-                        pluginTerminalThemes
-                      )
-                    )
+                    updateSettings({
+                      [isLightTarget ? 'terminalThemeLight' : 'terminalThemeDark']: theme,
+                      ...(hasTerminalColorOverrides(settings, target)
+                        ? { [TERMINAL_COLOR_OVERRIDES_SETTING[target]]: undefined }
+                        : {})
+                    })
                   }}
                   onDeleteImportedTheme={deleteImportedTheme}
                   importedHighlightSignal={importedHighlightSignal}

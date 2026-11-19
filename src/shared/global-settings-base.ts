@@ -7,10 +7,8 @@ import type { ExternalConversationSettings } from './external-conversation-setti
 import type { NativeChatGlobalSettings } from './native-chat/native-chat-appearance-settings'
 import type { NativeChatIdleStopSettings } from './native-chat/native-chat-idle-stop'
 import type { EditorTypographySettings } from './editor-typography-settings-types'
-import type { PluginAppearanceSettings } from './plugin-appearance-settings-types'
-import type { PluginFileTypeSuggestionSettings } from './plugins/contributions/plugin-file-type'
-import type { PluginUpdatePolicySettings } from './plugins/catalog/plugin-update-policy'
-import type { PluginSystemSettings } from './plugins/plugin-system-settings'
+import type { AppearanceThemeSettings } from './plugin-appearance-settings-types'
+import type { LegacyAppPluginSettings } from './legacy-app-plugin-settings'
 import type { TerminalScrollSettings } from './terminal/appearance/terminal-scroll-settings'
 import type { WorktreeDeletionPreferences } from './worktree-deletion-preferences'
 import type { AgentPermissionGlobalSettings } from './agent-launch/permissions/tui-agent-permission-choice'
@@ -29,11 +27,9 @@ export type GlobalSettingsBase = ClaudeAgentViewSettings &
   ExternalConversationSettings &
   BrowserLinkOpeningSettings &
   BrowserExtensionGlobalSettings &
-  PluginAppearanceSettings &
+  AppearanceThemeSettings &
   EditorTypographySettings &
-  PluginFileTypeSuggestionSettings &
-  PluginUpdatePolicySettings &
-  PluginSystemSettings &
+  LegacyAppPluginSettings &
   TerminalScrollSettings &
   TerminalColorOverrideGlobalSettings &
   WindowMaterialSettings &

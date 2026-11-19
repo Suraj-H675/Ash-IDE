@@ -47,7 +47,6 @@ import type {
 } from './api/os-permission-api'
 import type { PetApi } from './api/pet-api'
 import type { BrowserPasswordsApi } from './api/browser-passwords-api'
-import type { PluginsApi } from './api/plugin-host-api'
 import type { PreflightApi } from './api/preflight-api'
 import type { PtyApi } from './api/pty-api'
 import type { ProjectGroupsApi, ProjectsApi, RepositoryApi } from './api/repository-api'
@@ -167,8 +166,6 @@ export type PreloadApi = {
   wslDriveUnc: WslDriveUncConversionApi
   pwsh: RuntimeApi['pwsh']
   gitBash: RuntimeApi['gitBash']
-  /** Legacy Orca app-plugin API; deliberately absent in Ash desktop and web. */
-  plugins?: PluginsApi
   agentStatus: AgentStatusApi
   /** Optional legacy compatibility surface; desktop Ash does not expose mobile pairing. */
   mobile?: MobileApi
@@ -200,20 +197,6 @@ export type {
   NativeChatSubscribeArgs,
   NativeChatSubscriptionFrame
 } from './api/native-chat-api'
-export type {
-  PluginAutoUpdateEvent,
-  PluginHostCustomEditor,
-  PluginHostNewFile,
-  PluginHostInstallResult,
-  PluginHostInstallSource,
-  PluginHostListEntry,
-  PluginHostLogLine,
-  PluginHostPanel,
-  PluginHostStatus,
-  PluginMarketplaceHostInstallPreview,
-  PluginMarketplaceHostListing,
-  PluginMarketplaceHostSourceState
-} from './api/plugin-host-api'
 export type {
   PreflightApi,
   PreflightRuntimeContext,

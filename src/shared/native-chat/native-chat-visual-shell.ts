@@ -1,4 +1,4 @@
-import { PANEL_DESIGN_TOKEN_ALLOWLIST } from '../plugins/frames/plugin-panel-design-tokens'
+import { VISUAL_SHELL_DESIGN_TOKENS } from './native-chat-visual-design-tokens'
 
 /** Shared Electron-free sandbox document. Parse CSP before visual markup so later HTML cannot loosen it.
  * Allow pinned-CDN scripts/styles/fonts/images only; block fetch/sockets/frames/forms. Allowed-CDN requests can still carry data: disclosed accepted risk, not a no-egress guarantee. */
@@ -58,7 +58,7 @@ const MAX_LINK_LENGTH = 2048
 
 /** Theme variables a visual may style against: the plugin panel set plus the chart series. */
 export const NATIVE_CHAT_VISUAL_THEME_TOKENS = [
-  ...PANEL_DESIGN_TOKEN_ALLOWLIST,
+  ...VISUAL_SHELL_DESIGN_TOKENS,
   '--chart-1',
   '--chart-2',
   '--chart-3',

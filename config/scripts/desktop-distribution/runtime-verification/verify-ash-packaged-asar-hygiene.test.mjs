@@ -308,17 +308,21 @@ it.each(EXCLUDED_APP_PLUGIN_EXECUTABLES)(
 )
 
 it.each([
+  'out/main/plugins/panels/plugin-frame-guest-registry.js',
+  'out/shared/plugins/manifest/plugin-manifest.js',
   'out/shared/plugins/approval/plugin-cli-approval.js',
   'out/shared/plugins/declarative/runtime/declarative-sdk.js',
   'out/shared/plugins/declarative/testing/testing-host.js'
 ])('rejects dormant standalone general app-plugin module %s in ASAR', async (artifact) => {
   const resources = await makeArchive(['package.json', 'out/main/index.js', artifact])
   expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
-    '[ash-package-hygiene] excluded shared app-plugin tree packaged:'
+    '[ash-package-hygiene] excluded app-plugin CommonJS tree packaged:'
   )
 })
 
 it.each([
+  'out/main/plugins/panels/plugin-frame-guest-registry.js',
+  'out/shared/plugins/manifest/plugin-manifest.js',
   'out/shared/plugins/approval/plugin-cli-approval.js',
   'out/shared/plugins/declarative/runtime/declarative-sdk.js',
   'out/shared/plugins/declarative/testing/testing-host.js'
@@ -328,7 +332,7 @@ it.each([
   await mkdir(dirname(unpacked), { recursive: true })
   await writeFile(unpacked, 'synthetic retired app-plugin fixture\n')
   expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
-    '[ash-package-hygiene] excluded shared app-plugin tree packaged:'
+    '[ash-package-hygiene] excluded app-plugin CommonJS tree packaged:'
   )
 })
 
@@ -338,7 +342,7 @@ it('rejects retained CommonJS imports of excluded standalone plugin approval hel
     [importer]: "const x = require('./plugins/approval/plugin-consent-state')\n"
   })
   expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
-    `[ash-package-hygiene] retained runtime imports excluded shared app-plugin tree: ${importer} -> out/shared/plugins/approval/plugin-consent-state`
+    `[ash-package-hygiene] retained runtime imports excluded app-plugin CommonJS tree: ${importer} -> out/shared/plugins/approval/plugin-consent-state`
   )
 })
 
@@ -348,7 +352,7 @@ it('rejects retained static import() of excluded standalone plugin testing helpe
     [importer]: "const x = import('./plugins/declarative/testing/testing-host.js')\n"
   })
   expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(
-    `[ash-package-hygiene] retained runtime imports excluded shared app-plugin tree: ${importer} -> out/shared/plugins/declarative/testing/testing-host.js`
+    `[ash-package-hygiene] retained runtime imports excluded app-plugin CommonJS tree: ${importer} -> out/shared/plugins/declarative/testing/testing-host.js`
   )
 })
 

@@ -4,7 +4,6 @@ import type { GlobalSettings } from '../../../shared/global-settings-types'
 const DEFAULT_ON_MIGRATION_GUARDS = [
   ['terminalTuiScrollSensitivity', 'terminalTuiScrollSensitivityDefaultedToOne'],
   ['autoRenameBranchFromWork', 'autoRenameBranchFromWorkDefaultedOn'],
-  ['pluginSystemEnabled', 'pluginSystemDefaultedOn'],
   ['nestedWorkerMaxDepth', 'nestedWorkerMaxDepthDefaultedToFour']
 ] as const satisfies readonly (readonly [keyof GlobalSettings, keyof GlobalSettings])[]
 

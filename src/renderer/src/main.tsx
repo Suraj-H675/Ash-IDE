@@ -12,11 +12,7 @@ import {
   recordRendererCrashBreadcrumb
 } from './lib/crash-diagnostics'
 import { installAutomationHostDiagnostic } from './components/automations/automation-host-diagnostics'
-import {
-  applyCachedPluginAppTheme,
-  applyDocumentTheme,
-  readCachedPluginAppTheme
-} from './lib/document-theme'
+import { applyCachedAppTheme, applyDocumentTheme, readCachedAppTheme } from './lib/document-theme'
 import { installTypingLatencyDiagnostic } from './lib/typing-latency/diagnostic'
 import { installAppKeyboardRouter } from './lib/app-keyboard-router'
 import { shouldEnableReactGrab } from './lib/react-grab-dev-gate'
@@ -53,10 +49,10 @@ if (
 }
 
 applyWindowMaterialToDocument()
-const cachedPluginTheme = readCachedPluginAppTheme()
-applyDocumentTheme(cachedPluginTheme?.base ?? 'system', { disableTransitions: false })
-if (cachedPluginTheme) {
-  applyCachedPluginAppTheme(cachedPluginTheme)
+const cachedAppTheme = readCachedAppTheme()
+applyDocumentTheme(cachedAppTheme?.base ?? 'system', { disableTransitions: false })
+if (cachedAppTheme) {
+  applyCachedAppTheme(cachedAppTheme)
 }
 registerBrowserClientPageGuestMessageHandler(handleGuestWindowCloseMessage)
 const browserClientPageRenderer = installBrowserClientPageRenderer()

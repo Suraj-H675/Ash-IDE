@@ -104,12 +104,8 @@ const NODE_RUNTIME_INCLUDE = [
   'src/**/*expiry*.test.ts',
   'src/shared/own-retained-string.test.ts',
   'src/main/agent-hooks/server-transport-interference.test.ts',
-  'src/main/plugins/workers/plugin-worker-supervision.integration.test.ts',
-  'src/main/plugins/workers/plugin-worker-dev-restart-storage.integration.test.ts',
   // Worker TypeScript loads through node:module registerHooks, which Bun lacks.
-  'src/main/plugins/workers/plugin-worker-typescript-entry.integration.test.ts',
   // Reconciliation loads the real native Parcel watcher; Bun can abort on Linux ARM.
-  'src/main/plugins/plugin-service-reconciliation.test.ts',
   'src/main/ipc/command-path/command-path-directory-worker.test.ts',
   // Asserts Node's spawn-failure close signal and that a dead worker closes its children's pipes.
   'src/main/worker-thread-child-process/worker-thread-child-process.test.ts',

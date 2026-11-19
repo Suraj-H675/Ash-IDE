@@ -133,7 +133,7 @@ export function attachMainWindowServices(
   const allowedPermissions = new Set(['media', 'fullscreen', 'pointerLock'])
   mainWindow.webContents.session.setPermissionRequestHandler(
     (_webContents, permission, callback, details) => {
-      // Plugin srcdoc frames share this session but never the app's trust.
+      // Retired panel frames have no permission to use the app session.
       if (isPluginFramePermissionRequest(details)) {
         callback(false)
         return
@@ -155,6 +155,9 @@ export function attachMainWindowServices(
       // Only the app frame's font picker may list fonts; not subframes or other default-session pages.
       if (permissionName === 'local-fonts') {
         return webContents?.id === mainWindow.webContents.id && details.isMainFrame === true
+      }
+      if (isPluginFramePermissionRequest(details)) {
+        return false
       }
       if (permission !== 'media') {
         return allowedPermissions.has(permission)

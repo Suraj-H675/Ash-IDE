@@ -1,12 +1,10 @@
-import { useThemeBackgroundStore } from '@/store/theme-background'
 import { activeWindowMaterial } from './window-material-runtime'
 
-/** Something paints under translucent terminals: the window material (fixed per window) or a theme background image. */
+/** The window material paints under translucent terminal panes. */
 export function windowBackdropActive(): boolean {
-  return activeWindowMaterial() !== 'off' || useThemeBackgroundStore.getState().active
+  return activeWindowMaterial() !== 'off'
 }
 
 export function useWindowBackdropActive(): boolean {
-  const themeBackgroundActive = useThemeBackgroundStore((state) => state.active)
-  return activeWindowMaterial() !== 'off' || themeBackgroundActive
+  return activeWindowMaterial() !== 'off'
 }

@@ -7,7 +7,6 @@ import { getBrowserClientHostId } from '../browser/client-hosts/lifecycle/browse
 import { formatBrowserClientHostIdArgument } from '../../shared/browser/client-hosting/browser-client-host-id-argument'
 import { formatWindowMaterialArgument, resolveWindowMaterial } from '../../shared/window-material'
 import { windowMaterialOptions } from './window-material-options'
-import { rememberWindowMaterial } from './window-material-suppression'
 import { markSystemSessionEnding } from '../crash-reporting/expected-teardown-state'
 import { recordDurableCrashBreadcrumb } from '../crash-reporting/durable-crash-breadcrumb'
 import { clearTrustedUIRendererWebContentsId, setTrustedUIRendererWebContentsId } from '../ipc/ui'
@@ -158,7 +157,6 @@ export function createMainWindow(
       ]
     }
   })
-  rememberWindowMaterial(mainWindow, windowMaterial)
   const rendererWebContentsId = mainWindow.webContents.id
   installWindowsPathRegistryChangeListener(mainWindow)
   // Native paste fallback is privileged; trust only the top-level renderer.

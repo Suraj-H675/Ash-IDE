@@ -11,7 +11,6 @@ import {
 } from '../components/right-sidebar/file-explorer/content-search/file-search-include-pattern'
 import { useAppStore } from '../store'
 import { keybindingMatchesAction, type KeybindingActionId } from '../../../shared/keybindings'
-import { PLUGIN_COMMAND_ALIAS_ACTION_IDS } from '../../../shared/plugins/contributions/plugin-command-actions'
 import {
   ModifierDoubleTapDetector,
   toModifierDoubleTapEvent
@@ -31,6 +30,24 @@ import { textInputOwnsComposition } from '../../../shared/text-input-shortcut-po
 import { isAgentTerminalPreviewTarget } from '../components/dashboard-popout/agent-terminal-preview-target'
 
 /** Register window listeners once; each key event reads the latest committed shortcut state through a ref. */
+const BUILT_IN_APP_COMMAND_IDS = [
+  'worktree.history.back',
+  'worktree.history.forward',
+  'sidebar.left.toggle',
+  'sidebar.sleepingWorkspaces.toggle',
+  'floatingWorkspace.maximize',
+  'tab.rename',
+  'workspace.rename',
+  'workspace.openBoard',
+  'view.tasks',
+  'sidebar.right.toggle',
+  'sidebar.explorer.toggle',
+  'sidebar.search.toggle',
+  'sidebar.sourceControl.toggle',
+  'sidebar.checks.toggle',
+  'sidebar.ports.toggle'
+] as const satisfies readonly KeybindingActionId[]
+
 export function useGlobalKeybindings(args: {
   layout: AppChromeLayout
   floatingWorkspace: FloatingWorkspacePanelState
@@ -187,7 +204,7 @@ export function useGlobalKeybindings(args: {
       ) {
         return
       }
-      for (const actionId of PLUGIN_COMMAND_ALIAS_ACTION_IDS) {
+      for (const actionId of BUILT_IN_APP_COMMAND_IDS) {
         if (matchAppShortcut(actionId) && handlers.get(actionId)?.()) {
           return
         }

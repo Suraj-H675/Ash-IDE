@@ -9,6 +9,7 @@ function source(path: string): string {
 describe('Ash excludes the general application-plugin Main IPC tree', () => {
   it('has no installer, marketplace, frame, panel-push, settings or status-bar IPC registrar', () => {
     for (const path of [
+      'src/main/plugins',
       'src/main/ipc/plugins.ts',
       'src/main/ipc/plugin-frame-entry-ipc.ts',
       'src/main/ipc/plugin-marketplaces.ts',

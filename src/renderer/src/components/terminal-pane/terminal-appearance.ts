@@ -29,7 +29,7 @@ import { maybePushMode2031Flip } from './terminal-mode-2031-replies'
 import { resolveTerminalMinimumContrastRatio } from '../../../../shared/terminal-themes/terminal-contrast-correction'
 import { resolveTerminalInlineImagesEnabled } from '../../../../shared/terminal/images/terminal-inline-images-settings'
 import { windowBackdropActive } from '@/lib/window-backdrop'
-import { contrastRatio, over, type Rgba } from '@/lib/plugin-theme-tokens'
+import { contrastRatio, over, type Rgba } from '@/lib/app-theme-colors'
 import { getTerminalFontSizeOverride } from './terminal-font-size-overrides'
 
 function hexToRgb(hex: string): Rgba {

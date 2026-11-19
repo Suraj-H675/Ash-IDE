@@ -10,18 +10,18 @@ export function useMonacoTheme(isDarkOverride?: boolean): string {
   const documentDark = useDocumentDarkTheme()
   const editorBase = useCodeEditorThemeStore((state) => state.override?.base)
   const isDark = editorBase ? editorBase === 'dark' : (isDarkOverride ?? documentDark)
-  const pluginTheme = useCodeEditorThemeStore((state) => state.monaco)
+  const paletteTheme = useCodeEditorThemeStore((state) => state.monaco)
   const [defined, setDefined] = useState(() => definedThemes)
 
   useEffect(() => {
-    if (!pluginTheme || definedThemes.has(pluginTheme.name)) {
+    if (!paletteTheme || definedThemes.has(paletteTheme.name)) {
       return
     }
     let current = true
     // Why lazy: surfaces that never show an editor must not load Monaco for a theme.
     void import('monaco-editor').then((monaco) => {
-      monaco.editor.defineTheme(pluginTheme.name, pluginTheme.data)
-      definedThemes.add(pluginTheme.name)
+      monaco.editor.defineTheme(paletteTheme.name, paletteTheme.data)
+      definedThemes.add(paletteTheme.name)
       if (current) {
         setDefined(new Set(definedThemes))
       }
@@ -29,8 +29,12 @@ export function useMonacoTheme(isDarkOverride?: boolean): string {
     return () => {
       current = false
     }
-  }, [pluginTheme])
+  }, [paletteTheme])
 
   // Why the built-in until defined: Monaco silently ignores a theme name it doesn't know yet.
-  return pluginTheme && defined.has(pluginTheme.name) ? pluginTheme.name : isDark ? 'vs-dark' : 'vs'
+  return paletteTheme && defined.has(paletteTheme.name)
+    ? paletteTheme.name
+    : isDark
+      ? 'vs-dark'
+      : 'vs'
 }

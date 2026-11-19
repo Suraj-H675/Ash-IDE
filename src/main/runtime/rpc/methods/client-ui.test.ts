@@ -732,7 +732,7 @@ describe('client UI RPC methods', () => {
     })
   })
 
-  it.each(['workspaces', 'pr-checks', 'plugin:acme.tools/inspector'])(
+  it.each(['workspaces', 'pr-checks'])(
     'accepts the %s right sidebar tab a paired client can be sitting on',
     async (rightSidebarTab) => {
       const runtime = {
@@ -749,6 +749,22 @@ describe('client UI RPC methods', () => {
       expect(runtime.updateUIState).toHaveBeenCalledWith({ rightSidebarTab, sidebarWidth: 280 })
     }
   )
+
+  it('drops retired plugin panel tabs while preserving supported UI updates', async () => {
+    const updateUIState = vi.fn(() => getDefaultUIState())
+    const runtime = {
+      getRuntimeId: () => 'test-runtime',
+      updateUIState
+    } as unknown as OrcaRuntimeService
+    const dispatcher = new RpcDispatcher({ runtime, methods: CLIENT_UI_METHODS })
+
+    const response = await dispatcher.dispatch(
+      makeRequest('ui.set', { rightSidebarTab: 'plugin:acme.tools/inspector', sidebarWidth: 280 })
+    )
+
+    expect(response).toMatchObject({ ok: true })
+    expect(updateUIState).toHaveBeenCalledWith({ sidebarWidth: 280 })
+  })
 
   it('strips retired worktree card properties from legacy clients', async () => {
     const updated: PersistedUIState = {

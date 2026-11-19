@@ -112,6 +112,7 @@ describe('Ash right sidebar excludes general application-plugin panels', () => {
     try {
       await act(async () => {
         root.render(
+          // @ts-expect-error The test injects an obsolete route that the active type excludes.
           <RightSidebarPanelContent effectiveTab="plugin:acme.example/sidebar" rightSidebarOpen />
         )
       })

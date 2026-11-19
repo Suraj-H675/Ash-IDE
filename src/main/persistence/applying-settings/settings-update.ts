@@ -13,7 +13,7 @@ import { sanitizeAgentLaunchProfileUpdates } from '../../../shared/agent-launch/
 import { normalizeTerminalQuickCommands } from '../../../shared/terminal/quick-commands/terminal-quick-commands'
 import { assertTerminalQuickCommandsStorable } from '../../../shared/terminal/quick-commands/terminal-quick-command-prompt-limit'
 import { normalizeTerminalCustomThemes } from '../../../shared/terminal-themes/terminal-custom-themes'
-import { normalizePluginOwnedSettings } from '../../../shared/plugins/capabilities/plugin-owned-settings'
+import { normalizePluginThemeSettings } from '../../../shared/plugin-theme-settings'
 import { legacyMatchTerminalSidebarWrite } from '../../../shared/plugin-theme-settings'
 import { normalizeTerminalDefaultShell } from '../../../shared/shell/launch/terminal-default-shell'
 import { normalizeTerminalCursorStyleDefault } from '../../../shared/terminal/appearance/terminal-cursor-style-settings'
@@ -134,7 +134,7 @@ export function updateSettings(
       updates.terminalCustomThemes
     )
   }
-  Object.assign(sanitizedUpdates, normalizePluginOwnedSettings(updates))
+  Object.assign(sanitizedUpdates, normalizePluginThemeSettings(updates))
   Object.assign(
     sanitizedUpdates,
     legacyMatchTerminalSidebarWrite(operations.state.settings, sanitizedUpdates)

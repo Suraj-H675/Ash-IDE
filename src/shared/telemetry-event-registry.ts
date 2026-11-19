@@ -109,7 +109,6 @@ import {
   setupScriptPromptShownSchema,
   workspaceCreateFailedSchema
 } from './telemetry-repository-event-schemas'
-import { pluginInstalledSchema } from './telemetry-plugin-event-schemas'
 import { sshRemoteRuntimeResolvedSchema } from './telemetry-ssh-runtime-event-schemas'
 import { wslUsageSnapshotSchema } from './telemetry-wsl-usage-event-schemas'
 import {
@@ -247,7 +246,5 @@ export const eventSchemas = {
   wsl_move_orchestrator: wslMoveOrchestratorSchema,
   wsl_move_undo: wslMoveUndoSchema,
 
-  wsl_usage_snapshot: wslUsageSnapshotSchema,
-
-  plugin_installed: pluginInstalledSchema
+  wsl_usage_snapshot: wslUsageSnapshotSchema
 } as const

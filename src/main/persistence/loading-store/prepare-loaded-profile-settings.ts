@@ -4,7 +4,6 @@ import type { ProjectGroup } from '../../../shared/project-group-types'
 import { deriveGlobalWindowsRuntimeDefaultFromLegacySettings } from '../../../shared/project-execution-runtime'
 import { normalizeTaskProviderSettings } from '../../../shared/task-providers'
 import { normalizeAutoRenameBranchFromWorkDefaultOn } from '../../../shared/auto-rename-branch-from-work-settings'
-import { normalizePluginSystemEnabledDefaultOn } from '../../../shared/plugins/plugin-system-settings'
 import { migrateNestedWorkerMaxDepthDefault } from '../../../shared/nested-worker-depth'
 import {
   addMobilePairingCustomAddress,
@@ -32,7 +31,6 @@ export type PreparedLoadedProfileSettings = {
     GlobalSettings,
     'autoRenameBranchFromWork' | 'autoRenameBranchFromWorkDefaultedOn'
   >
-  migratedPluginSystemEnabled: ReturnType<typeof normalizePluginSystemEnabledDefaultOn>
   migratedNestedWorkerMaxDepth: ReturnType<typeof migrateNestedWorkerMaxDepthDefault>
   migratedTerminalCursorStyle: Pick<
     GlobalSettings,
@@ -79,10 +77,6 @@ export function prepareLoadedProfileSettings(
   const migratedAutoRenameBranchFromWork = normalizeAutoRenameBranchFromWorkDefaultOn(
     parsed.settings
   )
-  const migratedPluginSystemEnabled = normalizePluginSystemEnabledDefaultOn(parsed.settings)
-  if (parsed.settings?.pluginSystemDefaultedOn !== true) {
-    markNeedsSave()
-  }
   const migratedNestedWorkerMaxDepth = migrateNestedWorkerMaxDepthDefault(parsed.settings)
   if (parsed.settings?.nestedWorkerMaxDepthDefaultedToFour !== true) {
     markNeedsSave()
@@ -261,7 +255,6 @@ export function prepareLoadedProfileSettings(
   return {
     migratedExperimentalActivity,
     migratedAutoRenameBranchFromWork,
-    migratedPluginSystemEnabled,
     migratedNestedWorkerMaxDepth,
     migratedTerminalCursorStyle,
     migratedTerminalLineHeight,

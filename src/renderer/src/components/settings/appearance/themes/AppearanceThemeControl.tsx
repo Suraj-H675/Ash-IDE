@@ -147,13 +147,12 @@ export function CodeEditorThemeSelect({
   updateSettings: (updates: Partial<GlobalSettings>) => void
 }): React.JSX.Element {
   const selected = findCodeEditorTheme(
-    base === 'dark' ? settings.editorThemeDark : settings.editorThemeLight,
-    []
+    base === 'dark' ? settings.editorThemeDark : settings.editorThemeLight
   )
   return (
     <SettingsSearchableSelect
       ariaLabel={label}
-      value={selected === null ? FOLLOW_APP : typeof selected === 'string' ? selected : selected.id}
+      value={selected ?? FOLLOW_APP}
       searchPlaceholder={searchThemesLabel()}
       emptyText={noThemesLabel()}
       onValueChange={(value) =>

@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { RPC_PARAMS_BY_METHOD } from '../../../../shared/rpc-contract/rpc-params-catalog.generated'
+import { RpcDispatcher } from '../dispatcher'
+import type { OrcaRuntimeService } from '../../orca-runtime'
 import { ALL_RPC_METHODS, ASH_RPC_METHODS } from './index'
 import { ASH_RUNTIME_CONTROL_METHODS } from './ash-runtime-control'
 import { AUTOMATIC_WORK_METHODS } from './automatic-work'
@@ -12,10 +15,6 @@ import { MOBILE_PROJECT_SECTIONS_METHODS } from './mobile-project-sections'
 import { MOBILE_RELAY_HOSTS_METHODS } from './mobile-relay-hosts'
 import { MOBILE_WEB_BUNDLE_METHODS } from './mobile-web-bundle'
 import { PAIRING_METHODS } from './pairing'
-import { PLUGIN_DEV_EMIT_METHODS } from './plugin-dev-emit'
-import { PLUGIN_DEV_REQUEST_METHODS } from './plugin-dev-request'
-import { PLUGIN_METHODS } from './plugins'
-import { PLUGIN_VIEW_METHODS } from './plugin-view'
 import { SKILL_METHODS } from './skills'
 import { SPEECH_METHODS } from './speech'
 import { SSH_METHODS } from './ssh'
@@ -24,6 +23,28 @@ const methodNames = new Set<string>(ASH_RPC_METHODS.map(({ name }) => name))
 const allMethodNames = new Set<string>(ALL_RPC_METHODS.map(({ name }) => name))
 
 describe('Ash authenticated RPC surface', () => {
+  it('has no application-plugin RPC registrations or client contracts', async () => {
+    for (const names of [methodNames, allMethodNames, Object.keys(RPC_PARAMS_BY_METHOD)]) {
+      expect([...names].filter((name) => name.startsWith('plugins.'))).toEqual([])
+    }
+
+    const runtime = { getRuntimeId: () => 'local' } as unknown as OrcaRuntimeService
+    const dispatcher = new RpcDispatcher({ runtime })
+    for (const method of [
+      'plugins.list',
+      'plugins.open',
+      'plugins.devRequest',
+      'plugins.devEmit'
+    ]) {
+      await expect(
+        dispatcher.dispatch({ id: method, authToken: 'local', method })
+      ).resolves.toMatchObject({
+        ok: false,
+        error: { code: 'method_not_found' }
+      })
+    }
+  })
+
   it('does not load or register the retired mobile-only RPC groups in the full server manifest', () => {
     const excludedGroups = [
       EMULATOR_METHODS,
@@ -57,7 +78,7 @@ describe('Ash authenticated RPC surface', () => {
     expect(allMethodNames.has('orchestration.run')).toBe(true)
   })
 
-  it('does not load or register excluded SSH, managed server, speech, plugin, or skill RPC groups', () => {
+  it('does not load or register excluded SSH, managed server, speech, or skill RPC groups', () => {
     const excludedGroups = [
       { symbol: 'SSH_METHODS', prefix: 'ssh.', methods: SSH_METHODS },
       {
@@ -66,18 +87,6 @@ describe('Ash authenticated RPC surface', () => {
         methods: MANAGED_SERVER_METHODS
       },
       { symbol: 'SPEECH_METHODS', prefix: 'speech.', methods: SPEECH_METHODS },
-      { symbol: 'PLUGIN_METHODS', prefix: 'plugins.', methods: PLUGIN_METHODS },
-      { symbol: 'PLUGIN_VIEW_METHODS', prefix: 'plugins.', methods: PLUGIN_VIEW_METHODS },
-      {
-        symbol: 'PLUGIN_DEV_EMIT_METHODS',
-        prefix: 'plugins.',
-        methods: PLUGIN_DEV_EMIT_METHODS
-      },
-      {
-        symbol: 'PLUGIN_DEV_REQUEST_METHODS',
-        prefix: 'plugins.',
-        methods: PLUGIN_DEV_REQUEST_METHODS
-      },
       { symbol: 'SKILL_METHODS', prefix: 'skills.', methods: SKILL_METHODS }
     ]
     const fullManifestSource = readFileSync(

@@ -1,7 +1,6 @@
 import type { ITheme } from '@xterm/xterm'
 import { getTheme, getThemeNames } from './terminal-themes-data'
 import type { GlobalSettings } from '../../../shared/global-settings-types'
-import type { PluginTerminalThemeRegistration } from '../../../shared/plugins/artifacts/plugin-terminal-theme-artifact'
 import {
   makeCustomTerminalThemeSelection,
   normalizeTerminalCustomThemes,
@@ -32,7 +31,7 @@ export type EffectiveTerminalAppearance = {
 export type TerminalThemeOption = {
   value: string
   label: string
-  group: 'built-in' | 'imported' | 'plugin'
+  group: 'built-in' | 'imported'
   sourceLabel?: string
   mode?: TerminalCustomTheme['mode']
   previewTheme: ITheme | null
@@ -57,8 +56,7 @@ export function getTerminalTheme(
 }
 
 export function getAvailableTerminalThemeOptions(
-  settings: Pick<GlobalSettings, 'terminalCustomThemes' | 'terminalPluginPalettes'>,
-  pluginThemes: readonly PluginTerminalThemeRegistration[] = []
+  settings: Pick<GlobalSettings, 'terminalCustomThemes'>
 ): TerminalThemeOption[] {
   const builtinOptions = BUILTIN_TERMINAL_THEME_NAMES.map((name) => ({
     value: name,
@@ -77,15 +75,7 @@ export function getAvailableTerminalThemeOptions(
       previewTheme: terminalCustomThemeToXtermTheme(theme)
     })
   )
-  const pluginOptions = pluginThemes.map((theme) => ({
-    value: theme.id,
-    label: theme.label,
-    group: 'plugin' as const,
-    sourceLabel: theme.pluginName,
-    mode: theme.mode,
-    previewTheme: theme.terminal
-  }))
-  return [...builtinOptions, ...customOptions, ...pluginOptions]
+  return [...builtinOptions, ...customOptions]
 }
 
 export function resolveEffectiveTerminalAppearance(

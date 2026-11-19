@@ -6,7 +6,6 @@ import { SearchableSetting } from '../section-layout/SearchableSetting'
 import { ReduceVisualEffectsSetting } from './ReduceVisualEffectsSetting'
 import { getReduceVisualEffectsEntries } from './appearance-reduce-visual-effects-search'
 import { AppearanceAdvancedDisclosure } from './AppearanceAdvancedDisclosure'
-import { SettingsSearchableSelect } from '../form-controls/SettingsSearchableSelect'
 import { useAppStore } from '../../../store/index'
 import { useShortcutKeyComboDetails } from '@/hooks/useShortcutLabel'
 import { ShortcutHintList } from './AppearanceShortcutHintList'
@@ -29,7 +28,6 @@ import {
   AppearanceThemeSlotSelect,
   CodeEditorThemeSelect
 } from './themes/AppearanceThemeControl'
-import { usePluginIconThemes } from '@/store/plugin-icon-themes'
 
 type AppearanceInterfaceSectionProps = {
   settings: GlobalSettings
@@ -53,7 +51,6 @@ export function AppearanceInterfaceSection({
   forceVisiblePrimary = false
 }: AppearanceInterfaceSectionProps): React.JSX.Element {
   const searchQuery = useAppStore((state) => state.settingsSearchQuery)
-  const pluginIconThemes = usePluginIconThemes()
   const themeSlots = [
     {
       base: 'light' as const,
@@ -89,10 +86,6 @@ export function AppearanceInterfaceSection({
       )
     }
   ]
-  const iconThemeTitle = translate(
-    'auto.components.settings.AppearanceInterfaceSection.pluginIconTheme.title',
-    'Icon theme'
-  )
   const isSearching = normalizeSettingsSearchQuery(searchQuery).length > 0
   const zoomInKeyCombos = useShortcutKeyComboDetails('zoom.in')
   const zoomOutKeyCombos = useShortcutKeyComboDetails('zoom.out')
@@ -141,7 +134,6 @@ export function AppearanceInterfaceSection({
             'App colors for this mode.'
           )}
           keywords={[
-            'plugin',
             'theme',
             'terminal',
             slot.base,
@@ -188,56 +180,6 @@ export function AppearanceInterfaceSection({
           />
         </SearchableSetting>
       ))}
-
-      {pluginIconThemes.length > 0 ? (
-        <SearchableSetting
-          title={iconThemeTitle}
-          description={translate(
-            'auto.components.settings.AppearanceInterfaceSection.pluginIconTheme.description',
-            'File and folder icons from an enabled plugin.'
-          )}
-          keywords={['plugin', 'icon', 'file', 'folder']}
-          forceVisible={forceVisiblePrimary}
-        >
-          <SettingsRow
-            label={iconThemeTitle}
-            control={
-              <SettingsSearchableSelect
-                ariaLabel={iconThemeTitle}
-                value={
-                  pluginIconThemes.find((theme) => theme.id === settings.pluginIconTheme)?.id ??
-                  'built-in'
-                }
-                onValueChange={(value) =>
-                  updateSettings({
-                    pluginIconTheme:
-                      pluginIconThemes.find((theme) => theme.id === value)?.id ?? null
-                  })
-                }
-                searchPlaceholder={translate(
-                  'auto.components.settings.AppearanceInterfaceSection.pluginIconTheme.search',
-                  'Search icon themes…'
-                )}
-                groups={[
-                  {
-                    key: 'icon-themes',
-                    options: [
-                      {
-                        value: 'built-in',
-                        label: translate(
-                          'auto.components.settings.AppearanceInterfaceSection.pluginIconTheme.builtIn',
-                          'Built-in'
-                        )
-                      },
-                      ...pluginIconThemes.map((theme) => ({ value: theme.id, label: theme.label }))
-                    ]
-                  }
-                ]}
-              />
-            }
-          />
-        </SearchableSetting>
-      ) : null}
 
       <SearchableSetting
         title={translate('auto.components.settings.AppearancePane.5e6d7aba8d', 'UI Zoom')}

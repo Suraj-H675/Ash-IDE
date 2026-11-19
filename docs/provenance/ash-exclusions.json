@@ -44364,6 +44364,2221 @@
       "path": "src/shared/plugin-git-download-binary-compatibility.test-cases.ts",
       "sourceSha256": "1d684de23cc96d0c0ee7977f430af83e383bf79791fe88e4d074e6534df85e2d",
       "reason": "Ash M8 retires the orphan Git download case for the excluded application-plugin marketplace. The four retained Git compatibility registrars have an Ash runner."
+    },
+    {
+      "path": "config/build-plugins/sucrase-unused-transformers.ts",
+      "sourceSha256": "e5a90ede1c4bc9fd06d4ce6bcbcf4aa6953c50153637f2262931f736ac421fef",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "config/scripts/desktop-distribution/runtime-verification/verify-packaged-plugin-resources.cjs",
+      "sourceSha256": "3b667ea949608d8e468c60f663a52d192e008de1905698a91984557f04f249e7",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "config/scripts/performance/skills-plugins/plugin-command-bindings-benchmark.mjs",
+      "sourceSha256": "cca10df326c523bb6fb59c981ac43106dfe35f55ef3cc17f315cea90f327b03f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "config/scripts/performance/skills-plugins/plugin-message-budget-benchmark.mjs",
+      "sourceSha256": "346c163d6dad93a750a702851ebbb41de8b93f38c729d9cab7e6fe6a558f018a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "config/scripts/performance/skills-plugins/plugin-shortcut-conflicts-benchmark.mjs",
+      "sourceSha256": "a9fc05dc266104e3d1aff7060ab52272615ed455f6b912c569083013373ff517",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "config/scripts/plugin-build/declarative-runtime/build-plugin-declarative-runtime.mjs",
+      "sourceSha256": "4c7a14d8b139cb5d96686168010672a9f5e9d79c28cb31d30ceb5c3e8115685d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "resources/plugins/declarative/orca-components-data.d.ts",
+      "sourceSha256": "bf3b8bb8e4664b73c79d378cabbc7a66a0d781a8d86899d3903ba6c4b23d2312",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/declarative/orca-components-layout.d.ts",
+      "sourceSha256": "f513b362e0f47bdda326a1e3d4c3c0669df842685da0c01dee3611e521784f87",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/declarative/orca-components.d.ts",
+      "sourceSha256": "61e7577503191f743b167a8406fdca504b2848b9b8c267082994610fcfe585ce",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/declarative/orca-runtime.mjs",
+      "sourceSha256": "635d5f8ff9ba7aa30e73aac24dd1e10540d070c7cbb9c0b9d77d3d35b6a7c37e",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/declarative/orca-test-hooks.mjs",
+      "sourceSha256": "bb88dc5d5706d8c437d8761a36a1f6891c4668636675f731b61093d10f7accce",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/declarative/orca-test-register.mjs",
+      "sourceSha256": "67353a34b96f9fd840c90d40763951c3df6eac7a5418a00f42ecf74ebcab2246",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/declarative/orca-testing.mjs",
+      "sourceSha256": "d8297df4ca7eb4fcf8caf7a93c1ebc1f9eb6757a3a155f7b01632ca2820fe4dc",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/declarative/orca.d.ts",
+      "sourceSha256": "9e0bb4e1e1f96b201e65e18c724a94baf24cd4f05663ab915538118b23e4292c",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/bundled-plugins.json",
+      "sourceSha256": "7b302728788e0ef6b5370b3ede5a4f07cf60dff9af82c2fc9f5b793ea3a05e4a",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/orca-marketplace.json",
+      "sourceSha256": "fe8e65d2cc44dab0cdaae1232124f24ccb708c5551c04dd4aa94178cb00485d5",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-github-vscode-theme/README.md",
+      "sourceSha256": "a969df178d6bd3a9d48a5bd2beebbf677af4c1a98c9aa63a0e1f0c1a53b27f16",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-github-vscode-theme/orca-plugin.json",
+      "sourceSha256": "2ffa5da9b7c171b05790b146d48678cf6386dd83160ced0369d00c4e596d948e",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-github-vscode-theme/terminal/github-dark-default.json",
+      "sourceSha256": "7cfc4961d898bcac114069a6eff0d09ca83468bfd62c2af3ef9cf3f8ebdd58f9",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-github-vscode-theme/terminal/github-dark-dimmed.json",
+      "sourceSha256": "2be42f92a4a4c8e0c755868f95e96aef87076cee851047cffe2bbe555dbda977",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-github-vscode-theme/terminal/github-dark-high-contrast.json",
+      "sourceSha256": "53fa083a82acdf664353dcd5fb4d1ad87f51f8c05e66af45da693ed75300203b",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-github-vscode-theme/terminal/github-light-default.json",
+      "sourceSha256": "84495c133793b9bda5a9fb889a67f2a8e6dc4fd2603bc45c7236818e51bb7a83",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-github-vscode-theme/terminal/github-light-high-contrast.json",
+      "sourceSha256": "f070365df3980b22a63056d34e61aa3c37ede295a73ce825588100a97a77d202",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-github-vscode-theme/themes/github-dark-default.json",
+      "sourceSha256": "91c33474ea21fbe904cc9c500f3f917fc4a04937bcd6c728dba5b8d0b348d4eb",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-github-vscode-theme/themes/github-dark-dimmed.json",
+      "sourceSha256": "c1a1acd03b8c0fe7ff5c67dc0c4dfd81225fe91c74586a340b980de0eea0198d",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-github-vscode-theme/themes/github-dark-high-contrast.json",
+      "sourceSha256": "25fe1b53929868f8dbb2aff897ffa8f3d0c35f9959c2d186643388d24ffbdaf1",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-github-vscode-theme/themes/github-light-default.json",
+      "sourceSha256": "ee746fe23d163095d521b9893fb6d5433f006d75892a79cdf39c1fc83a0c31f9",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-github-vscode-theme/themes/github-light-high-contrast.json",
+      "sourceSha256": "8bc8a48523c392b05c801094a0de6067e31fa5370d961ae77939d8462c2df39d",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-multipass-recipes/orca-plugin.json",
+      "sourceSha256": "c6afc10f38ab5079beea91e1765200ebe24ba8a633232a964904c891476c8716",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-multipass-recipes/recipes/ubuntu-lts.json",
+      "sourceSha256": "830b8c864300ca49f5f18a2cefcf4027bb881cdcfaf36cba21cfc17356eff98f",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-vscode-default-themes/README.md",
+      "sourceSha256": "515a3b8c6a3e76c77d1301b308d0fdf98a588d6c23454877f0c2a2e45985ddbf",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-vscode-default-themes/orca-plugin.json",
+      "sourceSha256": "439b0b48594f4eb77807b8253f4e1efd7fc016784d83fd4d76fe23a7e1f24708",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-vscode-default-themes/themes/vs-code-dark-modern.json",
+      "sourceSha256": "17fde38e081d757ffd4fbc0a22ed99f928b9b6583886582851332ed87c0699f6",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-vscode-default-themes/themes/vs-code-dark.json",
+      "sourceSha256": "8ceef6535add7442e6f1846e6fca66cebb07b835b26b2d1bb912fc377247fe39",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-vscode-default-themes/themes/vs-code-light-modern.json",
+      "sourceSha256": "3afbe7b34e866dbfdd73864d2ca9b199dd37c529335ee4b2a5fdbb6ce9b62f26",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/launch/stablyai.orca-vscode-default-themes/themes/vs-code-light.json",
+      "sourceSha256": "6f8daebf442aeabf3383a770e23d1eb3e01977c8ebe9978687570af4a7357cc9",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/types/orca-frame.d.ts",
+      "sourceSha256": "013d5b4d1c4f5f206a7cb30eb2ba4cf21c0f2cadb9e3536b14427562f4724c83",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/types/orca-host.d.ts",
+      "sourceSha256": "8c1a38c2f7be222cae567d93537edffafbc089d5b7e1d26126f9f37c7dc61232",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/types/orca-services.d.ts",
+      "sourceSha256": "b741a67d67e23991d47b6e2ef7fac6afa15655d1d0b29fc060ab1f025e268935",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/types/orca-testing.d.ts",
+      "sourceSha256": "4c01f47a0f6cffc1850c2839b266cbdd6b822bed5d2013b4196bd9e1bdeb7fdd",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "resources/plugins/types/orca-worker.d.ts",
+      "sourceSha256": "40ddb3a58cbe5804d9b25c92b256654354bc6aee4bf2e8891aa1d4a54359b171",
+      "reason": "Ash M8 EX-03: retire application-plugin payload, manifest or authoring artifact. Preserve third-party license files."
+    },
+    {
+      "path": "src/main/plugins/__mocks__/plugin-git-ssh-remote-fixture.ts",
+      "sourceSha256": "dd7b971bb6ef2a38e3d6301e59d0320e71703077a9353396b3e780125160411c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/appearance/desktop-plugin-appearance.ts",
+      "sourceSha256": "301a97903e57bf88dcbd51ff5c274f20dd670cf10a36f559f67556eba8099fdc",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/appearance/plugin-appearance-colors.ts",
+      "sourceSha256": "1ba08aff9306eced3533dddfa73763f68034dd65463754550e9fc8c3e90ec2c3",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/appearance/plugin-appearance-service.ts",
+      "sourceSha256": "451ea5e95ecf7c6182d4bdaddf00e44e218c4882aa3c2f4dbfd8d84f5647d57c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-auto-updater.ts",
+      "sourceSha256": "4a5bb4f51998e9b016e67eb62c4abdde95d5396b0597cc286c0b232f4ea1e88a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-bounded-json-fetch.ts",
+      "sourceSha256": "d38c477c27feab59e6f8272ae933bfbfefbb83477ebde03e2e0d438a539693c6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-catalog-image-extraction.ts",
+      "sourceSha256": "7449e708c1589ac11e0e30dd277f11822191240a340708a6001c389e50835efa",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-catalog-monorepo-images.ts",
+      "sourceSha256": "3b7ea60fefaa484f3cb2c55e7c2dc02845b84028b318eb80b94261919f629d59",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-community-marketplace-seed.ts",
+      "sourceSha256": "7e6eed5105cba3dc45d9a1c97969f5148af23219ab4090123556aa6babf786c1",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-file-type-suggestion.ts",
+      "sourceSha256": "82c758db4aa0c648cfd207028099685a6b777d136804d89c1ea5cf6a49f5184c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-install-stats-service.ts",
+      "sourceSha256": "685caa2f32bab9644a8a1f0d0132b03fcca942df93997d4a1f466d9b45b9bf36",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-kill-list-service.ts",
+      "sourceSha256": "6236310ec45dc1f0b326bfaa62f326ef4ef61e12b2ab523b79e5eaa1fbbc8a49",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-kill-list-store.ts",
+      "sourceSha256": "2ddeb9c4f85eb81bd779fe271226fe3dc1ff8eccf2c0f7ae3b54e02175f54caa",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-marketplace-error-message.ts",
+      "sourceSha256": "4ed4aee928b5bc9832fbc28dd747f0408a31046c7ae4f52c1e50c6a1d04fb138",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-marketplace-fetch.ts",
+      "sourceSha256": "78541c70120673db48eb5a21d3dde4b260df9d0843f1de8325d96f7b19a32909",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-marketplace-install-origin.ts",
+      "sourceSha256": "8c99d523fceb94098e3a4dd758506a797a796ab6d1af0c9d5871316e4b058e6a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-marketplace-installer.ts",
+      "sourceSha256": "9d563f728ca5521466f9534335efd11e80bb8b07121e6a4a11804aa32382c45a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-marketplace-projection.ts",
+      "sourceSha256": "f94f6eb12ec7b9cfab35e620651a931c37bb796a06c2a827648773f97fe1ee44",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-marketplace-provenance.ts",
+      "sourceSha256": "69bdb43aaac422d5e15741e468f33461005b25d36abcb719d78b0a0ad139e04f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-marketplace-service.ts",
+      "sourceSha256": "d9386ec1f8ec1de25accc0fab1620f8b585a94596c2b2d7506c8392905bd6269",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-marketplace-store.ts",
+      "sourceSha256": "07dacd3902f4710a8d155d07431b016417771a6c3001679c1a26d76329bfd157",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-one-click-enable.ts",
+      "sourceSha256": "b72dec6f7beaae9ce5e028c0ab413c019ae37042c18428059249da2f5105af21",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-private-marketplace-ssh-shim.cjs",
+      "sourceSha256": "01a2583f1614d110a2fa6767b7fba405e9b81b99ab5dff4eac565629d892c121",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-release-first-seen-store.ts",
+      "sourceSha256": "38e671d58e9c7d5880e4c4ff09927e716b490d4b0f52af088601bf03680d8770",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-update-approval.ts",
+      "sourceSha256": "a0df402222a839b7331c9fcf033599e51c3bcaf3cfe28ece51484beee5365f7a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/catalog/plugin-update-review-notices.ts",
+      "sourceSha256": "66ca5631b5816fc52e8255bd58eac7b8929ccec195048de89ac5cfd3916ad241",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/contributions/plugin-artifact-pack-registry.ts",
+      "sourceSha256": "24db5c77c5440ec5e379cb38a94a4dee6e2b4aa56c1becaf56e230a7c233af8a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/contributions/plugin-content-pack-registry.ts",
+      "sourceSha256": "95cc42cbcd7747ee5702e2e5cfecab9d3a3f8ade5b2c5a360a0cb570707bb8d2",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/contributions/plugin-icon-theme-registry.ts",
+      "sourceSha256": "099dd79a9ba374b4698a8693e063d16c295517f24774b9f74007deea180a7458",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/contributions/plugin-syntax-registry.ts",
+      "sourceSha256": "e460ac6c62ce931f794c19554ee2ae960578532ec632454ea7ebbe88ccaa8057",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/contributions/plugin-theme-background-image.ts",
+      "sourceSha256": "489668bf7d0c91ac960c9071ad0a7fb1c55c5a13138324a1add5082b4480bcea",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/contributions/plugin-theme-registries.ts",
+      "sourceSha256": "972fd5b5814366293edcfa7ec9f18a141fab06f73f6373db7808027643f67ead",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/hooks/plugin-dev-hook-fire.ts",
+      "sourceSha256": "188a349740316f5af283a2cacaf4c758982c932714b247ed67c1d2a27f743cd4",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-atomic-file-write.ts",
+      "sourceSha256": "9d63c27e14f619e79786d09691fa98d8033f902c68da89a6e887137d84a66b67",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-catalog-install-guard.ts",
+      "sourceSha256": "fbb04b3d9a9b57712b7165655182179fe748781d781c3865ce549f97214e3005",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-current-pointer.ts",
+      "sourceSha256": "880c8e8fb55ccf09c4b26d3ea398460bc3f2130a07bde0cef28317efa9d2a2e2",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-git-ref-resolution.ts",
+      "sourceSha256": "7fff9174f0df1179c4209178d63d3346e41f8c213fb0e4557ed6b749ea02da72",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-git-repository.ts",
+      "sourceSha256": "335d7464159a74166df96999edb7fbb1c799f8c343834e2e616c220be87a4d7c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-git-tree.ts",
+      "sourceSha256": "9f74c15239f5f173c3605c9f5f3a201dbe70100d6985a0d420f436488b144ad4",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-install-lockfile-store.ts",
+      "sourceSha256": "eeaaaa847f5d79f89f4ade86599e3602b9d6942ded76add9e73937275b259f1a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-install-provenance.ts",
+      "sourceSha256": "b17b508eadba9afadc8b99167bb7b010bb32268f31c37432ad4c1b0139feeadb",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-install-publication.ts",
+      "sourceSha256": "ad106a5a59499af6a14425a8c8b6c72f9cd2714d3fa29aa2c5f2d987bf8407e0",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-install-staging.ts",
+      "sourceSha256": "32662ca0ab107a423e82ab2039dda980a2a0639626cef911267ca6ae6bac3041",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-install-trust.ts",
+      "sourceSha256": "3a3916fe4deba9a15cd2c32a8974adb4b99b058e6a294e11b4f729c945276f20",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-install.ts",
+      "sourceSha256": "8d5b47e0d9b5763379e40a0cce74d10af5f4744e99b9baa2eed28342e8fbef8f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-installation-state.ts",
+      "sourceSha256": "a88aebb0ccad18987523c55448306410ef17ce86c6ecfa217567d19c3229c8b7",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-mutation-queue.ts",
+      "sourceSha256": "f18bba92e42a1330edf53943b3d3a0f479e87c6b1e9f9bf11a333342a8e28890",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-removal.ts",
+      "sourceSha256": "61354df1bfa91412b8d0d911f02a25dcb8d33a5f289bf721bd603690cf6ad5bb",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/installation/plugin-rollback-candidate.ts",
+      "sourceSha256": "06736a6da0ac94eb653dc14e4ac711d3c22390b9fcb6167821b8983e025f5016",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-external-open-consent.ts",
+      "sourceSha256": "29ea2156eb9bc231b242a9b14af16871725a04454bf834d5ac809d69748cdecf",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-blocked-requests.ts",
+      "sourceSha256": "dcb692ef5e0baa988e5ef68ce0d581a8cd46fd663bebfea8653eab2105f451ae",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-content-types.ts",
+      "sourceSha256": "a117bedf2643f08346d3123f0b0ec040b09aa0af0a30f29ba61c31dbc79dc8ee",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-desktop-services.ts",
+      "sourceSha256": "168c5625518caf3cf22969433878e6060282824d5a6e9cd5f30e911e41f8c534",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-guest-diagnostics.ts",
+      "sourceSha256": "36885b17bff8c1e9710022548ca5b5b0c0fa5e679f45c76c12ded1951b024626",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-guest-policies.ts",
+      "sourceSha256": "59c3aff79b5eb750d3b61032b8c65ba475c08e34c2387c3943573b229fca9bf8",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-guest-registry.ts",
+      "sourceSha256": "28198a2990a04d02f953c49fd1e698b0eced3f6770e64b834c612d7aae7844cd",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-guest-sessions.ts",
+      "sourceSha256": "12fe0642dd135d263a40baaa3c8d7501964722efe530e1e01c071c2f7bc16e02",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-integrity.ts",
+      "sourceSha256": "b7b61451dee1a453bb212962113e75cdd0f4dc50a5f8f3881469edb388c40034",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-isolation.ts",
+      "sourceSha256": "b183d3c5358f8ff312c06db0037166f42a1029e42f6c9b8b1af66f14ebfb9519",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-module-resolution.ts",
+      "sourceSha256": "a715326f7b43589e65dde7cac6c516949d17e31de86f8b9db19bfd5f1db58940",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-module-transform.ts",
+      "sourceSha256": "74560cb6b401dd42492874641f5b4bf0e346b9e9277cc550707ab79ff3bd28aa",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-protocol.ts",
+      "sourceSha256": "cdfb485acc3c20eb19b65a33b961d9b00d5adc85fdfd4750a76a68a1f0f2e297",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-request-policy.ts",
+      "sourceSha256": "3f4fd6c622e8c52e305aeef571c3803ec01eccd85e4accad26df855c180796e6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-responses.ts",
+      "sourceSha256": "afcffdc08886bc2f979a1b8f7bd33be89631da2d90005175c9172be832ace0cd",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-scheme.ts",
+      "sourceSha256": "a388df4b6fea5413f1c22ca5e1eaa785e184ef8c431094c24948ce7afdf6e3b6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-session-policies.ts",
+      "sourceSha256": "32d76fea1ba935ad406ea1bcc452630cbe986056f0de491c8564a03840ac148c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-source-serving.ts",
+      "sourceSha256": "7922054be9a65f55f1cb159e37bfb5deb1d32605cf2a81b4b0e500e0c6f002f2",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-frame-theme-snapshot.ts",
+      "sourceSha256": "7af98068fe9e0ece6d2b1bf4261087543889da0eed3357ad08c1ca1792c79bf4",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-panel-bridge.ts",
+      "sourceSha256": "d7bf557b81d17b24536121e98be9c11db5ef4c137b5a61cd32c04c561f8494eb",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-panel-controller.ts",
+      "sourceSha256": "92063b6c1e09418d2d5036ab4e67a3fd74e6d5cbe7c6c1d882cc25c66aee2e41",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-panel-image.ts",
+      "sourceSha256": "d7ea3702c54843136fdd10c8b2e08ae1be50a93678435b97021b965b9d08023d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-panel-owner-lifecycle.ts",
+      "sourceSha256": "38340e8032334629da816abd7b53bee855552ba6547d0f38415e6c29e5c572eb",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-panel-sessions.ts",
+      "sourceSha256": "d4d1639e20b106b37c35f0795e78ed0dbe94313c67334de91cbdd87fd910072d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-panel-state.ts",
+      "sourceSha256": "c57ced8636ece5734ff26aed0e831436d5d242d6fb1c1fd928a6e0b21802984f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-save-as-download-mark.ts",
+      "sourceSha256": "151cf9250d9401fda8b66726a36035abb7892d277d3a83c84e0fc6cdab5376e7",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-source-transpile-client.ts",
+      "sourceSha256": "cc24bc3cf1b8b7df752e4609aabf1de1380a9e91a70df98c8a7c1bed62b73bfe",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-source-transpile-failure.ts",
+      "sourceSha256": "1c4fc5397fd45523fc1b94f078c34011ff99456e872c1d7f27e001e569525140",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-source-transpile-protocol.ts",
+      "sourceSha256": "aabafb74e0860f4ed804d2b1b1975900525162472fd4f78987d79cfcfb0adc72",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-source-transpile-worker-entry.ts",
+      "sourceSha256": "bcb544b164951642911e0190163c16bdae11be4382d1d315e0f4f5231fef2d63",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/panels/plugin-source-transpiler.ts",
+      "sourceSha256": "f2b39662ed160d127c1ba955cb6f30352e29d4366250e82d31c334c5b11024a3",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-activation-policy.ts",
+      "sourceSha256": "81805b14aaf65b1e2e2ad13f968efd4cef4d3c5f8b861dc13add6c40246c93e2",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-agent-status-event.ts",
+      "sourceSha256": "876991557680cc92434f71b5360131dd866f388b1c06e2afda694c6f0766b23c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-artifact-validation.ts",
+      "sourceSha256": "7f0271cd84404d91c9e055bd3cfa8620caea5e3b61de99c1290197c747cf3022",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-audit-log.ts",
+      "sourceSha256": "be17dc6320c53b954b5a44af4dfb502c6fca9bedc4880965d9ef774132550f4a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-authoring-checks.ts",
+      "sourceSha256": "44bc86fffab2e01d16bfe8f2cf73cebc59f4610f0580f8999ebcf3b334e5e9aa",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-bundled-approval.ts",
+      "sourceSha256": "d91e7a4c9c08dbe5a13c516e0de9b8f8f8550f424a6e1e6322b8d042f33bfc95",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-bundled-bootstrap-coordinator.ts",
+      "sourceSha256": "bbb5fd694d1490fae10a0d9a95d3afad5b36b1c50ec426da250294068821ae81",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-bundled-bootstrap.ts",
+      "sourceSha256": "744124412e79663796d8779eb6987f194419a8aa76c01619d09ad3dcee09d0d0",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-catalog-release-entry.ts",
+      "sourceSha256": "1612dfaa5a40f4b666609f0a8b3b1cb42c66672d89e5c19c96f9045ad2602629",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-cli-approval.ts",
+      "sourceSha256": "babb4a0d0b1f67cea5a8b33bb53c4ca624d2f7b7dd7ef438cbdcfa0bb5adc455",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-client-list.ts",
+      "sourceSha256": "0b1bb2dc14e0da0fe51fd38ccc00aa3c33b4a8284e19eee7e72bebbc03f499fe",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-command-invocation.ts",
+      "sourceSha256": "08ee70ea5df0778ab1ce1d687b7d19f95c8b9049e5b41cf3ebe25536a98f6e24",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-command-registry.ts",
+      "sourceSha256": "d7b7ce061da2514f99ec5ab40dd320d04361780e7a5c3b060f714ed094551650",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-command-replacement-owners.ts",
+      "sourceSha256": "699bc306f5d1725832c4aa8189687343dea14c2f5779c53cf125dcee5ce5d2c0",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-contained-artifact.ts",
+      "sourceSha256": "50fb8d83c2559d25cfff9a63798e6c89c5f1be621b7d534cdddaad4a6ab8358c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-content-hash.ts",
+      "sourceSha256": "b3e90df10bd353e44ebb7ce967ceb16ac959a7ce5c3f0df814c643025946ab11",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-content-integrity.ts",
+      "sourceSha256": "0668dcdecf713006224ff6f0d6958d96e19ed7697143b9808d23ce53600b6865",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-declarative-content-integrity.ts",
+      "sourceSha256": "4421438ad1c880391279ba3f20aae5d8082847ef5a0181739be682403d60c09e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-declared-settings.ts",
+      "sourceSha256": "e8f75a1074fe6025b6e2f9c551e01f2ab2cc50dd5dff3fca0515e271293418f5",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-dev-event-emit.ts",
+      "sourceSha256": "90c22deae9fd6eeffbd7a3d0fb01d15ab4e253aa2f6bba82e6615f81c9906136",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-dev-folders.ts",
+      "sourceSha256": "0259d2dcc31a5d38692be092697baba42cf7b10f6001e72877ecd8828b3a63ae",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-dev-panel-request.ts",
+      "sourceSha256": "3f665f65b6d018bbd65e565d79d43bfe99f484ba60b55e2cb6537c111d0b2650",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-dev-revision.ts",
+      "sourceSha256": "6e88fd09d4c64c5260387520859792fe6df5102b2f4380a39e09c1c1a8549cb7",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-dev-watcher-ignore.ts",
+      "sourceSha256": "02e66fdd50bdb45a0561d32cae27017450faaedcfc744e364c0a9ffc2975d116",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-dev-watcher.ts",
+      "sourceSha256": "53846a12ea020eaa38863f8eb6dd08e7491ad75676c3b92f8aa6ad185073014f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-discovery.ts",
+      "sourceSha256": "0e6cc8158604e8268f0a599d5207b77edfdc958a8225da4546f73a81e307d6d6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-enablement.ts",
+      "sourceSha256": "3d2669a92dc116a1b79525b409d3bb132029da0f0c00224fcd205c2f379f2f35",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-event-delivery.ts",
+      "sourceSha256": "19ba711972622d661f82f2ebc285b623da07f210d5af4e5b79804d16bcab005f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-image-artifact-validation.ts",
+      "sourceSha256": "7faf523b665c704160bfd4ffd6c88ff9bf18331dbae9e9fb83d580ec7cafbd20",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-image-cache.ts",
+      "sourceSha256": "f1a511486d2c406afeca5633808194d88131e325dc963d671e8723ef79c6c2be",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-image-protocol.ts",
+      "sourceSha256": "6ca3e0543fafc40432f4d54761e00ba1cb5d85c1637031077fb91c314a46539e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-image-read.ts",
+      "sourceSha256": "92daadf859263ff5b0d1f8365f24080584f9ced1d6ca864b16218416422dfbad",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-image-scheme.ts",
+      "sourceSha256": "7bb4f91a55568c2d56f4e2c9eab6d17627606544b70a752566b5d589ddc7fb0d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-list-projection.ts",
+      "sourceSha256": "e45d4997fb62041857329d234e0e5896c6262052664b3b8ae2dc7ccb229c7f30",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-log-buffer.ts",
+      "sourceSha256": "7f04e7ec2d858d91ae9c0d8a4e4ec2ee62dc9aa5fab67eee6428726e313314a1",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-manifest-file.ts",
+      "sourceSha256": "b4224ff621cb6e49049e734a6402b4e616f833c7414bc74a6451af8be18bcb4d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-manifest-images.ts",
+      "sourceSha256": "0054cfd36b8baf3199825651a2f096f70ca7b032167c643c15a7ec03ea3cf74f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-module-candidate-paths.ts",
+      "sourceSha256": "43309352165a78a786f5ef4a7d0efd2beb1ef0fb452d431bcfee235151c2a9ee",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-new-file-template.ts",
+      "sourceSha256": "6c59a6daa59888c14ae327d393b7bb2812b13b14334be17655df0fcdc9b4b0dd",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-refresh-settlement.ts",
+      "sourceSha256": "3a6288570e0814b4149704e01b34a2f20c050653dc76f8e9ce0af3d0d1d7db1f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-removal-settings.ts",
+      "sourceSha256": "936f887fbeec105111091d0b859d5c84333be94f74fc84184dbb5d22817a294b",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-runtime-binding.ts",
+      "sourceSha256": "cb60622221a946a56f3efb69926bc9f4c03ce42eb2e70ca02f984096539f9858",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-runtime-rpc.ts",
+      "sourceSha256": "6aee3e14b14c53585268c77623ddf83e8c90f467805d906c43017314928a04b0",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-secrets-store.ts",
+      "sourceSha256": "07c95c5c1ef0eb60f938b099092e93aa74a14e769c70dc4b22e483390d2caaa6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-service-host-call.ts",
+      "sourceSha256": "597bfa5d0d530735fb2308669b7fb83e35a043896aa35a018c8313cb93788442",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-service-housekeeping.ts",
+      "sourceSha256": "a4cf77cca2d1ddb573acc95c25f27979118fc10da4ce68c407a63ee2c5bc747f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-service-options.ts",
+      "sourceSha256": "82c5689764b0348d81aa17b7e0d3adbb6eec63ba67d781017f35274fd7227b04",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-service.ts",
+      "sourceSha256": "5e1c4fb5a5d8bacccd70f092fe5504a3093da318ca37902e20861b91d2cfd923",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-source-sucrase-transform.ts",
+      "sourceSha256": "3c11fe1a6ae09d6d1557d90e7a20814d4f0e1ee24058fab86c8f5fdea1d33d07",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-storage-store.ts",
+      "sourceSha256": "b636cac3ee6e622bd9df95c9d129efce7cae050e9650868f1592e44f1ed2c586",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-uninstall-worker-fixture.ts",
+      "sourceSha256": "a4af118b84c50aa7b93fe3d4f385303ced64bfb8408205f4b98b38eeebf7ce68",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-vm-recipe-identities.ts",
+      "sourceSha256": "637aefb985fe5df5e5f2e0d489a66b0c3a41b9c947f694e9fd4aa274d6cfd096",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/plugin-vm-recipe-registry.ts",
+      "sourceSha256": "774e310596918f4edbd72832b09fc81836f77ec27b2f1ab4bbae4ecdfb52cdd1",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/status-bar/plugin-status-bar-state.ts",
+      "sourceSha256": "77c313617835e546379764caa7b2ce7700857098d92c2e79a01c6ff8fa7026d8",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/testing/plugin-editor-html-scripts.ts",
+      "sourceSha256": "4dee090345ca722ed75131fce74b973c3029beca7430e97f3ed5e96027c85ca7",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/testing/plugin-editor-static-check.ts",
+      "sourceSha256": "73647d60546658e752ea5011c490c3fb3f3187bdd25b35bd89179250415c51ef",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/testing/plugin-test-hooks.ts",
+      "sourceSha256": "4a207a479a9607f95566fa545f801219041a9161904d1d1ffb2e78bd14ecbc4d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/testing/plugin-test-register.ts",
+      "sourceSha256": "2f26dab14f5de3c0df606fee347d0b680da6c9405fc36cc613a4c9a24acf7067",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/view/plugin-host-renderer-actions.ts",
+      "sourceSha256": "487af6a4dddc4b6f1bd5b8e64d8150a81549220cd303f6db6ef9b1a7102dfbb5",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/view/plugin-shot-policy.ts",
+      "sourceSha256": "95d9b3cfdaa5cce2022fe404ab8be244ce1881b81e01234ef566573e68257e71",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/view/plugin-view-capture.ts",
+      "sourceSha256": "03fa4e2e24c715741585106f5bce17617c6911d4f5b72f3692cbb326e3f99e03",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/view/plugin-view-chrome-shot.ts",
+      "sourceSha256": "492e3bed02f758189c25c223f1b5200aeaf55b530348d8d8257d6148fde76a7b",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/view/plugin-view-desktop-binding.ts",
+      "sourceSha256": "e80c55142388252492f339667268f0dc32629389f8de09e4143c6bece62f3b04",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/view/plugin-view-desktop.ts",
+      "sourceSha256": "f05aa0d2f329c65746250986b251289af47a18576af3a652c92c11829e08cf78",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/view/plugin-view-editor-key-focus.ts",
+      "sourceSha256": "3a53fa542ad5a541b4b4b6308378722d0019fc1a32473513cee9a4dfd9702486",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/view/plugin-view-editor-shot.ts",
+      "sourceSha256": "983a53949eeef6f529aba6b3a9a3de488b8f4406a52b12330d406158ed4e6f51",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/view/plugin-view-renderer-relay.ts",
+      "sourceSha256": "537c76116b50d60121b86614ae0c64991890062fc88536fb3b32161d9f86362b",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/view/plugin-view-replay-shot.ts",
+      "sourceSha256": "bfbf8a41c8c7f3a24d334f8f1ad5e5bc3bfc2c6a718e3d8c8ec5ae11b9e60a0c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/view/plugin-view-reply-schema.ts",
+      "sourceSha256": "f2cd97fa552b6f655d8e96117795ee32b5508184402c35042632c01098442e1f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/view/plugin-view-target.ts",
+      "sourceSha256": "1ae5d5eab888b578a3fffeccafe63b1a060faf9b9c4cefba068a63749627f6fe",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-call-adapter.ts",
+      "sourceSha256": "2a607cd5c5090781fb429c3b73a8f50d86f705e2d6ca75928930e3c3b7680347",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-call-scope.ts",
+      "sourceSha256": "2ba08896bf7220741a77e477474036dd43fa0f2752f90693ca2722327bfa252d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-entry.ts",
+      "sourceSha256": "90ac01cb1976be9889fee6d82baeeac9f9035745846b011f15434a69928af949",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-method-bind.ts",
+      "sourceSha256": "4c2434d93964a8cb3bb5dda326b455e33cdd5f638191bb8f239d080d7f584d01",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-method-bindings.ts",
+      "sourceSha256": "686c9e51ee0e218fed930741a30ac8bf5081c4fda286261c68b3129c5a91a23a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-methods.ts",
+      "sourceSha256": "59bf502e942eda6c1069dc4c8dfda4496601d0eaad7fe30556287c115c5510c9",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-panel-method-bindings.ts",
+      "sourceSha256": "f2c9075876fdb211ff6d4d265f43e8cbb3a08dcbb41d7a06292f2644561273e3",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-process-types.ts",
+      "sourceSha256": "391a305f13fa3bf2e73d598905005b920e4a3c2e6769f6c7d9321a306a20e1ae",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-process.ts",
+      "sourceSha256": "4bb7db4d8fbc84fa1a2eabe183f29fc9cfe739b9df1e7f2e11b136df2b9bdef1",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-runtime.ts",
+      "sourceSha256": "d2f412cb82660a80f1ba650ff23c2a57779cc45fb90a486303f14657c188d441",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-service-bindings.ts",
+      "sourceSha256": "179173fd1ee00468861e30900855b2b277c62f1f1c818732954fad80cf97a8c7",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-status-bar-method-bindings.ts",
+      "sourceSha256": "24454e6d67a03e7995a4aad15f84ed70a81c8b38788a47f0bbaa9dcc4bb8ba6e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-host-workspace-method-bindings.ts",
+      "sourceSha256": "1937ed0fad75178521db38839217d70a73c940a132491916cd094aa55ce471ad",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-resident-worker.ts",
+      "sourceSha256": "036dff243aebff06a95dd6610cc30ba54b1d145fbbd5d198bec1dfa031964d5e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-supervisor.ts",
+      "sourceSha256": "476d48281a6bc85814c4398c8d74104078ebbe3b6c08efc6c1073a431ceb0998",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-controller.ts",
+      "sourceSha256": "35ea983886bf0aeed269378555e7bb2d6ce1dce411719527450fea30a87a4479",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-env.ts",
+      "sourceSha256": "14cf1a8def2a5db9330b13724fc6478b7a3f135ab5b03d3332bfbf46e091ce64",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-generation-retention.ts",
+      "sourceSha256": "ccca7e735a4d98e38d3a1f65f3b889cd994ddfec8bc13da742e4c9971f702f0f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-host-calls.ts",
+      "sourceSha256": "dbebfdd6466ca1877cf419ed71322c448e5b621de80d03df7e0e2d1b108faf70",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-lifecycle.ts",
+      "sourceSha256": "f94be847f97a8161a62cb54e40fa9d5c6a24c9f2e68107cfffdf569c79590b68",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-manager.ts",
+      "sourceSha256": "2f2f405c21adf0fc94a73f01426f75932d93c5a7eef96e083638f9af750dd84f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-orca-import.ts",
+      "sourceSha256": "76b4ba378f74e5ffdb16eb0874ff1b80b8b191171fcf293420ebfb8a8a88fe68",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-output-buffer.ts",
+      "sourceSha256": "d3dec53cc9a078886c277b7de1767e1b4225aa399f9adb63617c2efab9e31958",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-reconciliation.ts",
+      "sourceSha256": "40306fb65c01bebe9571f16e722c4312bd86981974566f35262d6603f869570c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-requests.ts",
+      "sourceSha256": "5a6e2ac08cbe036f5193c9f3e0e0d82488e71765c92f1a970e59aedf331bb9ce",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-restart-loop.ts",
+      "sourceSha256": "76cb5df1de7122b42dda29a418674394412b64da1ddccf2501b4a5eb0b2284cc",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-slot-pool.ts",
+      "sourceSha256": "3a19db18e6652d57fc4b7119403477f0d685d95f9e589ddc310b909b49db6313",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-source-hooks.ts",
+      "sourceSha256": "b0ded5bf5d5721a1b11d6e9d58d85a14677494f5f0f6e4cff0c1fcc215dd47b7",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-spawn-spec.ts",
+      "sourceSha256": "f3b1726792cfd7801ef22c3f24cd11b1fa17cd645fe8b4b1e41e5eb4c9dfaf0c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-worker-startup.ts",
+      "sourceSha256": "3acc22bc7a270fd480f8b713c83412dff01f44b5e8503ac46e87eb30731fd5cd",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/plugins/workers/plugin-workspace-projection.ts",
+      "sourceSha256": "72bfdaa1a9ff6752f6c5a3c78e177013504e0afd76bceb51fe3cb29b9d8d40c2",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/plugin-dev-emit.test.ts",
+      "sourceSha256": "f1d39cfa0117c9575c07eae49472c348c30dff05868ef8168b03db29e161f21b",
+      "reason": "Ash M8 EX-03: remove a test of the retired general application-plugin implementation along with the implementation it exercises."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/plugin-dev-emit.ts",
+      "sourceSha256": "81fa636df9ccc07bd6abad4cd5ec59356880b72651509a6d5007914c53902281",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/plugin-dev-hook.test.ts",
+      "sourceSha256": "6a25affe3ee9c2e009b27f0fb0cd48e13de463afc17d1e110b2cae0e0225e43c",
+      "reason": "Ash M8 EX-03: remove a test of the retired general application-plugin implementation along with the implementation it exercises."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/plugin-dev-request.test.ts",
+      "sourceSha256": "608477865152d9b631760ee9b3d832145f662291dce33aeede46bedfe3e0a5cd",
+      "reason": "Ash M8 EX-03: remove a test of the retired general application-plugin implementation along with the implementation it exercises."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/plugin-dev-request.ts",
+      "sourceSha256": "689ce592f40309edab138f8ea04d59ed826a219ee77486c02c89bdc845f60c2d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/plugin-view.ts",
+      "sourceSha256": "297d1468d15a5113ff34d31f417bd57ca975bf4207b4ba8bf1257e8ddb8957d0",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/plugins.test.ts",
+      "sourceSha256": "4de0853793e95581f7969cd2a707861b0fbbc57ed6337a07e7e38990b71aac74",
+      "reason": "Ash M8 EX-03: remove a test of the retired general application-plugin implementation along with the implementation it exercises."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/plugins.ts",
+      "sourceSha256": "939cb9b511679bc16df3dad510ad6e5d969c2290cbd9dd9183151db4478e6780",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/telemetry/plugin-install-telemetry.ts",
+      "sourceSha256": "313d7d2c5b7072b6f55838adea98f042bfd3fbb9eca0d1fa2801917fa03cd041",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/window/window-material-suppression.ts",
+      "sourceSha256": "6ba5afb52214fa9cb022bb77ba53fae6f93056b28285beab9560cb24b0d5a61d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/preload/api/plugin-host-api.ts",
+      "sourceSha256": "4c09f3b7654b8032c0b80e92e7f5d0b67349f6cb2f941225d879ad6876928af2",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/preload/plugin-frame-guest-send-budget.ts",
+      "sourceSha256": "b7252e63b3d029625ad5bb53061d7f3576597c0147de6f753ff52d9e5395da73",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/preload/plugin-frame-guest-transport.ts",
+      "sourceSha256": "b0c50c13db8a560dd01b5e7d2b64b01d50bedf71f42d3b21a605c6b4c7ed4158",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/preload/plugin-frame-guest.ts",
+      "sourceSha256": "b885d919d52000a6d295f2e76a5e397091ae419b37f995869ce54efb5d7e6ca3",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/app-shell/plugin-settings-shortcut-handler.ts",
+      "sourceSha256": "5009e1913d7e06c8071d8260b63f94f702e213fcd4b5eca0150a4866d78c1a18",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/onboarding/onboarding-theme-fixture-themes.ts",
+      "sourceSha256": "de7ed59f023403ecfe0d6bad3708161ff995db0a2cfe2ad47c07e54e5d0aeec0",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeBox.tsx",
+      "sourceSha256": "162fefdab1558d815d9bff8b3ceda528af2f47bd229041af8966034c942f6808",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeContent.tsx",
+      "sourceSha256": "9f7518ce63edd1232e262dfe9f65dc443e5bbd78257f4c450e50d0a3af63e45e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeControls.tsx",
+      "sourceSha256": "24c250325d094278a5c70a36d48a618c12750ddd9a45c7d931c43b995e240df5",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeDisplay.tsx",
+      "sourceSha256": "1a9b5e389dcbf9fb2a03465cd0ce97856d81e38021d6a487872be11ac2fe2ac3",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeFormControls.tsx",
+      "sourceSha256": "f89b50101c0e234cc822e3bdc48c1974a06c8e23840a4d2f266059e321861ca6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeImage.tsx",
+      "sourceSha256": "ddb1ff39f57e7a9d0c9fb3b3084a82d367fab114e7939f8966ddc905847f2016",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeLayout.tsx",
+      "sourceSha256": "0f35a58d9adacb0a149bf7df4a99cd5924b9780ff8627b47f2d1d947e98c3e1c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeListItem.tsx",
+      "sourceSha256": "e611542e3d3102536d4cd073a7c047b4565fc64ffed0898c60ed887b3cb2d0e3",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeMarkdown.tsx",
+      "sourceSha256": "e5ffc6421261c5d92ddc3e645f00012ca773ca5247b1091153111555b2ddcd11",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeRelativeTime.tsx",
+      "sourceSha256": "e08d2a7fbeac2b4ea374675f15cff509e7f066046b216cba9e7f232bfe7a233a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeRichNode.tsx",
+      "sourceSha256": "ed006dbaaf7b1b4e3ec2997822d7dc1fd94a0ebc59299c937dc7ed14c1db9ab0",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeTable.tsx",
+      "sourceSha256": "48e56ccbbb57bfef2de7a986aaaaeb8a3a9a9aaa7f4a1d356962a2b2f2dc54d2",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeTree.tsx",
+      "sourceSha256": "7ea965f77352c3c190f48fe9da2cb0fd78579e11140d641bc8f273329f523b22",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/PluginDeclarativeView.tsx",
+      "sourceSha256": "a56cc92f55dbac18fd3bf252477121bb4df283c7bae7171bfac98bc4aa2bf9fd",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/plugin-declarative-act-targets.ts",
+      "sourceSha256": "36348d969e7601eecbee2915e9d694335b17bd49c511105fabbf89bb36ffd455",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/plugin-declarative-assets.ts",
+      "sourceSha256": "99c7acaeb428ccb92c0ace939affe7fb44b1f0fb0e3a0773b7dccb8a38b680a7",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/plugin-declarative-gesture-geometry.ts",
+      "sourceSha256": "adab22e49f4180856c79b15d929e4d98036daf7dccddc33cf48221916d38c23d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/plugin-declarative-host-value.ts",
+      "sourceSha256": "0426ce3e7406374eecaeb3cd52d1c86038071e31b320ca667573645bb14cafef",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/plugin-declarative-icons.ts",
+      "sourceSha256": "98d961b55a90b7ffb95c328959847960b74ed469a611cb37a2146231cc829bb5",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/plugin-declarative-table-selection.ts",
+      "sourceSha256": "42ddf81bd24bbc70116c4d253441c6ebdcd4123f8866327f03e78a8c7c95a480",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/declarative/plugin-declarative-tree-rows.ts",
+      "sourceSha256": "e8bc3137299820d9c28e1a0e64f2d73ef02e23c34a318690d4deec8f2b169f27",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/plugin-icon-glyphs.ts",
+      "sourceSha256": "400ece1bb479f4d954754c33f3139faf62cbd3658736155f4054c9651cdfac3a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/plugin-action-toast.ts",
+      "sourceSha256": "d3adc08174eb37c99fa515903a7b8817172fa1cce80ec5364273715fcda5b345",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/components/plugins/state/plugin-theme-apply.ts",
+      "sourceSha256": "3e268c446abc5474bda9db6c7b073aabf2a78d9e2e50974ca906ad6c709ef664",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/lib/plugin-icons/plugin-icon-svg.ts",
+      "sourceSha256": "03285f14656afaec528349a35e95fc44f9dcfb386a5306b4d35c21c82d5f7809",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/lib/plugin-monaco-theme.ts",
+      "sourceSha256": "f4c73550dc008539c0bfc4904d3b47da4b6c9f829470755216c39df632ae761b",
+      "reason": "Ash M8 EX-03: retire the plugin contract. Retained palette and native-chat calculations have neutral owners in Ash."
+    },
+    {
+      "path": "src/renderer/src/lib/plugin-monaco-token-rules.ts",
+      "sourceSha256": "f22cb5dbd0b7fbceaa4333bced597d035808f1120a99a9bd5f5f73c6245f846a",
+      "reason": "Ash M8 EX-03: retire the plugin contract. Retained palette and native-chat calculations have neutral owners in Ash."
+    },
+    {
+      "path": "src/renderer/src/lib/plugin-theme-tokens.ts",
+      "sourceSha256": "608cdabc207d693109a319c262c6ff7c5d98e3ce4a62f3f86246306bcce80ff5",
+      "reason": "Ash M8 EX-03: retire the plugin contract. Retained palette and native-chat calculations have neutral owners in Ash."
+    },
+    {
+      "path": "src/renderer/src/lib/terminal-plugin-palettes.ts",
+      "sourceSha256": "6f8c0f5441145ec4ad4ce38095fbf6192256268a06d897413ac342e7589188ef",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/lib/theme-background.ts",
+      "sourceSha256": "1890873959cb8393314395c5a844cce2d7f96c83ad59b588b815d97fd0acc1e2",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-content-list-store.ts",
+      "sourceSha256": "ba95f75005f17019b784a2bfab95218ba5ced8e4429ca3eab1e19d69575b744a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-icon-themes.ts",
+      "sourceSha256": "9cb1595fae8053df450a889811ac5667784d780de2933342c955e9d02697abe1",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/store/plugin-themes.ts",
+      "sourceSha256": "0951d73274bdd3b9676da017067f2189b616f82096c42352092fa2771fc95bdc",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/renderer/src/store/theme-background.ts",
+      "sourceSha256": "e0ab26667d958b58c8d0834fcfa2fd2adde1b88c0bcccd17b19db82a2d10dbea",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/approval/plugin-cli-approval.ts",
+      "sourceSha256": "d308cd5be74158211fdd8c397714b0726ba151138608d59f34bbb1d72a691228",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/approval/plugin-consent-fingerprint.ts",
+      "sourceSha256": "55e42671c38b160fd235efefaef90416d3d78753102d379d78d1a1774b4c3867",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/approval/plugin-consent-request.ts",
+      "sourceSha256": "860de46c25358bf546fc972a187f678315712ce93a2141fb014604afff0f1355",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/approval/plugin-consent-state.ts",
+      "sourceSha256": "f7be3175ca0c336e7bfff273dc0c8632d0e1bbf04e3d934307afabe3dfbf6ee8",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/approval/plugin-update-access-growth.ts",
+      "sourceSha256": "04dcc385d976540bf6327b4a4ec944851eb042684c940462455372afc0a06670",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/artifacts/plugin-icon-theme-artifact.ts",
+      "sourceSha256": "f32a3d62747c63f7a2bdae4b4c29dc2c53427199a2f9375d2e9293c3b72a0306",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/artifacts/plugin-syntax-artifact.ts",
+      "sourceSha256": "2470ac98b49307d207134a97bdb326c37363ceb39420d617cea066de6d61ae72",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/artifacts/plugin-terminal-theme-artifact.ts",
+      "sourceSha256": "fa6da94730a2bc4ae6ba98dba0621f903ad2ea4b906f34d219ff7bc62515b903",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/artifacts/plugin-theme-artifact.ts",
+      "sourceSha256": "a14e6b659258ab6fd0ab20454a5dde2e6d11971b137e35845087d722014972d4",
+      "reason": "Ash M8 EX-03: retire the plugin contract. Retained palette and native-chat calculations have neutral owners in Ash."
+    },
+    {
+      "path": "src/shared/plugins/artifacts/plugin-theme-background.ts",
+      "sourceSha256": "ddb2900c57ca027b54551101750a5c9fa306f9365855b2f346faea05670bd9cc",
+      "reason": "Ash M8 EX-03: retire the plugin contract. Retained palette and native-chat calculations have neutral owners in Ash."
+    },
+    {
+      "path": "src/shared/plugins/artifacts/plugin-theme-css-fallbacks.ts",
+      "sourceSha256": "0700096a3810e17ba64cf791f40acf18d24c425101e8cfb3958c1a6c326790d7",
+      "reason": "Ash M8 EX-03: retire the plugin contract. Retained palette and native-chat calculations have neutral owners in Ash."
+    },
+    {
+      "path": "src/shared/plugins/artifacts/plugin-theme-token-reference-doc.ts",
+      "sourceSha256": "9e98f98c4849481218c051c160a9187a00d225447ee150562625ddb8e9c0c64c",
+      "reason": "Ash M8 EX-03: retire the plugin contract. Retained palette and native-chat calculations have neutral owners in Ash."
+    },
+    {
+      "path": "src/shared/plugins/artifacts/plugin-vm-recipe-artifact.ts",
+      "sourceSha256": "75072dff29de33d1a35f02c87ff46dba35caea4d393adaabea2ff07a2fff91f3",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/authoring/plugin-author-typings.test-fixture.ts",
+      "sourceSha256": "bee1a3583fe2d1c630fe15a4bea9fe449f34f64067d0b61d063d240feed0346a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/authoring/plugin-host-typings.ts",
+      "sourceSha256": "7c37adffbd2d72694407a408227da2ab9711c8f66cc95eece1de49551d629dc3",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/capabilities/plugin-capabilities.ts",
+      "sourceSha256": "866e8281bfcee3391591cd8ea3455580c555a76dee650a1ad668a8784e7cae53",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/capabilities/plugin-capability-gate.ts",
+      "sourceSha256": "9c1d66656d41d0b794abc510c54d56992a4702e4a202e4ecd5ca04117f7e5635",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/capabilities/plugin-capability-reach.ts",
+      "sourceSha256": "ced34f6e907f2160ad96460caa5372c7f0ea30db69b7ff40fd372686f8ca0eaf",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/capabilities/plugin-owned-settings.ts",
+      "sourceSha256": "6e5aadb132dabd02fe2cbbdc3a7eeb7d0669c218bde9459f9ef8bfcca307163a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/catalog/plugin-catalog-release.ts",
+      "sourceSha256": "90f9ff2c56dd3a6d3e8d6c91464768412324eb06675fb9b8b0ca831c6593dac6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/catalog/plugin-catalog-types.ts",
+      "sourceSha256": "06c91d2e60fe7c117f599793ce588d93c4d792211f483a7042593c8abd8b5a16",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/catalog/plugin-catalog.ts",
+      "sourceSha256": "444d40463e4268f25413c732507ef25faa93b40a6b66691ceeec2a58193d2269",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/catalog/plugin-detail-fields.ts",
+      "sourceSha256": "bfb30ea422f118f71b1ef35b8f5b7d915de76cc972cf5a607b6646d43de8996a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/catalog/plugin-install-link.ts",
+      "sourceSha256": "c4de18ac326dd5fd9b87da7d4d1025cee817f8167019e816321c1cb46a54de23",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/catalog/plugin-install-stats.ts",
+      "sourceSha256": "f8218816320f2af57e4c7f9a1dc512c794b2a79f10b62b24d6b2e987717ecb19",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/catalog/plugin-kill-list.ts",
+      "sourceSha256": "24661f8e46b27e50f9cc4d72df518017fefd67c6b5c3b4b251867f4de04f3385",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/catalog/plugin-marketplace.ts",
+      "sourceSha256": "2fdc3ef534638a4641a88725665f01c56a470b1326b30950774cd4492846ee8f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/catalog/plugin-publisher-reservation.ts",
+      "sourceSha256": "ec16b94c2c3f0bb20d4aab6473b1b6915cf9d4b8db304c941f3dc5dcf3d95ec6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/catalog/plugin-repository-link.ts",
+      "sourceSha256": "7d05d55cf6dd37f968c8542da3488336b3892d0065e0478ef49b1afe1d8e0c22",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/catalog/plugin-update-policy.ts",
+      "sourceSha256": "90b65f9818084cb54aa7cb9d375ee5079bb9acf4e9771d98dc9e91aa129bc886",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-command-actions.ts",
+      "sourceSha256": "6f2ffa02d8d2706a2392437ee0a22a0ead4e35394ca93564f9f14e08b6bebd33",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-command-contribution.ts",
+      "sourceSha256": "d160485ae0f073e95a6e7f23367ce640f481f58a45343d4a6f1d5c1c4b902993",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-content-pack-contributions.ts",
+      "sourceSha256": "25b7828e2c068b83e9e6b78f0217c047ea7b375314100a26992481c8c61ca83f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-contribution-points.ts",
+      "sourceSha256": "2a49df586744d5f70add7fcae4d4008ca36c8ece1acb12fceabb6f8d9de0ec59",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-contribution-summary.ts",
+      "sourceSha256": "92de3764c2abbd1f4ceb1392aa4928fe23ccf045b8cda1c5afe52f6eec151a7c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-custom-editor-contribution.ts",
+      "sourceSha256": "38b5e7fdc85a5c7fc71778d28cd33f05fa0f5888e8cebd1f5ec0a5cdac2aa171",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-custom-editor-core-file-types.ts",
+      "sourceSha256": "02ac1710bf30ba77cd2e3f44355660d17c7905110150bdc2cf1ad422af9c645f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-event-contribution.ts",
+      "sourceSha256": "fe6ccfc62d8925c0ddcaab43a4aedde56479afde07f32855a3fb7254cf50e65f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-execution-profile.ts",
+      "sourceSha256": "13a19d6cae1704020638146dedfaef00a223eff25473358126a4ef9ee6250a49",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-file-match.ts",
+      "sourceSha256": "03d3b9fff92f3778f0111671956c3bf24d570044f51295ecc60ba24409e897b8",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-file-type.ts",
+      "sourceSha256": "93e739b11b5ed925a1e55728474372aec4b9b965c3d102a24664f653d9d1271a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-hook-contribution.ts",
+      "sourceSha256": "8585354cd5b0efbb272b3304201c8250c183a1df658fc4547004ce091a039b81",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-new-file-contribution.ts",
+      "sourceSha256": "6b07d0f70289c0d5444883e31cb05539c639246d5ddf0fb5f199fa14ae8a30dd",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-panel-contribution.ts",
+      "sourceSha256": "9933857bdf6a903cea8599d2ab10f8c26dca838b6199ca4c8a2cd631a4c98230",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-settings-contribution.ts",
+      "sourceSha256": "e46283b4b7b386c0076c1c177066b4e8b00f360e328873cb2e4f3a869ed449b6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-settings-values.ts",
+      "sourceSha256": "18f980e7079acd442c57d77098fcfcf9343bee52ceeec962ccc369352c3c2aaf",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-status-bar-item-contribution.ts",
+      "sourceSha256": "26df91e72220905a869358e978f96a890c4963cae7354762886d78311d6525bc",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/contributions/plugin-status-bar-state.ts",
+      "sourceSha256": "0273607dca5a58b69dfeceb61b8a17613cd01bbd6d707d92fd5a940de28770ee",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-box-props.ts",
+      "sourceSha256": "c300213bf5562724da3a3af196b516935e600ddb806061c873247cff457fe733",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-catalog.ts",
+      "sourceSha256": "eddfcdd7616d8027666ef44902ec82b7b319c7c8226fb3c4cc02729981620d27",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-content-props.ts",
+      "sourceSha256": "a90896f7561ad1c9010c17f507de6b128282512df6aa86165bf6045bdfd45be5",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-data-props.ts",
+      "sourceSha256": "dde736ed734173ffa093b14b8fc10700a4d53d6e38529ad8265cdfeb0a339ae9",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-form-props.ts",
+      "sourceSha256": "0f562c9ac76fb2e38abf316a34bcbfa95f31bdc74df4cc4b96790f169867f9de",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-host-typings.ts",
+      "sourceSha256": "774f39b4e9e73eabf5f88bed63652a2e5471ff85c9b50af08819853cab8719b1",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-layout-props.ts",
+      "sourceSha256": "8728ff0ca2242ca59d9b294845638bcace712bf0ff6535184e0d838240251055",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-limits.ts",
+      "sourceSha256": "28f13b41aefec672c302016fe126b99c67a8de6cd5b7043e4372e0b7ed73282d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-message-names.ts",
+      "sourceSha256": "31d01028a7dc1c7bef4eded8d5ba729fa1a808167214d9d78e44a642bbeabf0f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-messages.ts",
+      "sourceSha256": "08d5ccc5bfb9125d6b8af1547eac2533008d15c5eef420cb8c511f7f4f460ce0",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-panel-state.ts",
+      "sourceSha256": "e3fd4e43cc3ff70428457e55696dac0320d0a5f37303f189ab65344c1ecfd59e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-prop-schemas.ts",
+      "sourceSha256": "6b1991bcc59bddb2e283bcdd130077a2b5aa5793c315c03d695d8cf023f4ecc5",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-relative-time.ts",
+      "sourceSha256": "34e5fdcbbf9324992b3fe47c79baef3cb4f172d06151cecf14ca96b468a3a04b",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-table-columns.ts",
+      "sourceSha256": "945ccbf5af999b36381a4fc088592ecff66051bb30f2e01db4b9cb457d75b420",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/plugin-declarative-tree.ts",
+      "sourceSha256": "c59f43f4a06e14b7bf19ac3ec572f4df5e8d60f33f8063a81934059417fe1c2f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-act-snapshot.ts",
+      "sourceSha256": "371c821c2417d577a5d861b4e59dec1bd0c92e24aac5f39f58a45ccaed0aeb8f",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-atoms.ts",
+      "sourceSha256": "01771b8e4778e8adb51af76b5cc5446bf180ba205bffa92ad2da44731c718f91",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-data-sdk.ts",
+      "sourceSha256": "e2109e8f1fa16407928a0b91dacc1fc3018a79f0ef3170619b29a29429cff097",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-elements.ts",
+      "sourceSha256": "26ff799c8ff927cabd5e70b4e291dea21842f033b9ddf665bf7bfe0d7fabafc6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-error-location.ts",
+      "sourceSha256": "814f4d899fec2d3339b203e0368fd30218520605ff47ba5236c520d448648c18",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-evaluate.ts",
+      "sourceSha256": "7e9dd4f2374d5b506bdd564cf2ff10f78a6b041408af6112a1277c9e3643c80d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-host-messages.ts",
+      "sourceSha256": "1f747f4c3ef10fa0b1ae335e584c53e6aa5a1768abb1cf3b49708a17443ee9f9",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-memory-retention.ts",
+      "sourceSha256": "71958366aea574c6dcb6925cffc8faa6e4f5728eb5026677d367796d85be75ce",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-panel-context.ts",
+      "sourceSha256": "2466592377f2a74c812aebbe2472902e2ecf729628de2d0be11206426f934cb5",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-persist-queue.ts",
+      "sourceSha256": "1852464b570833b650c3017cd5996cac095da3f9e82d629784bac95169b63082",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-renderer-support.ts",
+      "sourceSha256": "1bae74b4900edb0cfe2c7c99932cc009c4d314eaeef7bea11ef29847b75bac82",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-renderer.ts",
+      "sourceSha256": "07bed201b7060e49b39a304b3b98b1af18e8a6becb6c080693a56f796d77ac58",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-runtime-types.ts",
+      "sourceSha256": "82834d760214bb7219521d17a6f7f68662802899edcbd30cf9fcedfba8906714",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-sdk.ts",
+      "sourceSha256": "b2b351a09ea24cf430ef6d981bc5f478ff696f2b26990d3a47d708b27125f8d8",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-source-maps.ts",
+      "sourceSha256": "b95843ad31a77b219cab964ad9a91f97397cda47d73be44cace3c6b94ca6dac8",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/declarative-storage-sync.ts",
+      "sourceSha256": "74cc00485f61434d9c66746bbe87660e67ae49b1e1cb3e031191366ffcc76c3d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/runtime/orca-module.ts",
+      "sourceSha256": "26f7524b56d25ab5fcddaa016171afa7c1cbf4b8b42eb8c000ad3a222113e8ad",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/orca-testing.ts",
+      "sourceSha256": "3e4a14c780afeecef250a6c2b822a6bb9e95fdcbc7a6d87d7c76fd7d712fae35",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-data-controls.ts",
+      "sourceSha256": "914bc937b4fef5c927118f174ab071153e2b964b88435bf4cfaf5acfdba9f811",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-editor-frame-api.ts",
+      "sourceSha256": "4bd60427288e31e83c07fbfe305a226bbc124443114d26b3e9e51a532edcef7e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-editor-host.ts",
+      "sourceSha256": "7cd23116520067afb3d62e3d5ad0f6464232ed5e9a756a43ed9e440b24fc3b85",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-host-error.ts",
+      "sourceSha256": "9b5efc081d853daf363c309f31ae3866ba316e07a644d4ac056b96f5528e9bce",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-host.ts",
+      "sourceSha256": "b3f87a21303deb41ef3f3dc084507ecc7b006e380f2718a7a48d13f8c2589554",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-panel-actions.ts",
+      "sourceSha256": "e49f3f6444c1105f356818a03b8762eaebeea652b17a4464147fb10a501aae8c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-panel-facades.ts",
+      "sourceSha256": "bef5545d105db6a209c2b8976058c344474235478a8439a5dda506fac8845269",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-panel.ts",
+      "sourceSha256": "41fcc81c866eb2ba7ad089bef75447e47752558c29123280ce46bbd66773df26",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-persisted.ts",
+      "sourceSha256": "e2760b619d289fe47caae1c76fcd7fcdd617cfdfe2d8ddf6edda4bac9a8060b8",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-plugin-data.ts",
+      "sourceSha256": "9caea1f9e3015f8ad76ecd6cdbe2941d09ed05a05d33154fe958e1737c09fa86",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-summary.ts",
+      "sourceSha256": "34b1300d71a55a1a1d8546dabc7bc97b075bd3decf6f7b9192490ef2abfe45a6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-tree.ts",
+      "sourceSha256": "9618961c010c2cd7152e638352fef9a6bfd6fe0c4c1093b9af5fb4cad557543b",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-value-controls.ts",
+      "sourceSha256": "b1dd0453a9122cba3833987811f072b48fe4299244e40f277ed09a304397dcf6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-visibility.ts",
+      "sourceSha256": "5bf285f29385bd84cf45dc3012ae2ab667b23e68a659a958a3921845fb7cb1e3",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/declarative/testing/testing-worker.ts",
+      "sourceSha256": "29d295d3eec573a176ca7b11a59fad9866f009e739483da41aa8a70a2296a05d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/events/plugin-change-event.ts",
+      "sourceSha256": "5c545b70336650a50ceadf80c885e4be80d28d5671d597fede77211f99398039",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/events/plugin-editor-save-hook.ts",
+      "sourceSha256": "d9b511bb48475cd996e889fd8da9610065679b221952bfae3445c337c703a863",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/events/plugin-events.ts",
+      "sourceSha256": "486eea1e89f1a6e2a9a65fbd6cce064379ffe50a12ad5c294d34dbfc418c8f0e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/events/plugin-hook-payloads.ts",
+      "sourceSha256": "1bfa22bd1c596a20beb814ad811e3e7698e131fe1bc92007bdb8ddbfa2248dea",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-custom-editor-bridge.ts",
+      "sourceSha256": "69975a33e83ef50b9af01960c27f18c266b00464c3155726301ffaad1acf523a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-declarative-host-document.ts",
+      "sourceSha256": "e36d0a1b78a8d602fad714c4b6e61e8dbcb705e11a48e185a0a450fb4c75a06d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-frame-bridge.ts",
+      "sourceSha256": "197145b3a32fbeb0d288caeeb6a0d5f172209ac90f1389dca48d77d4b8c41c2b",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-frame-entry-limits.ts",
+      "sourceSha256": "912a9850601e329870e57a610d9dd546a0c3c931c8645141ffebef4f221173d0",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-frame-guest.ts",
+      "sourceSha256": "20abcfc762655317ba1cbd805371ae7b7b96af16b949785c1c1e3bbf67d3b30e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-frame-shell-mount.test-fixture.ts",
+      "sourceSha256": "a2165d6c2462649960ffe2afaad91d96b74e70d7e7c2c41a5b1f953a159063c1",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-frame-source-map-prelude.ts",
+      "sourceSha256": "c428eceebfbcc5fd36470053f4efe5926dfe9bcbfa8a08baffb4c1b3ce49ddb5",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-frame-source-modules.ts",
+      "sourceSha256": "89df0b684beabe922e9353472ad68359aaa65171960e96bdb5d8ed310f9caae5",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-panel-call-admission.ts",
+      "sourceSha256": "b92d3c44d23088032740a05e2962118b51ac84ea3119dcea8761119751225c4d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-panel-design-tokens.ts",
+      "sourceSha256": "7d33ea58fbb54b02dba3127fecd90ccdda87dec03e681bccb3942cbd1ad38e46",
+      "reason": "Ash M8 EX-03: retire the plugin contract. Retained palette and native-chat calculations have neutral owners in Ash."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-panel-message-budget.ts",
+      "sourceSha256": "05caf13478f4911842543a5baedcffc1ba6ed4100d9c006dbc7a37849d9cee2c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-panel-shell-document.ts",
+      "sourceSha256": "cc79ba53ace411110a326c1a62dad294189cfe2bdac895f7c059592ae10ab93e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-panel-shell-facades.ts",
+      "sourceSha256": "05d3a6b3195264b8878a236908ca04341d3904f25fa2bcc3744bb8d64e89f059",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-panel-shell.ts",
+      "sourceSha256": "316866562986ac0bdd2e005e0c6a9a33b295c48419c5a17be3a165c6aa210296",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-protocol.ts",
+      "sourceSha256": "8587fd622d6a88310e84460560574cbb96237ff2f2eccbc5f21a08241c64e42a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-save-as-extensions.ts",
+      "sourceSha256": "691ee10fd7172ffc5bb3d133e8e2423b3da65795022fbd3cb873f6755ecf002c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/frames/plugin-tab-key.ts",
+      "sourceSha256": "b0e30e5c7c6fa1beac287b88f4162cf35c82a32ac5b11a0587c496054d3e3222",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/images/plugin-image-fields.ts",
+      "sourceSha256": "37e680223179437a9b2aaf1ba2f99c7ee3fec4b14a6db8457f06569812c45bea",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/images/plugin-image-format.ts",
+      "sourceSha256": "e26d18edbc161b664d7315bc6fb9830acbff608130d08eb895b40162128042ce",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/images/plugin-image-url.ts",
+      "sourceSha256": "75f44ab1596d377b9383488e6db76e38c38bc2d834b7693fcc9ce1659dac6ee8",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/images/plugin-manifest-catalog-images.ts",
+      "sourceSha256": "32fd056a8e603627098b830ff6f5ca14216d073bc831f6376428b7a81134af18",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/installation/plugin-file-validation.ts",
+      "sourceSha256": "a330e53e8fabda66dc3d6dbbc12793a3e02c5e458f1ebb49e73a84391cfeeee9",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/installation/plugin-git-arguments.ts",
+      "sourceSha256": "f88660c3fad2f7beea49fffc83af280ea3312f72328f3869e7fac6a76f8f4e5c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/installation/plugin-git-install-input.ts",
+      "sourceSha256": "4df35050d01dbfbc880b35f727056763c9da48690facf806f8928ea3f25f9ef1",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/installation/plugin-git-resolution.ts",
+      "sourceSha256": "198a3627689d9da540001b044af3c4f3b287322b46edaaaf098ed308222be7fa",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/installation/plugin-host-version.ts",
+      "sourceSha256": "61191f55a81f772b8f3a0537dd283f5502eb1a82b6bee6c035b4b514b0b0ac05",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/installation/plugin-id-format.ts",
+      "sourceSha256": "0bb13e9d90e44a1e25da77931de56fcd8029ade450bbcfe1fad196c2463aa675",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/installation/plugin-install-lockfile.ts",
+      "sourceSha256": "408e8c3856f25af36cbb362c11f737079de9b854316a00d3255ce42f27657211",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/installation/plugin-path-safety.ts",
+      "sourceSha256": "a7f4c28673e5e6bd0f685bf219a4bfb44443be404807e5621363b0205baaf052",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/installation/plugin-publisher-derivation.ts",
+      "sourceSha256": "e28ab8c8eab0d2b26d7231631e0dc2e943d2ace7f335052a023afc2b28a844aa",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/languages/protected-copy-keys.json",
+      "sourceSha256": "683d9ad32ad05dcb9a42865370ddd7f1c098e54932c37c41e46a8238a96e1dd0",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-display-text.ts",
+      "sourceSha256": "f2904454806ef170d99ad48303beb26058593a9e58649a2c491ef51a5571bcc2",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-engine-floor-keys.ts",
+      "sourceSha256": "1675815d10b7d71df4e061d02cb88380d6e70aecd9fb0c1b886061934c673507",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-engine-floor.ts",
+      "sourceSha256": "8d4467a9e6bca5b84ab416f157ddf829b5a2d6cfc3ed4654f651cd27ad97008c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-json-object.ts",
+      "sourceSha256": "f9643e4f42351f9a0b8bfe58e87461cfcfccf0c75e33314447e288752e87399e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-json-schema.test-fixture.ts",
+      "sourceSha256": "f462fc5b40a3300be65ee0ca2becee9b84fc04eb7943ba863be7c97c3b35a791",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-json-schema.ts",
+      "sourceSha256": "6c693d913e807f051c1895d7af42eec6cebcd776a9af869d9ac262c252f05243",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-manifest-compatibility.ts",
+      "sourceSha256": "8b9c30b12a76c7bfbe8bf6deb5c071587b11f4df15c2c13a9209be0c280e1da9",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-manifest-contribution-validation.ts",
+      "sourceSha256": "c7f721a4be2f79ff65c2779e1706e69c59d5e9459fc4a5be122846407408930a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-manifest-engine-range.ts",
+      "sourceSha256": "fa9e18a88045728ec6a129d9ef2dcab58e051973c2682e69a9ebac3475a3bb6a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-manifest-fields.ts",
+      "sourceSha256": "4eaab11a766e35bb7a782d175f33dee64de98342f0bcd865a79f49059a30cf6e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-manifest-v1-names.ts",
+      "sourceSha256": "9ad8a8f4265c5259086365338da5ce62943b6a1cba4490ff60664272d0517e55",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-manifest-v2-rules.ts",
+      "sourceSha256": "604e4663d3cde18702706c2dc0136541ba27aa26b00a181b3702cd8216885379",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-manifest.ts",
+      "sourceSha256": "9458131b44b9bcb97c3fe421ad398864b4320fcb8951154f8819ba8cb21870a0",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-schema-field-docs.ts",
+      "sourceSha256": "c65bd23815028d7bdd1604106b75a9e2253db892bb5b23bed74e91133f8e427a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-schema-issues.ts",
+      "sourceSha256": "c25c41d0a5724d4159af81bdedda88aff7d380888ca94b351c712ff91c60b06d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-schema-policy-notes.ts",
+      "sourceSha256": "980d108106a008162f2f5939200cd12ca22a7348b648f5ea95b1daa52011716c",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/manifest/plugin-schema-reference-doc.ts",
+      "sourceSha256": "b88e3c11a1cf59e7a9300bb2589eccf9cf4b2897ce278101a1a7f0eccc00a86d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/plugin-list-entry.ts",
+      "sourceSha256": "5a8613baa511b19e84e92f888ec91052ec04976eb63fec88b8d6e46a612b66a3",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/plugin-system-settings.ts",
+      "sourceSha256": "3867a28e2153233768603aaa121bbd6745dc1abb17ce03b4dfa82970a429f28a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/view/plugin-editor-shot-acts.ts",
+      "sourceSha256": "be2fc928f19962dff07d58d88374ea80b50565be353adb8b0a864ef00dd5c50a",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/view/plugin-shot-acts.ts",
+      "sourceSha256": "05c2b2d6e54ffd53051a5f9494163be14787ceb683e28d8d962e8e81226e7e79",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/view/plugin-view-protocol.ts",
+      "sourceSha256": "2a6f1ef72879445b3cb96500f464e95af36e74ccd0b853c550746122614f8656",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-hook-chain.ts",
+      "sourceSha256": "f9be1ea0d512ac73b3359fbf69645f496d11664820ee481d939c97d457a17dd1",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-host-api-appearance.ts",
+      "sourceSha256": "7bcda62f1fff038be9263e2519ad846541302fe1e38c95cdc5d332ddbb7e11c3",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-host-api-major.ts",
+      "sourceSha256": "e0cd36c31a4ab43d639225c6a4893f4a306e5d8a6350e001971026c8be9ca529",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-host-api-panel-methods.ts",
+      "sourceSha256": "a6dee6b78238a3832e368c8dc2a9e62ed335127417be7d85f168e8c0950a060b",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-host-api-reference-doc.ts",
+      "sourceSha256": "26f305582ce97f5eb3dd93363c12b1caace0e1eede26a42667125c8791996156",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-host-api-status-bar.ts",
+      "sourceSha256": "27e70a94941c6f610dfb332fea5c8f8d6d3863e30e540bbb35cb8a7dee40a0d3",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-host-api-storage-schemas.ts",
+      "sourceSha256": "bca167d2ccb021c02397ee9c6200aca1e3e9eca44b076d650965e0a1e1a2cb44",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-host-api-worker-actions.ts",
+      "sourceSha256": "b6821c1d900a77659866629c6b5727d532ff0b0f3943b9b1b1bfa4a536c27be2",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-host-api-workspace-methods.ts",
+      "sourceSha256": "2680849c27ff7ed609a8e0e69ad6ee903f1f4ee8e4e384b9ff7ee14b47c9c598",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-host-api.ts",
+      "sourceSha256": "fddb3611e1b390d1f806b5baf8ef71adcb7e175376339525b10dec9bc9e9590e",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-host-method-spec.ts",
+      "sourceSha256": "b2c526aef20c1153ddeb974a1a0fa4b5ca1920c92fb502b5bd1d96db4a3519be",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-host-protocol.ts",
+      "sourceSha256": "43dcb01b25e9ce5b0747f08cb342d93731fec533837bd875e62bf4af8ec74b4d",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-panel-bridge-protocol.ts",
+      "sourceSha256": "51af8636d8aafd58c31737d05e582c126fbada0ade19a348578dacce078bb507",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-schema-type-text.ts",
+      "sourceSha256": "b4453906b11ecc46132cca7e411a927190c275dabcbe53df07d3ad58b8a51ba6",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-worker-hooks.ts",
+      "sourceSha256": "8d4625882fb4ad295264d16df52cf85f07ccd8adc91e7f6f46bd4460a997c686",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/plugins/workers/plugin-worker-orca-api.ts",
+      "sourceSha256": "52d3072e07d86d89f921a7ec23d5272a884e0dfafde9db5bc2fff5f502837ee0",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/rpc-contract/plugins-params.ts",
+      "sourceSha256": "357391b6266c1debb7d983033495e0408c9ce7be9c10565ba2758d5c9a5ed7fb",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/shared/telemetry-plugin-event-schemas.ts",
+      "sourceSha256": "ee5c45703371d88c71d6c25681ee310f909a69677a2a7b555417652054849c3b",
+      "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
     }
   ]
 }

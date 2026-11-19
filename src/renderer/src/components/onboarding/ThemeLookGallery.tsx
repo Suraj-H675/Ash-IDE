@@ -2,7 +2,6 @@ import type React from 'react'
 import { useMemo } from 'react'
 import { translate } from '@/i18n/i18n'
 import { useUiLanguageRevision } from '@/i18n/use-ui-language-revision'
-import { usePluginTerminalThemes, usePluginThemes } from '@/store/plugin-themes'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import { SettingsSegmentedControl } from '../settings/form-controls/SettingsFormControls'
 import { buildThemeLooks, type ThemeLook, type ThemeLookBase } from './onboarding-theme-looks'
@@ -17,10 +16,7 @@ export function useThemeLooks(
 ): {
   looks: ThemeLooksByBase
   selected: Record<ThemeLookBase, string | null>
-  pluginTerminalThemes: ReturnType<typeof usePluginTerminalThemes>
 } {
-  const pluginThemes = usePluginThemes()
-  const pluginTerminalThemes = usePluginTerminalThemes()
   const languageRevision = useUiLanguageRevision()
   const looks = useMemo<ThemeLooksByBase>(() => {
     if (!baseline) {
@@ -34,16 +30,15 @@ export function useThemeLooks(
           ? translate('components.onboarding.theme.looks.orcaDark', 'Orca Dark')
           : translate('components.onboarding.theme.looks.orcaLight', 'Orca Light')
     }
-    const build = (base: ThemeLookBase): ThemeLook[] =>
-      buildThemeLooks({ base, pluginThemes, pluginTerminalThemes, baseline, labels })
+    const build = (base: ThemeLookBase): ThemeLook[] => buildThemeLooks({ base, baseline, labels })
     return { dark: build('dark'), light: build('light') }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- languageRevision re-reads translated labels
-  }, [baseline, pluginThemes, pluginTerminalThemes, languageRevision])
+  }, [baseline, languageRevision])
   const selected = {
     dark: settings ? selectedThemeLookId(settings, 'dark', looks.dark) : null,
     light: settings ? selectedThemeLookId(settings, 'light', looks.light) : null
   }
-  return { looks, selected, pluginTerminalThemes }
+  return { looks, selected }
 }
 
 /** Under System: which of the two persisted looks the list edits; marks the one showing now. */

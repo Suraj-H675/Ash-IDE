@@ -9,8 +9,11 @@ function rendererSource(path: string): string {
 }
 
 describe('Ash excluded application-plugin UI entrypoints', () => {
-  it('retires the closed renderer facades and retains draft, host, and contribution stores', () => {
+  it('retires the closed renderer facades and retains the editor draft store', () => {
     const retired = [
+      'store/plugin-content-list-store.ts',
+      'store/plugin-themes.ts',
+      'store/plugin-icon-themes.ts',
       'store/plugin-custom-editors.ts',
       'store/plugin-frame-isolation.ts',
       'store/plugin-new-files.ts',
@@ -24,7 +27,6 @@ describe('Ash excluded application-plugin UI entrypoints', () => {
     }
 
     const retained = [
-      'store/plugin-content-list-store.ts',
       'components/editor/save/bytes/editor-bytes-documents.ts',
       'components/editor/save/bytes/ash-no-plugin-frame-byte-drafts.test.ts'
     ]
@@ -130,8 +132,8 @@ describe('Ash excluded application-plugin UI entrypoints', () => {
     const cardPrimitives = rendererSource(
       'components/sidebar/workspace-card/template/card-primitives.tsx'
     )
-    expect(cardPrimitives).toContain('@/components/plugins/declarative/PluginDeclarativeDisplay')
-    expect(cardPrimitives).toContain('@/components/plugins/declarative/plugin-declarative-icons')
+    expect(cardPrimitives).toContain('./card-icon-glyphs')
+    expect(cardPrimitives).not.toContain('components/plugins')
   })
 
   it('removes orphan plugin presentation and trust state while retaining card and theme helpers', () => {
@@ -159,16 +161,7 @@ describe('Ash excluded application-plugin UI entrypoints', () => {
       expect(existsSync(resolve(process.cwd(), 'src/renderer/src', path)), path).toBe(false)
     }
 
-    const retained = [
-      'components/plugins/declarative/PluginDeclarativeDisplay.tsx',
-      'components/plugins/declarative/plugin-declarative-icons.ts',
-      'components/plugins/plugin-icon-glyphs.ts',
-      'components/plugins/state/plugin-theme-apply.ts',
-      'components/plugins/state/plugin-action-toast.ts'
-    ]
-    for (const path of retained) {
-      expect(existsSync(resolve(process.cwd(), 'src/renderer/src', path)), path).toBe(true)
-    }
+    expect(existsSync(resolve(process.cwd(), 'src/renderer/src/components/plugins'))).toBe(false)
   })
 
   it('only offers built-in Appearance choices, not excluded app-plugin catalog installation', () => {
@@ -189,6 +182,9 @@ describe('Ash excluded application-plugin UI entrypoints', () => {
     expect(appearance).toContain('MATCH_TERMINAL_APP_THEME')
     expect(appearance).toContain('editorThemeSlotUpdate')
     expect(appearance).toContain('FOLLOW_APP')
+    expect(rendererSource('components/onboarding/ThemeLookCarousel.tsx')).not.toMatch(
+      /onorca.dev|Browse plugins/
+    )
     expect(rendererSource('components/settings/page/settings-page-renderer.tsx')).not.toContain(
       'PluginInstallTrustDialogHost'
     )

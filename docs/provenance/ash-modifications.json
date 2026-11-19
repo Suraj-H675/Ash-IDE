@@ -917,11 +917,6 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
-      "path": "src/main/plugins/plugin-runtime-binding.ts",
-      "sha256": "ca16969b3e6087130ce9da3c550be83354f53024c2af58e4360626a2548fe0b3",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
       "path": "src/main/preflight/agent-detection.ts",
       "sha256": "52e4ffc50348b98eee77493075ab9b45ee5a4e3d96949194cb4ddd4de83f3d96",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1613,8 +1608,8 @@
     },
     {
       "path": "src/main/window/attach-main-window-services.ts",
-      "sha256": "44730c86d3d51791346bacda8fdc4c0ed8552bd31ba4901110ec1f0c2bcf0aa6",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "7f1500374c068fbd18a50a3c5613a4d21aec7f23cfae95f43b8fdd6eac49fb2d",
+      "reason": "Ash M8 EX-03: retire application-plugin guest and build entrypoints while preserving browser, document-preview, native-chat, and daemon boundaries."
     },
     {
       "path": "src/main/window/desktop-integration/app-icon.test.ts",
@@ -1667,11 +1662,6 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
-      "path": "src/preload/api/plugin-host-api.ts",
-      "sha256": "8f8af646d17dda414899ac0e4b7e88bdbe8ed25b292a3cf65497d8db2d436d0e",
-      "reason": "Ash M8: remove the legacy listLanguagePacks preload type from the excluded application-plugin surface."
-    },
-    {
       "path": "src/preload/api/preflight-api.ts",
       "sha256": "127db81372c8b486c7e5ae597e11624d20c8e435b3e789792c16e09d6b474ac8",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1698,8 +1688,8 @@
     },
     {
       "path": "src/preload/api-types.ts",
-      "sha256": "872676880bf80dd1e14cbf593d06af75ad66c682508a174a8712ecd34eb62e63",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "7c577cd4c1c6295e64d56ffc74569ebe1066161c11fe0227cac6b702c0535e5c",
+      "reason": "Ash M8 EX-03: remove the general application-plugin RPC and preload contracts while retaining supported desktop and local runtime routes."
     },
     {
       "path": "src/preload/index.ts",
@@ -1753,8 +1743,8 @@
     },
     {
       "path": "src/renderer/src/app-shell/use-global-keybindings.ts",
-      "sha256": "41ae805c1f3afeabfb67135637d2eee13c5c9ef9b21ed7803c137759b68308ba",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "39cdd35b69fd0189f1e8f3b22ea77c9d4c109c0ceaf0a1a1dc1c27ae01a90b7b",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
     },
     {
       "path": "src/renderer/src/components/Landing.tsx",
@@ -2053,8 +2043,8 @@
     },
     {
       "path": "src/renderer/src/components/settings/appearance/themes/AppearanceThemeControl.tsx",
-      "sha256": "2eae584158851cce6ee6b13f781e0677148d2d402afbfc972c06d10f005ebf86",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "f94eaf92ef8dd05fdfbdf01f455ffd2a7e966c2702ce78042a8892f882bd75bc",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
     },
     {
       "path": "src/renderer/src/components/settings/automations/AutomationsSettingsPane.tsx",
@@ -2708,8 +2698,8 @@
     },
     {
       "path": "src/renderer/src/main.tsx",
-      "sha256": "ceae9bffa191378f85f7279dae092176fc0031149314ecc0e20fb453d19a7d1f",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "0090345f44931b881df2d5181d7ad1a59539dadc3bbfeb366b0d4194e350273c",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
     },
     {
       "path": "src/renderer/src/runtime/local-jira-search-cancellation.ts",
@@ -2774,11 +2764,6 @@
     {
       "path": "src/renderer/src/runtime/runtime-linear-project-client.ts",
       "sha256": "829fd2d8c90df3eff4588b6f1a936c6e55b34e3b07fbb8978d6d98986ab813d7",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
-    },
-    {
-      "path": "src/renderer/src/store/plugin-content-list-store.ts",
-      "sha256": "20ee125208bbaf27028144f704c7ba81488ae5426666e2d369a21e4b665d8be7",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2958,8 +2943,8 @@
     },
     {
       "path": "src/shared/rpc-contract/rpc-params-catalog.generated.ts",
-      "sha256": "aff3be40fef4b6efa78fd5d405d6086a532b6eeca87aabfa4f52a55c70a4c74b",
-      "reason": "Ash M8: remove the stale invocation for the retired app-plugin RPC catalog generator while retaining the generated built-in RPC parameter contract."
+      "sha256": "c39c219df23f06fcda40e1edc3f37b827129ba30be96059d0518f62f3ea449aa",
+      "reason": "Ash M8 EX-03: remove the general application-plugin RPC and preload contracts while retaining supported desktop and local runtime routes."
     },
     {
       "path": "src/shared/rpc-contract/terminal-daemon-params.ts",
@@ -2998,8 +2983,8 @@
     },
     {
       "path": "config/electron-builder.config.cjs",
-      "sha256": "c863cc026af7b4c590e81a74654da027ced545e0297e01aac4b8841bfddfc4cf",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "b8a521107e438842bcbca7455ddbe66c079037ea9274b81ccef1534e76ee6bda",
+      "reason": "Ash M8 EX-03: retire application-plugin build inputs and verify the retired executable and resource paths stay out of Ash packages."
     },
     {
       "path": "config/packaged-runtime-node-modules.cjs",
@@ -3233,8 +3218,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "a3588d51dacb241d908dbc1369370ac6978c130953bd652b6dbb459da29e8709",
-      "reason": "Ash M8: allow an explicit AppImage-only Linux packaging target and generate the compiled CLI CommonJS package boundary during clean desktop asset builds, without global CLI installation."
+      "sha256": "92c748f45261b7228572def04cbf4e2e59304673985c959ad10cc56552a61149",
+      "reason": "Ash M8 EX-03: remove the remaining general IDE application-plugin contracts and keep coverage for the retained Ash boundary."
     },
     {
       "path": "pnpm-lock.yaml",
@@ -3243,8 +3228,8 @@
     },
     {
       "path": "electron.vite.config.ts",
-      "sha256": "de0c0e4d5979ab2c4ec3c5fa3fc3df93e95615b6c9fc747d64f4af89a6b67700",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "6f0fdbad4b95af2630aece95b9849f1264871c27fe26274d5b08a44489cfa649",
+      "reason": "Ash M8 EX-03: retire application-plugin build inputs and verify the retired executable and resource paths stay out of Ash packages."
     },
     {
       "path": "src/renderer/src/store/slices/editor/actions/untitled-file-creation.ts",
@@ -3326,18 +3311,18 @@
     },
     {
       "path": "src/main/ipc/app.ts",
-      "sha256": "43f7f2538be448000dc484597e764c07f42158e38156607bcfcd1fe0ce83463c",
-      "reason": "Ash M8: remove system-locale detection IPC and its Main menu refresh path for English-only UI."
+      "sha256": "b66c5644257027e0d42ba82ae8e0b820d67a27aec421388c2f44f4988e3fcc12",
+      "reason": "Ash M8 EX-03: retire application-plugin guest and build entrypoints while preserving browser, document-preview, native-chat, and daemon boundaries."
     },
     {
       "path": "src/main/persistence/loading-store/normalize-loaded-global-settings.ts",
-      "sha256": "4d1ca08130d9852fe26b7b17367c28b23328d26e24da17517a20e73e2374bc63",
-      "reason": "Ash M8: preserve valid legacy uiLanguage values while the English-only UI ignores them."
+      "sha256": "f8f726822b317aab7169e88c64187cc2879e770db77df4aecb686d58785c1065",
+      "reason": "Ash M8 EX-03: preserve legacy application-plugin records as passive profile data without a plugin startup migration or renderer mutations."
     },
     {
       "path": "src/main/persistence/loading-store/prepare-loaded-profile-settings.ts",
-      "sha256": "30e05fecd2fa8f61a7671055bb997257eedbaa4856616c9c1bbbe4f91c6b9356",
-      "reason": "Ash M8: retire the Portuguese uiLanguage startup migration and its save marker so valid legacy values are not rewritten."
+      "sha256": "b9122a88aaa718d5ae46077f632994de92667312a639c4642faa97241ffcd0ba",
+      "reason": "Ash M8 EX-03: preserve legacy application-plugin records as passive profile data without a plugin startup migration or renderer mutations."
     },
     {
       "path": "src/main/startup/browser-process-user-agent-ordering.test.ts",
@@ -3356,18 +3341,18 @@
     },
     {
       "path": "src/preload/api/app-api.ts",
-      "sha256": "69cd629007fdf6b3f3ed450f99a90bdb8222a1bf8c7bb9a7394f6bc1020d47a0",
-      "reason": "Ash M8: remove the renderer contract for retired system-locale detection IPC."
+      "sha256": "da5bc9618b6849c5174e504aeecb165053f38790fc101de9bc6a8b6d420c0639",
+      "reason": "Ash M8 EX-03: remove the general application-plugin RPC and preload contracts while retaining supported desktop and local runtime routes."
     },
     {
       "path": "src/preload/api/app-bridge.ts",
-      "sha256": "f45f2d74528426892c55089c3178a4f9760786d810e943f41ad0f4e8f7f4358c",
-      "reason": "Ash M8: remove the preload bridge for retired system-locale detection IPC."
+      "sha256": "7cc6663b1097620a9eda77cfed9872e9b14820916cb24c8df7b1308954c467d7",
+      "reason": "Ash M8 EX-03: remove the general application-plugin RPC and preload contracts while retaining supported desktop and local runtime routes."
     },
     {
       "path": "src/renderer/src/components/settings/appearance/AppearanceInterfaceSection.tsx",
-      "sha256": "5233c0ffb3295f7cac6e3e41b3721e6e6ea10b4679cf68e55048a76c44ee84a3",
-      "reason": "Ash M8: remove built-in and plugin language selection while preserving other appearance controls."
+      "sha256": "ab899e870eca9dd7edab3607c57a3e81d877557f67d1d81cb55867ddd3941dbd",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
     },
     {
       "path": "src/renderer/src/components/settings/appearance/appearance-interface-summary.ts",
@@ -3446,43 +3431,8 @@
     },
     {
       "path": "src/shared/default-global-settings.ts",
-      "sha256": "2c5d76bb82fea08c14c38267970932c948a2cf05e6b5fe1cf78ec492b356205e",
-      "reason": "Ash M8: default new or missing UI-language preferences to English while retaining legacy saved values for compatibility."
-    },
-    {
-      "path": "src/main/plugins/contributions/plugin-content-pack-registry.ts",
-      "sha256": "a94a790815ae5878391ba54a63062150b66b5d7bab105f5041b2d25eae14fb31",
-      "reason": "Ash M8: remove language-pack family reconciliation from the application-plugin content registry."
-    },
-    {
-      "path": "src/main/plugins/plugin-artifact-validation.ts",
-      "sha256": "a1b1d883ae8c7897ae69f108c796cf241c18170590c8e2b70b8afc0c8f0478a6",
-      "reason": "Ash M8: stop validating and size-accounting application-plugin language-pack artifacts."
-    },
-    {
-      "path": "src/main/runtime/rpc/methods/plugins.test.ts",
-      "sha256": "b3a44fd1b4de1c42be89aa4375b492c1ff0f1447361ff4fe7384d06b8fa58e13",
-      "reason": "Ash M8: update plugin RPC fixture after removing the languagePacks manifest contribution point."
-    },
-    {
-      "path": "src/shared/plugins/contributions/plugin-content-pack-contributions.ts",
-      "sha256": "24166cd60ef05610031535ee0b133a3393f1b750fafaca9616116b8fcdfccfca",
-      "reason": "Ash M8: remove the language-pack manifest contribution schema and locale validation."
-    },
-    {
-      "path": "src/shared/plugins/contributions/plugin-contribution-points.ts",
-      "sha256": "e9e7c98b8670088c9fa37d40c3f8b68440ead7c46e687dd1163e44364c855447",
-      "reason": "Ash M8: remove languagePacks from manifest contribution points and capability policy."
-    },
-    {
-      "path": "src/shared/plugins/contributions/plugin-contribution-summary.ts",
-      "sha256": "ca121da5380078c7915582f6cb4ff66f9c6ce892669d1938bafb21046be516f8",
-      "reason": "Ash M8: remove language-pack entries from plugin catalog contribution summaries."
-    },
-    {
-      "path": "src/shared/plugins/manifest/plugin-manifest-contribution-validation.ts",
-      "sha256": "090c6d9f667e63362572ca78bc7cb8e2272fdf7500c37c2464a5330d7b768b29",
-      "reason": "Ash M8: remove duplicate-locale validation for the retired language-pack contribution point."
+      "sha256": "54bc86ea57c24fbd6549db5d92cdf41e0f28ec4348e24657ff3ce8be4504a197",
+      "reason": "Ash M8 EX-03: preserve legacy application-plugin records as passive profile data without a plugin startup migration or renderer mutations."
     },
     {
       "path": "config/i18n-translation-source.md",
@@ -3493,6 +3443,316 @@
       "path": "config/scripts/desktop-distribution/linux/build-linux-local.mjs",
       "sha256": "5f43f18841a8c3636baffe57584d88cf244bfb69bbb144917c30a8b6a3896310",
       "reason": "Ash M8: permit explicit Linux AppImage-only packaging without requiring optional DEB/RPM toolchains; preserve default multi-target build."
+    },
+    {
+      "path": "config/build-plugins/main-build-entry-points.ts",
+      "sha256": "efd00cdba44c7bc0f1788783e89dae5f726f958eba6638b3b0ef98c6ad9bf0fd",
+      "reason": "Ash M8 EX-03: retire application-plugin guest and build entrypoints while preserving browser, document-preview, native-chat, and daemon boundaries."
+    },
+    {
+      "path": "config/build-plugins/plain-node-entry-guard.ts",
+      "sha256": "2aaa612295a66327fd97b01f1475bfa90a9bb08e91bce371ba06786afbc229f0",
+      "reason": "Ash M8 EX-03: retire application-plugin guest and build entrypoints while preserving browser, document-preview, native-chat, and daemon boundaries."
+    },
+    {
+      "path": "config/flaky-test-pattern-baseline.txt",
+      "sha256": "450718e0f8281496acb4cc1980348baffcca27212625024380e502849542076b",
+      "reason": "Ash M8 EX-03: retire application-plugin build inputs and verify the retired executable and resource paths stay out of Ash packages."
+    },
+    {
+      "path": "config/knip.json",
+      "sha256": "55bc509629f8dc152472cb95d33a8cbad175324f9c51083e4ebe08c0c1a977be",
+      "reason": "Ash M8 EX-03: retire application-plugin build inputs and verify the retired executable and resource paths stay out of Ash packages."
+    },
+    {
+      "path": "config/main-sync-spawn-baseline.txt",
+      "sha256": "91610d203598fdcc85e2a2d59f302b8d4d37885dd3b185cff7422ec1a1c3ce87",
+      "reason": "Ash M8 EX-03: retire application-plugin build inputs and verify the retired executable and resource paths stay out of Ash packages."
+    },
+    {
+      "path": "config/process-host-direct-import-baseline.txt",
+      "sha256": "4c8f2f973e7813ad39b49de4359cd2d34b35ad1d33641979db1692efa7e9ba4a",
+      "reason": "Ash M8 EX-03: retire application-plugin build inputs and verify the retired executable and resource paths stay out of Ash packages."
+    },
+    {
+      "path": "config/scripts/test-runtime/sqlite-admission/vitest-node-runtime-files.mjs",
+      "sha256": "b7583f5c2d531ee7d0581c215a8d498213a64c668a83f0bec79ff4819142e5fe",
+      "reason": "Ash M8 EX-03: retire application-plugin build inputs and verify the retired executable and resource paths stay out of Ash packages."
+    },
+    {
+      "path": "src/main/ipc/renderer-settings-update.ts",
+      "sha256": "e86231d8f41115c02d59bdfc061f9760ade675504e9ea102bd7b256c4c263aa4",
+      "reason": "Ash M8 EX-03: preserve legacy application-plugin records as passive profile data without a plugin startup migration or renderer mutations."
+    },
+    {
+      "path": "src/main/persistence/applying-settings/default-on-migration-guards.ts",
+      "sha256": "1b929d5757c9981e8d7b776fca6f7fcda81eb6fb0a7719dde0b1de688c2758a4",
+      "reason": "Ash M8 EX-03: preserve legacy application-plugin records as passive profile data without a plugin startup migration or renderer mutations."
+    },
+    {
+      "path": "src/main/persistence/applying-settings/settings-update.ts",
+      "sha256": "f3293d7f767ae3a9929574111c409e2587918c245bbe789ea53813c0d81c61d3",
+      "reason": "Ash M8 EX-03: preserve legacy application-plugin records as passive profile data without a plugin startup migration or renderer mutations."
+    },
+    {
+      "path": "src/main/persistence/applying-settings/terminal-settings-migrations.ts",
+      "sha256": "c46ffe2894ec583e6591cd2e158f00adfc16e70c3e120e71b446261122d1729a",
+      "reason": "Ash M8 EX-03: preserve legacy application-plugin records as passive profile data without a plugin startup migration or renderer mutations."
+    },
+    {
+      "path": "src/main/runtime/agent-state-rules/agent-state-rules-live-update.ts",
+      "sha256": "6f0bd229624b34d91fb1a07ef627316e8239082e89c12dd40f6d9f95bcf93a18",
+      "reason": "Ash M8 EX-03: use a neutral atomic text writer for retained policy cache writes."
+    },
+    {
+      "path": "src/main/runtime/rpc/errors.ts",
+      "sha256": "657d006232122694e3e52494d251420f2fc9fd0820d4ddaee58da0c6c4a79a0b",
+      "reason": "Ash M8 EX-03: remove the general application-plugin RPC and preload contracts while retaining supported desktop and local runtime routes."
+    },
+    {
+      "path": "src/main/runtime/rpc/methods/client-ui.test.ts",
+      "sha256": "7245f88189288f93f3bae2a93d6910b7ba6950853310d82dbbb7851cf537b473",
+      "reason": "Ash M8 EX-03: remove the general application-plugin RPC and preload contracts while retaining supported desktop and local runtime routes."
+    },
+    {
+      "path": "src/main/window/createMainWindow.ts",
+      "sha256": "42ba5108bb53caf38c28ac839b79d334b9272c774723dae64a9ceb6ccd3c829d",
+      "reason": "Ash M8 EX-03: retire application-plugin guest and build entrypoints while preserving browser, document-preview, native-chat, and daemon boundaries."
+    },
+    {
+      "path": "src/main/window/host-frame-navigation-guard.test.ts",
+      "sha256": "4e7327d54462fd2ccbfaaff6f5221ca507b0fb415a9b05fe9fdd9c1d9b05e556",
+      "reason": "Ash M8 EX-03: retire application-plugin guest and build entrypoints while preserving browser, document-preview, native-chat, and daemon boundaries."
+    },
+    {
+      "path": "src/main/window/host-frame-navigation-guard.ts",
+      "sha256": "220985e6873ec15106aff3159baf56fde1aa336f0d077a6067cc1348e3dca1c0",
+      "reason": "Ash M8 EX-03: retire application-plugin guest and build entrypoints while preserving browser, document-preview, native-chat, and daemon boundaries."
+    },
+    {
+      "path": "src/main/window/host-frame-permission-policy.ts",
+      "sha256": "d3293db64a4999de15acc4bdf28f0fa537ff258d879cb388d0d3cb9fca106a15",
+      "reason": "Ash M8 EX-03: retire application-plugin guest and build entrypoints while preserving browser, document-preview, native-chat, and daemon boundaries."
+    },
+    {
+      "path": "src/main/window/main-window-webview-security.test.ts",
+      "sha256": "4e455aa3c3079fc997d39d063c7cd0ec58704408031c81eb10c66397be3a2285",
+      "reason": "Ash M8 EX-03: retire application-plugin guest and build entrypoints while preserving browser, document-preview, native-chat, and daemon boundaries."
+    },
+    {
+      "path": "src/main/window/main-window-webview-security.ts",
+      "sha256": "2c3f05da00c3f6716832e8cc639f53221e353deb09d1cadf24f11836798009f5",
+      "reason": "Ash M8 EX-03: retire application-plugin guest and build entrypoints while preserving browser, document-preview, native-chat, and daemon boundaries."
+    },
+    {
+      "path": "src/main/wsl/host-lifecycle/wsl-hosts-policy-live-update.ts",
+      "sha256": "038cd3240928746570a79e855a74a0a6f81c1544090e82a1218bac8f0d74e8da",
+      "reason": "Ash M8 EX-03: use a neutral atomic text writer for retained policy cache writes."
+    },
+    {
+      "path": "src/renderer/src/app-shell/use-document-appearance.ts",
+      "sha256": "a65439becbb9c5ab29cbf2b97da2ae22053d053a66b0a78e838db4faf1a69535",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/assets/main.css",
+      "sha256": "af32e91a82e3a098d784dda0231f61e183271850b463e82e03a063c0fd286415",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/FileTypeIcon.tsx",
+      "sha256": "2e66631a70d77c1e4286e85cd872e34928ec4974c3405f8456c797719828b7c8",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/native-chat/StructuredAgentSessionPaneOverlayLayer.tsx",
+      "sha256": "8645ee78bcabb188dafc83476456adc31432555a4e0cb4d722ce7c256bfccb5a",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/native-chat/native-chat-appearance-style.ts",
+      "sha256": "dca53474ed4ee68b2ed6fe677f8d026fc29e1d2a0791fdff60941a855472823f",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/native-chat/native-chat-appearance.css",
+      "sha256": "457442f7df168a8d9f5e07be34c99940fe239d91f801cb692115ea6927c46681",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/onboarding/ThemeLookCarousel.tsx",
+      "sha256": "80d0b65ac5f56ceea6dae8febbd4d746247ce4f6ee5c05d598ccf2ab1476cbdd",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/onboarding/ThemeLookGallery.tsx",
+      "sha256": "631013bae5e1a7bf47a2c96793d568777f3dca7aed4b4915325efb33f3496655",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/onboarding/ThemeStep.fixture.tsx",
+      "sha256": "3bf8de767b6ebf58f2378bcfabab6443d163681e830332cd248e25fc5526dd0c",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/onboarding/ThemeStep.tsx",
+      "sha256": "112d8ad354af4ef2e0135e7cda20cc07e2fb91052e96e0b9bfe5d079d15508d6",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/onboarding/onboarding-theme-look-settings.ts",
+      "sha256": "8882f25f34d3dfc19359481d944580c042a560df9dc481568a236dc337f72e30",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/onboarding/onboarding-theme-looks.ts",
+      "sha256": "8c0531108403b73baa7e77e88100ff25fc23285b1de591f2ec35fa121d794e6d",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/settings/terminal/themes/TerminalThemePicker.tsx",
+      "sha256": "fb7be376dd4a7628bc39fea8ce718a717768bafd8093061f4cd2541bb7936124",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/settings/terminal/themes/TerminalThemeSections.tsx",
+      "sha256": "864ebbfb197739c09390890f30f2106bf3ccbc26d3bfa6bc3d5bd00a6d48df87",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/settings/virtual-machines/recipes/EphemeralVmsPane.tsx",
+      "sha256": "7c99bb6c4cdbf97954837a61e5db802f54508bdc1178cfa9c051a7ffa57daca6",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/sidebar/workspace-card/template/card-primitives.tsx",
+      "sha256": "3756cb27eb6e05861c56a5b93f8302a14097b0df693ffd1d64692183a1c2620a",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/tab-group/TabGroupPanel.tsx",
+      "sha256": "5fc52c3acceb48c849445c1b36f08521f35d6481d01160f9328096f469313d5a",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/terminal-pane/TerminalPaneOverlayLayer.tsx",
+      "sha256": "8ba82d7a7973a17abd22690d398ae1770a51c97f5331d8c51308aafe63213f86",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/terminal-pane/terminal-appearance.ts",
+      "sha256": "e89378e1fbc8e7bce7128bb374688e6c657320539fb8dd07299d70760e53c596",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/components/terminal-pane/use-terminal-pane-lifecycle.ts",
+      "sha256": "dddcc3e900f361e1d165a069e6bd4ea16e3199e75d80492d9d43576a9218d45a",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/hooks/use-monaco-theme.ts",
+      "sha256": "183de43420dfe63b709d78271eaa2bd32ff58048ebb87cd76e576abafcd2d626",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/hooks/useEphemeralVmRecipeOptions.ts",
+      "sha256": "585b3622df45383de9cada2231fcef6ebb237d7b0c2fdcd05428fd3d72c07502",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/lib/code-editor-theme.ts",
+      "sha256": "7aa169e21fe9940ccc1748c616b4c1dbcfafad7e7a7e555b4e79a95caa281bbf",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/lib/document-theme.ts",
+      "sha256": "4d87799339af7241c49b20a3755af2eb45ef05ab29f0b2b28c9744774f5039e8",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/lib/file-type-icons.ts",
+      "sha256": "4ddf2c5b0a2a32539dd2efea313ee670a5abcb8295d05480b6e874b4fbdd91c8",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/lib/terminal-app-theme.ts",
+      "sha256": "c325574f67da497981463bcf22dd0ee84ca214fce85ab7c8317a66b9d10cc222",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/lib/terminal-theme.ts",
+      "sha256": "2f972a1581a96113de9e42096d5ea0a303f70b04bedc7b10094cbbf4d34df5a1",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/lib/window-backdrop.ts",
+      "sha256": "f0b0a551f81a4c93b0cb615d0e531587c8800142579b70d9eee8778949a5f606",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/lib/window-material-runtime.ts",
+      "sha256": "510915fbc16fbb9ddf822aa0d8c9aae7cc9f271d320dc34fb084e15c870066ac",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/store/slices/ui/ui-slice-contract-contextual.ts",
+      "sha256": "03eeff838f35adb2f1cc12dce8942fc4c7e399d6754630d29edb2087d0fe78c1",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/store/slices/ui/ui-slice-hydration-actions.ts",
+      "sha256": "2026a585ec096197bea394b08068f47cdab43315b32c2c8f65f06963a0a37492",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/store/slices/ui/ui-slice-trust-actions.ts",
+      "sha256": "bd321304ff73bf48087aa67b3b10d674fee4bacebca3a35b1f3385196096c1fd",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/renderer/src/web/preload-api/web-app-api.ts",
+      "sha256": "897624fb495082319c8a8c29fc9b8984e7746cd2de8e72d9f286fb73a3a8d6be",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/shared/global-settings-base.ts",
+      "sha256": "13b05ff67440477d43a2c617c54aa392dbd8b87071b4ad99925bb439c11b0e2d",
+      "reason": "Ash M8 EX-03: preserve legacy application-plugin records as passive profile data without a plugin startup migration or renderer mutations."
+    },
+    {
+      "path": "src/shared/native-chat/native-chat-visual-shell.ts",
+      "sha256": "7e6be78d08d27e0d31027372a89127b29f143dd7d1da9f75dcf605b04a92aa12",
+      "reason": "Ash M8 EX-03: give the retained native-chat visual sandbox its own unchanged design-token allowlist."
+    },
+    {
+      "path": "src/shared/plugin-appearance-settings-types.ts",
+      "sha256": "fc99c7f427a2197fa1587a004dddb3c294788891e39afebe281b7f3c5f4ccce7",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/shared/plugin-theme-settings.ts",
+      "sha256": "3cb8bca705a6dd630427854fd842944e115e14c8cd3aaea041d9a11a83b2e02e",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/shared/rpc-contract/client-ui-params.ts",
+      "sha256": "06d4ce92b2e2e4e6df94c50e129b2f24d297079df1f192b9e4f08f72c269d924",
+      "reason": "Ash M8 EX-03: remove the general application-plugin RPC and preload contracts while retaining supported desktop and local runtime routes."
+    },
+    {
+      "path": "src/shared/telemetry-event-registry.ts",
+      "sha256": "d7fd3d4b9cb037075799370b08da0d9082c05ab66e277aa63efc928702b2856d",
+      "reason": "Ash M8 EX-03: remove the remaining general IDE application-plugin contracts and keep coverage for the retained Ash boundary."
+    },
+    {
+      "path": "src/shared/terminal-themes/terminal-theme-selection.ts",
+      "sha256": "3a0af44085804c5e69f7569841b8fc5af40e365aa6e9ecff620bf205664b08a4",
+      "reason": "Ash M8 EX-03: remove application-plugin renderer wiring while retaining built-in appearance, terminal palettes, Monaco and workspace UI behavior."
+    },
+    {
+      "path": "src/shared/ui-chrome-types.ts",
+      "sha256": "27b6eebbf06203b9187d5f448497e6c4d13ed0deaa255c6e4dab36261b5af4dc",
+      "reason": "Ash M8 EX-03: remove the remaining general IDE application-plugin contracts and keep coverage for the retained Ash boundary."
     }
   ]
 }

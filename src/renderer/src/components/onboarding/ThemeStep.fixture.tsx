@@ -3,7 +3,6 @@ import { defineFixture } from '../../component-fixtures/component-fixture'
 import { getDefaultSettings } from '../../../../shared/constants'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import { ThemeStep } from './ThemeStep'
-import { seedPluginThemes } from './onboarding-theme-fixture-themes'
 
 function ThemeStepHarness({ initialTheme }: { initialTheme: GlobalSettings['theme'] }) {
   const [settings, setSettings] = useState<GlobalSettings>(() => ({
@@ -28,13 +27,11 @@ function ThemeStepHarness({ initialTheme }: { initialTheme: GlobalSettings['them
 
 export const darkMode = defineFixture({
   width: 1036,
-  setup: seedPluginThemes,
   render: () => <ThemeStepHarness initialTheme="dark" />
 })
 
 export const systemNarrow = defineFixture({
   width: 760,
-  setup: seedPluginThemes,
   render: () => <ThemeStepHarness initialTheme="system" />
 })
 
@@ -44,14 +41,12 @@ const pickLook = (id: string) => (frame: HTMLElement) => {
 
 export const pickedPalette = defineFixture({
   width: 1036,
-  setup: seedPluginThemes,
   interact: pickLook('terminal:Dracula'),
   render: () => <ThemeStepHarness initialTheme="dark" />
 })
 
-export const pickedPluginLight = defineFixture({
+export const pickedPaletteLight = defineFixture({
   width: 1036,
-  setup: seedPluginThemes,
-  interact: pickLook('plugin:stablyai.orca-github-vscode-theme/github-light-default'),
+  interact: pickLook('terminal:Catppuccin Latte'),
   render: () => <ThemeStepHarness initialTheme="light" />
 })

@@ -7,7 +7,7 @@ import { normalizeOpenInApplications } from '../../../shared/open-in-application
 import { normalizeTerminalShortcutPolicy } from '../../../shared/keybindings'
 import { normalizeAppIconId } from '../../../shared/app-icon'
 import { normalizeTerminalCustomThemes } from '../../../shared/terminal-themes/terminal-custom-themes'
-import { normalizePluginOwnedSettings } from '../../../shared/plugins/capabilities/plugin-owned-settings'
+import { normalizePluginThemeSettings } from '../../../shared/plugin-theme-settings'
 import {
   hasLegacyMatchTerminalSidebar,
   syncLegacyMatchTerminalSidebar
@@ -48,7 +48,6 @@ export function normalizeLoadedGlobalSettings(
   const {
     migratedExperimentalActivity,
     migratedAutoRenameBranchFromWork,
-    migratedPluginSystemEnabled,
     migratedNestedWorkerMaxDepth,
     migratedTerminalCursorStyle,
     migratedTerminalLineHeight,
@@ -69,10 +68,10 @@ export function normalizeLoadedGlobalSettings(
     normalizedNotifications,
     normalizedSourceControlGroupOrder
   } = profile
-  const pluginOwnedSettings = normalizePluginOwnedSettings(parsed.settings ?? {})
+  const appearanceThemeSettings = normalizePluginThemeSettings(parsed.settings ?? {})
   const matchTerminalSidebarInputs = {
-    pluginAppThemeLight: pluginOwnedSettings.pluginAppThemeLight,
-    pluginAppThemeDark: pluginOwnedSettings.pluginAppThemeDark,
+    pluginAppThemeLight: appearanceThemeSettings.pluginAppThemeLight,
+    pluginAppThemeDark: appearanceThemeSettings.pluginAppThemeDark,
     leftSidebarAppearanceMode: parsed.settings?.leftSidebarAppearanceMode
   }
 
@@ -101,7 +100,6 @@ export function normalizeLoadedGlobalSettings(
     primarySelectionMiddleClickPasteDefaultedForTerminalDefaults:
       primarySelectionDefaultedForTerminalDefaults || stampPrimarySelectionTerminalDefaults,
     ...migratedAutoRenameBranchFromWork,
-    ...migratedPluginSystemEnabled,
     ...migratedNestedWorkerMaxDepth,
     ...migratedTerminalCursorStyle,
     terminalLineHeight: migratedTerminalLineHeight,
@@ -136,7 +134,7 @@ export function normalizeLoadedGlobalSettings(
     terminalDefaultShell: normalizeTerminalDefaultShell(parsed.settings?.terminalDefaultShell),
     terminalQuickCommands: normalizeTerminalQuickCommands(parsed.settings?.terminalQuickCommands),
     terminalCustomThemes: normalizeTerminalCustomThemes(parsed.settings?.terminalCustomThemes),
-    ...pluginOwnedSettings,
+    ...appearanceThemeSettings,
     ...syncLegacyMatchTerminalSidebar(
       matchTerminalSidebarInputs,
       hasLegacyMatchTerminalSidebar(matchTerminalSidebarInputs)

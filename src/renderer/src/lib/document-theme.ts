@@ -1,9 +1,7 @@
 import type { GlobalSettings } from '../../../shared/global-settings-types'
-import {
-  PLUGIN_APP_THEME_TOKENS,
-  type PluginThemeRegistration
-} from '../../../shared/plugins/artifacts/plugin-theme-artifact'
-import { browserColorProbe, safePluginThemeTokens, type ColorProbe } from './plugin-theme-tokens'
+import { APP_THEME_TOKENS } from './app-theme-tokens'
+import { MATCH_TERMINAL_APP_THEME } from '../../../shared/plugin-theme-settings'
+import { browserColorProbe, safeAppThemeColors, type ColorProbe } from './app-theme-colors'
 
 export type DocumentThemePreference = GlobalSettings['theme']
 
@@ -101,38 +99,32 @@ export function applyDocumentTheme(
   pendingTransitionDisableFrames.push(firstFrame)
 }
 
-type PluginThemeRoot = {
+type ThemePaintRoot = {
   style: Pick<CSSStyleDeclaration, 'setProperty' | 'removeProperty'>
 }
 
-export type CachedPluginAppTheme = {
-  id: string
+export type AppThemePaint = {
+  id: typeof MATCH_TERMINAL_APP_THEME
   revision: string
   base: 'light' | 'dark'
   tokens: Record<string, string>
 }
 
-/** What an app theme paint needs: a plugin theme, or one Orca synthesizes (Match Terminal). */
-export type AppThemePaint = Pick<PluginThemeRegistration, 'base' | 'tokens'> & {
-  id: string
-  revision: string
-}
-
-type PluginThemePaintOptions = {
-  root?: PluginThemeRoot
+type ThemePaintOptions = {
+  root?: ThemePaintRoot
   probe?: ColorProbe
   /** Built-in token values for the current light/dark mode; read from the document by default. */
   builtIns?: () => Record<string, string>
 }
 
-const PUBLIC_TOKENS = new Set<string>(PLUGIN_APP_THEME_TOKENS)
-const appliedPluginTokens = new WeakMap<object, readonly string[]>()
-// Why: plugin themes load after discovery and Match Terminal after settings; repainting from
-// this cache before first paint avoids flashing the built-in theme on every launch.
-const PLUGIN_THEME_CACHE_KEY = 'orca.pluginAppTheme.lastApplied'
+const PUBLIC_TOKENS = new Set<string>(APP_THEME_TOKENS)
+const appliedThemeTokens = new WeakMap<object, readonly string[]>()
+// Keep the old key readable for Match Terminal without rewriting a saved plugin cache.
+const LEGACY_THEME_CACHE_KEY = 'orca.pluginAppTheme.lastApplied'
+const THEME_CACHE_KEY = 'ash.matchTerminal.lastApplied'
 
-function setPluginTokens(root: PluginThemeRoot, tokens: Record<string, string>): void {
-  for (const token of appliedPluginTokens.get(root) ?? []) {
+function setThemeTokens(root: ThemePaintRoot, tokens: Record<string, string>): void {
+  for (const token of appliedThemeTokens.get(root) ?? []) {
     if (!tokens[token]) {
       root.style.removeProperty(token)
     }
@@ -140,14 +132,14 @@ function setPluginTokens(root: PluginThemeRoot, tokens: Record<string, string>):
   for (const [token, value] of Object.entries(tokens)) {
     root.style.setProperty(token, value)
   }
-  appliedPluginTokens.set(root, Object.keys(tokens))
+  appliedThemeTokens.set(root, Object.keys(tokens))
 }
 
 function documentBuiltIns(): Record<string, string> {
   const style = getComputedStyle(document.documentElement)
   const read = (token: string): string => style.getPropertyValue(token).trim()
   return {
-    ...Object.fromEntries(PLUGIN_APP_THEME_TOKENS.map((token) => [token, read(token)])),
+    ...Object.fromEntries(APP_THEME_TOKENS.map((token) => [token, read(token)])),
     // Why: chat paints an omitted link color as --callout-note, so the bubble check needs it.
     '--text-link': read('--text-link') || read('--callout-note')
   }
@@ -165,29 +157,29 @@ function withFloatingSurfaces(tokens: Record<string, string>): Record<string, st
 }
 
 /** Paints tokens that stay readable over this mode's built-ins; returns what was painted. */
-function paintPluginTokens(
-  { tokens, base }: Pick<CachedPluginAppTheme, 'tokens' | 'base'>,
-  options: PluginThemePaintOptions
+function paintThemeTokens(
+  { tokens, base }: Pick<AppThemePaint, 'tokens' | 'base'>,
+  options: ThemePaintOptions
 ): Record<string, string> {
   const root = options.root ?? document.documentElement
   // Why clear first: built-ins must be read without the previous theme's overrides.
-  setPluginTokens(root, {})
-  const safe = safePluginThemeTokens(
+  setThemeTokens(root, {})
+  const safe = safeAppThemeColors(
     tokens,
     base,
     (options.builtIns ?? documentBuiltIns)(),
     options.probe ?? browserColorProbe
   )
-  setPluginTokens(root, withFloatingSurfaces(safe))
+  setThemeTokens(root, withFloatingSurfaces(safe))
   return safe
 }
 
-function writeCache(storage: Storage | null, cached: CachedPluginAppTheme | null): void {
+function writeCache(storage: Storage | null, cached: AppThemePaint | null): void {
   try {
     if (cached) {
-      storage?.setItem(PLUGIN_THEME_CACHE_KEY, JSON.stringify(cached))
-    } else {
-      storage?.removeItem(PLUGIN_THEME_CACHE_KEY)
+      storage?.setItem(THEME_CACHE_KEY, JSON.stringify(cached))
+    } else if (readCachedAppTheme(storage)) {
+      storage?.setItem(THEME_CACHE_KEY, 'null')
     }
   } catch {
     // Storage can be full or unavailable; the cache only shortens startup flashes.
@@ -196,32 +188,34 @@ function writeCache(storage: Storage | null, cached: CachedPluginAppTheme | null
 
 /** Overlays an app theme's safe tokens and returns them; tokens it no longer sets fall back to
  *  main.css. Call after the document's light/dark mode matches the theme's base. */
-export function applyPluginAppTheme(
+export function applyAppTheme(
   theme: AppThemePaint | null,
-  options: PluginThemePaintOptions & { storage?: Storage | null } = {}
+  options: ThemePaintOptions & { storage?: Storage | null } = {}
 ): Record<string, string> {
   const storage = options.storage === undefined ? globalThis.localStorage : options.storage
   if (!theme) {
-    setPluginTokens(options.root ?? document.documentElement, {})
+    setThemeTokens(options.root ?? document.documentElement, {})
     writeCache(storage, null)
     return {}
   }
-  const tokens = paintPluginTokens(theme, options)
+  const tokens = paintThemeTokens(theme, options)
   writeCache(storage, { id: theme.id, revision: theme.revision, base: theme.base, tokens })
   return tokens
 }
 
-/** The last applied plugin theme, for painting before settings and plugins load. */
-export function readCachedPluginAppTheme(
+/** The last Match Terminal paint, available before settings load. */
+export function readCachedAppTheme(
   storage: Storage | null = globalThis.localStorage ?? null
-): CachedPluginAppTheme | null {
+): AppThemePaint | null {
   try {
-    const cached: unknown = JSON.parse(storage?.getItem(PLUGIN_THEME_CACHE_KEY) ?? 'null')
+    const cached: unknown = JSON.parse(
+      storage?.getItem(THEME_CACHE_KEY) ?? storage?.getItem(LEGACY_THEME_CACHE_KEY) ?? 'null'
+    )
     if (
       typeof cached !== 'object' ||
       cached === null ||
       !('id' in cached) ||
-      typeof cached.id !== 'string' ||
+      cached.id !== MATCH_TERMINAL_APP_THEME ||
       !('revision' in cached) ||
       typeof cached.revision !== 'string' ||
       !('base' in cached) ||
@@ -238,16 +232,13 @@ export function readCachedPluginAppTheme(
           PUBLIC_TOKENS.has(entry[0]) && typeof entry[1] === 'string'
       )
     )
-    return { id: cached.id, revision: cached.revision, base: cached.base, tokens }
+    return { id: MATCH_TERMINAL_APP_THEME, revision: cached.revision, base: cached.base, tokens }
   } catch {
     return null
   }
 }
 
 /** Repaints a cached theme at startup, re-checked against this mode's built-ins. */
-export function applyCachedPluginAppTheme(
-  cached: CachedPluginAppTheme,
-  options: PluginThemePaintOptions = {}
-): void {
-  paintPluginTokens(cached, options)
+export function applyCachedAppTheme(cached: AppThemePaint, options: ThemePaintOptions = {}): void {
+  paintThemeTokens(cached, options)
 }

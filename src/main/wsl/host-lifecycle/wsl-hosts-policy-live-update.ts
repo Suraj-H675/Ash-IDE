@@ -11,7 +11,7 @@ import {
 } from '../../../shared/wsl-hosts-policy'
 import { getMainHttpClient } from '../../network/http-client'
 import { noteWslHostsLivePolicyBlock } from './wsl-host-gate'
-import { writePluginFileAtomically } from '../../plugins/installation/plugin-atomic-file-write'
+import { writeTextFileAtomically } from '../../filesystem/atomic-text-file'
 
 const REFRESH_INTERVAL_MS = 4 * 60 * 60 * 1000
 const FETCH_TIMEOUT_MS = 30_000
@@ -148,7 +148,7 @@ export class WslHostsPolicyLiveUpdater {
     try {
       // The validated text, not the parsed object: parsing strips fields this build doesn't know,
       // and an equal revision never rewrites the cache, so a newer build would never see them.
-      await writePluginFileAtomically(
+      await writeTextFileAtomically(
         join(this.deps.userDataPath, wslHostsPolicyCacheFileName(channel)),
         text
       )

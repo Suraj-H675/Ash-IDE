@@ -83,17 +83,6 @@ export function EphemeralVmsPane(): React.JSX.Element {
     void refresh()
   }, [refresh])
 
-  useEffect(() => {
-    if (!window.api.plugins?.onChanged) {
-      return
-    }
-    return window.api.plugins.onChanged((event) => {
-      if (event?.contentPacksChanged ?? true) {
-        void refresh()
-      }
-    })
-  }, [refresh])
-
   const openWorkspaceComposerForRecipe = (repoId: string, recipeId: string): void => {
     openModal('new-workspace-composer', {
       initialRepoId: repoId,

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ExternalLink, Puzzle, Settings2 } from 'lucide-react'
+import { Settings2 } from 'lucide-react'
 import { Trans } from 'react-i18next'
 import { toast } from 'sonner'
 import { track } from '@/lib/telemetry'
@@ -9,7 +9,7 @@ import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import type { DiscoveryStatusEmitted } from '../../../../shared/onboarding-state-types'
 import { i18n, translate } from '@/i18n/i18n'
 import { ThemeSlotControl, useThemeLooks } from './ThemeLookGallery'
-import { ThemeLookCarousel, openThemePluginDirectory } from './ThemeLookCarousel'
+import { ThemeLookCarousel } from './ThemeLookCarousel'
 import { ThemeModeTiles } from './ThemeModeTiles'
 import type { ThemeLook, ThemeLookBase } from './onboarding-theme-looks'
 import { themeLookSettingsUpdate } from './onboarding-theme-look-settings'
@@ -192,15 +192,13 @@ export function ThemeStep({
   const systemPrefersDark = useSystemPrefersDark()
   const osBase: ThemeLookBase = systemPrefersDark ? 'dark' : 'light'
   const [systemSlot, setSystemSlot] = useState<ThemeLookBase | null>(null)
-  const { looks, selected, pluginTerminalThemes } = useThemeLooks(settings, lookBaseline)
+  const { looks, selected } = useThemeLooks(settings, lookBaseline)
   // Why a slot picker under System: both looks persist, and only the OS chooses which one shows.
   const base: ThemeLookBase = theme === 'system' ? (systemSlot ?? osBase) : theme
 
   const pickLook = (look: ThemeLook): void => {
     if (settings && lookBaseline) {
-      void updateSettings(
-        themeLookSettingsUpdate(look, settings, lookBaseline, pluginTerminalThemes)
-      )
+      void updateSettings(themeLookSettingsUpdate(look, settings, lookBaseline))
     }
   }
 
@@ -270,26 +268,6 @@ export function ThemeStep({
       />
 
       <div className="space-y-1.5 px-1 text-[12px] text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Puzzle className="size-3.5" />
-          <span>
-            {translate(
-              'components.onboarding.theme.looks.pluginsHint',
-              'More themes are available as plugins.'
-            )}
-          </span>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 font-medium text-foreground underline-offset-4 hover:underline"
-            onClick={openThemePluginDirectory}
-          >
-            {translate(
-              'components.onboarding.theme.looks.browseThemePlugins',
-              'Browse theme plugins'
-            )}
-            <ExternalLink className="size-3" />
-          </button>
-        </div>
         <div className="flex items-center gap-2">
           <Settings2 className="size-3.5" />
           <span>

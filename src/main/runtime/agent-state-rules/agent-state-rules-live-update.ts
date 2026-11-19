@@ -5,7 +5,7 @@ import { readFetchResponseTextWithinLimit } from '../../../shared/fetch-response
 import type { GlobalSettings } from '../../../shared/global-settings-types'
 import { getVersionChannel, MAIN_RELEASE_REPO } from '../../../shared/release-channel'
 import { getMainHttpClient } from '../../network/http-client'
-import { writePluginFileAtomically } from '../../plugins/installation/plugin-atomic-file-write'
+import { writeTextFileAtomically } from '../../filesystem/atomic-text-file'
 import {
   activateAgentStateRules,
   BUNDLED_AGENT_STATE_RULES,
@@ -167,7 +167,7 @@ export class AgentStateRulesLiveUpdater {
     this.downloaded = bundle
     this.activate()
     try {
-      await writePluginFileAtomically(this.cachePath(run.channel), text)
+      await writeTextFileAtomically(this.cachePath(run.channel), text)
     } catch (error) {
       warn(`downloaded rules not cached: ${describeError(error)}`)
     }

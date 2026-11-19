@@ -218,7 +218,6 @@ export function buildDefaultSettings(args: {
     defaultTuiAgent: null,
     disabledTuiAgents: [...DEFAULT_DISABLED_TUI_AGENTS],
     pluginSystemEnabled: true,
-    pluginSystemDefaultedOn: true,
     disabledPlugins: [],
     pluginConsents: {},
     devPluginPaths: [],
