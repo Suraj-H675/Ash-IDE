@@ -225,6 +225,7 @@ jobs:
             config/scripts/desktop-distribution/runtime-verification/electron-builder-config.test.mjs \
             config/scripts/desktop-distribution/linux/build-linux-local.test.mjs \
             config/scripts/cli-build/verify-cli-bin.test.mjs \
+            config/scripts/cli-build/build-cli-clean-outputs.test.mjs \
             config/scripts/desktop-distribution/runtime-verification/verify-ash-packaged-asar-hygiene.test.mjs \
             config/scripts/orcad-distribution/server-bundle/orcad-excluded-artifacts.test.mjs
           node config/scripts/runtime-verification/skills-cli/verify-skills-cli-runtime.cjs out

@@ -3753,6 +3753,11 @@
       "path": "src/shared/ui-chrome-types.ts",
       "sha256": "27b6eebbf06203b9187d5f448497e6c4d13ed0deaa255c6e4dab36261b5af4dc",
       "reason": "Ash M8 EX-03: remove the remaining general IDE application-plugin contracts and keep coverage for the retained Ash boundary."
+    },
+    {
+      "path": "config/scripts/cli-build/build-cli.mjs",
+      "sha256": "bb6cba3abf62a8699ba0abb0605367812e4a612044c6af978000c15f89830455",
+      "reason": "Ash M8: clear only generated CLI/shared compiler emission trees before rebuilding, with symlink-safe output-root admission, so stale removed app-plugin modules cannot enter release packages from reused checkouts."
     }
   ]
 }
