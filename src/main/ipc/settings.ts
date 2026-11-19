@@ -18,7 +18,6 @@ import { isAgentStatusHooksEnabledForAgent } from '../../shared/agent-hook-liste
 import { recordManagedHookInstallFailure } from '../agent-hooks/install-telemetry'
 import { applyElectronProxySettings } from '../network/proxy-settings'
 import { applyBrowserSessionProxies } from '../browser/sessions/browser-session-proxy'
-import { applyProxyToElectronUpdaterSession } from '../updater/lifecycle/electron-updater-proxy-session'
 import { browserSessionRegistry } from '../browser/sessions/browser-session-registry'
 import { sanitizeNetworkSettings } from './network-settings-sanitization'
 import { normalizeAppIconId } from '../../shared/app-icon'
@@ -202,8 +201,7 @@ export function registerSettingsHandlers(
       // Start every authority before yielding so requests cannot enter between their barriers.
       const [defaultSessionResult, browserSessionsResult] = await Promise.allSettled([
         applyElectronProxySettings(result),
-        applyBrowserSessionProxies(browserSessionRegistry.listProfiles(), result),
-        applyProxyToElectronUpdaterSession(result)
+        applyBrowserSessionProxies(browserSessionRegistry.listProfiles(), result)
       ])
       if (defaultSessionResult.status === 'rejected') {
         console.warn('[settings] failed to apply network proxy settings')

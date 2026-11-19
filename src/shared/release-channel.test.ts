@@ -46,7 +46,9 @@ describe('release channel', () => {
     expect(getReleaseNotesUrlForVersion('1.4.160-adhoc.20260728140533')).toBe(
       'https://github.com/Suraj-H675/Ash-IDE/releases/tag/v1.4.160-adhoc.20260728140533'
     )
-    expect(getReleaseNotesUrlForVersion(null)).toBe('https://github.com/Suraj-H675/Ash-IDE/releases')
+    expect(getReleaseNotesUrlForVersion(null)).toBe(
+      'https://github.com/Suraj-H675/Ash-IDE/releases'
+    )
   })
 
   it('round-trips an hourly version stamp as UTC', () => {
@@ -174,8 +176,7 @@ describe('release channel', () => {
     expect(hasInstallableArtifactForPlatform('darwin', ['latest.yml'])).toBe(false)
     expect(hasInstallableArtifactForPlatform('linux', ['latest-linux-arm64.yml'])).toBe(true)
     expect(hasInstallableArtifactForPlatform('linux', [])).toBe(false)
-    // Unknown platforms should get a download-time explanation rather than an unexplained empty picker.
-    expect(hasInstallableArtifactForPlatform('freebsd', [])).toBe(true)
+    expect(hasInstallableArtifactForPlatform('freebsd', [])).toBe(false)
   })
 
   it('finds the directly runnable installer for a platform', () => {
@@ -190,6 +191,17 @@ describe('release channel', () => {
     expect(findInstallerAssetName('linux', assets)).toBe('ash-ide-linux.AppImage')
     expect(findInstallerAssetName('win32', ['latest.yml'])).toBeNull()
     expect(findInstallerAssetName('freebsd', assets)).toBeNull()
+  })
+
+  it('rejects foreign, loosely suffixed, and traversal-like installer names', () => {
+    expect(
+      findInstallerAssetName('linux', ['Orca.AppImage', '../ash-ide-linux.AppImage'])
+    ).toBeNull()
+    expect(findInstallerAssetName('win32', ['orca-windows-setup.exe'])).toBeNull()
+    expect(findInstallerAssetName('darwin', ['orca-macos-arm64.dmg'])).toBeNull()
+    expect(getReleaseNotesUrlForVersion('../../other/repo')).toBe(
+      'https://github.com/Suraj-H675/Ash-IDE/releases'
+    )
   })
 
   it('offers stable and rc on every platform', () => {

@@ -13,7 +13,6 @@ import type { AppMenuQuitHandlers } from '../menu/app-menu-quit-item'
 import type { createWebContentsTimedFlag } from './web-contents-timed-flag'
 import { recordCrashBreadcrumb } from '../crash-reporting/crash-breadcrumb-store'
 import { recordDurableCrashBreadcrumb } from '../crash-reporting/durable-crash-breadcrumb'
-import { isQuittingForUpdate } from '../updater/updater-service'
 import {
   createSystemTray,
   setMacMenuBarIconVisible,
@@ -69,9 +68,7 @@ export function showMainWindowFromTray(): void {
     safelyRevealWindow(state.mainWindow)
     return
   }
-  if (!isQuittingForUpdate()) {
-    openWindow()
-  }
+  openWindow()
 }
 
 /** Shows the main window and sends it a one-shot intent, also queued for a renderer that mounts later. */

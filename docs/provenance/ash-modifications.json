@@ -38,7 +38,7 @@
     },
     {
       "path": "src/cli/handler-group-manifest.ts",
-      "sha256": "31f1e1245b0ed41b0e9a9cd90a80c0d16e11f4f49d15fb55d95e95b9fb331558",
+      "sha256": "2ff0d23534b6c07c6c0642def0e67f4c994eea351b416885b3e991fff19c1127",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -58,7 +58,7 @@
     },
     {
       "path": "src/cli/handlers/profile-state.test.ts",
-      "sha256": "1d73d3cd78c70ae1b3569249d97be99fa2f79b0c01b183f74fc9acbe92f4c9c1",
+      "sha256": "2f5b0a70911993c632906ab6bc551cbb6aa22c7df2ee889364df72904481b3f4",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -268,7 +268,7 @@
     },
     {
       "path": "src/cli/specs/index.ts",
-      "sha256": "7aec21c48b720fba23c42030a3d040a45d9bc53b7b434499044221d2f72933ea",
+      "sha256": "d3af4f948f7fb0ffa9754c76f4104fc907d00e09d40f812b6c60ad808915dc50",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -718,7 +718,7 @@
     },
     {
       "path": "src/main/ipc/settings.ts",
-      "sha256": "72056eb9e2f016fc1da4f0e61b7c80b04d2b98fb07ba72415b2b825647bcc8a0",
+      "sha256": "79e33bf8b85e5c3726bd7fb4b3378d422c9edc93b8c2a8bca5140246f93487ff",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1338,7 +1338,7 @@
     },
     {
       "path": "src/main/startup/main-process-preflight.ts",
-      "sha256": "8b571800d7aceb7ccf82c4f62517c9e8987491515c9d5deee136fc28d827c57c",
+      "sha256": "36a3467f24701b31a6fb9106d2bf624bfed7408d00317f4781940ded4bb39cc7",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1358,7 +1358,7 @@
     },
     {
       "path": "src/main/startup/main-process-quit.ts",
-      "sha256": "1125c6992e6cf3c6e516c35eade8965b6ac02b759c711660cb3aa00a0c1681d1",
+      "sha256": "0700222c88372e5168123d118b8ca09d9120f3d0017cad638f4f86843cf8c187",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1403,7 +1403,7 @@
     },
     {
       "path": "src/main/startup/main-window-actions.ts",
-      "sha256": "f3103a8717ee0bfb6bc23c1269d1c824347914b4dc7de426c25490f3b76b7013",
+      "sha256": "33e8c6601a327d18c4902562e15e169be93524367c37f276ee4315b5c08a8a34",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1533,7 +1533,7 @@
     },
     {
       "path": "src/main/updater/releases/updater-release-builds.test.ts",
-      "sha256": "54a6072a19b757bb403e6457130d61790a36fabadc101d20ed287fe15ba62b31",
+      "sha256": "59b15eeb1ff9b3f93f03b29ed805786156bff0a2a2088dabd2f966f974ddcdbd",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1548,7 +1548,7 @@
     },
     {
       "path": "src/main/updater/updater-events.test.ts",
-      "sha256": "cf77e20916332d18abc72a7f71193963b1344d5320f1f37f13d6f0ab466f221d",
+      "sha256": "315602a80d048d929a7aac42f6681236e9f5705788e4aee7b232d48e2a246a4e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1578,7 +1578,7 @@
     },
     {
       "path": "src/main/updater/updater.linux-root-package-install.test.ts",
-      "sha256": "22ab6fff02b0ccd8910f4b52fd20b409aacf118d21a257ca6ae3c003ad938480",
+      "sha256": "6d2c755ce94094cc686090f62c9ba1f0821b1927cb5f8e9cd000224d0d147e03",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2598,7 +2598,7 @@
     },
     {
       "path": "src/renderer/src/i18n/locales/en.json",
-      "sha256": "1b35c632cda27095c6f6ba4f2fdfd0a3f4b461ec4bee89abbb2206a72ff04d02",
+      "sha256": "39f7a6272b4ceed9a608603372ef8f2acf05520ac7bb950a10066258263e8987",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2928,12 +2928,12 @@
     },
     {
       "path": "src/shared/release-channel.test.ts",
-      "sha256": "26da2450416da7e6f7566c3d71dd7460261e32a19a0585d4d6dcbce52126e8a5",
+      "sha256": "bbfd43e5957cf5d22e56af84d6c82fbe0bddebe59f847213f74c3e3768fe2746",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "src/shared/release-channel.ts",
-      "sha256": "72864bf208e6d16dc80a313642b4a572a26ebb1862caa8c3db1a819ae78f197f",
+      "sha256": "3eba1037a2b2082174a46f9eb315c709fbbd9911713462641234d1800da165c6",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -2983,17 +2983,17 @@
     },
     {
       "path": "config/electron-builder.config.cjs",
-      "sha256": "b8a521107e438842bcbca7455ddbe66c079037ea9274b81ccef1534e76ee6bda",
+      "sha256": "a381c945e994bfb46a1f35a81c90953892ce7ad2a1575e7fb561eab356997ac6",
       "reason": "Ash M8 EX-03: retire application-plugin build inputs and verify the retired executable and resource paths stay out of Ash packages."
     },
     {
       "path": "config/packaged-runtime-node-modules.cjs",
-      "sha256": "801c6dcd97842304488d95b38c1ebf16f8050184581707e521e9f0b47d7b7693",
+      "sha256": "d3f923c229b71dbee6b02dd61e8099fff0a88cf71d7ac429dfb2c13dd908a0e8",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
       "path": "config/scripts/ci/sharding/ci-shard-timings.json",
-      "sha256": "edfb10efd96fa71ecc5c8c00ba3dafec97d2e481e7299a057a4823226ff54753",
+      "sha256": "cc30a1a3b12fdd0137614a71600d63d4fd64e3d3b6c132404e76abd7dae0fb78",
       "reason": "Ash M8: remove timing entries for retired language-pack test files."
     },
     {
@@ -3023,7 +3023,7 @@
     },
     {
       "path": "config/scripts/desktop-distribution/runtime-verification/electron-builder-config.test.mjs",
-      "sha256": "63073785cfa7acf1e6a174b99d72e36f9efc32fce2fa1e76616b1c04ac5d9960",
+      "sha256": "22c8ddf8b7c276dab02c1ff812c4bf0764dbe2d30c0145d22e87be0339216fb8",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -3108,7 +3108,7 @@
     },
     {
       "path": "config/scripts/native-build/macos/build-computer-macos.mjs",
-      "sha256": "9f9bd0a85f4d3844d68c95bea0df6e10a21fa6e94c4c0d7f0c566b7507c5dc8e",
+      "sha256": "5d6f17f1265d0bf868c2b7cf2a73c5ad362ebad5540246d9b7cd233f1d28d0ec",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -3218,8 +3218,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "92c748f45261b7228572def04cbf4e2e59304673985c959ad10cc56552a61149",
-      "reason": "Ash M8 EX-03: remove the remaining general IDE application-plugin contracts and keep coverage for the retained Ash boundary."
+      "sha256": "089f039d9890b78aa68799bf28740c7f9258fb77584dcff4ac0089b10dc58eac",
+      "reason": "Ash M8 EX-03: remove general IDE app-plugin contracts and retain Ash boundaries. M8 release safety: add an explicit operator-only offline AppImage staging script without enabling updater installation."
     },
     {
       "path": "pnpm-lock.yaml",
@@ -3233,19 +3233,16 @@
     },
     {
       "path": "src/renderer/src/store/slices/editor/actions/untitled-file-creation.ts",
-      "sourceSha256": "ecfc1edaaed4ea472bb7f9db01141086e10af95ce5ed1a7b9b7457d45b2d6a28",
       "sha256": "b19e91c04c24d5e9965c0a4a3081cf98e45b9f874e04aae1eb29083f49ea3ad6",
       "reason": "Ash M8: remove the orphan application-plugin template reader and action while preserving provenance-guarded generic untitled and blank-file creation."
     },
     {
       "path": "src/renderer/src/store/slices/editor/types/editor-files-slice.ts",
-      "sourceSha256": "352c64828939ff2e775b9592835f8232bce199a08002a5ca977cbeab03af0abb",
       "sha256": "7694a1a4fd24f0d5fe36158b421d5bc245b85c4344cc9dc092c0601573979cf8",
       "reason": "Ash M8: remove the orphan application-plugin new-file action from the editor slice contract while retaining generic untitled creation."
     },
     {
       "path": "src/renderer/src/store/slices/editor/create-editor-slice.ts",
-      "sourceSha256": "5e8065cd3f72ccc3607c4ccc68b5fc6e4197d14b172ac50818ce11b61a4bbc41",
       "sha256": "045b8ee90d2c58dcace8c031828e3bd4600f6c06941a78433014a2d30598da0e",
       "reason": "Ash M8: wire the generic untitled-file action factory after retiring plugin-created file creation."
     },
@@ -3441,8 +3438,8 @@
     },
     {
       "path": "config/scripts/desktop-distribution/linux/build-linux-local.mjs",
-      "sha256": "5f43f18841a8c3636baffe57584d88cf244bfb69bbb144917c30a8b6a3896310",
-      "reason": "Ash M8: permit explicit Linux AppImage-only packaging without requiring optional DEB/RPM toolchains; preserve default multi-target build."
+      "sha256": "1cc91e2bf40738d4c91ca58397631ea506e4635d4a46eb5258b60db27e372bb4",
+      "reason": "Ash M8: permit explicit AppImage-only packaging without DEB/RPM prerequisites; preserve default multi-target build. Use the Ash-only build architecture setting rather than Orca's inherited environment variable."
     },
     {
       "path": "config/build-plugins/main-build-entry-points.ts",
@@ -3451,12 +3448,12 @@
     },
     {
       "path": "config/build-plugins/plain-node-entry-guard.ts",
-      "sha256": "2aaa612295a66327fd97b01f1475bfa90a9bb08e91bce371ba06786afbc229f0",
-      "reason": "Ash M8 EX-03: retire application-plugin guest and build entrypoints while preserving browser, document-preview, native-chat, and daemon boundaries."
+      "sha256": "978aabfd717c50d9ba989f937dca91c129ab6dfb056094d81e0ab2c4bd293928",
+      "reason": "Ash M8 EX-03: retire application-plugin build entries while preserving retained service boundaries. M8 release: emit the profile checkpoint and database modules as protected plain-Node entries required by the compiled CLI after the Electron Main build."
     },
     {
       "path": "config/flaky-test-pattern-baseline.txt",
-      "sha256": "450718e0f8281496acb4cc1980348baffcca27212625024380e502849542076b",
+      "sha256": "cdd4264ea99ef29f8a9ea5ee4c1ee6bb799b68df84ac2d9188ab7fc12cda5b80",
       "reason": "Ash M8 EX-03: retire application-plugin build inputs and verify the retired executable and resource paths stay out of Ash packages."
     },
     {
@@ -3476,7 +3473,7 @@
     },
     {
       "path": "config/scripts/test-runtime/sqlite-admission/vitest-node-runtime-files.mjs",
-      "sha256": "b7583f5c2d531ee7d0581c215a8d498213a64c668a83f0bec79ff4819142e5fe",
+      "sha256": "0ef884b121ff83addf8d76f4413f3f0e1db7584acbc1d58485d6dede12033689",
       "reason": "Ash M8 EX-03: retire application-plugin build inputs and verify the retired executable and resource paths stay out of Ash packages."
     },
     {
@@ -3758,6 +3755,151 @@
       "path": "config/scripts/cli-build/build-cli.mjs",
       "sha256": "bb6cba3abf62a8699ba0abb0605367812e4a612044c6af978000c15f89830455",
       "reason": "Ash M8: clear only generated CLI/shared compiler emission trees before rebuilding, with symlink-safe output-root admission, so stale removed app-plugin modules cannot enter release packages from reused checkouts."
+    },
+    {
+      "path": "src/cli/handlers/profile-state-recovery-admission.test.ts",
+      "sha256": "09fc8b9b830c6f1c4fc06e411e050aef5707d003de36922501391f1789481fe5",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/handlers/profile-state.ts",
+      "sha256": "9d65306c54a63a134f1100c8e6e223b2949e6a181ff481d76627d899f394bf98",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/specs/profile-state.ts",
+      "sha256": "d7eb29e9e4c739b8826f689bf079af9db9860b075aadbc74e0b62c6790c31840",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/persistence/profile-state/legacy-json/profile-state-recovery.ts",
+      "sha256": "aa3b993866a92371ea03ea6fb24d1b2cff0335e6c665b96d1b00cfa81b603ed0",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-access.ts",
+      "sha256": "24120710dd2a9e4a71ec0332f19779c79c3915f4bd9667605ccf8adccab483b3",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-backup-job.ts",
+      "sha256": "c865db44fe977b071e31477b1fd11a2cb09390d0f4fe8dcd62b7b254e7ba3f94",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-database-quarantine.ts",
+      "sha256": "abf75745c3bd01e447d3ebd62d641d6a247a388608cce3ff7315163d4d233c55",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-database-recovery.ts",
+      "sha256": "4ace6232e9af9fd7a5c3cb24482cc7db4135ce28eef869556b26eb0d14cf9f84",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-database.ts",
+      "sha256": "6a9b67a20be05cde68a8cbcc95fbae150a182a23df0cf30241385749f35097d5",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-recovery-command.ts",
+      "sha256": "4dcbe350ddde810d1d7baac26d8488bb59859d77403d9a5410ded9349a4925e2",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-recovery-copy.ts",
+      "sha256": "580444c445a5060dbe528971fa82964c12cd4a3b6495ded0101151dc55ff9f46",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-startup-failure.ts",
+      "sha256": "b31388bbac798ccd5ab0ae61318e4d0f771a2ebba8626ce3f2f10e7c49f35caa",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-startup-recovery-dialog.ts",
+      "sha256": "125e0c08875ad0bb78a33efce07c284007dd2d7915aef707db6454e65e271d97",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/main-window-lifecycle-flags.ts",
+      "sha256": "19097684e5f6f7a7312fb00c81bad972535a6d6b84e24c211eca22ac442c981c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/profile-state-recovery-preflight.test.ts",
+      "sha256": "8ca67da802a6e0570eb9f78e208cbb7e9c3626819faf9d77b8185b1b7189e281",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/profile-state-recovery-preflight.ts",
+      "sha256": "9e510ad50e3fa2a5634796b1ea823103e099f9cdcd3228cc7b2866ebaaa565f7",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/serve-native-quit-guard.test.ts",
+      "sha256": "4ed85aa4cde674c665f082449901a933eec10479d0587c050e36a77c4aeaf920",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/serve-native-quit-guard.ts",
+      "sha256": "d7505f4f53d5c5c21ee2220ea7f30e76bcf4d089b53c7612820018daf1f70adf",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/startup/serve-quit-handling.ts",
+      "sha256": "cbea0beb8efb36b068c995624eccaa141e398002b4a93ccb9d50f0080850af00",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/linux-package/appimage-runtime-identity.ts",
+      "sha256": "e27ec86dfba60b536d7a5fe6b46c34dee70d43dfd97416dfea6f0445e47cf34b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/nudges/nudge-campaign.ts",
+      "sha256": "cd5a650f56669a32d2038943cde6e9e99def5db678aaa2f1696adc3a69e7e35c",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/updater/releases/updater-changelog.ts",
+      "sha256": "0bcef3b7618a8327045932a62c173eb67217a7fcbc3121d346a9b5ef03542de7",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/preload/api/updater-bridge.ts",
+      "sha256": "b8fb514b500b7ca4aaefa96e6c1759fbd9c7c5fd5331c36566eb46c639e02772",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/i18n/en-runtime-required.json",
+      "sha256": "8c435312f08538550be1cc308771d622d4fd9dc536fc731d77c1387674d02283",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/profile-state-build-compatibility.ts",
+      "sha256": "dea2be77b6f5555853f03b85680431c2a309cae637db56871bfba82429a52cfa",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/shared/updater-failure-copy.ts",
+      "sha256": "cde08a15e6cfa78d2faec8674c6331e09f6195ca4deff42b04e8bfa2afdf641d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/desktop-distribution/macos/build-mac-local.mjs",
+      "sha256": "f898c7dc03984c19af384a000f19de9967a72f54a5c7eac98799d3ced9dedc28",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/desktop-distribution/macos/verify-macos-release-env.mjs",
+      "sha256": "8ca1fa062ee2b15dfd7070ee1065e816b4d9ae45ef43e0a34a57eb559a96ae42",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/specs/profile-state.test.ts",
+      "sha256": "de7d006e78e4f2564e5247f682dab347bb2af232f0c1c631dfd06acb28c0c440",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     }
   ]
 }

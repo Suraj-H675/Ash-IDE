@@ -63,7 +63,7 @@ describe('Ash Linux package target selection', () => {
 
   it('respects the injected environment without altering the caller environment', () => {
     const execFile = vi.fn()
-    const environment = { ASH_LINUX_PACKAGE_TARGETS: 'AppImage', ORCA_LINUX_ARM64_RELEASE: '1' }
+    const environment = { ASH_LINUX_PACKAGE_TARGETS: 'AppImage', ASH_LINUX_ARM64_RELEASE: '1' }
     runLocalLinuxBuild({
       arch: 'x64',
       cwd: '/disposable-ash-test',
@@ -80,8 +80,8 @@ describe('Ash Linux package target selection', () => {
       env: { ASH_LINUX_PACKAGE_TARGETS: 'AppImage' },
       stdio: 'inherit'
     })
-    expect(execFile.mock.calls[0][2].env).not.toHaveProperty('ORCA_LINUX_ARM64_RELEASE')
-    expect(environment.ORCA_LINUX_ARM64_RELEASE).toBe('1')
+    expect(execFile.mock.calls[0][2].env).not.toHaveProperty('ASH_LINUX_ARM64_RELEASE')
+    expect(environment.ASH_LINUX_ARM64_RELEASE).toBe('1')
   })
 
   it('keeps explicit arm64 selection and the release marker', () => {
@@ -95,6 +95,18 @@ describe('Ash Linux package target selection', () => {
       execFile
     })
     expect(execFile.mock.calls[0][1]).toContain('--arm64')
-    expect(execFile.mock.calls[0][2].env.ORCA_LINUX_ARM64_RELEASE).toBe('1')
+    expect(execFile.mock.calls[0][2].env.ASH_LINUX_ARM64_RELEASE).toBe('1')
+  })
+
+  it('uses the Ash architecture setting, never the inherited Orca setting', () => {
+    try {
+      vi.stubEnv('ASH_LINUX_BUILD_ARCH', 'arm64')
+      vi.stubEnv('ORCA_LINUX_BUILD_ARCH', 'x64')
+      expect(resolveLinuxBuildArch({ platform: 'linux', hostArch: 'x64' })).toBe('arm64')
+      vi.stubEnv('ASH_LINUX_BUILD_ARCH', undefined)
+      expect(resolveLinuxBuildArch({ platform: 'linux', hostArch: 'arm64' })).toBe('arm64')
+    } finally {
+      vi.unstubAllEnvs()
+    }
   })
 })

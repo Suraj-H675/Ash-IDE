@@ -1,5 +1,4 @@
-import { net } from 'electron'
-import { compareVersions, isValidVersion } from '../releases/updater-fallback'
+import { compareVersions } from '../releases/updater-fallback'
 
 export type NudgeConfig = {
   id: string
@@ -8,56 +7,7 @@ export type NudgeConfig = {
 }
 
 export async function fetchNudge(): Promise<NudgeConfig | null> {
-  try {
-    const res = await net.fetch('https://onorca.dev/whats-new/nudge.json', {
-      signal: AbortSignal.timeout(5000)
-    })
-    if (!res.ok) {
-      return null
-    }
-
-    const json: unknown = await res.json()
-    if (!json || typeof json !== 'object' || Array.isArray(json)) {
-      return null
-    }
-
-    const { id, minVersion, maxVersion } = json as Record<string, unknown>
-    if (typeof id !== 'string' || !id.trim()) {
-      return null
-    }
-
-    if (minVersion === undefined && maxVersion === undefined) {
-      return null
-    }
-
-    if (minVersion !== undefined && typeof minVersion !== 'string') {
-      return null
-    }
-    if (maxVersion !== undefined && typeof maxVersion !== 'string') {
-      return null
-    }
-    if (minVersion !== undefined && !isValidVersion(minVersion)) {
-      return null
-    }
-    if (maxVersion !== undefined && !isValidVersion(maxVersion)) {
-      return null
-    }
-    if (
-      minVersion !== undefined &&
-      maxVersion !== undefined &&
-      compareVersions(minVersion, maxVersion) > 0
-    ) {
-      return null
-    }
-
-    return {
-      id: id.trim(),
-      minVersion,
-      maxVersion
-    }
-  } catch {
-    return null
-  }
+  return null
 }
 
 export function versionMatchesRange(

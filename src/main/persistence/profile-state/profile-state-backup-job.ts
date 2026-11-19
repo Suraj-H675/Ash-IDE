@@ -7,6 +7,7 @@ export type ProfileStateBackupJob = {
   profileId: string
   targetPath: string
   temporaryPath?: string
+  requireCommittedState?: boolean
 }
 
 /** Retain connections through snapshot copy and strict validation. */
@@ -15,19 +16,19 @@ export async function writeProfileStateBackup(job: ProfileStateBackupJob): Promi
   try {
     await writeProfileStateDatabaseSnapshotAsync(opened.db, job.targetPath, {
       temporaryPath: job.temporaryPath,
-      validateStagedSnapshot: (stagingPath) =>
-        validateProfileStateBackup(stagingPath, job.profileId)
+      validateStagedSnapshot: (stagingPath) => {
+        const snapshot = openProfileStateDatabaseReadOnly(stagingPath, job.profileId)
+        try {
+          const revision = validateProfileStateSnapshot(snapshot.db)
+          if (job.requireCommittedState && revision === 0) {
+            throw new Error('Profile state has no committed revision to checkpoint')
+          }
+        } finally {
+          snapshot.db.close()
+        }
+      }
     })
   } finally {
     opened.db.close()
-  }
-}
-
-function validateProfileStateBackup(path: string, profileId: string): void {
-  const snapshot = openProfileStateDatabaseReadOnly(path, profileId)
-  try {
-    validateProfileStateSnapshot(snapshot.db)
-  } finally {
-    snapshot.db.close()
   }
 }

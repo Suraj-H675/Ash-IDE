@@ -8,15 +8,8 @@ const binaryPath = path.join(packagePath, '.build', 'release', 'orca-computer-us
 const appPath = path.join(packagePath, '.build', 'release', 'Ash Computer Use.app')
 const appExecutablePath = path.join(appPath, 'Contents', 'MacOS', 'ash-computer-use-macos')
 const appIconPath = path.join(appPath, 'Contents', 'Resources', 'AppIcon.icns')
-const entitlementsPath = path.join(
-  repoRoot,
-  'resources',
-  'build',
-  'entitlements.computer-use.mac.plist'
-)
-const bundleId = process.env.ASH_COMPUTER_MACOS_BUNDLE_ID ?? 'com.ashide.desktop.computer-use'
-const displayName = 'Orca Computer Use'
-const signingIdentity = resolveSigningIdentity()
+const bundleId = 'com.ashide.desktop.computer-use'
+const displayName = 'Ash Computer Use'
 const universalTriples = ['arm64-apple-macosx', 'x86_64-apple-macosx']
 
 if (process.platform !== 'darwin') {
@@ -55,43 +48,15 @@ function createHelperApp() {
   copyFileSync(path.join(repoRoot, 'resources', 'build', 'icon.icns'), appIconPath)
   chmodSync(appExecutablePath, 0o755)
   writeFileSync(path.join(appPath, 'Contents', 'Info.plist'), infoPlist(), 'utf8')
-  const signer = spawnSync('codesign', codesignArgs(signingIdentity, appPath), { stdio: 'inherit' })
+  const signer = spawnSync('codesign', ['--force', '--deep', '--sign', '-', appPath], {
+    stdio: 'inherit'
+  })
   if (signer.signal) {
     process.kill(process.pid, signer.signal)
   }
   if (signer.status !== 0) {
     process.exit(signer.status ?? 1)
   }
-}
-
-function codesignArgs(identity, targetPath) {
-  const args = ['--force', '--deep', '--sign', identity]
-  if (process.env.ORCA_MAC_RELEASE === '1' && identity !== '-') {
-    args.push('--options', 'runtime', '--timestamp', '--entitlements', entitlementsPath)
-  }
-  args.push(targetPath)
-  return args
-}
-
-function resolveSigningIdentity() {
-  const explicitIdentity = process.env.ORCA_COMPUTER_MACOS_SIGN_IDENTITY ?? process.env.CSC_NAME
-  if (explicitIdentity) {
-    return explicitIdentity
-  }
-  const identities = spawnSync('security', ['find-identity', '-v', '-p', 'codesigning'], {
-    encoding: 'utf8'
-  })
-  if (identities.status !== 0 || !identities.stdout) {
-    return '-'
-  }
-  const developmentMatch = identities.stdout.match(/"([^"]*Apple Development:[^"]+)"/)
-  if (process.env.ORCA_MAC_RELEASE !== '1' && developmentMatch) {
-    return developmentMatch[1]
-  }
-  const releaseMatch =
-    identities.stdout.match(/"([^"]*Developer ID Application:[^"]+)"/) ??
-    identities.stdout.match(/"([^"]*Apple Distribution:[^"]+)"/)
-  return releaseMatch?.[1] ?? developmentMatch?.[1] ?? '-'
 }
 
 function run(command, args) {
@@ -134,9 +99,9 @@ function infoPlist() {
   <key>LSUIElement</key>
   <true/>
   <key>NSAccessibilityUsageDescription</key>
-  <string>Orca Computer Use needs Accessibility permission to read and interact with app interfaces when you ask Orca to use apps.</string>
+  <string>Ash Computer Use needs Accessibility permission to read and interact with app interfaces when you ask Ash IDE to use apps.</string>
   <key>NSScreenCaptureUsageDescription</key>
-  <string>Orca Computer Use needs Screen Recording permission to capture app windows when you ask Orca to inspect your screen.</string>
+  <string>Ash Computer Use needs Screen Recording permission to capture app windows when you ask Ash IDE to inspect your screen.</string>
 </dict>
 </plist>
 `

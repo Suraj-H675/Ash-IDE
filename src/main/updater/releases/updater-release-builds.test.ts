@@ -382,7 +382,7 @@ describe('listReleaseBuilds', () => {
     }
   )
 
-  it('surfaces a rate limit with its reset time and a sign-in hint when unauthenticated', async () => {
+  it('surfaces a rate limit with its reset time without prompting for provider credentials', async () => {
     const nowMs = 1_800_000_000_000
     vi.spyOn(Date, 'now').mockReturnValue(nowMs)
     fetchMock.mockResolvedValue(
@@ -398,7 +398,7 @@ describe('listReleaseBuilds', () => {
 
     const failure = listReleaseBuilds('hourly', 'darwin')
     await expect(failure).rejects.toThrow(
-      "GitHub rate limit reached. Try again in about 28 minutes, or run `gh auth login` so Orca can use your account's higher limit."
+      'GitHub rate limit reached. Try again in about 28 minutes.'
     )
     await expect(failure).rejects.toMatchObject({
       coded: { messageCode: 'rateLimitedInMinutesSignedOut', messageParams: { count: 28 } }
@@ -482,8 +482,7 @@ describe('resolveTargetBuild', () => {
     expect(resolveTargetBuild('daily', 'v1.4.160-daily.202607281300')).toEqual({
       tag: 'v1.4.160-daily.202607281300',
       version: '1.4.160-daily.202607281300',
-      feedUrl:
-        'https://github.com/Suraj-H675/Ash-IDE/releases/download/v1.4.160-daily.202607281300'
+      feedUrl: 'https://github.com/Suraj-H675/Ash-IDE/releases/download/v1.4.160-daily.202607281300'
     })
   })
 

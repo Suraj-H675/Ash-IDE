@@ -29,8 +29,6 @@ import { setUnreadDockBadgeCount } from '../dock/unread-badge'
 import { destroySystemTray } from '../tray/system-tray'
 import { shutdownTelemetry } from '../telemetry/client'
 import { shutdownObservability } from '../observability/index'
-import { isQuittingForUpdate } from '../updater/updater-service'
-import { recordUpdaterLifecycle } from '../updater/updater-lifecycle-diagnostics'
 import { stopTccPromptNotice } from '../macos-permissions/macos-tcc-prompt-notice'
 import { cancelHistoryGc } from '../pty/history/terminal-history-gc'
 import { shouldQuitWhenAllWindowsClosed } from './window-all-closed-quit-policy'
@@ -76,11 +74,6 @@ function installBeforeQuitHandler(): void {
     if (event.defaultPrevented) {
       return
     }
-    if (isQuittingForUpdate()) {
-      recordUpdaterLifecycle('before_quit_allowed', undefined, {
-        message: 'before-quit allowed for update install'
-      })
-    }
     state.isQuitting = true
     flushUnsavedCloudSessions()
     desktopConnectorCloud()?.fence()
@@ -114,21 +107,12 @@ function installWillQuitHandler(): void {
     state.unsubscribeSystemResumeBroadcast = null
     // Keep log-stream diagnostics alive through renderer quit vetoes.
     stopTccPromptNotice()
-    const updateQuitInProgress = isQuittingForUpdate()
-    if (updateQuitInProgress) {
-      recordUpdaterLifecycle(
-        'will_quit_cleanup_started',
-        { daemonTeardown: 'disconnect' },
-        { message: 'will-quit cleanup for update install; daemonTeardown=disconnect' }
-      )
-    }
     // Remove the Windows tray icon only after renderer vetoes are past.
     destroySystemTray()
     // Final stats flush closes working sessions synchronously; quit supplies no terminating hook to preserve their duration.
     const codexBackfillRecoveryShutdown = stopCodexStateDbBackfillRecoveries()
     stopCodexAccountSessionBridges()
-    // Stamp resume reasons before stopping sessions; an update restart was not a user quit.
-    setStructuredAgentSessionTeardownTrigger(updateQuitInProgress ? 'update' : 'quit')
+    setStructuredAgentSessionTeardownTrigger('quit')
     const structuredAgentSessionShutdown = stopStructuredAgentSessionRuntime()
     setUnreadDockBadgeCount(0)
     // Wait briefly for ref maintenance instead of killing mid-prune and stranding its lock; an orphan can finish safely.
@@ -224,7 +208,7 @@ function installWillQuitHandler(): void {
     // Normal quits preserve the detached daemon for warm reattach; dev-parent death leaves its temporary profile ownerless.
     const daemonTeardown = isDevParentShutdownRequested() ? shutdownDaemon() : disconnectDaemon()
     // Bound unsettled transports and final writes so quit cannot hang (#9447). Failures still exit; atomic swaps preserve old files if the final debounce is lost.
-    settleTeardownWithinDeadline([
+    void settleTeardownWithinDeadline([
       { name: 'daemon', promise: daemonTeardown },
       { name: 'browser', promise: browserShutdown },
       { name: 'runtime-rpc', promise: rpcStopAndClear },

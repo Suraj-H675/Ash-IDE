@@ -46579,6 +46579,21 @@
       "path": "src/shared/telemetry-plugin-event-schemas.ts",
       "sourceSha256": "ee5c45703371d88c71d6c25681ee310f909a69677a2a7b555417652054849c3b",
       "reason": "Ash M8 EX-03: retire general IDE application-plugin host, contract, installer, worker, contribution, packaging or authoring code."
+    },
+    {
+      "path": "src/main/window/main-window-updater-deferred-setup.test.ts",
+      "sourceSha256": "cc951e74daea3d5ca6f61893cd6d062ecac7e82485754de814d56410a4c28e97",
+      "reason": "Ash M8: remove tests for the retired desktop updater registrar and its automatic setup timer."
+    },
+    {
+      "path": "src/main/window/main-window-updater.ts",
+      "sourceSha256": "169dba76efc87c21378300d279e8e9ed03f0ceabbe78f8b9acaa13b1f469766a",
+      "reason": "Ash M8: remove the dormant desktop updater registrar and its inherited network, timer, download and install entry points."
+    },
+    {
+      "path": "src/main/window/updater-package-recovery-ipc.test.ts",
+      "sourceSha256": "f73da1478f95a55bd0171efde0ffac25c453576a8e1357480ee6f0ceaa7f0ae0",
+      "reason": "Ash M8: remove tests for the retired desktop updater installer IPC. Ash status and preload tests cover the read-only boundary."
     }
   ]
 }

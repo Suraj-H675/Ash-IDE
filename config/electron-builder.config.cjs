@@ -81,37 +81,20 @@ const {
   normalizeLinuxPackagedFilePermissions
 } = require('./scripts/desktop-distribution/linux/linux-package-file-permissions.cjs')
 const {
-  signWindowsUninstallerViaSignPath
-} = require('./scripts/desktop-distribution/windows/windows-uninstaller-signing.cjs')
-const {
-  buildMacShipItScheduling
-} = require('./scripts/desktop-distribution/macos/macos-shipit-scheduling.cjs')
+  assertAshLocalPackaging
+} = require('./scripts/desktop-distribution/ash-local-packaging.cjs')
 
-// Dev channels need release bundle ID/signature/notarization so Squirrel.Mac accepts updates and macOS retains app identity.
-const isMacHourly = process.env.ORCA_MAC_HOURLY === '1'
-const isMacDaily = process.env.ORCA_MAC_DAILY === '1'
-const isMacAdhoc = process.env.ORCA_MAC_ADHOC === '1'
-// Keep Windows dev flags separate: mac flags enable hardened runtime/notarization/global signing, which would demand an unavailable Windows cert.
-const isWinHourly = process.env.ORCA_WIN_HOURLY === '1'
-const isWinDaily = process.env.ORCA_WIN_DAILY === '1'
-const isWinAdhoc = process.env.ORCA_WIN_ADHOC === '1'
-const isWinDevChannel = isWinHourly || isWinDaily || isWinAdhoc
-const isMacRelease = process.env.ORCA_MAC_RELEASE === '1' || isMacHourly || isMacDaily || isMacAdhoc
-const isLinuxArm64Release = process.env.ORCA_LINUX_ARM64_RELEASE === '1'
-const localBuildVersion =
-  isMacRelease || isWinDevChannel ? undefined : process.env.ORCA_LOCAL_BUILD_VERSION
-const isHourlyChannel = isMacHourly || isWinHourly
-const isDailyChannel = isMacDaily || isWinDaily
-const isAdhocChannel = isMacAdhoc || isWinAdhoc
-const devChannelBuildVersion = isHourlyChannel
-  ? process.env.ORCA_HOURLY_BUILD_VERSION
-  : isDailyChannel
-    ? process.env.ORCA_DAILY_BUILD_VERSION
-    : isAdhocChannel
-      ? process.env.ORCA_ADHOC_BUILD_VERSION
-      : undefined
-// Separate dev-channel repos: 24 hourly tags/day would evict stable/RC from the ten-entry release feed; isolate adhoc/daily from hourly subscribers too.
+assertAshLocalPackaging(process.env, process.platform)
+
+const isLinuxArm64Release = process.env.ASH_LINUX_ARM64_RELEASE === '1'
+const localBuildVersion = process.env.ASH_LOCAL_BUILD_VERSION
 const appId = 'com.ashide.desktop'
+const localMacSignIgnore = [
+  ...bundledRipgrepMacSignIgnore,
+  '/Contents/Resources/agent-browser-darwin-[^/]+$',
+  ...macTerminalHostSignIgnore
+].map((pattern) => new RegExp(pattern))
+const macEntitlements = resolve(__dirname, '../resources/build/entitlements.mac.plist')
 const featureWallResources = {
   from: 'resources/onboarding/feature-wall',
   to: 'onboarding/feature-wall'
@@ -216,20 +199,14 @@ const macUsageDescriptions = {
   NSBonjourServices: ['_http._tcp', '_https._tcp'],
   ...MACOS_FOLDER_USAGE_DESCRIPTIONS
 }
-// Developer ID team that signs every release-channel mac build.
-const ORCA_MAC_TEAM_ID = '6CX3WHS9HZ'
-
 /** @type {import('electron-builder').Configuration} */
 module.exports = {
   appId,
   productName: 'Ash IDE',
   protocols: [{ name: 'Ash IDE', schemes: ['ash-ide'] }],
   toolsets: { appimage: '1.0.3' },
-  ...(devChannelBuildVersion
-    ? { extraMetadata: { version: devChannelBuildVersion } }
-    : localBuildVersion
-      ? { extraMetadata: { version: localBuildVersion } }
-      : {}),
+  publish: null,
+  ...(localBuildVersion ? { extraMetadata: { version: localBuildVersion } } : {}),
   directories: {
     buildResources: 'resources/ash-build'
   },
@@ -237,6 +214,7 @@ module.exports = {
     '!**/.vscode/*',
     // Repo inputs already bundled/copied through extraResources would bloat app.asar.
     '!src{,/**/*}',
+    '!node_modules/electron-updater{,/**/*}',
     '!out/orcad{,/**/*}',
     // Exclude remote orcad deployment templates and their build inputs entirely.
     '!out/orcad-*{,/**/*}',
@@ -374,6 +352,7 @@ module.exports = {
   // electron-builder calls this with the context alone. The second parameter is the bundle root,
   // so a test can point the guard at a scratch bundle instead of needing the repo's out/ built.
   beforePack: (context, ensureWaylandClipboard = ensureBundledWaylandClipboard) => {
+    assertAshLocalPackaging(process.env, context.electronPlatformName)
     // Only Ash's local desktop runtime is packaged. Do not require excluded mobile or SSH templates.
     assertNotDarkBuild([join(__dirname, '..', 'out', 'main')])
     assertPackagedNativeVariantsInstalled(context.electronPlatformName, context.arch)
@@ -409,17 +388,15 @@ module.exports = {
         context.packager.appInfo.productFilename
       )
       const architecture = macSliceArch(context.arch, 'local-build compatibility')
-      const schedulingAddon = buildMacShipItScheduling(resourcesDir, architecture)
-      await signMacStandaloneHelper(schedulingAddon, 'ShipIt scheduling', context.packager)
       const version = context.packager.appInfo.version
-      let commit = process.env.ORCA_BUILD_COMMIT || process.env.GITHUB_SHA || 'unknown'
+      let commit = process.env.ASH_BUILD_COMMIT || process.env.GITHUB_SHA || 'unknown'
       if (commit === 'unknown') {
         try {
           commit = execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {
             encoding: 'utf8'
           }).trim()
         } catch {
-          // Source archives can still produce a signed build with an explicit version.
+          // Source archives can still report an explicit local build version.
         }
       }
       writeMacBuildCompatibility(resourcesDir, { version, commit, architecture })
@@ -481,30 +458,34 @@ module.exports = {
         await signMacStandaloneHelper(
           join(resourcesDir, filename),
           filename,
-          context.packager,
           resolve(__dirname, '../resources/build/entitlements.mac.plist')
         )
       }
     }
     chmodUnixCliLaunchers(resourcesDir, context.electronPlatformName)
     if (context.electronPlatformName === 'darwin') {
-      await signMacComputerUseHelper(join(resourcesDir, 'Ash Computer Use.app'), context.packager)
+      const computerUseApp = join(resourcesDir, 'Ash Computer Use.app')
+      execFileSync('codesign', ['--force', '--deep', '--sign', '-', computerUseApp], {
+        stdio: 'inherit'
+      })
+      execFileSync('codesign', ['--verify', '--deep', '--strict', computerUseApp], {
+        stdio: 'inherit'
+      })
       await signMacStandaloneHelper(
         join(resourcesDir, '..', 'MacOS', 'orca-notification-status'),
-        'orca-notification-status',
-        context.packager
+        'orca-notification-status'
       )
       await signMacStandaloneHelper(
         join(resourcesDir, '..', 'MacOS', 'orca-keyboard-layout'),
-        'orca-keyboard-layout',
-        context.packager
+        'orca-keyboard-layout'
       )
       await signMacStandaloneHelper(
         join(resourcesDir, '..', 'MacOS', 'orca-process-footprint'),
-        'orca-process-footprint',
-        context.packager
+        'orca-process-footprint'
       )
-      await packageMacTerminalHost(join(resourcesDir, '..', '..'), context)
+      const appPath = join(resourcesDir, '..', '..')
+      await packageMacTerminalHost(appPath, context)
+      await signLocalMacApp(appPath)
     }
     if (context.electronPlatformName === 'linux') {
       // All Linux targets share this bundle. RPM/DEB must never inherit the
@@ -515,14 +496,6 @@ module.exports = {
   },
   win: {
     executableName: 'ash-ide',
-    // SignPath signs Windows installers after packaging, so set release publisherName explicitly.
-    // Unsigned dev channels omit it or updater signature checks reject dev updates and return to stable.
-    // Sign hook signs nothing: it relays transient NSIS uninstaller files to CI SignPath; unset relay env leaves local/dev builds inert.
-    signtoolOptions: {
-      sign: signWindowsUninstallerViaSignPath,
-      ...(isWinDevChannel ? {} : { publisherName: 'SignPath Foundation' })
-    },
-    ...(isWinDevChannel ? { verifyUpdateCodeSignature: false } : {}),
     extraResources: [
       ...commonExtraResources,
       ...windowsRuntimeResources,
@@ -538,8 +511,6 @@ module.exports = {
         from: 'native/windows-cli-launcher/.build/ash-administrator-restart.exe',
         to: 'bin/ash-administrator-restart.exe'
       },
-      // Why resources/bin: SignPath signs every unsigned PE under win-unpacked, and the hook
-      // installer copies this signed file into ~/.orca/agent-hooks (#20913).
       {
         from: 'native/windows-agent-hook/.build/orca-agent-hook.exe',
         to: 'bin/orca-agent-hook.exe'
@@ -559,6 +530,7 @@ module.exports = {
     artifactName: 'ash-ide-windows-setup.${ext}',
     shortcutName: '${productName}',
     uninstallDisplayName: '${productName}',
+    deleteAppDataOnUninstall: false,
     createDesktopShortcut: 'always',
     // Ash-only NSIS integration: never reuse the Orca installer, daemon cleanup,
     // global provider-hook uninstall or document association ownership.
@@ -584,22 +556,10 @@ module.exports = {
       }))
     ],
     icon: 'resources/ash-build/icon.icns',
-    entitlements: 'resources/build/entitlements.mac.plist',
-    entitlementsInherit: 'resources/build/entitlements.mac.plist',
-    ...(isMacRelease
-      ? { sign: resolve(__dirname, './scripts/desktop-distribution/macos/sign-mac-app.mjs') }
-      : {}),
-    signIgnore: [
-      ...bundledRipgrepMacSignIgnore,
-      // afterPack signs the bundled agent-browser binary explicitly.
-      '/Contents/Resources/agent-browser-darwin-[^/]+$',
-      ...macTerminalHostSignIgnore
-    ],
+    identity: null,
     extendInfo: macUsageDescriptions,
-    // Local macOS builds need no release credentials; hardening/notarization stay on explicit release paths.
-    hardenedRuntime: isMacRelease,
-    // Dev notarization preserves TCC identifier/team identity across cdhash changes; unticketed hourly updates otherwise lose folder grants with EPERM and no prompt.
-    notarize: isMacRelease,
+    hardenedRuntime: false,
+    notarize: false,
     extraResources: [
       ...commonExtraResources,
       ...createPackagedRuntimeNodeModuleResources('darwin'),
@@ -643,9 +603,6 @@ module.exports = {
       }
     ]
   },
-  // Why: release builds should fail if signing is unavailable instead of
-  // silently downgrading to ad-hoc artifacts that look shippable in CI logs.
-  forceCodeSigning: isMacRelease,
   dmg: {
     artifactName: 'ash-ide-macos-${arch}.${ext}'
   },
@@ -763,33 +720,6 @@ function chmodUnixCliLaunchers(resourcesDir, electronPlatformName) {
   }
 }
 
-async function signMacComputerUseHelper(helperAppPath, packager) {
-  if (!existsSync(helperAppPath)) {
-    if (isMacRelease) {
-      throw new Error(`Missing Orca Computer Use helper app at ${helperAppPath}`)
-    }
-    return
-  }
-  const codeSigningInfo =
-    isMacRelease && process.env.CSC_LINK && packager?.codeSigningInfo?.value
-      ? await packager.codeSigningInfo.value
-      : null
-  const identity =
-    process.env.ORCA_COMPUTER_MACOS_SIGN_IDENTITY ??
-    process.env.CSC_NAME ??
-    findInstalledMacSigningIdentity(codeSigningInfo?.keychainFile) ??
-    (isMacRelease ? null : '-')
-  if (!identity) {
-    throw new Error('Missing signing identity for Orca Computer Use helper app')
-  }
-  // Why: TCC grants attach to this nested app's code identity. Sign it before
-  // the outer Ash IDE.app is sealed so production builds preserve that identity.
-  execFileSync('codesign', codesignArgs(identity, helperAppPath), { stdio: 'inherit' })
-  execFileSync('codesign', ['--verify', '--deep', '--strict', helperAppPath], {
-    stdio: 'inherit'
-  })
-}
-
 // electron-builder `Arch` enum: x64=1, arm64=3. A universal (4) slice has no single arch.
 function macSliceArch(archEnum, purpose) {
   const arch = { 1: 'x64', 3: 'arm64' }[archEnum]
@@ -809,85 +739,43 @@ async function packageMacTerminalHost(appPath, context) {
     entitlementsPath: resolve(__dirname, '../resources/build/entitlements.mac.plist'),
     usageDescriptions: macUsageDescriptions,
     signCode: (path, { entitlements }) =>
-      signMacStandaloneHelper(path, 'terminal host', context.packager, entitlements)
+      signMacStandaloneHelper(path, 'terminal host', entitlements)
   })
   // Only a local build may skip a slice this host cannot run; a shipped slice must serve a PTY.
   await verifyPackagedMacTerminalHostBoots(appPath, {
     arch,
-    required: isMacRelease || process.env.CI === 'true'
+    required: process.env.CI === 'true'
   })
   await verifyMacTerminalHost({
     appPath,
     arch,
     usageDescriptions: macUsageDescriptions,
-    expectedTeamId: isMacRelease ? ORCA_MAC_TEAM_ID : null
+    expectedTeamId: null
   })
 }
 
-async function signMacStandaloneHelper(helperPath, helperName, packager, entitlements) {
+async function signLocalMacApp(app) {
+  const { sign } = await import('@electron/osx-sign')
+  // Sign explicitly so a keychain identity containing "-" cannot match builder's qualifier.
+  await sign({
+    app,
+    identity: '-',
+    identityValidation: false,
+    preAutoEntitlements: false,
+    ignore: (file) => localMacSignIgnore.some((pattern) => pattern.test(file)),
+    optionsForFile: () => ({ hardenedRuntime: false, entitlements: macEntitlements })
+  })
+}
+
+async function signMacStandaloneHelper(helperPath, helperName, entitlements) {
   if (!existsSync(helperPath)) {
-    if (isMacRelease) {
-      throw new Error(`Missing ${helperName} helper at ${helperPath}`)
-    }
-    return
+    throw new Error(`Missing ${helperName} helper at ${helperPath}`)
   }
-  const codeSigningInfo =
-    isMacRelease && process.env.CSC_LINK && packager?.codeSigningInfo?.value
-      ? await packager.codeSigningInfo.value
-      : null
-  const identity =
-    process.env.CSC_NAME ??
-    findInstalledMacSigningIdentity(codeSigningInfo?.keychainFile) ??
-    (isMacRelease ? null : '-')
-  if (!identity) {
-    throw new Error(`Missing signing identity for ${helperName} helper`)
-  }
-  // Why: nested executables must be signed before the outer app bundle is sealed.
-  const args = ['--force', '--sign', identity]
-  if (isMacRelease) {
-    args.push('--options', 'runtime', '--timestamp')
-  }
+  const args = ['--force', '--sign', '-']
   if (entitlements) {
     args.push('--entitlements', entitlements)
   }
   args.push(helperPath)
   execFileSync('codesign', args, { stdio: 'inherit' })
   execFileSync('codesign', ['--verify', '--strict', helperPath], { stdio: 'inherit' })
-}
-
-function codesignArgs(identity, targetPath) {
-  const args = ['--force', '--deep', '--sign', identity]
-  if (isMacRelease) {
-    args.push(
-      '--options',
-      'runtime',
-      '--timestamp',
-      '--entitlements',
-      resolve(__dirname, '../resources/build/entitlements.computer-use.mac.plist')
-    )
-  }
-  args.push(targetPath)
-  return args
-}
-
-function findInstalledMacSigningIdentity(keychainFile) {
-  try {
-    const output = execFileSync(
-      'security',
-      ['find-identity', '-v', '-p', 'codesigning', ...(keychainFile ? [keychainFile] : [])],
-      {
-        encoding: 'utf8'
-      }
-    )
-    const releaseMatch =
-      output.match(/"([^"]*Developer ID Application:[^"]+)"/) ??
-      output.match(/"([^"]*Apple Distribution:[^"]+)"/)
-    if (releaseMatch?.[1]) {
-      return releaseMatch[1]
-    }
-    if (!isMacRelease) {
-      return output.match(/"([^"]*Apple Development:[^"]+)"/)?.[1] ?? null
-    }
-  } catch {}
-  return null
 }

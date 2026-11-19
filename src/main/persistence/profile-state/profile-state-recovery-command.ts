@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, rmSync } from 'node:fs'
+import { join } from 'node:path'
 import {
   ProfileStateRecoveryCommandError,
   type ProfileStateRecoverySelector,
@@ -29,6 +30,8 @@ import { writeVersionedProfileStateExport } from './legacy-json/profile-state-ve
 import { readProfileStateDomain } from './profile-state-domain-reader'
 import { repairProfileStateSections } from './profile-state-section-repair'
 import { isRecord } from './profile-state-document-validation'
+import { isLocalProfileStateFile } from './profile-state-local-recovery-file'
+import { refuseNewerProfileState } from './profile-state-private-database'
 import { profileHasPendingProjectMove } from '../../orca-profiles/profile-project-move-record'
 import {
   invalidateHttp1CompatibilityMarker,
@@ -39,6 +42,9 @@ export function getProfileStateExports(
   userDataPath: string,
   profileId?: string
 ): ProfileStateExportsResult {
+  const indexPath = join(userDataPath, 'orca-profile-index.json')
+  isLocalProfileStateFile(indexPath)
+  isLocalProfileStateFile(`${indexPath}.bak`)
   const location = getActiveProfileStateLocation(userDataPath, profileId)
   if (location === undefined) {
     throw new ProfileStateRecoveryCommandError(
@@ -68,6 +74,12 @@ export function rollbackProfileState(
       'This profile has a pending project move. Resolve the move with both profiles preserved before restoring a single profile.'
     )
   }
+  assertProfileStateMaintenance(maintenance, {
+    profileId: result.profileId,
+    dataFile: result.dataFile,
+    databasePath: result.databaseFile
+  })
+  refuseNewerProfileState(result.databaseFile, result.profileId)
   if (selector.kind === 'sqlite') {
     return restoreDatabaseBackup(userDataPath, result, selector.backupId, maintenance)
   }

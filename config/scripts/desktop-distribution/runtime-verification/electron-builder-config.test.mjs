@@ -425,3 +425,20 @@ describe('arch-aware packaging guard', () => {
 
   // The host's own build is the foreign-arch case: a Windows checkout compiles these for its CPU only.
 })
+
+it('packages Ash identities with no automatic publisher, signing relay or uninstall data deletion', () => {
+  expect(electronBuilderConfig.appId).toBe('com.ashide.desktop')
+  expect(electronBuilderConfig.publish).toBeNull()
+  expect(electronBuilderConfig.mac).toMatchObject({ identity: null, notarize: false })
+  expect(electronBuilderConfig.win).not.toHaveProperty('signtoolOptions')
+  expect(electronBuilderConfig.nsis).toMatchObject({ deleteAppDataOnUninstall: false })
+  const { assertAshLocalPackaging } = require('../ash-local-packaging.cjs')
+  expect(() => assertAshLocalPackaging({}, 'darwin')).not.toThrow()
+  expect(() => assertAshLocalPackaging({ ORCA_MAC_RELEASE: '1' })).toThrow(/approved signing/)
+  expect(() =>
+    assertAshLocalPackaging({ ORCA_WIN_UNINSTALLER_SIGNED_PATH: 'foreign.exe' })
+  ).toThrow(/approved signing/)
+  expect(() => assertAshLocalPackaging({ WIN_CSC_LINK: 'foreign.pfx' }, 'win32')).toThrow(
+    /without release signing inputs/
+  )
+})

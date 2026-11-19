@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseArgs, validateCommandAndFlags } from '../args'
+import { ASH_COMMAND_SPECS } from './index'
 import { PROFILE_STATE_COMMAND_SPECS } from './profile-state'
 
 describe('profile state rollback discovery', () => {
@@ -9,6 +10,19 @@ describe('profile state rollback discovery', () => {
     expect(() => validateCommandAndFlags(PROFILE_STATE_COMMAND_SPECS, parsed)).toThrow(
       `Unknown flag --page for command: ${spec.path.join(' ')}`
     )
+  })
+
+  it('exposes only local profile-state maintenance commands through the Ash registry', () => {
+    const profileSpecs = ASH_COMMAND_SPECS.filter(({ path }) => path[0] === 'profile')
+    expect(profileSpecs.map(({ path }) => path.join(' '))).toEqual([
+      'profile state exports',
+      'profile state checkpoint',
+      'profile state rollback'
+    ])
+    const args = parseArgs(['profile', 'state', 'checkpoint', '--profile-id', 'inactive'])
+    expect(() => validateCommandAndFlags(ASH_COMMAND_SPECS, args)).not.toThrow()
+    const remote = parseArgs(['profile', 'state', 'checkpoint', '--host', 'remote'])
+    expect(() => validateCommandAndFlags(ASH_COMMAND_SPECS, remote)).toThrow(/Unknown flag/)
   })
 
   it.each(['exports', 'rollback'])('accepts an explicit profile for %s', (command) => {

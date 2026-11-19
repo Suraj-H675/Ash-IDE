@@ -5,6 +5,7 @@ import { basename, dirname, join } from 'node:path'
 import { bestEffortFsyncDirectorySync, fsyncFileSync } from '../../../shared/secure-file'
 import { durableWriteTempPath, writeFileDurableSync } from '../../filesystem/durable-file-write'
 import { hardenSqliteDatabaseFiles } from '../../sqlite/harden-database-files'
+import { isLocalProfileStateFile } from './profile-state-local-recovery-file'
 import { copyProfileStateRecoveryFiles } from './profile-state-recovery-copy'
 
 export type ProfileStateDatabaseQuarantine = {
@@ -24,14 +25,15 @@ export function quarantineProfileStateDatabase(
   if (databasePath.length === 0 || databasePath.includes('\0') || profileId.length === 0) {
     throw new Error('Profile state quarantine arguments are invalid')
   }
-  const sourceFiles = profileStateDatabaseFiles(databasePath).filter(existsSync)
+  const sourceFiles = profileStateDatabaseFiles(databasePath).filter(isLocalProfileStateFile)
   if (sourceFiles.length === 0 && recoveryFiles.length === 0) {
     throw new Error('Profile state database family does not exist')
   }
 
   const directory = join(quarantineRoot, `profile-state-corrupt-${Date.now()}-${randomUUID()}`)
   const targets = new Set<string>()
-  mkdirSync(directory, { recursive: true, mode: 0o700 })
+  mkdirSync(quarantineRoot, { recursive: true, mode: 0o700 })
+  mkdirSync(directory, { mode: 0o700 })
   try {
     const copies: { source: string; target: string }[] = []
     for (const sourcePath of sourceFiles) {

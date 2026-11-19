@@ -26,8 +26,12 @@ export const CLI_MAIN_ENTRY_NAMES = [
     'storage-classification',
     'offline-settings',
     'backup-path',
+    // The CLI's manual checkpoint path imports both modules directly. The
+    // Electron build replaces out/main, so they must remain explicit inputs.
+    'database',
     'database-recovery',
     'domain-reader',
+    'manual-checkpoint',
     'recovery-command'
   ].map((module) => `persistence/profile-state/profile-state-${module}`),
   'persistence/profile-state/legacy-json/profile-state-export-path',

@@ -516,3 +516,27 @@ it('refuses a retired vendor dependency packed inside app.asar', async () => {
     '[ash-package-hygiene] excluded app vendor SDK was packaged: posthog-node'
   )
 })
+
+it.each([
+  ['out/preload/index.js', "ipcRenderer.invoke('updater:quitAndInstall')"],
+  ['out/main/index.js', "ipcMain.handle('updater:listBuilds', handler)"],
+  ['out/main/chunks/changelog.js', "fetch('https://onorca.dev/whats-new/changelog.json')"],
+  ['out/main/chunks/nudge.js', "fetch('https://onorca.dev/whats-new/nudge.json')"]
+])('rejects inherited updater transport in %s', async (path, contents) => {
+  const resources = await makeArchive(['package.json', path], { [path]: contents })
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(/excluded update transport/)
+})
+
+it('rejects a packaged desktop updater feed or installer dependency', async () => {
+  const resources = await makeArchive(['package.json', 'out/main/index.js'])
+  await writeFile(join(resources, 'app-update.yml'), 'provider: github')
+  expect(() => verifyAshPackagedAsarHygiene(resources)).toThrow(/desktop updater configuration/)
+  const archivedDependency = await makeArchive([
+    'package.json',
+    'out/main/index.js',
+    'node_modules/electron-updater/package.json'
+  ])
+  expect(() => verifyAshPackagedAsarHygiene(archivedDependency)).toThrow(
+    /desktop updater configuration/
+  )
+})

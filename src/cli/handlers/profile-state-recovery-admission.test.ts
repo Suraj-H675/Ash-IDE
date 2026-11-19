@@ -1,10 +1,13 @@
 import {
   existsSync,
   mkdirSync,
+  linkSync,
+  lstatSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
   rmSync,
+  symlinkSync,
   writeFileSync
 } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -145,6 +148,163 @@ function state(databasePath: string) {
 }
 
 describe('offline recovery excludes runtime admission', () => {
+  it('creates a private, usable checkpoint and restores only profile state on explicit request', async () => {
+    const profile = await fixture()
+    const project = join(profile.root, 'project-sentinel')
+    const provider = join(profile.root, 'provider-sentinel')
+    const daemon = join(profile.root, 'daemon')
+    mkdirSync(daemon)
+    const pty = join(daemon, 'pty-sentinel')
+    for (const path of [project, provider, pty]) {
+      writeFileSync(path, 'independent state', { mode: 0o600 })
+    }
+
+    await PROFILE_STATE_HANDLERS['profile state checkpoint']({
+      flags: new Map(),
+      client: new RuntimeClient(profile.root),
+      cwd: profile.root,
+      json: true
+    })
+
+    const receipt = JSON.parse(String(vi.mocked(console.log).mock.calls.at(-1)?.[0]))
+    const checkpoint = receipt.result
+    expect(lstatSync(checkpoint.path).mode & 0o777).toBe(0o600)
+    expect(JSON.parse(state(checkpoint.path).json)).toEqual(liveState)
+
+    const source = openProfileStateDatabase(profile.databasePath, profileId)
+    try {
+      importProfileStateJson(source.db, JSON.stringify(backupState), { expectedRevision: 2 })
+    } finally {
+      source.db.close()
+    }
+    await rollback({ ...profile, backupId: checkpoint.id })
+    expect(JSON.parse(state(profile.databasePath).json)).toEqual(liveState)
+    expect(readdirSync(daemon)).toEqual(['pty-sentinel'])
+    for (const path of [project, provider, pty]) {
+      expect(readFileSync(path, 'utf8')).toBe('independent state')
+    }
+  })
+
+  it('includes committed WAL state without creating sidecars in the original profile', async () => {
+    const profile = await fixture()
+    const walPath = `${profile.databasePath}-wal`
+    const pendingState = { settings: { theme: 'committed-in-wal' } }
+    const source = openProfileStateDatabase(profile.databasePath, profileId)
+    source.db.pragma('wal_autocheckpoint = 0')
+    importProfileStateJson(source.db, JSON.stringify(pendingState), { expectedRevision: 2 })
+    const primary = readFileSync(profile.databasePath)
+    const wal = readFileSync(walPath)
+    source.db.close()
+    writeFileSync(profile.databasePath, primary)
+    writeFileSync(walPath, wal)
+    const before = readdirSync(profile.directory)
+
+    await PROFILE_STATE_HANDLERS['profile state checkpoint']({
+      flags: new Map(),
+      client: new RuntimeClient(profile.root),
+      cwd: profile.root,
+      json: true
+    })
+
+    const checkpoint = JSON.parse(String(vi.mocked(console.log).mock.calls.at(-1)?.[0])).result
+    expect(JSON.parse(state(checkpoint.path).json)).toEqual(pendingState)
+    expect(readFileSync(profile.databasePath)).toEqual(primary)
+    expect(readFileSync(walPath)).toEqual(wal)
+    expect(readdirSync(profile.directory).filter((name) => !name.includes(checkpoint.id))).toEqual(
+      before
+    )
+  })
+
+  it('defers checkpoint creation while an admitted runtime can write the profile', async () => {
+    const profile = await fixture()
+    const before = readdirSync(profile.directory)
+    const liveRuntime = acquireProfileStateRuntimeAdmission(profile.root)
+    try {
+      await expect(
+        PROFILE_STATE_HANDLERS['profile state checkpoint']({
+          flags: new Map(),
+          client: new RuntimeClient(profile.root),
+          cwd: profile.root,
+          json: true
+        })
+      ).rejects.toThrow(/in use/)
+      expect(readdirSync(profile.directory)).toEqual(before)
+      liveRuntime.assertActive()
+    } finally {
+      liveRuntime.release()
+    }
+  })
+
+  it.each(['backup', 'latest-json'] as const)(
+    'keeps newer-schema primary bytes during explicit %s recovery',
+    async (selector) => {
+      const profile = await fixture()
+      const db = openProfileStateDatabase(profile.databasePath, profileId)
+      db.db.pragma('user_version = 999')
+      db.db.close()
+      const before = readFileSync(profile.databasePath)
+      await expect(rollback(profile, selector)).rejects.toThrow(/schema is newer/)
+      expect(readFileSync(profile.databasePath)).toEqual(before)
+      expect(
+        readdirSync(profile.directory).some((name) => name.startsWith('profile-state-corrupt'))
+      ).toBe(false)
+    }
+  )
+
+  it.each(['symlink', 'hardlink', 'dangling-sidecar'] as const)(
+    'refuses a %s recovery input without copying or changing foreign state',
+    async (alias) => {
+      const profile = await fixture()
+      const outside = join(profile.root, 'provider-data')
+      writeFileSync(outside, readFileSync(profile.backupPath))
+      const before = readFileSync(profile.databasePath)
+      if (alias === 'dangling-sidecar') {
+        symlinkSync(join(profile.root, 'missing'), `${profile.databasePath}-wal`)
+      } else {
+        rmSync(profile.backupPath)
+        const createLink = alias === 'symlink' ? symlinkSync : linkSync
+        createLink(outside, profile.backupPath)
+      }
+      await expect(rollback(profile)).rejects.toThrow(/without links/)
+      expect(readFileSync(profile.databasePath)).toEqual(before)
+      expect(JSON.parse(state(outside).json)).toEqual(backupState)
+      expect(
+        readdirSync(profile.directory).some((name) => name.startsWith('profile-state-corrupt'))
+      ).toBe(false)
+    }
+  )
+
+  it('leaves the primary and prior backups intact when a checkpoint fails to publish', async () => {
+    const profile = await fixture()
+    const before = readFileSync(profile.databasePath)
+    const beforeNames = readdirSync(profile.directory)
+    vi.spyOn(durableFileWrite, 'renameDurable').mockRejectedValueOnce(
+      new Error('checkpoint IO failure')
+    )
+    await expect(
+      PROFILE_STATE_HANDLERS['profile state checkpoint']({
+        flags: new Map(),
+        client: new RuntimeClient(profile.root),
+        cwd: profile.root,
+        json: true
+      })
+    ).rejects.toThrow('checkpoint IO failure')
+    expect(readFileSync(profile.databasePath)).toEqual(before)
+    expect(readdirSync(profile.directory)).toEqual(beforeNames)
+    acquireProfileStateRuntimeAdmission(profile.root).release()
+  })
+
+  it('rejects a corrupt backup before quarantining or replacing the current database', async () => {
+    const profile = await fixture()
+    const before = readFileSync(profile.databasePath)
+    writeFileSync(profile.backupPath, 'truncated database')
+    await expect(rollback(profile)).rejects.toThrow()
+    expect(readFileSync(profile.databasePath)).toEqual(before)
+    expect(
+      readdirSync(profile.directory).some((name) => name.startsWith('profile-state-corrupt'))
+    ).toBe(false)
+  })
+
   it.each(['backup', 'latest-json'] as const)(
     'refuses %s rollback without changing the database when a move journal is unresolved',
     async (selector) => {

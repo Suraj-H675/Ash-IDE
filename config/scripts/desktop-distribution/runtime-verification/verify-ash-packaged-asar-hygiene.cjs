@@ -116,6 +116,24 @@ function verifyAshPackagedAsarHygiene(resourcesDir) {
       )
     }
   }
+  if (
+    existsSync(join(resourcesDir, 'app-update.yml')) ||
+    existsSync(join(resourcesDir, 'app.asar.unpacked', 'node_modules', 'electron-updater')) ||
+    [...normalizedEntries].some((entry) => entry.startsWith('node_modules/electron-updater/'))
+  ) {
+    throw new Error('[ash-package-hygiene] unexpected packaged desktop updater configuration')
+  }
+  const excludedUpdaterCode =
+    /onorca\.dev\/(?:whats-new\/|changelog\b)|["']updater:(?:check|download|quitAndInstall|dismissNudge|dismissAvailableUpdate|getLinuxPackageInstallInstructions|showLinuxPackage|listBuilds)["']/
+  const updaterSources = [...preloads, ...mainSources]
+  for (const chunk of normalizedEntries) {
+    if (/^out\/main\/chunks\/[^/]+\.js$/.test(chunk)) {
+      updaterSources.push(extractFile(archivePath, chunk).toString('utf8'))
+    }
+  }
+  if (updaterSources.some((source) => excludedUpdaterCode.test(source))) {
+    throw new Error('[ash-package-hygiene] excluded update transport in packaged Main or preload')
+  }
   for (const artifact of [
     ...EXCLUDED_TASK_TRACKER_CLI_ARTIFACTS,
     ...EXCLUDED_ASH_CLI_ENTRY_ARTIFACTS

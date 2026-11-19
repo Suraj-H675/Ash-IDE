@@ -171,7 +171,7 @@ describe('Electron recovery preflight', () => {
     expect(response()).toMatchObject({
       ok: false,
       code: 'runtime_error',
-      message: expect.stringContaining('Stop Orca')
+      message: expect.stringContaining('Stop Ash IDE')
     })
     expect(readFileSync(item.databaseFile, 'utf8')).toBe('broken database')
     expect(JSON.parse(readFileSync(item.dataFile, 'utf8'))).toEqual({ old: true })
@@ -328,7 +328,7 @@ describe('Electron recovery preflight', () => {
       await vi.waitFor(() => expect(mocks.exit).toHaveBeenCalledWith(1))
       expect(mocks.relaunch).not.toHaveBeenCalled()
       expect(mocks.showMessageBox).toHaveBeenCalledWith(
-        expect.objectContaining({ detail: expect.stringContaining('Stop Orca') })
+        expect.objectContaining({ detail: expect.stringContaining('Stop Ash IDE') })
       )
       expect(readFileSync(item.databaseFile, 'utf8')).toBe('broken database')
     })

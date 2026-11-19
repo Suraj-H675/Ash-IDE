@@ -2,7 +2,7 @@
 // Run deb/rpm maintainer scripts on a private, rewritten fixture tree only.
 // Never execute the package's actual install/remove hooks against /usr or /opt.
 import assert from 'node:assert/strict'
-import { execFileSync } from 'node:child_process'
+import { execFile } from 'node:child_process'
 import {
   readFileSync,
   mkdtempSync,
@@ -17,6 +17,7 @@ import {
   rmSync
 } from 'node:fs'
 import { tmpdir } from 'node:os'
+import { promisify } from 'node:util'
 import { dirname, join, resolve } from 'node:path'
 
 const repo = resolve(import.meta.dirname, '../../../..')
@@ -82,8 +83,19 @@ function clearLink() {
   }
 }
 
-function run(file, ...args) {
-  execFileSync('bash', [file, ...args], { stdio: 'pipe', timeout: 5000 })
+const exec = promisify(execFile)
+
+async function run(file, ...args) {
+  await exec('bash', [file, ...args], {
+    timeout: 5000,
+    env: {
+      PATH: '/usr/bin:/bin',
+      HOME: join(fixture, 'home/qa'),
+      XDG_CONFIG_HOME: join(fixture, 'home/qa/.config'),
+      CODEX_HOME: join(fixture, 'home/qa/.codex'),
+      CLAUDE_CONFIG_DIR: join(fixture, 'home/qa/.claude')
+    }
+  })
 }
 
 try {
@@ -96,15 +108,28 @@ try {
   writeExecutable(currentShim)
   writeExecutable(sandbox)
 
-  run(install)
+  const preserved = new Map([
+    ['home/qa/.config/ash-ide/profiles/personal/profile-state.db', 'Ash profile'],
+    ['home/qa/.config/ash-ide/browser/sentinel', 'Ash browser state'],
+    ['home/qa/.config/Orca/sentinel', 'Orca profile'],
+    ['home/qa/.codex/config.toml', 'Provider configuration'],
+    ['home/qa/workspace/project/sentinel', 'User project']
+  ])
+  for (const [relative, bytes] of preserved) {
+    const path = join(fixture, relative)
+    mkdirSync(dirname(path), { recursive: true, mode: 0o700 })
+    writeFileSync(path, bytes, { flag: 'wx', mode: 0o600 })
+  }
+
+  await run(install)
   assert.equal(linkTarget(), currentShim, 'current install prefix must own CLI link')
   assert.equal(lstatSync(sandbox).mode & 0o7777, 0o4755, 'sandbox setuid mode must be applied')
-  run(install)
+  await run(install)
   assert.equal(linkTarget(), currentShim, 'repeat install must be idempotent')
 
   clearLink()
   writeFileSync(link, 'another app owns this pathname\n', { flag: 'wx' })
-  run(install)
+  await run(install)
   assert.equal(
     readFileSync(link, 'utf8'),
     'another app owns this pathname\n',
@@ -112,25 +137,25 @@ try {
   )
   clearLink()
   symlinkSync(join(fixture, 'opt/another-app/resources/bin/ash-ide'), link)
-  run(install)
+  await run(install)
   assert.match(linkTarget(), /another-app/, 'unrelated dangling symlink must not be overwritten')
 
   clearLink()
   symlinkSync(legacyShim, link) // Previous package path may now be nonexistent.
-  run(install)
+  await run(install)
   assert.equal(linkTarget(), currentShim, 'own stale legacy link must migrate to new prefix')
-  run(remove, '1')
+  await run(remove, '1')
   assert.equal(linkTarget(), currentShim, 'rpm upgrade must retain CLI link')
-  run(remove, 'upgrade')
+  await run(remove, 'upgrade')
   assert.equal(linkTarget(), currentShim, 'deb upgrade must retain CLI link')
-  run(remove, '0')
+  await run(remove, '0')
   assert.equal(lstatIfExists(link), null, 'rpm final uninstall removes only owned link')
 
   symlinkSync(currentShim, link)
-  run(remove, 'remove')
+  await run(remove, 'remove')
   assert.equal(lstatIfExists(link), null, 'deb uninstall removes only owned link')
   symlinkSync(join(fixture, 'opt/another-app/resources/bin/ash-ide'), link)
-  run(remove, '0')
+  await run(remove, '0')
   assert.match(linkTarget(), /another-app/, 'unrelated CLI link survives uninstall')
   clearLink()
   chmodSync(sandbox, 0o755)
@@ -138,19 +163,28 @@ try {
   writeExecutable(legacyShim)
   const legacySandbox = join(fixture, 'opt/ash-ide/chrome-sandbox')
   writeExecutable(legacySandbox)
-  run(install)
+  await run(install)
   assert.equal(linkTarget(), legacyShim, 'older install layout remains supported')
   assert.equal(lstatSync(legacySandbox).mode & 0o7777, 0o4755)
-  run(remove, '0')
+  await run(remove, '0')
   assert.equal(lstatIfExists(link), null, 'older package symlink remains scoped to Ash')
   unlinkSync(legacyShim)
-  run(install)
+  await run(install)
   assert.equal(lstatIfExists(link), null, 'missing package shim cannot create a dead link')
   assert.equal(
     lstatSync(sandbox).mode & 0o7777,
     0o755,
     'missing shim must not chmod an unrelated sandbox'
   )
+
+  writeExecutable(currentShim)
+  await run(install)
+  assert.equal(linkTarget(), currentShim, 'reinstallation restores only the package link')
+  for (const [relative, bytes] of preserved) {
+    const path = join(fixture, relative)
+    assert.equal(readFileSync(path, 'utf8'), bytes)
+    assert.equal(lstatSync(path).mode & 0o777, 0o600)
+  }
 
   assert.equal(JSON.parse(readFileSync(join(repo, 'package.json'), 'utf8')).license, 'MIT')
   assert.match(readFileSync(join(repo, 'LICENSE'), 'utf8'), /^MIT License\n/)
@@ -162,6 +196,7 @@ try {
       upgrade: true,
       remove: true,
       thirdPartyLinksPreserved: true,
+      ashAndForeignUserDataPreserved: true,
       sandboxMode: true,
       licenseMetadata: 'MIT'
     })

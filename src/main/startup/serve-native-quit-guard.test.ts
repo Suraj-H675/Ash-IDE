@@ -36,7 +36,6 @@ function emitBeforeQuit(): { preventDefault: ReturnType<typeof vi.fn> } {
 
 describe('installServeNativeQuitGuard', () => {
   const closeDesktopWindows = vi.fn()
-  const isQuittingForUpdate = vi.fn(() => false)
 
   beforeEach(() => {
     electron.beforeQuit.length = 0
@@ -45,12 +44,11 @@ describe('installServeNativeQuitGuard', () => {
     }
     electron.quit.mockReset()
     closeDesktopWindows.mockReset()
-    isQuittingForUpdate.mockReturnValue(false)
     resetProcessQuitRequestForTest()
   })
 
   it('turns a macOS Dock or app-switcher Quit into closing the desktop windows (#15537)', () => {
-    installServeNativeQuitGuard({ platform: 'darwin', isQuittingForUpdate, closeDesktopWindows })
+    installServeNativeQuitGuard({ platform: 'darwin', closeDesktopWindows })
 
     const event = emitBeforeQuit()
 
@@ -59,7 +57,7 @@ describe('installServeNativeQuitGuard', () => {
   })
 
   it('lets a signal, supervisor or relaunch quit through, and keeps it allowed on re-entry', () => {
-    installServeNativeQuitGuard({ platform: 'darwin', isQuittingForUpdate, closeDesktopWindows })
+    installServeNativeQuitGuard({ platform: 'darwin', closeDesktopWindows })
 
     quitProcess()
     expect(electron.quit).toHaveBeenCalledOnce()
@@ -68,15 +66,8 @@ describe('installServeNativeQuitGuard', () => {
     expect(closeDesktopWindows).not.toHaveBeenCalled()
   })
 
-  it('lets an update install quit through', () => {
-    isQuittingForUpdate.mockReturnValue(true)
-    installServeNativeQuitGuard({ platform: 'darwin', isQuittingForUpdate, closeDesktopWindows })
-
-    expect(emitBeforeQuit().preventDefault).not.toHaveBeenCalled()
-  })
-
   it('does not cancel a macOS logout or shutdown', () => {
-    installServeNativeQuitGuard({ platform: 'darwin', isQuittingForUpdate, closeDesktopWindows })
+    installServeNativeQuitGuard({ platform: 'darwin', closeDesktopWindows })
 
     electron.powerListeners.shutdown?.()
 
@@ -85,7 +76,7 @@ describe('installServeNativeQuitGuard', () => {
   })
 
   it.each(['linux', 'win32'] as const)('installs nothing on %s', (platform) => {
-    installServeNativeQuitGuard({ platform, isQuittingForUpdate, closeDesktopWindows })
+    installServeNativeQuitGuard({ platform, closeDesktopWindows })
 
     expect(electron.beforeQuit).toHaveLength(0)
     expect(electron.powerListeners).toEqual({})

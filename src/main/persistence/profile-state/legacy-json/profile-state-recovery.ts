@@ -8,6 +8,7 @@ import {
   quarantineProfileStateDatabase,
   type ProfileStateDatabaseQuarantine
 } from '../profile-state-database-quarantine'
+import { isLocalProfileStateFile } from '../profile-state-local-recovery-file'
 import { profileStateJsonExportPaths } from './profile-state-export-path'
 import { profileStateDatabaseBackupFiles } from '../profile-state-backup-path'
 import {
@@ -40,8 +41,11 @@ export function restoreProfileStateJsonExport(
   options: ProfileStateJsonRecoveryOptions
 ): ProfileStateJsonRecovery {
   assertProfileStateMaintenance(options.maintenance, options)
-  const rawJson = readRecoveryExport(options.exportPath)
   const retainedExports = profileStateJsonExportPaths(options.dataFile)
+  if (options.exportPath !== options.dataFile && !retainedExports.includes(options.exportPath)) {
+    throw new Error('Profile state recovery export does not belong to this profile')
+  }
+  const rawJson = readRecoveryExport(options.exportPath)
   const retainedBackups = profileStateDatabaseBackupFiles(options.databasePath)
   const recoveryFiles = [options.exportPath, ...retainedExports, ...retainedBackups]
   const authorityMarker = profileStateAuthorityMarkerPath(options.databasePath)
@@ -90,7 +94,7 @@ export function restoreProfileStateJsonExport(
 }
 
 function readRecoveryExport(exportPath: string): string {
-  if (exportPath.length === 0 || exportPath.includes('\0')) {
+  if (!isLocalProfileStateFile(exportPath)) {
     throw new Error('Profile state recovery export path is invalid')
   }
   const rawJson = readFileSync(exportPath, 'utf8')

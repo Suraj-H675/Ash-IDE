@@ -24,7 +24,6 @@ import {
   installUnhandledRejectionLogging
 } from './main-process-error-guards'
 import { hydrateShellPath, mergePathSegments } from './hydrate-shell-path'
-import { isQuittingForUpdate } from '../updater/updater-service'
 import { getDevInstanceIdentity, shouldApplyPreReadyAppName } from './dev-instance-identity'
 import { enableRendererHeapHeadroom } from './renderer-heap-headroom'
 import { configureLinuxDevShmUsage } from './linux-dev-shm-policy'
@@ -153,12 +152,7 @@ function initializeMainProcessPreflight(options: MainProcessPreflightOptions): b
   state.desktopActivationGate = createServeDesktopActivationGate({
     // Hold activation until the startup window exists; early second-instance activation otherwise opens a duplicate and aborts launch.
     initialState: 'initializing',
-    activateWindow: () => {
-      // Updater replacement must not resurrect the old bundle.
-      if (!isQuittingForUpdate()) {
-        options.focusExistingWindow()
-      }
-    },
+    activateWindow: () => options.focusExistingWindow(),
     onBlocked: (reason) => console.error(`[serve] Desktop activation blocked: ${reason}`)
   })
   installUncaughtPipeErrorGuard()

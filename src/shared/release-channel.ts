@@ -178,8 +178,8 @@ export function getVersionChannel(version: string): ReleaseChannel | null {
 export function getReleaseNotesUrlForVersion(version: string | null): string {
   const channel = version ? getVersionChannel(version) : null
   const repo = channel ? getReleaseRepoForChannel(channel) : MAIN_RELEASE_REPO
-  return version
-    ? `https://github.com/${repo}/releases/tag/v${normalizeTagToVersion(version)}`
+  return version && channel
+    ? `https://github.com/${repo}/releases/tag/v${encodeURIComponent(normalizeTagToVersion(version.trim()))}`
     : `https://github.com/${repo}/releases`
 }
 
@@ -201,18 +201,14 @@ export function hasInstallableArtifactForPlatform(
   assetNames: readonly string[]
 ): boolean {
   const manifests = getUpdateManifestNamesForPlatform(platform)
-  // Unknown platforms should fail with a download explanation rather than an empty picker.
-  if (manifests.length === 0) {
-    return true
-  }
   return manifests.some((manifest) => assetNames.includes(manifest))
 }
 
 /** Match electron-builder’s runnable installer names for manual bootstrap when in-app switching cannot work. */
 const PLATFORM_INSTALLER_PATTERNS: Partial<Record<NodeJS.Platform, RegExp>> = {
-  darwin: /\.dmg$/i,
-  win32: /windows-setup\.exe$/i,
-  linux: /\.AppImage$/i
+  darwin: /^ash-ide-macos-(?:x64|arm64)\.dmg$/,
+  win32: /^ash-ide-windows-setup\.exe$/,
+  linux: /^ash-ide-linux(?:-arm64)?\.AppImage$/
 }
 
 export function findInstallerAssetName(

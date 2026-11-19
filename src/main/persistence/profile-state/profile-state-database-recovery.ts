@@ -1,11 +1,12 @@
 import { profileStateDatabaseFiles } from './profile-state-storage-classification'
-import { existsSync, lstatSync, mkdirSync, rmSync } from 'node:fs'
-import { dirname } from 'node:path'
-import { durableWriteTempPath, renameDurableSync } from '../../filesystem/durable-file-write'
+import { existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { renameDurableSync } from '../../filesystem/durable-file-write'
 import { hardenSqliteDatabaseFiles } from '../../sqlite/harden-database-files'
 import { bestEffortFsyncDirectorySync, fsyncFileSync } from '../../../shared/secure-file'
 import { openProfileStateDatabaseReadOnly } from './profile-state-database'
 import { validateProfileStateSnapshot } from './profile-state-documents'
+import { isLocalProfileStateFile } from './profile-state-local-recovery-file'
 import { copyProfileStateRecoveryFile } from './profile-state-recovery-copy'
 import {
   profileStateDatabaseBackups,
@@ -49,15 +50,18 @@ export function restoreProfileStateDatabaseBackup(
   if (!backups.some((backup) => backup.path === options.backupPath)) {
     throw new Error('Selected profile state database backup is not retained by this profile')
   }
-  if (!lstatSync(options.backupPath).isFile()) {
+  if (!isLocalProfileStateFile(options.backupPath)) {
     throw new Error('Profile state database backup must be a regular file')
   }
-  if (['-wal', '-shm', '-journal'].some((suffix) => existsSync(`${options.backupPath}${suffix}`))) {
+  if (profileStateDatabaseFiles(options.backupPath).slice(1).some(isLocalProfileStateFile)) {
     throw new Error('Profile state database backup has sidecars and is not self-contained')
   }
 
-  mkdirSync(dirname(options.databasePath), { recursive: true })
-  const stagingPath = durableWriteTempPath(options.databasePath)
+  const currentDatabaseFiles = profileStateDatabaseFiles(options.databasePath).filter(
+    isLocalProfileStateFile
+  )
+  const stagingDirectory = mkdtempSync(join(dirname(options.databasePath), '.ash-state-restore-'))
+  const stagingPath = join(stagingDirectory, 'profile-state.db')
   try {
     copyProfileStateRecoveryFile(options.backupPath, stagingPath)
     hardenSqliteDatabaseFiles(stagingPath)
@@ -87,7 +91,7 @@ export function restoreProfileStateDatabaseBackup(
       rmSync(exportPath)
     }
 
-    const removedDatabaseFiles = profileStateDatabaseFiles(options.databasePath).filter(existsSync)
+    const removedDatabaseFiles = currentDatabaseFiles
     // Remove the primary first: interruption must fail closed on retained backups, never replay old WAL.
     for (const path of removedDatabaseFiles) {
       rmSync(path)
@@ -97,9 +101,7 @@ export function restoreProfileStateDatabaseBackup(
     renameDurableSync(stagingPath, options.databasePath)
     return { revision, quarantine, removedDatabaseFiles }
   } finally {
-    for (const path of profileStateDatabaseFiles(stagingPath)) {
-      rmSync(path, { force: true })
-    }
+    rmSync(stagingDirectory, { recursive: true, force: true })
   }
 }
 

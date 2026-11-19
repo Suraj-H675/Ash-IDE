@@ -1,14 +1,7 @@
-import {
-  constants,
-  copyFileSync,
-  linkSync,
-  lstatSync,
-  mkdtempSync,
-  rmSync,
-  statSync
-} from 'node:fs'
+import { constants, copyFileSync, linkSync, lstatSync, mkdtempSync, rmSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
 import { runProcessSync } from '@orca/process-host'
+import { isLocalProfileStateFile } from './profile-state-local-recovery-file'
 
 // Avoid process startup for small copies.
 const MINIMUM_CLONE_BYTES = 8 * 1024 * 1024
@@ -26,10 +19,10 @@ export function copyProfileStateRecoveryFiles(files: readonly RecoveryCopy[]): v
   const clones: RecoveryCopy[] = []
   const names = new Set<string>()
   for (const file of files) {
-    const info = lstatSync(file.source)
-    if (!info.isFile() && (!info.isSymbolicLink() || !statSync(file.source).isFile())) {
-      throw new Error(`Profile recovery artifact is not a file: ${file.source}`)
+    if (!isLocalProfileStateFile(file.source)) {
+      throw new Error('Profile-state recovery artifact disappeared')
     }
+    const info = lstatSync(file.source)
     const name = basename(file.source)
     if (process.platform !== 'darwin' || !info.isFile() || info.size < MINIMUM_CLONE_BYTES) {
       copyFileSync(file.source, file.target, constants.COPYFILE_EXCL)

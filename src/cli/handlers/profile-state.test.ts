@@ -503,7 +503,7 @@ describe('profile-state CLI recovery', () => {
       expect(readFileSync(profile.dataFile, 'utf8')).toBe(
         JSON.stringify({ settings: { theme: 'old' } })
       )
-      expect(vi.mocked(console.error).mock.calls.at(-1)?.[0]).toContain('Stop Orca')
+      expect(vi.mocked(console.error).mock.calls.at(-1)?.[0]).toContain('Stop Ash IDE')
     }
   )
 
@@ -633,6 +633,6 @@ describe('profile-state CLI recovery', () => {
 
     expect(process.exitCode).toBe(1)
     expect(readFileSync(profile.databaseFile, 'utf8')).toBe('damaged sqlite primary')
-    expect(String(vi.mocked(console.log).mock.calls.at(-1)?.[0])).toContain('Stop Orca')
+    expect(String(vi.mocked(console.log).mock.calls.at(-1)?.[0])).toContain('Stop Ash IDE')
   })
 })

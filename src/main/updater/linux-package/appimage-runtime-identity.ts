@@ -8,10 +8,10 @@ import {
   statSync,
   type Stats
 } from 'node:fs'
-import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 
 const APPIMAGE_HEADER_LENGTH = 11
-const ORCA_PACKAGE_MARKER_MAX_BYTES = 1_024
+const ASH_PACKAGE_MARKER_MAX_BYTES = 1_024
 const PACKAGE_TYPE_MARKER_MAX_BYTES = 32
 
 export type AppImageRuntimeIdentity = {
@@ -104,7 +104,7 @@ function readPayloadMarker(
 ): string | null {
   try {
     const canonicalPath = realpathSync(markerPath)
-    if (!isInside(runtimeRoot, canonicalPath)) {
+    if (canonicalPath !== markerPath || !isInside(runtimeRoot, canonicalPath)) {
       return null
     }
     return inspectRegularFile(canonicalPath, (fd, stats) =>
@@ -123,14 +123,14 @@ function hasAppImagePackageEvidence(runtimeRoot: string, resourcesPath: string):
     join(resourcesPath, 'package-type'),
     PACKAGE_TYPE_MARKER_MAX_BYTES
   )
-  if (packageType === 'AppImage') {
-    return true
+  if (packageType !== null && packageType !== 'AppImage') {
+    return false
   }
 
   const content = readPayloadMarker(
     runtimeRoot,
     join(resourcesPath, 'app.asar.unpacked', 'out', 'package.json'),
-    ORCA_PACKAGE_MARKER_MAX_BYTES
+    ASH_PACKAGE_MARKER_MAX_BYTES
   )
   try {
     const marker: unknown = JSON.parse(content ?? '')
@@ -138,7 +138,7 @@ function hasAppImagePackageEvidence(runtimeRoot: string, resourcesPath: string):
       typeof marker === 'object' &&
       marker !== null &&
       'name' in marker &&
-      marker.name === 'orca-compiled-output' &&
+      marker.name === 'ash-ide-compiled-output' &&
       'type' in marker &&
       marker.type === 'commonjs'
     )
@@ -174,7 +174,7 @@ export function resolveAppImageRuntimeIdentity(
 
   const runtimeRoot = resolve(appDirPath)
   if (
-    resolve(dirname(execPath)) !== runtimeRoot ||
+    resolve(execPath) !== join(runtimeRoot, 'ash-ide') ||
     resolve(resourcesPath) !== resolve(join(runtimeRoot, 'resources')) ||
     !hasAppImageHeader(appImagePath)
   ) {
@@ -187,7 +187,7 @@ export function resolveAppImageRuntimeIdentity(
       realpathSync(resourcesPath) !== join(realRuntimeRoot, 'resources') ||
       !isExecutablePayloadFile(realRuntimeRoot, execPath) ||
       !isExecutablePayloadFile(realRuntimeRoot, join(runtimeRoot, 'AppRun')) ||
-      !hasAppImagePackageEvidence(realRuntimeRoot, resourcesPath)
+      !hasAppImagePackageEvidence(realRuntimeRoot, join(realRuntimeRoot, 'resources'))
     ) {
       return null
     }

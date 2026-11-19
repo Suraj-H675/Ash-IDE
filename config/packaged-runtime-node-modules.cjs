@@ -27,7 +27,6 @@ const PACKAGED_RUNTIME_PACKAGE_ROOTS = [
   '@anthropic-ai/claude-agent-sdk',
   '@orca/process-host',
   '@parcel/watcher',
-  'electron-updater',
   'i18next',
   'jsonc-parser',
   'node-pty',

@@ -12,6 +12,8 @@ import {
   getProfileStateExports,
   rollbackProfileState
 } from '../../main/persistence/profile-state/profile-state-recovery-command'
+import { checkpointProfileState } from '../../main/persistence/profile-state/profile-state-manual-checkpoint'
+import { isProfileStateSqliteAvailable } from '../../main/persistence/profile-state/profile-state-database'
 import { acquireProfileStateMaintenance } from '../../main/persistence/profile-state/profile-state-access'
 import {
   isProfileStateRecoveryCommandError,
@@ -84,12 +86,12 @@ function rejectProfileStateRemoteSelection(flags: ReadonlyMap<string, string | b
   )
 }
 
-async function requireStoppedRuntime(client: RuntimeClient): Promise<void> {
+async function requireStoppedRuntime(client: RuntimeClient, operation = 'rollback'): Promise<void> {
   const status = await client.getOfflineRuntimeAdmission()
   if (status.reachable || status.legacyPidRunning) {
     throw new RuntimeClientError(
       'runtime_error',
-      'Stop Orca before profile-state rollback so no process can write the SQLite database.'
+      `Stop Ash IDE before profile-state ${operation} so no process can write the SQLite database.`
     )
   }
 }
@@ -116,6 +118,22 @@ export const PROFILE_STATE_HANDLERS: Record<string, CommandHandler> = {
       getProfileStateExports(getDefaultUserDataPath(), parseProfileId(flags))
     )
     printResult(localSuccess(result), json, formatExports)
+  },
+  'profile state checkpoint': async ({ client, flags, json }) => {
+    rejectProfileStateRemoteSelection(flags)
+    const profileId = parseProfileId(flags)
+    if (!isProfileStateSqliteAvailable()) {
+      throw new RuntimeClientError('runtime_error', 'This CLI cannot create a SQLite checkpoint.')
+    }
+    const userDataPath = getDefaultUserDataPath()
+    const maintenance = acquireProfileStateMaintenance(userDataPath)
+    try {
+      await requireStoppedRuntime(client, 'checkpoint')
+      const checkpoint = await checkpointProfileState(userDataPath, maintenance, profileId)
+      printResult(localSuccess(checkpoint), json, (result) => `${result.id}: ${result.path}`)
+    } finally {
+      maintenance.release()
+    }
   },
   'profile state rollback': async ({ client, flags, json }) => {
     rejectProfileStateRemoteSelection(flags)

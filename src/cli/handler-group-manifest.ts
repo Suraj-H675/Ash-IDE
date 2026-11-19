@@ -219,7 +219,7 @@ export const HANDLER_GROUPS: readonly HandlerGroup[] = [
   },
   {
     name: 'profile-state',
-    keys: ['profile state exports', 'profile state rollback'],
+    keys: ['profile state exports', 'profile state checkpoint', 'profile state rollback'],
     load: async () => (await import('./handlers/profile-state.js')).PROFILE_STATE_HANDLERS
   },
   {

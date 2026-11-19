@@ -66,8 +66,9 @@ const ASH_LOCAL_COMMAND_ROOTS = new Set([
 ])
 const ASH_REMOTE_SCOPE_FLAGS = new Set(['environment', 'host', 'pairing-code'])
 
-export const ASH_COMMAND_SPECS: CommandSpec[] = COMMAND_SPECS.filter((spec) =>
-  ASH_LOCAL_COMMAND_ROOTS.has(spec.path[0] ?? '')
+export const ASH_COMMAND_SPECS: CommandSpec[] = COMMAND_SPECS.filter(
+  (spec) =>
+    ASH_LOCAL_COMMAND_ROOTS.has(spec.path[0] ?? '') || PROFILE_STATE_COMMAND_SPECS.includes(spec)
 ).map((spec) => {
   const localSpec: CommandSpec = {
     ...spec,

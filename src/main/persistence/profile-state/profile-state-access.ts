@@ -1,12 +1,12 @@
-import { lstatSync, readdirSync, realpathSync } from 'node:fs'
+import { readdirSync, realpathSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import {
   ProfileStateAccessError,
-  hasCode,
   profileStateAccessPaths,
   publishAccessOwner,
   reclaimExitedOwner
 } from './profile-state-access-owner'
+import { isLocalProfileStateFile } from './profile-state-local-recovery-file'
 export { ProfileStateAccessError } from './profile-state-access-owner'
 
 export type ProfileStateRuntimeAdmission = {
@@ -45,15 +45,7 @@ export function assertProfileStateMaintenance(
         'Profile state recovery paths do not belong to the maintenance root'
       )
     }
-    try {
-      if (lstatSync(path).isSymbolicLink()) {
-        throw new ProfileStateAccessError('Profile state recovery cannot replace a symbolic link')
-      }
-    } catch (error) {
-      if (!hasCode(error, 'ENOENT')) {
-        throw error
-      }
-    }
+    isLocalProfileStateFile(path)
   }
 }
 
