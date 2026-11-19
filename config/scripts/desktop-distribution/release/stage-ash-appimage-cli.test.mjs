@@ -1,7 +1,19 @@
 import { createHash, generateKeyPairSync, sign } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { chmod, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
+import {
+  chmod,
+  link,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rename,
+  rm,
+  stat,
+  symlink,
+  writeFile
+} from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -10,6 +22,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 const cli = fileURLToPath(new URL('./stage-ash-appimage-cli.mjs', import.meta.url))
 const repo = resolve(import.meta.dirname, '../../../..')
 const { privateKey, publicKey } = generateKeyPairSync('ed25519')
+const trustedKeyBytes = Buffer.from(publicKey.export({ format: 'pem', type: 'spki' }))
+const trustedKeySha256 = createHash('sha256').update(trustedKeyBytes).digest('hex')
 const asset = 'ash-ide-linux.AppImage'
 let temp
 let stageRoot
@@ -47,7 +61,7 @@ beforeEach(async () => {
     expiresAtMs: Date.now() + 60_000
   }
   await writeFile(artifactPath, bytes)
-  await writeFile(keyPath, publicKey.export({ format: 'pem', type: 'spki' }))
+  await writeFile(keyPath, trustedKeyBytes)
   await signFixture()
 })
 
@@ -70,6 +84,8 @@ function invoke(overrides = [], { replaceArgs = false } = {}) {
         signaturePath,
         '--public-key',
         keyPath,
+        '--trusted-key-sha256',
+        trustedKeySha256,
         '--artifact',
         artifactPath,
         '--stage-root',
@@ -121,6 +137,54 @@ describe.skipIf(process.platform !== 'linux')('offline release staging CLI', () 
     const missingKey = invoke(['--manifest', manifestPath], { replaceArgs: true })
     expect(missingKey.status).not.toBe(0)
     expect(missingKey.stderr).toMatch(/Missing --signature/)
+    expect(await readdir(stageRoot)).toEqual([])
+  })
+
+  it('rejects a substituted key even when it is a valid Ed25519 public key', async () => {
+    const foreign = generateKeyPairSync('ed25519').publicKey.export({ format: 'pem', type: 'spki' })
+    await writeFile(keyPath, foreign)
+    const child = invoke()
+    expect(child.status).not.toBe(0)
+    expect(child.stderr).toMatch(/independently approved SHA-256/)
+    expect(await readdir(stageRoot)).toEqual([])
+  })
+
+  it('rejects untrusted key pin syntax before accessing any file', async () => {
+    const child = invoke(['--trusted-key-sha256', 'not-a-digest'])
+    expect(child.status).not.toBe(0)
+    expect(child.stderr).toMatch(/64 lowercase hex/)
+    expect(await readdir(stageRoot)).toEqual([])
+  })
+
+  it('refuses symlink and hardlink key aliases instead of following a pathname', async () => {
+    const keyOriginal = join(temp, 'original-key.pem')
+    await rename(keyPath, keyOriginal)
+    await symlink(keyOriginal, keyPath)
+    const linked = invoke()
+    expect(linked.status).not.toBe(0)
+    expect(await readdir(stageRoot)).toEqual([])
+
+    await rm(keyPath)
+    await rename(keyOriginal, keyPath)
+    await link(keyPath, join(temp, 'hardlinked-key.pem'))
+    const hardlinked = invoke()
+    expect(hardlinked.status).not.toBe(0)
+    expect(hardlinked.stderr).toMatch(/single-link/)
+    expect(await readdir(stageRoot)).toEqual([])
+  })
+
+  it('refuses publicly writable trust roots and linked signed metadata', async () => {
+    await chmod(keyPath, 0o666)
+    const publicKeyFile = invoke()
+    expect(publicKeyFile.status).not.toBe(0)
+    expect(publicKeyFile.stderr).toMatch(/not writable by others/)
+    await chmod(keyPath, 0o644)
+
+    const original = join(temp, 'original-manifest.json')
+    await rename(manifestPath, original)
+    await symlink(original, manifestPath)
+    const manifestAlias = invoke()
+    expect(manifestAlias.status).not.toBe(0)
     expect(await readdir(stageRoot)).toEqual([])
   })
 
