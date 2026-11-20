@@ -158,6 +158,7 @@ it.each([
   '.env',
   'dist/ash-ide-linux.AppImage',
   'release/old-package.tar.gz',
+  'config/scripts/desktop-distribution/release/stage-ash-appimage.mjs',
   'unexpected-private-source/secrets.json'
 ])('refuses private checkout or unexpected root %s inside app.asar', async (path) => {
   const resources = await makeArchive(['package.json', 'out/main/index.js', path])

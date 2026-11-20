@@ -71,7 +71,20 @@ function stage(fixture = manifest, overrides = {}, key = privateKey) {
 describe.skipIf(process.platform !== 'linux')('offline Ash AppImage admission', () => {
   it('publishes the exact verified bytes privately without executing or altering the input', async () => {
     const staged = await stage()
-    expect(staged).toMatchObject({ version: '0.2.0', sha256: manifest.sha256 })
+    expect(staged).toMatchObject({
+      manifestVersion: '0.2.0',
+      sha256: manifest.sha256,
+      ashPackageIdentityVerified: false,
+      activationAvailable: false,
+      activationBlockers: expect.arrayContaining([
+        expect.stringMatching(
+          /manifest version is not matched to the packaged Ash application identity/
+        ),
+        expect.stringMatching(/stopped GUI, PTY, and Ash agent-session census/),
+        expect.stringMatching(/agent-session census/),
+        expect.stringMatching(/compatible snapshot/)
+      ])
+    })
     expect(await readFile(staged.path)).toEqual(artifact)
     expect(await readFile(artifactPath)).toEqual(artifact)
     expect((await stat(staged.path)).mode & 0o777).toBe(0o600)

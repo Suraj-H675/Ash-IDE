@@ -17,7 +17,8 @@ const USAGE = [
   '    --architecture x64|arm64 --installed-version X.Y.Z',
   'Manifest bytes must be compact JSON.stringify serialization (no duplicate keys).',
   'Signature is exactly 64 raw Ed25519 bytes over the original manifest file bytes.',
-  'The trusted public key MUST be independently authenticated by the operator.'
+  'The trusted public key MUST be independently authenticated by the operator.',
+  'The manifest version is not an inspected payload version; activation is unavailable.'
 ].join('\n')
 
 const REQUIRED = [

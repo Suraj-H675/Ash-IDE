@@ -11,6 +11,13 @@ const APPIMAGE_ASSETS = {
 const MAX_MANIFEST_BYTES = 16 * 1024
 const MAX_ARTIFACT_BYTES = 2 * 1024 ** 3
 const MAX_MANIFEST_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000
+const ACTIVATION_BLOCKERS = Object.freeze([
+  'No approved Ash release trust root or verified release feed is available.',
+  'The signed manifest version is not matched to the packaged Ash application identity.',
+  'No production AppImage installation destination or versioned slot switch is configured.',
+  'No stopped GUI, PTY, and Ash agent-session census or exclusive update maintenance gate is connected.',
+  'No complete compatible snapshot covers every mutable Ash state domain.'
+])
 const stableVersion = z
   .string()
   .max(32)
@@ -190,7 +197,14 @@ export async function stageAshAppImage({
       }
     }
     durable = true
-    return { path: publishedPath, version: manifest.version, sha256: manifest.sha256 }
+    return {
+      path: publishedPath,
+      manifestVersion: manifest.version,
+      sha256: manifest.sha256,
+      ashPackageIdentityVerified: false,
+      activationAvailable: false,
+      activationBlockers: ACTIVATION_BLOCKERS
+    }
   } finally {
     await source.close()
     if (!durable && directory) {
