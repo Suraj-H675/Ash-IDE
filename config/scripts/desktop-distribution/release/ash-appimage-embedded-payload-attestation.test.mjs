@@ -423,6 +423,14 @@ describe.skipIf(!hasRealFixtures)('real AppImage signed attestation', () => {
       readerPath
     })
     const identity = report.embeddedIdentity
+    // Real fixtures may be built from a clean source commit or a dirty tree.
+    // When the caller knows the source revision, pin it independently rather
+    // than accepting whatever commit the embedded sidecar claims.
+    const expectedSourceCommit =
+      process.env.ASH_M8_REAL_EXPECTED_SOURCE_COMMIT === 'none'
+        ? null
+        : (process.env.ASH_M8_REAL_EXPECTED_SOURCE_COMMIT ?? identity.sourceCommit)
+    expect(identity.sourceCommit).toBe(expectedSourceCommit)
     const manifestValue = {
       schema: 1,
       product: 'com.ashide.desktop',
@@ -460,7 +468,7 @@ describe.skipIf(!hasRealFixtures)('real AppImage signed attestation', () => {
       manifestBytes: signed.manifestBytes,
       manifestSignature: signed.signature,
       manifestPolicy: { publicKey: manifestKeys.publicKey },
-      expectedSourceCommit: identity.sourceCommit,
+      expectedSourceCommit,
       signingKey: attestationKeys.privateKey
     })
 
@@ -475,9 +483,10 @@ describe.skipIf(!hasRealFixtures)('real AppImage signed attestation', () => {
         }
       },
       claimProvenance: {
-        sourceCommit: null,
-        callerPinnedSourceCommit: null,
-        sourceCommitBinding: 'missing-from-embedded-claim'
+        sourceCommit: expectedSourceCommit,
+        callerPinnedSourceCommit: expectedSourceCommit,
+        sourceCommitBinding:
+          expectedSourceCommit === null ? 'missing-from-embedded-claim' : 'caller-pinned-match'
       }
     })
     expect(serializeAshAppImageEmbeddedPayloadAttestation(result.payload)).toEqual(result.bytes)
