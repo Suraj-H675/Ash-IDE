@@ -552,6 +552,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/daemon/daemon-entry.ts",
+      "sha256": "56b8897f11fb0e9ac7ff77cc7ae7700cc9e064086952fec5d734f64362f6ffcc",
+      "reason": "Ash M8: write fatal daemon startup diagnostics synchronously so a short-lived process does not lose them when stderr is piped."
+    },
+    {
       "path": "src/main/daemon/executable-host/macos/macos-daemon-bundle.ts",
       "sha256": "9a2d239be1c35ddf864a91edf2c98ea09173673b8d2eea0ce9d7e12e9a4a789e",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -3023,8 +3028,8 @@
     },
     {
       "path": "config/scripts/desktop-distribution/runtime-verification/electron-builder-config.test.mjs",
-      "sha256": "22c8ddf8b7c276dab02c1ff812c4bf0764dbe2d30c0145d22e87be0339216fb8",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "9d32d2879fa5ebf507995de654db11066a5b7b08d2232e162a06c7138dba8d93",
+      "reason": "Ash M8 release build contract: require compiled profile checkpoint/rollback verification in the desktop asset build, preserving the pinned Orca source hash independently."
     },
     {
       "path": "config/scripts/desktop-distribution/runtime-verification/run-linux-packaged-node-pty-floor-smoke.mjs",
@@ -3218,8 +3223,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "089f039d9890b78aa68799bf28740c7f9258fb77584dcff4ac0089b10dc58eac",
-      "reason": "Ash M8 EX-03: remove general IDE app-plugin contracts and retain Ash boundaries. M8 release safety: add an explicit operator-only offline AppImage staging script without enabling updater installation."
+      "sha256": "99192ff49a9227a92f6c40a7e4036d21eeed153a3400cce4e51dd29e15f2c1ff",
+      "reason": "Ash M8 EX-03: remove general IDE app-plugin contracts and retain Ash boundaries. M8 release: keep offline-only staging disabled for installation and require real compiled CLI checkpoint/rollback smoke after asset builds."
     },
     {
       "path": "pnpm-lock.yaml",
@@ -3448,8 +3453,8 @@
     },
     {
       "path": "config/build-plugins/plain-node-entry-guard.ts",
-      "sha256": "978aabfd717c50d9ba989f937dca91c129ab6dfb056094d81e0ab2c4bd293928",
-      "reason": "Ash M8 EX-03: retire application-plugin build entries while preserving retained service boundaries. M8 release: emit the profile checkpoint and database modules as protected plain-Node entries required by the compiled CLI after the Electron Main build."
+      "sha256": "e5b4ca67a3be53a9579bd9a731f0a2c0f45378f9b36bfa78200753f4cbc2297f",
+      "reason": "Ash M8 EX-03: retire application-plugin build entries while preserving retained service boundaries. M8 release: emit the profile checkpoint, database and document-validation modules as protected plain-Node entries so clean post-Vite CLI recovery and its compiled smoke remain operable."
     },
     {
       "path": "config/flaky-test-pattern-baseline.txt",
@@ -3808,8 +3813,8 @@
     },
     {
       "path": "src/main/persistence/profile-state/profile-state-recovery-copy.ts",
-      "sha256": "580444c445a5060dbe528971fa82964c12cd4a3b6495ded0101151dc55ff9f46",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "205762ed1e2bc7b77caa5924a9bc3a7bf7bb71032fe14e6b3b943a4bb39e22d6",
+      "reason": "Ash M8 recovery hardening: copy quiescent profile-state files from validated single-link descriptors, anchor Linux paths to opened directories, reject untrusted links and changed inodes, accept only the verified macOS /var system alias, enforce byte and shared synchronous-time budgets, and write exclusive outputs with fsync. The macOS clone path remains retired pending descriptor-safe native support."
     },
     {
       "path": "src/main/persistence/profile-state/profile-state-startup-failure.ts",

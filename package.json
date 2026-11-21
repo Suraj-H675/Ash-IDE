@@ -118,7 +118,7 @@
     "smoke:computer": "node config/scripts/runtime-verification/desktop-transport/computer-use-smoke.mjs",
     "verify:computer-native": "node config/scripts/runtime-verification/desktop-transport/verify-computer-native.mjs",
     "verify:cli-bin": "node config/scripts/cli-build/verify-cli-bin.mjs",
-    "verify:built-skills-cli": "node config/scripts/runtime-verification/skills-cli/verify-skills-cli-runtime.cjs out",
+    "verify:built-skills-cli": "node config/scripts/runtime-verification/skills-cli/verify-skills-cli-runtime.cjs out && node config/scripts/runtime-verification/skills-cli/verify-compiled-profile-recovery.cjs out",
     "verify:renderer-boot-graph": "node config/scripts/desktop-build/output-contracts/verify-renderer-boot-graph.mjs",
     "verify:localization-catalogs": "bun config/scripts/localization/catalog-validation/verify-localization-catalogs.mjs",
     "verify:localization-catalog": "node config/scripts/localization/catalog-validation/verify-localization-catalog.mjs",

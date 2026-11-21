@@ -361,6 +361,8 @@ describe('electron-builder config', () => {
       expect(scripts[name], name).not.toMatch(/build:(?:mobile-web|wsl-guest|web-from-renderer)/)
     }
     expect(scripts['build:desktop:assets']).toContain('build:cli:assets')
+    expect(scripts['build:desktop:assets']).toContain('verify:built-skills-cli')
+    expect(scripts['verify:built-skills-cli']).toContain('verify-compiled-profile-recovery.cjs')
     expect(scripts['build:cli:assets']).not.toContain('prepare:cli-output')
     expect(scripts['build:linux']).toContain('build:native')
     expect(scripts['build:linux']).toContain('ensure:electron-runtime')

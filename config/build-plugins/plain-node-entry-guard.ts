@@ -30,6 +30,9 @@ export const CLI_MAIN_ENTRY_NAMES = [
     // Electron build replaces out/main, so they must remain explicit inputs.
     'database',
     'database-recovery',
+    // Compiled profile checkpoint/rollback smoke loads the same document
+    // validator used by real CLI recovery, after Vite replaces out/main.
+    'documents',
     'domain-reader',
     'manual-checkpoint',
     'recovery-command'

@@ -233,5 +233,8 @@ jobs:
             config/scripts/desktop-distribution/runtime-verification/verify-ash-packaged-asar-hygiene.test.mjs \
             config/scripts/desktop-distribution/release/stage-ash-appimage.test.mjs \
             config/scripts/desktop-distribution/release/stage-ash-appimage-cli.test.mjs \
+            src/main/persistence/profile-state/ash-profile-state-descriptor-copy.test.ts \
+            src/cli/handlers/profile-state-recovery-admission.test.ts \
             config/scripts/orcad-distribution/server-bundle/orcad-excluded-artifacts.test.mjs
           node config/scripts/runtime-verification/skills-cli/verify-skills-cli-runtime.cjs out
+          node config/scripts/runtime-verification/skills-cli/verify-compiled-profile-recovery.cjs out

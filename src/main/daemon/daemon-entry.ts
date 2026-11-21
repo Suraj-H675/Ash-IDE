@@ -1,6 +1,6 @@
 import '../memory/host-malloc-tunables-claim'
 import { parseArgs } from './launch/daemon-command-arguments'
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeSync } from 'node:fs'
 import { startDaemon, type DaemonHandle } from './server/daemon-main'
 import { createPtySubprocess } from './pty-subprocess/pty-subprocess'
 import { warmWindowsConptyOnce } from './pty-subprocess/windows-conpty-warmup'
@@ -255,6 +255,11 @@ if (isDirectExecution) {
       // The launcher settles on exit, which can precede IPC delivery; carry occupied status in the exit code.
       process.send?.({ type: 'endpoint-unavailable', reason: err.reason })
     }
-    process.stderr.write(`[daemon] Fatal: ${message}\n`, () => process.exit(exitCode))
+    try {
+      writeSync(2, `[daemon] Fatal: ${message}\n`)
+    } catch {
+      // A closed startup pipe must not replace the intended failure exit code.
+    }
+    process.exit(exitCode)
   })
 }
