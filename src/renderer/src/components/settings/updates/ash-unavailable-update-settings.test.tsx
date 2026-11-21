@@ -9,7 +9,41 @@ const fixture = vi.hoisted(() => ({
   version: vi.fn(async () => '0.0.0-ash-qa'),
   check: vi.fn(),
   download: vi.fn(),
-  install: vi.fn()
+  install: vi.fn(),
+  preflight: vi.fn(async () => ({
+    decision: 'busy' as const,
+    candidateIdentity: {
+      state: 'unavailable' as const,
+      source: 'no-candidate' as const,
+      reason: 'no-staged-candidate' as const
+    },
+    runtime: {
+      observedAtMs: 1,
+      hostOwnership: {
+        state: 'unknown' as const,
+        reason: 'exclusive-host-ownership-unavailable' as const
+      },
+      daemonGenerations: { state: 'known' as const, count: 1 },
+      windows: { state: 'known' as const, count: 1 },
+      ptys: { state: 'known' as const, count: 0 },
+      ptyOwnedAgentSessions: { state: 'known' as const, count: 0 },
+      providerAgentSessions: {
+        state: 'unknown' as const,
+        reason: 'provider-agent-inventory-unavailable' as const
+      },
+      pendingDiskWrites: {
+        state: 'unknown' as const,
+        reason: 'pending-write-census-unavailable' as const
+      }
+    },
+    blockers: [
+      'candidate-not-provided',
+      'gui-window-active',
+      'provider-agent-inventory-unknown',
+      'pending-disk-writes-unknown'
+    ] as const,
+    activationAvailable: false as const
+  }))
 }))
 
 vi.mock('../../../store/index', () => ({
@@ -51,7 +85,7 @@ it.each([
   ['source-build', 'This development build cannot check for or install app updates.'],
   ['not-configured', 'Automatic updates are not configured for this Ash IDE package.']
 ] as const)(
-  'renders honest %s updater unavailability without actionable controls',
+  'renders honest %s updater unavailability with a read-only preflight action',
   async (reason, copy) => {
     fixture.reason = reason
     vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
@@ -62,7 +96,8 @@ it.each([
           getVersion: fixture.version,
           check: fixture.check,
           download: fixture.download,
-          quitAndInstall: fixture.install
+          quitAndInstall: fixture.install,
+          getPreflight: fixture.preflight
         }
       }
     })
@@ -73,11 +108,35 @@ it.each([
       await act(async () => root.render(<GeneralUpdateSettingsSection />))
       expect(host.textContent).toContain('Ash IDE version: 0.0.0-ash-qa')
       expect(host.textContent).toContain(copy)
-      expect(host.querySelectorAll('button')).toHaveLength(0)
+      const diagnosticButton = Array.from(host.querySelectorAll('button')).find((button) =>
+        button.textContent?.includes('Inspect local update blockers')
+      )
+      expect(host.querySelectorAll('button')).toHaveLength(1)
+      expect(diagnosticButton).toBeDefined()
       expect(host.textContent).not.toContain('Remote updater controls')
       expect(host.textContent).not.toContain('Update delay controls')
       expect(host.textContent).not.toContain('Release channel controls')
       expect(fixture.version).toHaveBeenCalledOnce()
+      expect(fixture.check).not.toHaveBeenCalled()
+      expect(fixture.download).not.toHaveBeenCalled()
+      expect(fixture.install).not.toHaveBeenCalled()
+      expect(fixture.preflight).not.toHaveBeenCalled()
+
+      await act(async () => {
+        diagnosticButton?.click()
+      })
+      expect(fixture.preflight).toHaveBeenCalledOnce()
+      expect(host.querySelector('[role="status"][aria-live="polite"]')?.textContent).toContain(
+        'Local update safety inspection complete. Admission: busy.'
+      )
+      expect(host.textContent).toContain('Admission: busy')
+      expect(host.textContent).toContain(
+        'No staged candidate was supplied; no release package was inspected.'
+      )
+      expect(host.textContent).toContain('Provider agent activity could not be fully inventoried.')
+      expect(host.textContent).toContain('Pending disk writes could not be fully inventoried.')
+      expect(host.textContent).toContain('An Ash window is open.')
+      expect(host.textContent).toContain('Activation is unavailable.')
       expect(fixture.check).not.toHaveBeenCalled()
       expect(fixture.download).not.toHaveBeenCalled()
       expect(fixture.install).not.toHaveBeenCalled()

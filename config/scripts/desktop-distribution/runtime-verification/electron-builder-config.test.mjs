@@ -344,6 +344,10 @@ describe('electron-builder config', () => {
     expect(beforePack).not.toMatch(/assertMobileWebBundleBuilt|assertOrcadTemplateBuilt/)
     const afterPack = electronBuilderConfig.afterPack.toString()
     expect(afterPack).not.toMatch(/assertPackagedWebClient|assertPackagedServeSelectionEntry/)
+    expect(afterPack).toContain('createAshPackageInputIdentityClaim')
+    expect(afterPack.indexOf('normalizeLinuxPackagedFilePermissions')).toBeLessThan(
+      afterPack.indexOf('createAshPackageInputIdentityClaim')
+    )
     expect(afterPack).toContain('verifyPackagedMainRuntimeDeps')
     expect(afterPack).toContain('verifyPackagedDaemonEntryBoots')
   })

@@ -13,6 +13,7 @@ import { getUpdateCheckClickOptions, getUpdateCheckHint } from '@/lib/update-che
 import { GeneralRemoteServerUpdates } from '../runtime-environments/updates/GeneralRemoteServerUpdates'
 import { ReleaseChannelSection } from './ReleaseChannelSection'
 import { UpdateDelaySetting } from './UpdateDelaySetting'
+import { UpdatePreflightDiagnostic } from './UpdatePreflightDiagnostic'
 import { formatUpdateDelayDate } from './update-delay-copy'
 import { useNow } from '@/hooks/use-now'
 import { isDelayedUpdatePending } from '../../../../../shared/update-delay'
@@ -78,6 +79,7 @@ export function GeneralUpdateSettingsSection(): React.JSX.Element {
             agent sessions will not be interrupted by an automatic update.
           </p>
         </SearchableSetting>
+        <UpdatePreflightDiagnostic />
       </section>
     )
   }

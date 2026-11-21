@@ -113,6 +113,7 @@ describe.skipIf(process.platform !== 'linux')('offline release staging CLI', () 
     expect(help.status).toBe(0)
     expect(help.stdout).toContain('no installation, no download')
     expect(help.stdout).toContain('manifest version is not an inspected payload version')
+    expect(help.stdout).toContain('input snapshot is only an input claim')
     expect(await readdir(stageRoot)).toEqual([])
   })
 
@@ -122,9 +123,10 @@ describe.skipIf(process.platform !== 'linux')('offline release staging CLI', () 
     const staged = JSON.parse(child.stdout.trim())
     expect(staged.manifestVersion).toBe('0.2.0')
     expect(staged.ashPackageIdentityVerified).toBe(false)
+    expect(staged.candidateIdentity.state).toBe('unverified')
     expect(staged.activationAvailable).toBe(false)
     expect(staged.activationBlockers).toContain(
-      'The signed manifest version is not matched to the packaged Ash application identity.'
+      'The signed manifest or packaging input claim is not matched to the embedded AppImage payload.'
     )
     expect(staged.sha256).toBe(manifest.sha256)
     expect(await readFile(staged.path)).toEqual(bytes)

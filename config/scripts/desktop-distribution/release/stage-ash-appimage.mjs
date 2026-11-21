@@ -13,7 +13,7 @@ const MAX_ARTIFACT_BYTES = 2 * 1024 ** 3
 const MAX_MANIFEST_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000
 const ACTIVATION_BLOCKERS = Object.freeze([
   'No approved Ash release trust root or verified release feed is available.',
-  'The signed manifest version is not matched to the packaged Ash application identity.',
+  'The signed manifest or packaging input claim is not matched to the embedded AppImage payload.',
   'No production AppImage installation destination or versioned slot switch is configured.',
   'No stopped GUI, PTY, and Ash agent-session census or exclusive update maintenance gate is connected.',
   'No complete compatible snapshot covers every mutable Ash state domain.'
@@ -22,6 +22,21 @@ const stableVersion = z
   .string()
   .max(32)
   .regex(/^(0|[1-9]\d{0,8})\.(0|[1-9]\d{0,8})\.(0|[1-9]\d{0,8})$/)
+const packageInputIdentityClaimSchema = z.strictObject({
+  schema: z.literal(1),
+  evidenceKind: z.literal('packaging-input-snapshot'),
+  appId: z.literal('com.ashide.desktop'),
+  productName: z.literal('Ash IDE'),
+  packageName: z.literal('ash-ide'),
+  version: stableVersion,
+  architecture: z.enum(['x64', 'arm64']),
+  sourceCommit: z
+    .string()
+    .regex(/^[a-f0-9]{40}$/)
+    .nullable(),
+  capturedAppAsarSha256: z.string().regex(/^[a-f0-9]{64}$/),
+  capturedCompiledCliPackageJsonSha256: z.string().regex(/^[a-f0-9]{64}$/)
+})
 const manifestSchema = z.strictObject({
   schema: z.literal(1),
   product: z.literal('com.ashide.desktop'),
@@ -34,6 +49,7 @@ const manifestSchema = z.strictObject({
   asset: z.string().max(64),
   size: z.number().int().min(20).max(MAX_ARTIFACT_BYTES),
   sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  packageInputIdentityClaim: packageInputIdentityClaimSchema.optional(),
   issuedAtMs: z.number().int().positive(),
   expiresAtMs: z.number().int().positive()
 })
@@ -84,6 +100,14 @@ function authenticateManifest({ manifestBytes, signature, policy }) {
     throw new Error(
       'Ash release does not match the installed build or is outside its validity period'
     )
+  }
+  if (
+    manifest.packageInputIdentityClaim &&
+    (manifest.packageInputIdentityClaim.appId !== manifest.product ||
+      manifest.packageInputIdentityClaim.version !== manifest.version ||
+      manifest.packageInputIdentityClaim.architecture !== manifest.architecture)
+  ) {
+    throw new Error('Ash signed packaging identity does not match the signed release manifest')
   }
   return { manifest, expected }
 }
@@ -197,10 +221,33 @@ export async function stageAshAppImage({
       }
     }
     durable = true
+    const inputClaim = manifest.packageInputIdentityClaim
     return {
       path: publishedPath,
       manifestVersion: manifest.version,
       sha256: manifest.sha256,
+      candidateIdentity: {
+        state: 'unverified',
+        source: inputClaim ? 'signed-packaging-input-claim' : 'signed-manifest-claim',
+        appIdClaim: manifest.product,
+        productNameClaim: inputClaim?.productName ?? null,
+        versionClaim: manifest.version,
+        architectureClaim: manifest.architecture,
+        artifactSha256: manifest.sha256,
+        artifactSha256Verified: true,
+        reason: 'embedded-appimage-payload-not-inspected',
+        ...(inputClaim
+          ? {
+              packagingInputClaim: {
+                evidenceKind: inputClaim.evidenceKind,
+                sourceCommit: inputClaim.sourceCommit,
+                capturedAppAsarSha256: inputClaim.capturedAppAsarSha256,
+                capturedCompiledCliPackageJsonSha256:
+                  inputClaim.capturedCompiledCliPackageJsonSha256
+              }
+            }
+          : {})
+      },
       ashPackageIdentityVerified: false,
       activationAvailable: false,
       activationBlockers: ACTIVATION_BLOCKERS

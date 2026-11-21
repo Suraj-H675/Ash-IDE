@@ -10,6 +10,7 @@ function unavailable(): Promise<never> {
 export const updaterApi = {
   getStatus: () => ipcRenderer.invoke('updater:getStatus'),
   getVersion: () => ipcRenderer.invoke('updater:getVersion'),
+  getPreflight: () => ipcRenderer.invoke('updater:getPreflight'),
   check: unavailable,
   download: unavailable,
   dismissNudge: unavailable,

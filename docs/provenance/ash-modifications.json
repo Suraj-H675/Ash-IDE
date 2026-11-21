@@ -2223,8 +2223,8 @@
     },
     {
       "path": "src/renderer/src/components/settings/updates/GeneralUpdateSettingsSection.tsx",
-      "sha256": "31b4c174e4b7ed8061cf058980671aeabf1f0603653aa21c8d28317412984dd4",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "ad2a366cb8447c134ebce404c47822213b479399d8952f78023fcdcbd8294747",
+      "reason": "Ash M8: expose the read-only local update preflight in the existing unavailable update settings."
     },
     {
       "path": "src/renderer/src/components/settings/voice/VoicePane.tsx",
@@ -2988,8 +2988,8 @@
     },
     {
       "path": "config/electron-builder.config.cjs",
-      "sha256": "a381c945e994bfb46a1f35a81c90953892ce7ad2a1575e7fb561eab356997ac6",
-      "reason": "Ash M8 EX-03: retire application-plugin build inputs and verify the retired executable and resource paths stay out of Ash packages."
+      "sha256": "e29acc80bde458234305535563a70f973aea90df4f71b451799eccfae0b13590",
+      "reason": "Ash M8 EX-03: retire application-plugin build inputs and verify the retired executable and resource paths stay out of Ash packages. Ash M8 PK-05 preflight: generate a bounded Linux package input-identity claim from captured app.asar and compiled CLI bytes; the claim does not verify a candidate AppImage payload."
     },
     {
       "path": "config/packaged-runtime-node-modules.cjs",
@@ -3028,8 +3028,8 @@
     },
     {
       "path": "config/scripts/desktop-distribution/runtime-verification/electron-builder-config.test.mjs",
-      "sha256": "9d32d2879fa5ebf507995de654db11066a5b7b08d2232e162a06c7138dba8d93",
-      "reason": "Ash M8 release build contract: require compiled profile checkpoint/rollback verification in the desktop asset build, preserving the pinned Orca source hash independently."
+      "sha256": "f27f2ea7b3418ba06e6ae2d51aadcecb3ca34e278a18dad303183bfa14ee49dc",
+      "reason": "Ash M8 release build contract: require compiled profile checkpoint/rollback verification in the desktop asset build, preserving the pinned Orca source hash independently. Ash M8 PK-05: assert that Linux afterPack generates the package input-identity claim after package finalization."
     },
     {
       "path": "config/scripts/desktop-distribution/runtime-verification/run-linux-packaged-node-pty-floor-smoke.mjs",
@@ -3873,8 +3873,8 @@
     },
     {
       "path": "src/preload/api/updater-bridge.ts",
-      "sha256": "b8fb514b500b7ca4aaefa96e6c1759fbd9c7c5fd5331c36566eb46c639e02772",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "62bb8a9365ad239dce8b02eb8883fd53d2a7b98d5e5a92205c8b66f7a2ffe621",
+      "reason": "Ash M8: expose only the read-only update preflight IPC call alongside the existing unavailable updater status and version reads."
     },
     {
       "path": "src/renderer/src/i18n/en-runtime-required.json",
@@ -3905,6 +3905,21 @@
       "path": "src/cli/specs/profile-state.test.ts",
       "sha256": "de7d006e78e4f2564e5247f682dab347bb2af232f0c1c631dfd06acb28c0c440",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/daemon/providers/adapter/daemon-pty-session-inventory.ts",
+      "sha256": "4721f887efb589b9bcd7e52e43d5a80230d52a72f0ec1320dea8f17663c33407",
+      "reason": "Ash M8: add an authenticated already-connected session inventory for read-only update deferral; never reconnect, stop, or mutate PTYs."
+    },
+    {
+      "path": "src/preload/api/updater-api.ts",
+      "sha256": "4dffc44210d4b6330acfe87a26a2bcc42c58dfb3169722535e01577236c4c34e",
+      "reason": "Ash M8: expose a typed read-only desktop update preflight result without adding installation or restart methods."
+    },
+    {
+      "path": "src/renderer/src/web/preload-api/web-updater-api.ts",
+      "sha256": "128652af67f39b4c66ef259043d2f6128f13f1b6d3b794ee356d1645a7c3fd00",
+      "reason": "Ash M8: reject the desktop-only runtime census from the web preload instead of fabricating desktop process state."
     }
   ]
 }

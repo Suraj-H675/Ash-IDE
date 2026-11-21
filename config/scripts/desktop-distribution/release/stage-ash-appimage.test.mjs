@@ -1,4 +1,5 @@
 import { createHash, generateKeyPairSync, sign } from 'node:crypto'
+import { createReadStream } from 'node:fs'
 import {
   chmod,
   link,
@@ -7,8 +8,8 @@ import {
   readFile,
   readdir,
   rm,
-  stat,
   symlink,
+  stat,
   writeFile
 } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -47,6 +48,18 @@ beforeEach(async () => {
     asset: basename,
     size: artifact.length,
     sha256: createHash('sha256').update(artifact).digest('hex'),
+    packageInputIdentityClaim: {
+      schema: 1,
+      evidenceKind: 'packaging-input-snapshot',
+      appId: 'com.ashide.desktop',
+      productName: 'Ash IDE',
+      packageName: 'ash-ide',
+      version: '0.2.0',
+      architecture: 'x64',
+      sourceCommit: 'a'.repeat(40),
+      capturedAppAsarSha256: 'b'.repeat(64),
+      capturedCompiledCliPackageJsonSha256: 'c'.repeat(64)
+    },
     issuedAtMs: Date.now() - 1000,
     expiresAtMs: Date.now() + 60_000
   }
@@ -68,17 +81,83 @@ function stage(fixture = manifest, overrides = {}, key = privateKey) {
   })
 }
 
+async function sha256File(path) {
+  const hash = createHash('sha256')
+  for await (const chunk of createReadStream(path)) {
+    hash.update(chunk)
+  }
+  return hash.digest('hex')
+}
+
 describe.skipIf(process.platform !== 'linux')('offline Ash AppImage admission', () => {
+  it.skipIf(
+    !process.env.ASH_M8_REAL_APPIMAGE_FIXTURE || !process.env.ASH_M8_REAL_PACKAGE_IDENTITY_PATH
+  )('stages genuine Ash AppImage bytes while keeping signed identity unverified', async () => {
+    const realArtifactPath = process.env.ASH_M8_REAL_APPIMAGE_FIXTURE
+    const packageIdentity = JSON.parse(
+      await readFile(process.env.ASH_M8_REAL_PACKAGE_IDENTITY_PATH, 'utf8')
+    )
+    const before = await stat(realArtifactPath)
+    const digest = await sha256File(realArtifactPath)
+    const realManifest = {
+      ...manifest,
+      version: packageIdentity.version,
+      tag: `v${packageIdentity.version}`,
+      asset:
+        packageIdentity.architecture === 'arm64'
+          ? 'ash-ide-linux-arm64.AppImage'
+          : 'ash-ide-linux.AppImage',
+      size: before.size,
+      sha256: digest,
+      packageInputIdentityClaim: packageIdentity
+    }
+    const staged = await stage(realManifest, {
+      artifactPath: realArtifactPath,
+      // This fixture is staged against a disposable older-version policy, not
+      // the version of the workstation's actual installed application.
+      policy: { publicKey, architecture: packageIdentity.architecture, installedVersion: '0.0.0' }
+    })
+
+    expect(staged.candidateIdentity).toMatchObject({
+      state: 'unverified',
+      source: 'signed-packaging-input-claim',
+      artifactSha256: digest,
+      artifactSha256Verified: true,
+      reason: 'embedded-appimage-payload-not-inspected'
+    })
+    expect(staged.ashPackageIdentityVerified).toBe(false)
+    expect(staged.activationAvailable).toBe(false)
+    expect(await sha256File(staged.path)).toBe(digest)
+    expect(await sha256File(realArtifactPath)).toBe(digest)
+  })
+
   it('publishes the exact verified bytes privately without executing or altering the input', async () => {
     const staged = await stage()
     expect(staged).toMatchObject({
       manifestVersion: '0.2.0',
       sha256: manifest.sha256,
+      candidateIdentity: {
+        state: 'unverified',
+        source: 'signed-packaging-input-claim',
+        appIdClaim: 'com.ashide.desktop',
+        productNameClaim: 'Ash IDE',
+        versionClaim: '0.2.0',
+        architectureClaim: 'x64',
+        artifactSha256: manifest.sha256,
+        artifactSha256Verified: true,
+        reason: 'embedded-appimage-payload-not-inspected',
+        packagingInputClaim: {
+          evidenceKind: 'packaging-input-snapshot',
+          sourceCommit: 'a'.repeat(40),
+          capturedAppAsarSha256: 'b'.repeat(64),
+          capturedCompiledCliPackageJsonSha256: 'c'.repeat(64)
+        }
+      },
       ashPackageIdentityVerified: false,
       activationAvailable: false,
       activationBlockers: expect.arrayContaining([
         expect.stringMatching(
-          /manifest version is not matched to the packaged Ash application identity/
+          /packaging input claim is not matched to the embedded AppImage payload/
         ),
         expect.stringMatching(/stopped GUI, PTY, and Ash agent-session census/),
         expect.stringMatching(/agent-session census/),
@@ -140,6 +219,54 @@ describe.skipIf(process.platform !== 'linux')('offline Ash AppImage admission', 
   ])('rejects invalid signed %s (%s)', async (field, value) => {
     await expect(stage({ ...manifest, [field]: value })).rejects.toThrow()
     expect(await readdir(stageRoot)).toEqual([])
+  })
+
+  it('rejects signed packaging identity claims that disagree with the release manifest', async () => {
+    await expect(
+      stage({
+        ...manifest,
+        packageInputIdentityClaim: {
+          ...manifest.packageInputIdentityClaim,
+          evidenceKind: 'final-appimage-payload'
+        }
+      })
+    ).rejects.toThrow()
+    await expect(
+      stage({
+        ...manifest,
+        packageInputIdentityClaim: {
+          ...manifest.packageInputIdentityClaim,
+          version: '0.3.0'
+        }
+      })
+    ).rejects.toThrow(/does not match the signed release manifest/)
+    await expect(
+      stage({
+        ...manifest,
+        packageInputIdentityClaim: {
+          ...manifest.packageInputIdentityClaim,
+          productName: 'Orca'
+        }
+      })
+    ).rejects.toThrow()
+    await expect(
+      stage({
+        ...manifest,
+        packageInputIdentityClaim: {
+          ...manifest.packageInputIdentityClaim,
+          appId: 'com.stably.os'
+        }
+      })
+    ).rejects.toThrow()
+    expect(await readdir(stageRoot)).toEqual([])
+  })
+
+  it('keeps even signed matching packaging metadata unverified without inspecting the AppImage payload', async () => {
+    const staged = await stage()
+    expect(staged.candidateIdentity.state).toBe('unverified')
+    expect(staged.candidateIdentity.reason).toBe('embedded-appimage-payload-not-inspected')
+    expect(staged.ashPackageIdentityVerified).toBe(false)
+    expect(staged.activationAvailable).toBe(false)
   })
 
   it('rejects same-size tampering, certified wrong CPU and unsigned filename impersonation', async () => {

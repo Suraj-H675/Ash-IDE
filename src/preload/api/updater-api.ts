@@ -5,10 +5,13 @@ import type {
   UpdateStatus
 } from '../../shared/update-status-types'
 import type { ReleaseChannel } from '../../shared/release-channel'
+import type { UpdatePreflightReport } from '../../shared/update-preflight-types'
 
 export type UpdaterApi = {
   getVersion: () => Promise<string>
   getStatus: () => Promise<UpdateStatus>
+  /** Read-only local census. It never makes an update available or interrupts runtime work. */
+  getPreflight: () => Promise<UpdatePreflightReport>
   check: (options?: UpdateCheckOptions) => Promise<void>
   download: () => Promise<void>
   quitAndInstall: () => Promise<void>

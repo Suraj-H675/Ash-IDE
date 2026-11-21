@@ -83,6 +83,9 @@ const {
 const {
   assertAshLocalPackaging
 } = require('./scripts/desktop-distribution/ash-local-packaging.cjs')
+const {
+  createAshPackageInputIdentityClaim
+} = require('./scripts/desktop-distribution/release/ash-package-input-identity.cjs')
 
 assertAshLocalPackaging(process.env, process.platform)
 
@@ -492,6 +495,14 @@ module.exports = {
       // 0777/0666 modes from Electron's zip; sandbox setuid is installed only
       // by our narrowly scoped package postinstall script.
       normalizeLinuxPackagedFilePermissions(context.appOutDir)
+      await createAshPackageInputIdentityClaim({
+        resourcesDir,
+        appId,
+        productName: context.packager.appInfo.productName,
+        version: context.packager.appInfo.version,
+        architecture: { 1: 'x64', 3: 'arm64' }[context.arch],
+        sourceCommit: packagedSourceCommit()
+      })
     }
   },
   win: {
@@ -704,6 +715,19 @@ function stampPackagedCliVersion(resourcesDir, version) {
   }
   const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
   writeFileSync(packageJsonPath, `${JSON.stringify({ ...packageJson, version }, null, 2)}\n`)
+}
+
+function packagedSourceCommit() {
+  try {
+    const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+    const dirty = execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim()
+    const configured = process.env.ASH_BUILD_COMMIT || process.env.GITHUB_SHA
+    return /^[a-f0-9]{40}$/.test(head) && !dirty && (!configured || configured === head)
+      ? head
+      : null
+  } catch {
+    return null
+  }
 }
 
 function chmodUnixCliLaunchers(resourcesDir, electronPlatformName) {

@@ -5,9 +5,11 @@ import { noopUnsubscribe } from './web-storage'
 export function createUpdaterApi(): NonNullable<Partial<PreloadApi>['updater']> {
   // Only desktop main can produce Linux install recovery; reject fake web results. Allocate each Error at the caller for its stack.
   const desktopOnlyMessage = 'Linux package install recovery is only available in the desktop app.'
+  const preflightMessage = 'Update runtime preflight is only available in the desktop app.'
   return {
     getVersion: () => Promise.resolve('web'),
     getStatus: () => Promise.resolve({ state: 'idle' } as never),
+    getPreflight: () => Promise.reject(new Error(preflightMessage)),
     check: () => Promise.resolve(),
     download: () => Promise.resolve(),
     quitAndInstall: () => Promise.resolve(),

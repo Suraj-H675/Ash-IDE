@@ -21,6 +21,7 @@ const USAGE = [
   'Signature is exactly 64 raw Ed25519 bytes over the original manifest file bytes.',
   'Fingerprint is SHA-256 of the exact PEM file bytes; authenticate it independently.',
   'Key and manifest input files must be regular, single-link files; symlinks are refused.',
+  'A signed packaging-input snapshot is only an input claim until the embedded AppImage payload is inspected.',
   'The manifest version is not an inspected payload version; activation is unavailable.'
 ].join('\n')
 

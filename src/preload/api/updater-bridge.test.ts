@@ -10,6 +10,7 @@ vi.mock('electron', () => ({ ipcRenderer: ipc }))
 it('sends only read-only Ash updater IPC and rejects compatibility calls without restart side effects', async () => {
   await updaterApi.getStatus()
   await updaterApi.getVersion()
+  await updaterApi.getPreflight()
   for (const call of [
     updaterApi.check,
     updaterApi.download,
@@ -26,5 +27,9 @@ it('sends only read-only Ash updater IPC and rejects compatibility calls without
     channel: 'stable',
     message: 'Automatic Ash IDE updates are unavailable.'
   })
-  expect(ipc.invoke.mock.calls).toEqual([['updater:getStatus'], ['updater:getVersion']])
+  expect(ipc.invoke.mock.calls).toEqual([
+    ['updater:getStatus'],
+    ['updater:getVersion'],
+    ['updater:getPreflight']
+  ])
 })

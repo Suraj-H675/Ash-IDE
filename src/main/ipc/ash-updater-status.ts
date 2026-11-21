@@ -1,20 +1,19 @@
-import { app, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
+import { NO_STAGED_UPDATE_CANDIDATE, assessUpdatePreflight } from '../updater/update-preflight'
+import { collectAshUpdateRuntimeCensus } from '../updater/update-runtime-census'
+import type { UpdatePreflightReport } from '../../shared/update-preflight-types'
 import type { UpdateStatus } from '../../shared/update-status-types'
 import { getTrustedUIRendererWebContents } from './ui'
 
-/**
- * Ash currently has no verified packaged-update/rollback pipeline. Expose the
- * true availability and installed version without registering the inherited
- * Orca check, download, install, or release-channel handlers.
- *
- * When Ash's own updater is accepted, replace this read-only boundary with a
- * trusted, session-safe Ash release implementation.
- */
 export function registerAshUpdaterReadOnlyHandlers(): void {
-  ipcMain.handle('updater:getStatus', (event): UpdateStatus => {
+  const assertTrustedSender = (event: { sender: unknown }) => {
     if (getTrustedUIRendererWebContents() !== event.sender) {
       throw new Error('Unauthorized Ash updater status sender')
     }
+  }
+
+  ipcMain.handle('updater:getStatus', (event): UpdateStatus => {
+    assertTrustedSender(event)
     return {
       state: 'unavailable',
       reason: app.isPackaged ? 'not-configured' : 'source-build'
@@ -22,9 +21,13 @@ export function registerAshUpdaterReadOnlyHandlers(): void {
   })
 
   ipcMain.handle('updater:getVersion', (event): string => {
-    if (getTrustedUIRendererWebContents() !== event.sender) {
-      throw new Error('Unauthorized Ash updater version sender')
-    }
+    assertTrustedSender(event)
     return app.getVersion()
+  })
+
+  ipcMain.handle('updater:getPreflight', async (event): Promise<UpdatePreflightReport> => {
+    assertTrustedSender(event)
+    const runtime = await collectAshUpdateRuntimeCensus(() => BrowserWindow.getAllWindows().length)
+    return assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, runtime)
   })
 }
