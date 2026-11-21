@@ -1,0 +1,23 @@
+# M8 — genuine two-version native X11 shared-profile recovery QA
+
+**Scope:** additional diagnostic evidence for PK-06 only; **PK-05, PK-06 and RT-15 remain production NO-GO**. The application updater stays unavailable. This is a manually invoked, QA-only test, not an executable replacement, update activation, production migration, or full-state rollback.
+
+## Native journey and evidence
+
+`config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-cross-version-profile-x11.sh` runs on Linux with a private authenticated Xvfb screen and a disposable home, XDG directories, provider homes, runtime, project and profile. It accepts two genuine built AppImages with caller-pinned exact SHA-256 digests and strictly ascending version pins. It checks the compiled package metadata and packaging-input identity sidecars, but neither those checks nor the offline package-input identity claim establish production release authenticity.
+
+It seeds a single private SQLite profile, takes a checkpoint through the **previous version's packaged CLI**, then performs these real desktop launches against that **same** test profile:
+
+1. **Previous-version AppImage:** real Ash X11 window, authenticated runtime status and Settings RPC, then the test-owned terminal daemon and runtime stop.
+2. **Candidate-version AppImage:** accepts the previously initialized database with all desktop-added default fields, observes a supported settings change, provides a real X11 window and authenticated Settings RPC, then stops its own daemon and runtime.
+3. **Previous-version AppImage again:** after the previous CLI restores its retained private checkpoint, starts the real desktop and reopens the restored SQLite state.
+
+The verifier asserts the actual app versions reported by the authenticated runtime, native Ash window class/process identity, three distinct runtime identities, three successful daemon and runtime stops, private checkpoint permissions, restored supported settings, and retained unrelated fixture state. It cleans up using exact test-owned process IDs; a failure can only signal a daemon after checking its private PID record, process incarnation, owner and matching executable/token path. Private logs remain in the disposable fixture for inspection. A successful run returns zero, and the fixture's daemon PID record must be absent. Neither the normal GUI-close nor `runtime stop` alone is considered a daemon stop.
+
+The authentic local X11 fixture run passed with genuine `0.1.0 → 0.2.0 → 0.1.0` AppImage versions. All stages opened real windows and read settings through the authenticated IPC boundary; SQLite rollback succeeded, all three daemon and runtime stops succeeded, and the final test-owned process audit found no surviving process. The `0.2.0` candidate is a **disposable, version-only dirty-source build** with a null embedded source commit, not a cryptographically sourced or production release. Exact private fixture paths and process receipts are intentionally omitted from public source.
+
+The helper `ash-two-version-native-profile-qa.cjs` performs data/identity assertions and delegates ownership-checked process signaling to `ash-two-version-native-process-cleanup.cjs`. Foundation CI runs `bash -n`, `node --check` and a focused negative regression checking that forged daemon, GUI and Xvfb process identities **cannot** signal unrelated processes. CI **does not** claim to execute private native Xvfb/AppImage fixtures. The negative regression passed locally, and the full real-image native journey passed separately. The native test is a manual command accepting positional arguments `PREVIOUS_APPIMAGE PREVIOUS_SHA256 PREVIOUS_VERSION CANDIDATE_APPIMAGE CANDIDATE_SHA256 CANDIDATE_VERSION`.
+
+## Remaining work
+
+This QA transition did not replace an installed executable, test a signed Ash feed, preserve live provider-native agents during maintenance, compare every mutable state domain, validate arbitrary schema migrations, run actual installed downgrade/recovery, or prove a transactional exclusive admission fence. It cannot satisfy production PK-05/PK-06/RT-15 by itself. A supported real implementation needs full state-domain compatibility and rollback, executable activation/recovery, complete provider/PTY/write exclusion and independent security review before the updater may become available.
