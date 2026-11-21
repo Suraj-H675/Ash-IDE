@@ -13,13 +13,14 @@ import {
   assertPathStillMatches,
   assertPrivateDirectory,
   copyPinnedAppImage,
-  hashPinnedFile,
+  hashOpenedPinnedFile,
   openPinnedRegularFile,
   readExactly
 } from './ash-appimage-embedded-identity-files.mjs'
 import {
   READER_MAX_BUFFER_BYTES,
   READER_VERSION,
+  PINNED_APPIMAGE_FD_PATH,
   assertReaderUnchanged,
   isExpectedAppImage,
   parseSquashfsStats,
@@ -30,23 +31,13 @@ import {
 
 const MAX_LISTING_BYTES = 8 * 1024 * 1024
 
-async function findSquashfsSuperblock(snapshotPath, imageSize) {
-  const pinned = await openPinnedRegularFile(
-    snapshotPath,
-    'Private AppImage snapshot',
-    MAX_APPIMAGE_BYTES,
-    { privateFile: true }
+async function findSquashfsSuperblock(pinnedSnapshot) {
+  const superblock = await scanSquashfsSuperblock(
+    (position, length) => readExactly(pinnedSnapshot.handle, length, position),
+    Number(pinnedSnapshot.info.size)
   )
-  try {
-    const superblock = await scanSquashfsSuperblock(
-      (position, length) => readExactly(pinned.handle, length, position),
-      imageSize
-    )
-    await assertPathStillMatches(snapshotPath, pinned, 'Private AppImage snapshot')
-    return superblock
-  } finally {
-    await pinned.handle.close()
-  }
+  await assertPathStillMatches(pinnedSnapshot.path, pinnedSnapshot, 'Private AppImage snapshot')
+  return superblock
 }
 
 export async function verifyAshAppImageEmbeddedIdentity({
@@ -76,6 +67,7 @@ export async function verifyAshAppImageEmbeddedIdentity({
 
   const workRoot = await mkdtemp(join(tmpdir(), 'ash-appimage-identity-qa-'))
   let pinnedArtifact
+  let pinnedSnapshot
   let reader
   try {
     await assertPrivateDirectory(workRoot, 'AppImage QA scratch directory')
@@ -84,29 +76,33 @@ export async function verifyAshAppImageEmbeddedIdentity({
     if (!isExpectedAppImage(pinnedArtifact.header, architecture)) {
       throw new Error('AppImage ELF header does not match the expected architecture')
     }
-    const beforeDigest = await hashPinnedFile(
+    pinnedSnapshot = await openPinnedRegularFile(
       snapshotPath,
       'Private AppImage snapshot',
-      MAX_APPIMAGE_BYTES
+      MAX_APPIMAGE_BYTES,
+      { privateFile: true }
     )
+    const beforeDigest = await hashOpenedPinnedFile(pinnedSnapshot, 'Private AppImage snapshot')
     if (beforeDigest !== expectedSha256) {
       throw new Error('Private AppImage snapshot failed its pre-inspection SHA-256 check')
     }
 
-    const superblock = await findSquashfsSuperblock(snapshotPath, Number(pinnedArtifact.info.size))
+    const superblock = await findSquashfsSuperblock(pinnedSnapshot)
     reader = await verifyReader(readerPath)
     const statOutput = runReader(
       reader,
-      squashfsArgs(superblock.offset, '-stat', snapshotPath),
+      squashfsArgs(superblock.offset, '-stat', PINNED_APPIMAGE_FD_PATH),
       READER_MAX_BUFFER_BYTES,
-      workRoot
+      workRoot,
+      pinnedSnapshot
     )
     parseSquashfsStats(statOutput, superblock)
     const listingOutput = runReader(
       reader,
-      squashfsArgs(superblock.offset, '-lln', snapshotPath),
+      squashfsArgs(superblock.offset, '-lln', PINNED_APPIMAGE_FD_PATH),
       MAX_LISTING_BYTES,
-      workRoot
+      workRoot,
+      pinnedSnapshot
     )
     const entries = parseSquashfsListing(listingOutput, superblock.inodeCount)
     const extracted = new Map()
@@ -114,9 +110,10 @@ export async function verifyAshAppImageEmbeddedIdentity({
       const entry = entries.get(target)
       const output = runReader(
         reader,
-        squashfsArgs(superblock.offset, '-cat', snapshotPath, target),
+        squashfsArgs(superblock.offset, '-cat', PINNED_APPIMAGE_FD_PATH, target),
         Math.min(maxBytes + 1, entry.size + 1),
-        workRoot
+        workRoot,
+        pinnedSnapshot
       )
       if (output.length !== entry.size) {
         throw new Error(`SquashFS reader returned an unexpected byte count for ${target}`)
@@ -125,11 +122,7 @@ export async function verifyAshAppImageEmbeddedIdentity({
     }
     const identity = await verifyEmbeddedIdentityFiles(extracted, architecture)
     await assertReaderUnchanged(reader)
-    const afterDigest = await hashPinnedFile(
-      snapshotPath,
-      'Private AppImage snapshot',
-      MAX_APPIMAGE_BYTES
-    )
+    const afterDigest = await hashOpenedPinnedFile(pinnedSnapshot, 'Private AppImage snapshot')
     if (afterDigest !== expectedSha256 || afterDigest !== beforeDigest) {
       throw new Error('Private AppImage snapshot changed during embedded identity inspection')
     }
@@ -190,9 +183,13 @@ export async function verifyAshAppImageEmbeddedIdentity({
       await reader?.handle.close()
     } finally {
       try {
-        await pinnedArtifact?.handle.close()
+        await pinnedSnapshot?.handle.close()
       } finally {
-        await rm(workRoot, { recursive: true, force: true })
+        try {
+          await pinnedArtifact?.handle.close()
+        } finally {
+          await rm(workRoot, { recursive: true, force: true })
+        }
       }
     }
   }

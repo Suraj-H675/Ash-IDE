@@ -27,10 +27,12 @@ import {
   verifyEmbeddedIdentityFiles
 } from './ash-appimage-embedded-identity-payload.mjs'
 import {
+  MAX_APPIMAGE_BYTES,
   assertPathStillMatches,
   openPinnedRegularFile
 } from './ash-appimage-embedded-identity-files.mjs'
 import {
+  PINNED_APPIMAGE_FD_PATH,
   assertReaderUnchanged,
   runReader,
   verifyReader
@@ -372,19 +374,60 @@ describe.skipIf(!hasRealFixtures)('real AppImage embedded identity QA', () => {
     await copyFile(readerPath, localReader)
     await chmod(localReader, 0o700)
     const pinned = await verifyReader(localReader)
+    const pinnedSnapshot = await openPinnedRegularFile(realFixture, 'AppImage', MAX_APPIMAGE_BYTES)
     try {
       await rename(localReader, join(root, 'old-reader-inode'))
       await writeFile(localReader, Buffer.from('not an executable'), { mode: 0o700 })
       const output = runReader(
         pinned,
-        ['-offset', '944632', '-mem', '32M', '-processors', '1', '-stat', realFixture],
+        ['-offset', '944632', '-mem', '32M', '-processors', '1', '-stat', PINNED_APPIMAGE_FD_PATH],
         64 * 1024,
-        root
+        root,
+        pinnedSnapshot
       )
       expect(output.toString('utf8')).toMatch(/^Found a valid SQUASHFS 4:0 superblock/)
       await expect(assertReaderUnchanged(pinned)).rejects.toThrow(/changed while being inspected/)
     } finally {
+      await pinnedSnapshot.handle.close()
       await pinned.handle.close()
+    }
+  })
+
+  it('reads the pinned AppImage inode rather than a substituted scratch pathname', async () => {
+    const snapshotPath = join(root, 'private-snapshot.AppImage')
+    await copyFile(realFixture, snapshotPath)
+    await chmod(snapshotPath, 0o600)
+    const snapshot = await openPinnedRegularFile(
+      snapshotPath,
+      'Private AppImage snapshot',
+      MAX_APPIMAGE_BYTES,
+      { privateFile: true }
+    )
+    const reader = await verifyReader(readerPath)
+    try {
+      await rename(snapshotPath, join(root, 'original-snapshot-inode'))
+      await writeFile(snapshotPath, Buffer.from('attacker-controlled replacement'), { mode: 0o600 })
+      const args = [
+        '-offset',
+        '944632',
+        '-mem',
+        '32M',
+        '-processors',
+        '1',
+        '-stat',
+        PINNED_APPIMAGE_FD_PATH
+      ]
+      expect(() =>
+        runReader(reader, [...args.slice(0, -1), snapshotPath], 64 * 1024, root, snapshot)
+      ).toThrow(/pinned AppImage snapshot descriptor/)
+      const output = runReader(reader, args, 64 * 1024, root, snapshot)
+      expect(output.toString('utf8')).toMatch(/^Found a valid SQUASHFS 4:0 superblock/)
+      await expect(
+        assertPathStillMatches(snapshotPath, snapshot, 'Private AppImage snapshot')
+      ).rejects.toThrow(/changed while being inspected/)
+    } finally {
+      await reader.handle.close()
+      await snapshot.handle.close()
     }
   })
 

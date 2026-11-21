@@ -10,21 +10,26 @@ import {
 
 const READER_SHA256 = '461e1fd9eac39c12e673042807459985636030d5557319343fc3a6ed4ba1677c'
 export const READER_VERSION = '4.7.5'
+export const PINNED_APPIMAGE_FD_PATH = '/proc/self/fd/4'
 const MAX_READER_BYTES = 2 * 1024 * 1024
 const READER_TIMEOUT_MS = 10_000
 export const READER_MAX_BUFFER_BYTES = 64 * 1024
 const ELF_MACHINES = Object.freeze({ x64: 62, arm64: 183 })
 
 /** Execute the authenticated inode, without looking up its pathname again. */
-export function runReader(reader, args, maxBuffer, cwd) {
+export function runReader(reader, args, maxBuffer, cwd, pinnedSnapshot) {
+  if (!pinnedSnapshot?.handle || !args.includes(PINNED_APPIMAGE_FD_PATH)) {
+    throw new Error('SquashFS reader requires the pinned AppImage snapshot descriptor')
+  }
   const result = spawnSync('/proc/self/fd/3', args, {
     cwd,
     env: { LC_ALL: 'C' },
     encoding: null,
     maxBuffer,
     shell: false,
-    // Child fd 3 is a duplicate of the opened, hash-verified reader inode.
-    stdio: ['ignore', 'pipe', 'pipe', reader.handle.fd],
+    // Child fds 3 and 4 refer to the pinned reader and snapshot inodes.
+    // Never re-resolve a mutable scratch pathname within the native reader.
+    stdio: ['ignore', 'pipe', 'pipe', reader.handle.fd, pinnedSnapshot.handle.fd],
     timeout: READER_TIMEOUT_MS,
     windowsHide: true
   })

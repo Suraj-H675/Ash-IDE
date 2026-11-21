@@ -149,30 +149,25 @@ export async function copyPinnedAppImage(artifactPath, expectedSha256, snapshotP
   }
 }
 
-export async function hashPinnedFile(path, label, maxBytes) {
-  const pinned = await openPinnedRegularFile(path, label, maxBytes, { privateFile: true })
+export async function hashOpenedPinnedFile(pinned, label) {
   const hash = createHash('sha256')
   const buffer = Buffer.alloc(COPY_CHUNK_BYTES)
   let offset = 0
-  try {
-    while (offset < Number(pinned.info.size)) {
-      const { bytesRead } = await pinned.handle.read(
-        buffer,
-        0,
-        Math.min(buffer.length, Number(pinned.info.size) - offset),
-        offset
-      )
-      if (bytesRead === 0) {
-        throw new Error(`${label} changed while being hashed`)
-      }
-      hash.update(buffer.subarray(0, bytesRead))
-      offset += bytesRead
+  while (offset < Number(pinned.info.size)) {
+    const { bytesRead } = await pinned.handle.read(
+      buffer,
+      0,
+      Math.min(buffer.length, Number(pinned.info.size) - offset),
+      offset
+    )
+    if (bytesRead === 0) {
+      throw new Error(`${label} changed while being hashed`)
     }
-    await assertPathStillMatches(path, pinned, label)
-    return hash.digest('hex')
-  } finally {
-    await pinned.handle.close()
+    hash.update(buffer.subarray(0, bytesRead))
+    offset += bytesRead
   }
+  await assertPathStillMatches(pinned.path, pinned, label)
+  return hash.digest('hex')
 }
 
 export async function readExactly(handle, length, position) {
