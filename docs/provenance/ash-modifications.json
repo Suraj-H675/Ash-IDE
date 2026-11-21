@@ -3453,8 +3453,8 @@
     },
     {
       "path": "config/build-plugins/plain-node-entry-guard.ts",
-      "sha256": "e5b4ca67a3be53a9579bd9a731f0a2c0f45378f9b36bfa78200753f4cbc2297f",
-      "reason": "Ash M8 EX-03: retire application-plugin build entries while preserving retained service boundaries. M8 release: emit the profile checkpoint, database and document-validation modules as protected plain-Node entries so clean post-Vite CLI recovery and its compiled smoke remain operable."
+      "sha256": "c81d9aeba616593caa96697dd8b4d8faf34124ad446c7f174ff5982c724a97d7",
+      "reason": "Ash M8 EX-03: retire application-plugin build entries while preserving retained service boundaries. M8 release: emit the profile checkpoint, database and document-validation modules as protected plain-Node entries so clean post-Vite CLI recovery and its compiled smoke remain operable. M8 landing: extract the daemon-entry smoke executor without changing the protected Rollup input contract."
     },
     {
       "path": "config/flaky-test-pattern-baseline.txt",
@@ -3908,8 +3908,8 @@
     },
     {
       "path": "src/main/daemon/providers/adapter/daemon-pty-session-inventory.ts",
-      "sha256": "4721f887efb589b9bcd7e52e43d5a80230d52a72f0ec1320dea8f17663c33407",
-      "reason": "Ash M8: add an authenticated already-connected session inventory for read-only update deferral; never reconnect, stop, or mutate PTYs."
+      "sha256": "96da0226e8e6dc450ff2ba3fd36619c12368c08b272bf1ccab549f018d6b5111",
+      "reason": "Ash M8: add an authenticated already-connected session inventory for read-only update deferral; never reconnect, stop, or mutate PTYs. M8 landing: move the read-only census payload parser into a focused Ash-owned module without changing admission semantics."
     },
     {
       "path": "src/preload/api/updater-api.ts",
