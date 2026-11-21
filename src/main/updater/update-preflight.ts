@@ -13,7 +13,7 @@ export const NO_STAGED_UPDATE_CANDIDATE: CandidatePackageIdentityEvidence = {
 }
 
 function isActive(evidence: UpdatePreflightCount): boolean {
-  return evidence.state === 'known' && evidence.count > 0
+  return evidence.state === 'known' ? evidence.count > 0 : evidence.lowerBound > 0
 }
 
 export function assessUpdatePreflight(
@@ -43,12 +43,14 @@ export function assessUpdatePreflight(
   }
   if (runtime.ptys.state === 'unknown') {
     blockers.add('pty-inventory-unknown')
-  } else if (runtime.ptys.count > 0) {
+  }
+  if (isActive(runtime.ptys)) {
     blockers.add('pty-active')
   }
   if (runtime.ptyOwnedAgentSessions.state === 'unknown') {
     blockers.add('agent-owner-inventory-unknown')
-  } else if (runtime.ptyOwnedAgentSessions.count > 0) {
+  }
+  if (isActive(runtime.ptyOwnedAgentSessions)) {
     blockers.add('agent-session-active')
   }
   if (runtime.providerAgentSessions.state === 'unknown') {

@@ -1,0 +1,26 @@
+# M8 update runtime-census and safe deferral proof
+
+**Scope:** `RT-15` diagnostic progress only. `PK-05`, `PK-06`, and `RT-15` remain **NO-GO** for production update activation. This milestone does not install, download, stop sessions, or authorize updates. `activationAvailable` remains `false`.
+
+## Implemented behavior
+
+The authenticated connected-daemon inventory now retains a verified lower bound on live PTYs and PTY-owned agents when another daemon, fallback, or provider inventory is incomplete. An observed PTY remains a `busy` blocker after all GUI windows close, without treating unobserved sessions as absent. Unknown coverage remains `unknown`; lack of a window is never evidence of host quiescence. The Settings update diagnostic distinguishes an unknown count from `At least N observed`, shows snapshot observation time, and gives qualified session guidance.
+
+The census continues to report host exclusivity, provider-native agent sessions, and pending writes as unknown because Ash does not yet possess a complete authenticated, race-resistant source for them. The updater stays deferred or busy, never available.
+
+## Independent host evidence
+
+- In the Codex sandbox, the real-daemon harness could not bind its disposable Unix socket (`listen EPERM`); that failure was environmental, not a passing integration test.
+- On the connected host, the initial seven-case real-daemon suite ran and exposed **one genuine product defect**: the census rejected a valid fractional daemon start timestamp as non-integer. The real server derives its start time from `Date.now() - process.uptime() * 1000`, which can produce fractional milliseconds. A valid authenticated live PTY was consequently reported as unknown. The validator now accepts positive, finite, bounded fractional timestamps while still comparing authenticated daemon-incarnation fields exactly. A focused regression uses a fractional start timestamp.
+- The corrected connected-daemon suite passed **7/7** on the host, including an authenticated PTY-owned agent remaining `busy` with zero GUI windows. Receipt: `/var/tmp/ash-m8-census-daemon-host-fixed-20261121.log`.
+- The corrected six-file focused suite passed **43/43** across census, updater preflight, IPC, Settings, profile maintenance, and transaction fence tests. Receipt: `/var/tmp/ash-m8-census-focused-host-fixed-20261121.log`.
+- Scoped Oxlint and Oxfmt checks passed. The official pinned Orca source ledger passed: 33,506 upstream records, 784 Ash adaptations, 9,316 documented removals and the unchanged MIT license hash `ff1b611f80580d49f4b97e93a97b24eb050b0671b26b8afe16341fab699112f3`.
+- Node TypeScript typecheck passed (`./node_modules/.bin/tsc --noEmit -p config/tsconfig.node.json --composite false`), as independently observed on the corrected source.
+- Fresh gstack-assisted product review exposed a separate **renderer** TypeScript failure: fixed unknown provider-agent and pending-write reports had no `lowerBound` but the diagnostic formatter accepted only `UpdatePreflightCount`. The first host web typecheck failed with two TS2345 diagnostics; the formatter now explicitly accepts fixed unknown observations without fabricating an activity count. Renderer regression assertions cover their displayed `Unknown` status. The corrected web TypeScript check passed (exit 0): `./node_modules/.bin/tsc --noEmit -p config/tsconfig.web.json --composite false`. Receipt: `/var/tmp/ash-m8-runtime-census-web-tsc-fixed-20261121.log`.
+- The complete `pnpm run build:release:javascript` passed on the corrected source on the connected host, including the compiled CLI closure (1,073 files/three commands), desktop renderer/preload boot checks, and the compiled profile checkpoint/rollback smoke. Receipt: `/var/tmp/ash-m8-runtime-census-release-js-host-20261121.log`. The build emitted non-blocking bundler warnings about chunk sizes/dynamic imports; it was not a native AppImage or GUI runtime test.
+
+## Remaining gates and limitations
+
+The **final corrected-source** seven-file test run passed **50/50**, including the real connected-daemon and Settings tests: `/var/tmp/ash-m8-census-post-webfix-all-20261121.log`. A fresh complete JavaScript release build after the renderer type correction also passed (`pnpm run build:release:javascript`), including compiled CLI verification and profile checkpoint/rollback smoke: `/var/tmp/ash-m8-census-post-webfix-release-js-20261121.log`. The first independent product review correctly identified the two web TypeScript errors; the first security review found no P0/P1/P2 source defects on its pre-correction snapshot. Final-diff acceptance requires explicit review of the last UI/type correction and its test evidence.
+
+A point-in-time PTY count is not a durable maintenance fence. Other provider-native sessions and pending writes may exist, and an active process may exit immediately after observation. No claim of full runtime quiescence, complete update recovery, live-data rollback, or source-trusted embedded AppImage identity is made. The prior M8 storage proof is isolated and not enabled for production installation. Exact final-diff reviews, native GUI/AppImage verification, Git checkpoint, merge and CI status must be recorded separately from their actual receipts; missing evidence does not count as a pass.

@@ -15,7 +15,7 @@ export type UpdatePreflightUnknownReason =
 
 export type UpdatePreflightCount =
   | { state: 'known'; count: number }
-  | { state: 'unknown'; reason: UpdatePreflightUnknownReason }
+  | { state: 'unknown'; reason: UpdatePreflightUnknownReason; lowerBound: number }
 
 export type CandidatePackageIdentityEvidence =
   | {

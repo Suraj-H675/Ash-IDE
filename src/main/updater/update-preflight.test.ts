@@ -87,11 +87,16 @@ describe('safe update preflight decision', () => {
       NO_STAGED_UPDATE_CANDIDATE,
       census({
         hostOwnership: { state: 'unknown', reason: 'exclusive-host-ownership-unavailable' },
-        daemonGenerations: { state: 'unknown', reason: 'daemon-disconnected' },
-        ptys: { state: 'unknown', reason: 'inventory-partial' },
+        daemonGenerations: {
+          state: 'unknown',
+          reason: 'daemon-disconnected',
+          lowerBound: 0
+        },
+        ptys: { state: 'unknown', reason: 'inventory-partial', lowerBound: 0 },
         ptyOwnedAgentSessions: {
           state: 'unknown',
-          reason: 'agent-owner-inventory-incomplete'
+          reason: 'agent-owner-inventory-incomplete',
+          lowerBound: 0
         }
       })
     )
@@ -99,15 +104,48 @@ describe('safe update preflight decision', () => {
     expect(report.decision).toBe('defer')
     expect(report.runtime.daemonGenerations).toEqual({
       state: 'unknown',
-      reason: 'daemon-disconnected'
+      reason: 'daemon-disconnected',
+      lowerBound: 0
     })
-    expect(report.runtime.ptys).toEqual({ state: 'unknown', reason: 'inventory-partial' })
+    expect(report.runtime.ptys).toEqual({
+      state: 'unknown',
+      reason: 'inventory-partial',
+      lowerBound: 0
+    })
     expect(report.blockers).toEqual(
       expect.arrayContaining([
         'host-ownership-unverified',
         'daemon-generation-inventory-unknown',
         'pty-inventory-unknown',
         'agent-owner-inventory-unknown'
+      ])
+    )
+  })
+
+  it('reports busy from a verified lower bound while daemon and owner coverage is incomplete', () => {
+    const report = assessUpdatePreflight(
+      NO_STAGED_UPDATE_CANDIDATE,
+      census({
+        daemonGenerations: { state: 'unknown', reason: 'inventory-partial', lowerBound: 1 },
+        windows: { state: 'known', count: 0 },
+        ptys: { state: 'unknown', reason: 'inventory-partial', lowerBound: 1 },
+        ptyOwnedAgentSessions: {
+          state: 'unknown',
+          reason: 'inventory-partial',
+          lowerBound: 1
+        }
+      })
+    )
+
+    expect(report.decision).toBe('busy')
+    expect(report.activationAvailable).toBe(false)
+    expect(report.blockers).toEqual(
+      expect.arrayContaining([
+        'daemon-generation-inventory-unknown',
+        'pty-inventory-unknown',
+        'pty-active',
+        'agent-owner-inventory-unknown',
+        'agent-session-active'
       ])
     )
   })

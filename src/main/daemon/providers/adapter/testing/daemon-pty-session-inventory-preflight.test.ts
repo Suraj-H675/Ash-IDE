@@ -1,7 +1,12 @@
 import '../../../pty-subprocess/testing/mock-descendant-sweep'
 import { rmSync } from 'node:fs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { DaemonClient } from '../../../transport/client/daemon-client'
+import type { DaemonClient } from '../../../transport/client/daemon-client'
+import {
+  NO_STAGED_UPDATE_CANDIDATE,
+  assessUpdatePreflight
+} from '../../../../updater/update-preflight'
+import { collectUpdateRuntimeCensus } from '../../../../updater/update-runtime-census'
 import {
   createMockSubprocess,
   startDaemonAdapterHarness,
@@ -62,6 +67,55 @@ describe('connected-only daemon session census', () => {
       agentOwnershipComplete: true,
       sessions: [{ sessionId: id, isAlive: true }]
     })
+  })
+
+  it('keeps an authenticated agent PTY busy after the last window closes', async () => {
+    const activeHarness = getHarness()
+    await activeHarness.adapter.spawn({
+      cols: 80,
+      rows: 24,
+      agentSessionEnsure: {
+        claim: {
+          digestVersion: 1,
+          keyId: 'fixture-key',
+          identityDigest: 'a'.repeat(43),
+          worktreeScopeDigest: 'b'.repeat(43),
+          agent: 'codex'
+        },
+        surface: {
+          worktreeId: 'fixture-worktree',
+          tabId: 'fixture-tab',
+          leafId: '11111111-1111-4111-8111-111111111111',
+          terminalHandle: 'term_abcdefgh'
+        }
+      }
+    })
+    let windowCount = 1
+    const census = () =>
+      collectUpdateRuntimeCensus({
+        getWindowCount: () => windowCount,
+        getProvider: () => ({
+          identity: activeHarness.adapter,
+          adapters: [activeHarness.adapter]
+        }),
+        now: () => 1_800_000_000_000
+      })
+
+    const beforeClose = await census()
+    expect(beforeClose.ptys).toEqual({ state: 'known', count: 1 })
+    expect(beforeClose.ptyOwnedAgentSessions).toEqual({ state: 'known', count: 1 })
+
+    windowCount = 0
+    const afterClose = await census()
+    const report = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, afterClose)
+
+    expect(afterClose.windows).toEqual({ state: 'known', count: 0 })
+    expect(afterClose.ptys).toEqual({ state: 'known', count: 1 })
+    expect(afterClose.ptyOwnedAgentSessions).toEqual({ state: 'known', count: 1 })
+    expect(report.decision).toBe('busy')
+    expect(report.blockers).toEqual(expect.arrayContaining(['pty-active', 'agent-session-active']))
+    expect(report.blockers).not.toContain('gui-window-active')
+    expect(report.activationAvailable).toBe(false)
   })
 
   it('rejects an inventory response from a replaced daemon incarnation', async () => {

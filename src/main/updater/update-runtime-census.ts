@@ -1,8 +1,6 @@
 import { sameEndpointIdentity } from '../daemon/endpoint/identity/daemon-endpoint-incarnation'
 import type { DaemonEndpointIdentity } from '../daemon/protocol/daemon-hello-protocol'
 import type { ConnectedSessionInventory } from '../daemon/providers/adapter/daemon-pty-session-inventory'
-import type { DaemonPtyAdapter } from '../daemon/providers/adapter/daemon-pty-adapter'
-import { isAgentSessionOwnerBinding } from '../../shared/agent-session/agent-session-host-authority'
 import { DegradedDaemonPtyProvider } from '../daemon/providers/routing/degraded-daemon-pty-provider'
 import { getAllDaemonAdapters } from '../daemon/providers/lifecycle/daemon-provider-routing'
 import { getDaemonProvider } from '../daemon/providers/lifecycle/daemon-provider-state'
@@ -10,209 +8,38 @@ import type {
   UpdatePreflightUnknownReason,
   UpdateRuntimeCensus
 } from '../../shared/update-preflight-types'
+import {
+  MAX_CENSUS_SESSIONS,
+  censusWithUnknownRuntime,
+  count,
+  hostOwnership,
+  isConnectedInventory,
+  isUnknownInventory,
+  parseFallbackPtyIds,
+  pendingWrites,
+  providerAgentInventory,
+  readWindowCount,
+  sameProvider,
+  stableWindowCount,
+  unknown,
+  validIdentity,
+  withTimeout
+} from './update-runtime-census-evidence'
+import type {
+  UpdateCensusDaemonAdapter,
+  UpdateCensusProvider,
+  UpdateRuntimeCensusDependencies
+} from './update-runtime-census-evidence'
+
+export type {
+  UpdateCensusDaemonAdapter,
+  UpdateCensusProvider,
+  UpdateRuntimeCensusDependencies
+} from './update-runtime-census-evidence'
 
 const MAX_DAEMON_GENERATIONS = 16
-const MAX_CENSUS_SESSIONS = 10_000
 const FALLBACK_LIST_TIMEOUT_MS = 2_000
 const DAEMON_LIST_TIMEOUT_MS = 2_500
-
-export type UpdateCensusDaemonAdapter = Pick<
-  DaemonPtyAdapter,
-  'getDaemonIdentity' | 'getLastAuthenticatedDaemonIdentity' | 'listSessionsIfAlreadyConnected'
->
-
-export type UpdateCensusProvider = {
-  identity: object
-  adapters: readonly UpdateCensusDaemonAdapter[]
-  listFallbackPtyIds?: () => Promise<readonly string[]>
-}
-
-export type UpdateRuntimeCensusDependencies = {
-  getWindowCount: () => number
-  getProvider: () => UpdateCensusProvider | null
-  now?: () => number
-}
-
-function count(value: number): { state: 'known'; count: number } {
-  return { state: 'known', count: value }
-}
-
-function unknown<T extends UpdatePreflightUnknownReason>(
-  reason: T
-): {
-  state: 'unknown'
-  reason: T
-} {
-  return { state: 'unknown', reason }
-}
-
-function providerAgentInventory(): UpdateRuntimeCensus['providerAgentSessions'] {
-  return { state: 'unknown', reason: 'provider-agent-inventory-unavailable' }
-}
-
-function pendingWrites(): UpdateRuntimeCensus['pendingDiskWrites'] {
-  return { state: 'unknown', reason: 'pending-write-census-unavailable' }
-}
-
-function hostOwnership(): UpdateRuntimeCensus['hostOwnership'] {
-  return { state: 'unknown', reason: 'exclusive-host-ownership-unavailable' }
-}
-
-function censusWithUnknownRuntime(
-  observedAtMs: number,
-  windows: UpdateRuntimeCensus['windows'],
-  reason: UpdatePreflightUnknownReason
-): UpdateRuntimeCensus {
-  return {
-    observedAtMs,
-    hostOwnership: hostOwnership(),
-    daemonGenerations: unknown(reason),
-    windows,
-    ptys: unknown(reason),
-    ptyOwnedAgentSessions: unknown(
-      reason === 'provider-agent-inventory-unavailable'
-        ? 'agent-owner-inventory-incomplete'
-        : reason
-    ),
-    providerAgentSessions: providerAgentInventory(),
-    pendingDiskWrites: pendingWrites()
-  }
-}
-
-function isDaemonIdentity(value: unknown): value is DaemonEndpointIdentity {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'pid' in value &&
-    Number.isSafeInteger(value.pid) &&
-    Number(value.pid) > 0 &&
-    'startedAtMs' in value &&
-    Number.isSafeInteger(value.startedAtMs) &&
-    Number(value.startedAtMs) > 0 &&
-    'launchNonce' in value &&
-    typeof value.launchNonce === 'string' &&
-    value.launchNonce.length > 0 &&
-    value.launchNonce.length <= 512
-  )
-}
-
-function validIdentity(adapter: UpdateCensusDaemonAdapter): DaemonEndpointIdentity | null {
-  try {
-    const active = adapter.getDaemonIdentity()
-    const authenticated = adapter.getLastAuthenticatedDaemonIdentity()
-    return isDaemonIdentity(active) &&
-      isDaemonIdentity(authenticated) &&
-      sameEndpointIdentity(active, authenticated)
-      ? active
-      : null
-  } catch {
-    return null
-  }
-}
-
-function sameProvider(
-  current: UpdateCensusProvider | null,
-  expected: UpdateCensusProvider
-): current is UpdateCensusProvider {
-  return (
-    current !== null &&
-    current.identity === expected.identity &&
-    Array.isArray(current.adapters) &&
-    current.adapters.length === expected.adapters.length &&
-    current.adapters.every((adapter, index) => adapter === expected.adapters[index])
-  )
-}
-
-function isConnectedInventory(
-  value: unknown
-): value is Extract<ConnectedSessionInventory, { state: 'complete' }> {
-  if (typeof value !== 'object' || value === null || !('state' in value)) {
-    return false
-  }
-  return (
-    value.state === 'complete' &&
-    'identity' in value &&
-    isDaemonIdentity(value.identity) &&
-    'sessions' in value &&
-    Array.isArray(value.sessions) &&
-    value.sessions.length <= MAX_CENSUS_SESSIONS &&
-    'agentOwnershipComplete' in value &&
-    typeof value.agentOwnershipComplete === 'boolean' &&
-    value.sessions.every(
-      (session) =>
-        typeof session === 'object' &&
-        session !== null &&
-        'sessionId' in session &&
-        typeof session.sessionId === 'string' &&
-        session.sessionId.length > 0 &&
-        session.sessionId.length <= 512 &&
-        'isAlive' in session &&
-        session.isAlive === true &&
-        (!('agentSessionOwners' in session) ||
-          (Array.isArray(session.agentSessionOwners) &&
-            session.agentSessionOwners.every(isAgentSessionOwnerBinding)))
-    )
-  )
-}
-
-function isUnknownInventory(
-  value: unknown
-): value is Extract<ConnectedSessionInventory, { state: 'unknown' }> {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'state' in value &&
-    value.state === 'unknown' &&
-    'reason' in value &&
-    (value.reason === 'daemon-disconnected' ||
-      value.reason === 'daemon-identity-changed' ||
-      value.reason === 'inventory-unavailable' ||
-      value.reason === 'inventory-invalid')
-  )
-}
-
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<T>((_resolve, reject) => {
-        timer = setTimeout(
-          () => reject(new Error('bounded runtime inventory timed out')),
-          timeoutMs
-        )
-      })
-    ])
-  } finally {
-    if (timer !== undefined) {
-      clearTimeout(timer)
-    }
-  }
-}
-
-function readWindowCount(
-  dependencies: UpdateRuntimeCensusDependencies
-):
-  | { state: 'known'; count: number }
-  | { state: 'unknown'; reason: 'window-inventory-unavailable' } {
-  try {
-    const windowCount = dependencies.getWindowCount()
-    return Number.isSafeInteger(windowCount) && windowCount >= 0
-      ? count(windowCount)
-      : unknown('window-inventory-unavailable')
-  } catch {
-    return unknown('window-inventory-unavailable')
-  }
-}
-
-function stableWindowCount(
-  before: UpdateRuntimeCensus['windows'],
-  after: UpdateRuntimeCensus['windows']
-): UpdateRuntimeCensus['windows'] {
-  return before.state === 'known' && after.state === 'known' && before.count === after.count
-    ? after
-    : unknown('window-inventory-unavailable')
-}
 
 export async function collectUpdateRuntimeCensus(
   dependencies: UpdateRuntimeCensusDependencies
@@ -239,134 +66,192 @@ export async function collectUpdateRuntimeCensus(
     return censusWithUnknownRuntime(observedAtMs, windows, 'generation-limit-exceeded')
   }
 
-  const before = provider.adapters.map(validIdentity)
-  if (before.some((identity) => identity === null)) {
-    return censusWithUnknownRuntime(observedAtMs, windows, 'daemon-disconnected')
+  type StableInventory = {
+    adapter: UpdateCensusDaemonAdapter
+    identity: DaemonEndpointIdentity
+    inventory: Extract<ConnectedSessionInventory, { state: 'complete' }>
   }
 
+  let daemonReason: UpdatePreflightUnknownReason | undefined
+  let ownerReason: UpdatePreflightUnknownReason | undefined
+  const before = provider.adapters.map(validIdentity)
   const results = await Promise.allSettled(
-    provider.adapters.map((adapter) =>
-      withTimeout(
+    provider.adapters.map((adapter, index) => {
+      if (!before[index]) {
+        return Promise.resolve({ state: 'unknown', reason: 'daemon-disconnected' } as const)
+      }
+      return withTimeout(
         Promise.resolve().then(() => adapter.listSessionsIfAlreadyConnected()),
         DAEMON_LIST_TIMEOUT_MS
       )
-    )
+    })
   )
-  const defer = (reason: UpdatePreflightUnknownReason) =>
-    censusWithUnknownRuntime(
-      observedAtMs,
-      stableWindowCount(windows, readWindowCount(dependencies)),
-      reason
-    )
+  const stable: StableInventory[] = []
+  for (let index = 0; index < provider.adapters.length; index += 1) {
+    const result = results[index]
+    const identityBefore = before[index]
+    if (!identityBefore) {
+      daemonReason ??= 'daemon-disconnected'
+      ownerReason ??= 'daemon-disconnected'
+      continue
+    }
+    if (!result || result.status === 'rejected') {
+      daemonReason ??= 'inventory-partial'
+      ownerReason ??= 'inventory-partial'
+      continue
+    }
+    const inventory: unknown = result.value
+    if (!isConnectedInventory(inventory) && !isUnknownInventory(inventory)) {
+      daemonReason ??= 'inventory-invalid'
+      ownerReason ??= 'inventory-invalid'
+      continue
+    }
+    if (isUnknownInventory(inventory)) {
+      const reason =
+        inventory.reason === 'daemon-disconnected' ||
+        inventory.reason === 'daemon-identity-changed' ||
+        inventory.reason === 'inventory-invalid'
+          ? inventory.reason
+          : 'inventory-partial'
+      daemonReason ??= reason
+      ownerReason ??= reason
+      continue
+    }
+    const identityAfter = validIdentity(provider.adapters[index])
+    if (
+      !identityAfter ||
+      !sameEndpointIdentity(identityBefore, inventory.identity) ||
+      !sameEndpointIdentity(identityBefore, identityAfter)
+    ) {
+      daemonReason ??= 'daemon-identity-changed'
+      ownerReason ??= 'daemon-identity-changed'
+      continue
+    }
+    stable.push({ adapter: provider.adapters[index], identity: identityBefore, inventory })
+  }
+
   let afterProvider: UpdateCensusProvider | null
+  let providerStableThroughRead = true
   try {
     afterProvider = dependencies.getProvider()
   } catch {
     afterProvider = null
   }
   if (!sameProvider(afterProvider, provider)) {
-    return defer('provider-changed')
-  }
-  if (results.some((result) => result.status === 'rejected')) {
-    return defer('inventory-partial')
+    providerStableThroughRead = false
+    daemonReason ??= 'provider-changed'
+    ownerReason ??= 'provider-changed'
   }
 
-  const inventories = results.map((result) => (result as PromiseFulfilledResult<unknown>).value)
-  if (
-    !inventories.every(
-      (inventory) => isConnectedInventory(inventory) || isUnknownInventory(inventory)
-    )
-  ) {
-    return defer('inventory-invalid')
+  let fallbackIds: readonly string[] = []
+  let fallbackReason: UpdatePreflightUnknownReason | undefined
+  if (provider.listFallbackPtyIds) {
+    try {
+      const parsed = parseFallbackPtyIds(
+        await withTimeout(provider.listFallbackPtyIds(), FALLBACK_LIST_TIMEOUT_MS)
+      )
+      fallbackIds = parsed.ids
+      fallbackReason = parsed.reason
+    } catch {
+      fallbackReason = 'fallback-inventory-unavailable'
+    }
   }
-  const unknownInventory = inventories.find(isUnknownInventory)
-  if (unknownInventory) {
-    const reason =
-      unknownInventory.reason === 'daemon-disconnected' ||
-      unknownInventory.reason === 'daemon-identity-changed' ||
-      unknownInventory.reason === 'inventory-invalid'
-        ? unknownInventory.reason
-        : 'inventory-partial'
-    return defer(reason)
+
+  try {
+    afterProvider = dependencies.getProvider()
+  } catch {
+    afterProvider = null
+  }
+  if (!sameProvider(afterProvider, provider)) {
+    providerStableThroughRead = false
+    daemonReason ??= 'provider-changed'
+    ownerReason ??= 'provider-changed'
+  }
+  if (!providerStableThroughRead && provider.listFallbackPtyIds) {
+    fallbackReason = 'provider-changed'
+  }
+
+  const stableInventories: StableInventory[] = []
+  for (const observation of stable) {
+    const identityAfterRead = validIdentity(observation.adapter)
+    if (!identityAfterRead || !sameEndpointIdentity(observation.identity, identityAfterRead)) {
+      daemonReason ??= 'daemon-identity-changed'
+      ownerReason ??= 'daemon-identity-changed'
+      continue
+    }
+    stableInventories.push(observation)
   }
 
   const sessionsById = new Map<
     string,
     Extract<ConnectedSessionInventory, { state: 'complete' }>['sessions'][number]
   >()
-  let agentOwnershipComplete = true
   const agentSessionDigests = new Set<string>()
-  const completeInventories = inventories as Array<
-    Extract<ConnectedSessionInventory, { state: 'complete' }>
-  >
-  for (let index = 0; index < completeInventories.length; index += 1) {
-    const inventory = completeInventories[index]
-    const identityBefore = before[index]
-    const identityAfter = validIdentity(provider.adapters[index])
-    if (
-      !identityBefore ||
-      !identityAfter ||
-      !sameEndpointIdentity(identityBefore, inventory.identity) ||
-      !sameEndpointIdentity(identityBefore, identityAfter)
-    ) {
-      return defer('daemon-identity-changed')
-    }
-    agentOwnershipComplete &&= inventory.agentOwnershipComplete
+  let ownersComplete = true
+  for (const { inventory } of stableInventories) {
+    ownersComplete &&= inventory.agentOwnershipComplete
     for (const session of inventory.sessions) {
-      if (!session.isAlive || !session.sessionId || sessionsById.has(session.sessionId)) {
-        return defer('inventory-invalid')
+      if (sessionsById.has(session.sessionId)) {
+        daemonReason ??= 'inventory-invalid'
+        ownerReason ??= 'inventory-invalid'
+        continue
+      }
+      if (sessionsById.size >= MAX_CENSUS_SESSIONS) {
+        daemonReason ??= 'generation-limit-exceeded'
+        ownerReason ??= 'generation-limit-exceeded'
+        continue
       }
       sessionsById.set(session.sessionId, session)
       for (const owner of session.agentSessionOwners ?? []) {
+        if (agentSessionDigests.has(owner.claim.identityDigest)) {
+          continue
+        }
+        if (agentSessionDigests.size >= MAX_CENSUS_SESSIONS) {
+          ownerReason ??= 'generation-limit-exceeded'
+          ownersComplete = false
+          continue
+        }
         agentSessionDigests.add(owner.claim.identityDigest)
       }
     }
   }
-
-  let fallbackIds: readonly string[] = []
-  if (provider.listFallbackPtyIds) {
-    try {
-      fallbackIds = await withTimeout(provider.listFallbackPtyIds(), FALLBACK_LIST_TIMEOUT_MS)
-    } catch {
-      return defer('fallback-inventory-unavailable')
-    }
-    if (
-      !Array.isArray(fallbackIds) ||
-      fallbackIds.length > MAX_CENSUS_SESSIONS ||
-      fallbackIds.some((id) => typeof id !== 'string' || id.length === 0) ||
-      new Set(fallbackIds).size !== fallbackIds.length
-    ) {
-      return defer('inventory-invalid')
-    }
-    if (fallbackIds.length > 0) {
-      agentOwnershipComplete = false
-    }
-    if (fallbackIds.some((id) => sessionsById.has(id))) {
-      return defer('inventory-invalid')
-    }
+  const sessionIds = new Set(sessionsById.keys())
+  if (fallbackIds.some((id) => sessionIds.has(id))) {
+    fallbackIds = fallbackIds.filter((id) => !sessionIds.has(id))
+    fallbackReason ??= 'inventory-invalid'
   }
-  try {
-    afterProvider = dependencies.getProvider()
-  } catch {
-    afterProvider = null
+  if (fallbackIds.length > MAX_CENSUS_SESSIONS - sessionsById.size) {
+    fallbackIds = fallbackIds.slice(0, MAX_CENSUS_SESSIONS - sessionsById.size)
+    fallbackReason ??= 'generation-limit-exceeded'
   }
-  if (!sameProvider(afterProvider, provider)) {
-    return defer('provider-changed')
+  if (fallbackReason) {
+    ownerReason ??= fallbackReason
+  }
+  if (fallbackIds.length > 0 || fallbackReason) {
+    ownersComplete = false
+    ownerReason ??= 'agent-owner-inventory-incomplete'
+  }
+  if (!ownersComplete) {
+    ownerReason ??= 'agent-owner-inventory-incomplete'
   }
   const stableWindows = stableWindowCount(windows, readWindowCount(dependencies))
-  if (sessionsById.size + fallbackIds.length > MAX_CENSUS_SESSIONS) {
-    return censusWithUnknownRuntime(observedAtMs, stableWindows, 'generation-limit-exceeded')
-  }
+  const sessionLowerBound = sessionsById.size + fallbackIds.length
+  const generationLowerBound = stableInventories.length
 
   return {
     observedAtMs,
     hostOwnership: hostOwnership(),
-    daemonGenerations: count(provider.adapters.length),
+    daemonGenerations: daemonReason
+      ? unknown(daemonReason, generationLowerBound)
+      : count(provider.adapters.length),
     windows: stableWindows,
-    ptys: count(sessionsById.size + fallbackIds.length),
-    ptyOwnedAgentSessions: agentOwnershipComplete
-      ? count(agentSessionDigests.size)
-      : unknown('agent-owner-inventory-incomplete'),
+    ptys:
+      daemonReason || fallbackReason
+        ? unknown(daemonReason ?? fallbackReason ?? 'inventory-partial', sessionLowerBound)
+        : count(sessionLowerBound),
+    ptyOwnedAgentSessions: ownerReason
+      ? unknown(ownerReason, agentSessionDigests.size)
+      : count(agentSessionDigests.size),
     providerAgentSessions: providerAgentInventory(),
     pendingDiskWrites: pendingWrites()
   }

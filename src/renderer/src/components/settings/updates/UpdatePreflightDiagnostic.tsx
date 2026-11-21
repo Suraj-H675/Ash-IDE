@@ -23,11 +23,15 @@ const blockerCopy: Record<UpdatePreflightBlocker, string> = {
   'window-inventory-unknown': 'The Ash window inventory is incomplete.',
   'gui-window-active': 'An Ash window is open.',
   'pty-inventory-unknown': 'The PTY session inventory is incomplete.',
-  'pty-active': 'A PTY session is active.',
+  'pty-active':
+    'A PTY was observed during this check. Confirm it has ended in Manage Sessions; closing its window does not stop it.',
   'agent-owner-inventory-unknown': 'PTY agent ownership could not be fully verified.',
-  'agent-session-active': 'An agent session owned by a PTY is active.',
-  'provider-agent-inventory-unknown': 'Provider agent activity could not be fully inventoried.',
-  'pending-disk-writes-unknown': 'Pending disk writes could not be fully inventoried.'
+  'agent-session-active':
+    'A PTY was observed with an agent owner during this check. Stop it with its provider, then confirm the PTY ended in Manage Sessions.',
+  'provider-agent-inventory-unknown':
+    'Ash cannot see every provider-native agent session. Review provider sessions before relying on an empty PTY inventory.',
+  'pending-disk-writes-unknown':
+    'Ash cannot prove that writes are drained. Finish ongoing saves and writes, then recheck; this diagnostic still cannot prove they are clear.'
 }
 
 const unknownReasonCopy: Record<UpdatePreflightUnknownReason, string> = {
@@ -46,10 +50,16 @@ const unknownReasonCopy: Record<UpdatePreflightUnknownReason, string> = {
   'exclusive-host-ownership-unavailable': 'Exclusive host ownership cannot be established.'
 }
 
-function describeCount(count: UpdatePreflightCount): string {
-  return count.state === 'known'
-    ? String(count.count)
-    : `Unknown — ${unknownReasonCopy[count.reason]}`
+function describeCount(
+  count: UpdatePreflightCount | { state: 'unknown'; reason: UpdatePreflightUnknownReason }
+): string {
+  if (count.state === 'known') {
+    return String(count.count)
+  }
+  if ('lowerBound' in count && count.lowerBound > 0) {
+    return `At least ${count.lowerBound} observed; ${unknownReasonCopy[count.reason]}`
+  }
+  return `Unknown; ${unknownReasonCopy[count.reason]}`
 }
 
 function describeCandidate(candidate: CandidatePackageIdentityEvidence): string {
@@ -105,6 +115,9 @@ export function UpdatePreflightDiagnostic(): React.JSX.Element {
             <p role="status" aria-live="polite" className="text-xs text-muted-foreground">
               Local update safety inspection complete. Admission: {report.decision}. Activation is
               unavailable.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Snapshot observed {new Date(report.runtime.observedAtMs).toLocaleString()}.
             </p>
             <div className="space-y-3 rounded-md border border-border/60 p-3 text-xs">
               <div>

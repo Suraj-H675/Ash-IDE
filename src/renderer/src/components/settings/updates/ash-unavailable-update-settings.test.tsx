@@ -23,10 +23,22 @@ const fixture = vi.hoisted(() => ({
         state: 'unknown' as const,
         reason: 'exclusive-host-ownership-unavailable' as const
       },
-      daemonGenerations: { state: 'known' as const, count: 1 },
-      windows: { state: 'known' as const, count: 1 },
-      ptys: { state: 'known' as const, count: 0 },
-      ptyOwnedAgentSessions: { state: 'known' as const, count: 0 },
+      daemonGenerations: {
+        state: 'unknown' as const,
+        reason: 'inventory-partial' as const,
+        lowerBound: 1
+      },
+      windows: { state: 'known' as const, count: 0 },
+      ptys: {
+        state: 'unknown' as const,
+        reason: 'inventory-partial' as const,
+        lowerBound: 1
+      },
+      ptyOwnedAgentSessions: {
+        state: 'unknown' as const,
+        reason: 'inventory-partial' as const,
+        lowerBound: 1
+      },
       providerAgentSessions: {
         state: 'unknown' as const,
         reason: 'provider-agent-inventory-unavailable' as const
@@ -38,7 +50,8 @@ const fixture = vi.hoisted(() => ({
     },
     blockers: [
       'candidate-not-provided',
-      'gui-window-active',
+      'pty-active',
+      'agent-session-active',
       'provider-agent-inventory-unknown',
       'pending-disk-writes-unknown'
     ] as const,
@@ -133,10 +146,21 @@ it.each([
       expect(host.textContent).toContain(
         'No staged candidate was supplied; no release package was inspected.'
       )
-      expect(host.textContent).toContain('Provider agent activity could not be fully inventoried.')
-      expect(host.textContent).toContain('Pending disk writes could not be fully inventoried.')
-      expect(host.textContent).toContain('An Ash window is open.')
+      expect(host.textContent).toContain('Ash cannot see every provider-native agent session.')
+      expect(host.textContent).toContain('Ash cannot prove that writes are drained.')
+      expect(host.textContent).toContain('Unknown; The provider agent inventory is unavailable.')
+      expect(host.textContent).toContain('Unknown; The pending disk write census is unavailable.')
+      expect(host.textContent).toContain(
+        'A PTY was observed during this check. Confirm it has ended in Manage Sessions; closing its window does not stop it.'
+      )
+      expect(host.textContent).toContain(
+        'A PTY was observed with an agent owner during this check. Stop it with its provider, then confirm the PTY ended in Manage Sessions.'
+      )
+      expect(host.textContent).toContain(
+        'At least 1 observed; The daemon returned only part of its inventory.'
+      )
       expect(host.textContent).toContain('Activation is unavailable.')
+      expect(host.textContent).toContain('Snapshot observed')
       expect(fixture.check).not.toHaveBeenCalled()
       expect(fixture.download).not.toHaveBeenCalled()
       expect(fixture.install).not.toHaveBeenCalled()

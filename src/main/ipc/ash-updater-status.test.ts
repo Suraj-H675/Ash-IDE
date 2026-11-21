@@ -10,10 +10,14 @@ const fixture = vi.hoisted(() => ({
   census: {
     observedAtMs: 1,
     hostOwnership: { state: 'unknown', reason: 'exclusive-host-ownership-unavailable' },
-    daemonGenerations: { state: 'unknown', reason: 'daemon-unavailable' },
+    daemonGenerations: { state: 'unknown', reason: 'daemon-unavailable', lowerBound: 0 },
     windows: { state: 'known', count: 2 },
-    ptys: { state: 'unknown', reason: 'daemon-unavailable' },
-    ptyOwnedAgentSessions: { state: 'unknown', reason: 'daemon-unavailable' },
+    ptys: { state: 'unknown', reason: 'daemon-unavailable', lowerBound: 0 },
+    ptyOwnedAgentSessions: {
+      state: 'unknown',
+      reason: 'daemon-unavailable',
+      lowerBound: 0
+    },
     providerAgentSessions: {
       state: 'unknown',
       reason: 'provider-agent-inventory-unavailable'
