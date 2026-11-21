@@ -44,6 +44,7 @@ const DESKTOP_ENTRY = Buffer.from(
 const realFixture = process.env.ASH_M8_REAL_APPIMAGE_FIXTURE
 const realFixtureSha256 = process.env.ASH_M8_REAL_APPIMAGE_SHA256
 const realFixtureArchitecture = process.env.ASH_M8_REAL_APPIMAGE_ARCHITECTURE
+const realFixtureExpectedVersion = process.env.ASH_M8_REAL_EXPECTED_VERSION ?? '0.1.0'
 const missingSidecarFixture = process.env.ASH_M8_MISSING_SIDECAR_FIXTURE
 const missingSidecarSha256 = process.env.ASH_M8_MISSING_SIDECAR_SHA256
 const readerPath = process.env.ASH_M8_UNSQUASHFS_READER
@@ -401,7 +402,7 @@ describe.skipIf(!hasRealFixtures)('real AppImage embedded identity QA', () => {
         appId: APP_ID,
         productName: 'Ash IDE',
         packageName: 'ash-ide',
-        version: '0.1.0',
+        version: realFixtureExpectedVersion,
         architecture: realFixtureArchitecture,
         appAsarSha256: result.embeddedIdentity.capturedAppAsarSha256,
         compiledCliPackageJsonSha256: result.embeddedIdentity.capturedCompiledCliPackageJsonSha256

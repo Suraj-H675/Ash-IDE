@@ -32,6 +32,7 @@ async function fileSha256(path) {
 describe.skipIf(!hasRealFixture)('real AppImage offline operator CLI', () => {
   it('stages exact signed bytes under caller keys and rejects a tampered attestation', async () => {
     const identity = JSON.parse(await readFile(identityPath, 'utf8'))
+    const installedVersion = process.env.ASH_M8_REAL_INSTALLED_VERSION ?? '0.0.0'
     const sourceCommit =
       process.env.ASH_M8_REAL_EXPECTED_SOURCE_COMMIT === 'none'
         ? null
@@ -69,7 +70,7 @@ describe.skipIf(!hasRealFixture)('real AppImage offline operator CLI', () => {
       manifestPolicy: {
         publicKey: releaseKeys.publicKey,
         architecture,
-        installedVersion: '0.0.0'
+        installedVersion
       },
       expectedSourceCommit: sourceCommit,
       signingKey: attestationKeys.privateKey
@@ -111,7 +112,7 @@ describe.skipIf(!hasRealFixture)('real AppImage offline operator CLI', () => {
         '--architecture',
         architecture,
         '--installed-version',
-        '0.0.0',
+        installedVersion,
         '--attestation',
         paths.attestation,
         '--attestation-signature',
@@ -155,6 +156,15 @@ describe.skipIf(!hasRealFixture)('real AppImage offline operator CLI', () => {
       const rejected = invoke(tamperedArgs)
       expect(rejected.status).not.toBe(0)
       expect(await readdir(rejectedRoot)).toEqual([])
+
+      const replayRoot = join(root, 'same-version')
+      await mkdir(replayRoot, { mode: 0o700 })
+      const replayArgs = [...args]
+      replayArgs[replayArgs.indexOf('--stage-root') + 1] = replayRoot
+      replayArgs[replayArgs.indexOf('--installed-version') + 1] = manifest.version
+      const replay = invoke(replayArgs)
+      expect(replay.status).not.toBe(0)
+      expect(await readdir(replayRoot)).toEqual([])
     } finally {
       await rm(root, { recursive: true, force: true })
     }

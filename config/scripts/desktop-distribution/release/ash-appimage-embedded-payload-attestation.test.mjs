@@ -531,13 +531,14 @@ describe.skipIf(!hasRealFixtures)('real AppImage signed attestation', () => {
       issuedAtMs: Date.now() - 1000,
       expiresAtMs: Date.now() + 60_000
     }
+    const incorrectVersion = identity.version === '0.0.1' ? '0.0.2' : '0.0.1'
     const mismatchedVersionManifest = {
       ...manifestValue,
-      version: '0.2.0',
-      tag: 'v0.2.0',
+      version: incorrectVersion,
+      tag: `v${incorrectVersion}`,
       packageInputIdentityClaim: {
         ...manifestValue.packageInputIdentityClaim,
-        version: '0.2.0'
+        version: incorrectVersion
       }
     }
     const signed = signedManifest(mismatchedVersionManifest)
