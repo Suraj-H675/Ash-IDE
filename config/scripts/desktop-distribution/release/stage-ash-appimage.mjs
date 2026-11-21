@@ -1,130 +1,63 @@
-import { createHash, verify } from 'node:crypto'
+import { createHash } from 'node:crypto'
 import { constants } from 'node:fs'
 import { lstat, mkdtemp, open, realpath, rename, rm, rmdir } from 'node:fs/promises'
 import { basename, join, resolve } from 'node:path'
-import { z } from 'zod'
+import { authenticateAshReleaseManifest } from './ash-appimage-release-manifest.mjs'
+import { verifyAshAppImageEmbeddedPayloadAttestation } from './ash-appimage-embedded-payload-attestation.mjs'
 
-const APPIMAGE_ASSETS = {
-  x64: { name: 'ash-ide-linux.AppImage', elfMachine: 62 },
-  arm64: { name: 'ash-ide-linux-arm64.AppImage', elfMachine: 183 }
-}
-const MAX_MANIFEST_BYTES = 16 * 1024
-const MAX_ARTIFACT_BYTES = 2 * 1024 ** 3
-const MAX_MANIFEST_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000
-const ACTIVATION_BLOCKERS = Object.freeze([
+const BASE_ACTIVATION_BLOCKERS = Object.freeze([
   'No approved Ash release trust root or verified release feed is available.',
-  'The signed manifest or packaging input claim is not matched to the embedded AppImage payload.',
   'No production AppImage installation destination or versioned slot switch is configured.',
   'No stopped GUI, PTY, and Ash agent-session census or exclusive update maintenance gate is connected.',
   'No complete compatible snapshot covers every mutable Ash state domain.'
 ])
-const stableVersion = z
-  .string()
-  .max(32)
-  .regex(/^(0|[1-9]\d{0,8})\.(0|[1-9]\d{0,8})\.(0|[1-9]\d{0,8})$/)
-const packageInputIdentityClaimSchema = z.strictObject({
-  schema: z.literal(1),
-  evidenceKind: z.literal('packaging-input-snapshot'),
-  appId: z.literal('com.ashide.desktop'),
-  productName: z.literal('Ash IDE'),
-  packageName: z.literal('ash-ide'),
-  version: stableVersion,
-  architecture: z.enum(['x64', 'arm64']),
-  sourceCommit: z
-    .string()
-    .regex(/^[a-f0-9]{40}$/)
-    .nullable(),
-  capturedAppAsarSha256: z.string().regex(/^[a-f0-9]{64}$/),
-  capturedCompiledCliPackageJsonSha256: z.string().regex(/^[a-f0-9]{64}$/)
-})
-const manifestSchema = z.strictObject({
-  schema: z.literal(1),
-  product: z.literal('com.ashide.desktop'),
-  repository: z.literal('Suraj-H675/Ash-IDE'),
-  platform: z.literal('linux'),
-  architecture: z.enum(['x64', 'arm64']),
-  format: z.literal('AppImage'),
-  version: stableVersion,
-  tag: z.string().max(33),
-  asset: z.string().max(64),
-  size: z.number().int().min(20).max(MAX_ARTIFACT_BYTES),
-  sha256: z.string().regex(/^[a-f0-9]{64}$/),
-  packageInputIdentityClaim: packageInputIdentityClaimSchema.optional(),
-  issuedAtMs: z.number().int().positive(),
-  expiresAtMs: z.number().int().positive()
-})
 
-function isUpgrade(candidate, installed) {
-  const current = stableVersion.parse(installed).split('.').map(Number)
-  const difference = candidate
-    .split('.')
-    .map((part, index) => Number(part) - current[index])
-    .find((delta) => delta !== 0)
-  return difference > 0
+function activationBlockers(hasVerifiedOfflineAttestation) {
+  return [
+    ...BASE_ACTIVATION_BLOCKERS,
+    hasVerifiedOfflineAttestation
+      ? 'The embedded payload attestation was checked only under caller-selected offline keys.'
+      : 'The signed manifest or packaging input claim is not matched to the embedded AppImage payload.'
+  ]
 }
 
-function authenticateManifest({ manifestBytes, signature, policy }) {
-  if (policy?.publicKey?.asymmetricKeyType !== 'ed25519' || policy.publicKey.type !== 'public') {
-    throw new Error('Ash release trust is unavailable')
-  }
+async function assertPinnedPrivateStageRoot(root) {
+  const pinned = await root.handle.stat()
+  const current = await lstat(root.path)
   if (
-    !Buffer.isBuffer(manifestBytes) ||
-    manifestBytes.length > MAX_MANIFEST_BYTES ||
-    !Buffer.isBuffer(signature) ||
-    signature.length !== 64 ||
-    !verify(null, manifestBytes, policy.publicKey, signature)
+    !pinned.isDirectory() ||
+    !current.isDirectory() ||
+    pinned.dev !== current.dev ||
+    pinned.ino !== current.ino ||
+    pinned.uid !== process.getuid() ||
+    (pinned.mode & 0o077) !== 0 ||
+    (current.mode & 0o077) !== 0 ||
+    (await realpath(root.path)) !== root.path
   ) {
-    throw new Error('Invalid Ash release manifest signature')
+    throw new Error('Ash release staging directory changed during publishing')
   }
-
-  // Release signer and verifier must agree on ONE representation. Accept only
-  // compact JSON.stringify bytes: duplicate member names, alternate number
-  // formatting, reordered escaping and whitespace cannot be signed ambiguously.
-  const source = manifestBytes.toString('utf8')
-  const parsed = JSON.parse(source)
-  if (JSON.stringify(parsed) !== source) {
-    throw new Error('Ash release manifest must use compact canonical JSON without duplicate keys')
-  }
-  const manifest = manifestSchema.parse(parsed)
-  const expected = APPIMAGE_ASSETS[manifest.architecture]
-  const now = Date.now()
-  if (
-    policy.architecture !== manifest.architecture ||
-    !isUpgrade(manifest.version, policy.installedVersion) ||
-    manifest.tag !== `v${manifest.version}` ||
-    manifest.asset !== expected.name ||
-    manifest.issuedAtMs > now ||
-    manifest.expiresAtMs <= now ||
-    manifest.expiresAtMs - manifest.issuedAtMs > MAX_MANIFEST_LIFETIME_MS
-  ) {
-    throw new Error(
-      'Ash release does not match the installed build or is outside its validity period'
-    )
-  }
-  if (
-    manifest.packageInputIdentityClaim &&
-    (manifest.packageInputIdentityClaim.appId !== manifest.product ||
-      manifest.packageInputIdentityClaim.version !== manifest.version ||
-      manifest.packageInputIdentityClaim.architecture !== manifest.architecture)
-  ) {
-    throw new Error('Ash signed packaging identity does not match the signed release manifest')
-  }
-  return { manifest, expected }
 }
 
-async function requirePrivateStageRoot(path) {
-  const root = resolve(path)
-  const stat = await lstat(root)
-  if (
-    process.platform !== 'linux' ||
-    !stat.isDirectory() ||
-    stat.uid !== process.getuid() ||
-    (stat.mode & 0o077) !== 0 ||
-    (await realpath(root)) !== root
-  ) {
+async function openPrivateStageRoot(path) {
+  if (process.platform !== 'linux') {
     throw new Error('Ash release staging requires a private, owned local directory')
   }
-  return root
+  const absolutePath = resolve(path)
+  let handle
+  try {
+    handle = await open(
+      absolutePath,
+      constants.O_RDONLY | constants.O_DIRECTORY | constants.O_NOFOLLOW
+    )
+    const root = { path: absolutePath, handle, anchoredPath: `/proc/self/fd/${handle.fd}` }
+    await assertPinnedPrivateStageRoot(root)
+    return root
+  } catch (error) {
+    await handle?.close()
+    throw new Error('Ash release staging requires a private, owned local directory', {
+      cause: error
+    })
+  }
 }
 
 function isExpectedAppImage(header, machine) {
@@ -150,30 +83,39 @@ export async function stageAshAppImage({
   signature,
   policy,
   artifactPath,
-  stageRoot
+  stageRoot,
+  embeddedPayloadAttestation
 }) {
-  const { manifest, expected } = authenticateManifest({ manifestBytes, signature, policy })
+  const { manifest, expected } = authenticateAshReleaseManifest({
+    manifestBytes,
+    signature,
+    policy
+  })
   if (
     basename(artifactPath) !== expected.name ||
     (await realpath(artifactPath)) !== resolve(artifactPath)
   ) {
     throw new Error('Ash release asset path does not match the signed name')
   }
-  const root = await requirePrivateStageRoot(stageRoot)
-  const source = await open(
-    artifactPath,
-    constants.O_RDONLY | constants.O_NONBLOCK | constants.O_NOFOLLOW
-  )
+  const root = await openPrivateStageRoot(stageRoot)
+  let source
   let directory
   let partial
   let publishedPath
   let durable = false
+  let verifiedAttestation
   try {
+    source = await open(
+      artifactPath,
+      constants.O_RDONLY | constants.O_NONBLOCK | constants.O_NOFOLLOW
+    )
     const info = await source.stat()
     if (!info.isFile() || info.nlink !== 1 || info.size !== manifest.size) {
       throw new Error('Ash release asset must be a regular file of the signed size')
     }
-    directory = await mkdtemp(join(root, '.ash-release-'))
+    // Keep all writes rooted to the validated directory inode, even if its
+    // caller-visible pathname is replaced while the artifact is being copied.
+    directory = await mkdtemp(join(root.anchoredPath, '.ash-release-'))
     partial = join(directory, '.partial')
     const destination = await open(partial, 'wx', 0o600)
     try {
@@ -199,12 +141,21 @@ export async function stageAshAppImage({
         await destination.writeFile(chunk)
         bytes += bytesRead
       }
+      const stagedArtifactSha256 = hash.digest('hex')
       if (
         bytes !== manifest.size ||
-        hash.digest('hex') !== manifest.sha256 ||
+        stagedArtifactSha256 !== manifest.sha256 ||
         !isExpectedAppImage(header, expected.elfMachine)
       ) {
         throw new Error('Ash release asset failed digest or AppImage architecture verification')
+      }
+      if (embeddedPayloadAttestation) {
+        verifiedAttestation = verifyAshAppImageEmbeddedPayloadAttestation({
+          ...embeddedPayloadAttestation,
+          manifestBytes,
+          manifest,
+          stagedArtifactSha256
+        })
       }
       await destination.sync()
     } finally {
@@ -212,30 +163,36 @@ export async function stageAshAppImage({
     }
     publishedPath = join(directory, expected.name)
     await rename(partial, publishedPath)
-    for (const path of [directory, root]) {
-      const handle = await open(path, constants.O_RDONLY | constants.O_DIRECTORY)
-      try {
-        await handle.sync()
-      } finally {
-        await handle.close()
-      }
+    const directoryHandle = await open(directory, constants.O_RDONLY | constants.O_DIRECTORY)
+    try {
+      await directoryHandle.sync()
+    } finally {
+      await directoryHandle.close()
     }
+    await root.handle.sync()
+    await assertPinnedPrivateStageRoot(root)
     durable = true
     const inputClaim = manifest.packageInputIdentityClaim
     return {
-      path: publishedPath,
+      path: join(root.path, basename(directory), expected.name),
       manifestVersion: manifest.version,
       sha256: manifest.sha256,
       candidateIdentity: {
         state: 'unverified',
-        source: inputClaim ? 'signed-packaging-input-claim' : 'signed-manifest-claim',
+        source: verifiedAttestation
+          ? 'signed-embedded-payload-attestation'
+          : inputClaim
+            ? 'signed-packaging-input-claim'
+            : 'signed-manifest-claim',
         appIdClaim: manifest.product,
         productNameClaim: inputClaim?.productName ?? null,
         versionClaim: manifest.version,
         architectureClaim: manifest.architecture,
         artifactSha256: manifest.sha256,
         artifactSha256Verified: true,
-        reason: 'embedded-appimage-payload-not-inspected',
+        reason: verifiedAttestation
+          ? 'caller-key-attestation-does-not-establish-an-approved-ash-trust-root'
+          : 'embedded-appimage-payload-not-inspected',
         ...(inputClaim
           ? {
               packagingInputClaim: {
@@ -248,19 +205,37 @@ export async function stageAshAppImage({
             }
           : {})
       },
+      offlineAttestation: verifiedAttestation
+        ? {
+            state: 'verified-under-caller-key',
+            sha256: verifiedAttestation.sha256,
+            publicKeySha256: verifiedAttestation.publicKeySha256,
+            manifestSha256: verifiedAttestation.payload.manifestSha256,
+            artifactSha256: verifiedAttestation.payload.manifest.identity.sha256,
+            sourceCommit: verifiedAttestation.payload.claimProvenance.sourceCommit,
+            sourceCommitBinding: verifiedAttestation.payload.claimProvenance.sourceCommitBinding
+          }
+        : null,
       ashPackageIdentityVerified: false,
       activationAvailable: false,
-      activationBlockers: ACTIVATION_BLOCKERS
+      activationBlockers: activationBlockers(verifiedAttestation !== undefined)
     }
   } finally {
-    await source.close()
-    if (!durable && directory) {
-      for (const path of [partial, publishedPath]) {
-        if (path) {
-          await rm(path, { force: true })
+    try {
+      await source?.close()
+    } finally {
+      try {
+        if (!durable && directory) {
+          for (const path of [partial, publishedPath]) {
+            if (path) {
+              await rm(path, { force: true })
+            }
+          }
+          await rmdir(directory)
         }
+      } finally {
+        await root.handle.close()
       }
-      await rmdir(directory)
     }
   }
 }

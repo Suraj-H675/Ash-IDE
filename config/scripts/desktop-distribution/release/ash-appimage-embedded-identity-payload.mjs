@@ -140,6 +140,9 @@ export async function verifyEmbeddedIdentityFiles(files, architecture) {
     return {
       claim: recomputedClaim,
       desktop,
+      appAsarSha256: recomputedClaim.capturedAppAsarSha256,
+      compiledCliPackageJsonSha256: recomputedClaim.capturedCompiledCliPackageJsonSha256,
+      desktopSha256: sha256(files.get('com.ashide.desktop.desktop')),
       sidecarSha256: sha256(files.get('resources/ash-package-input-identity.json'))
     }
   } finally {

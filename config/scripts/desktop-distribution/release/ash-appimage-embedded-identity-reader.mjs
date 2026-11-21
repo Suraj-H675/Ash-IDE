@@ -1,9 +1,10 @@
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { dirname } from 'node:path'
 import {
   assertPrivateDirectory,
+  assertPathStillMatches,
   decodeUtf8,
-  hashPinnedFile,
   openPinnedRegularFile
 } from './ash-appimage-embedded-identity-files.mjs'
 
@@ -14,14 +15,16 @@ const READER_TIMEOUT_MS = 10_000
 export const READER_MAX_BUFFER_BYTES = 64 * 1024
 const ELF_MACHINES = Object.freeze({ x64: 62, arm64: 183 })
 
-export function runReader(readerPath, args, maxBuffer, cwd) {
-  const result = spawnSync(readerPath, args, {
+/** Execute the authenticated inode, without looking up its pathname again. */
+export function runReader(reader, args, maxBuffer, cwd) {
+  const result = spawnSync('/proc/self/fd/3', args, {
     cwd,
     env: { LC_ALL: 'C' },
     encoding: null,
     maxBuffer,
     shell: false,
-    stdio: ['ignore', 'pipe', 'pipe'],
+    // Child fd 3 is a duplicate of the opened, hash-verified reader inode.
+    stdio: ['ignore', 'pipe', 'pipe', reader.handle.fd],
     timeout: READER_TIMEOUT_MS,
     windowsHide: true
   })
@@ -40,6 +43,27 @@ export function runReader(readerPath, args, maxBuffer, cwd) {
   return result.stdout ?? Buffer.alloc(0)
 }
 
+async function hashOpenedReader(reader) {
+  const hash = createHash('sha256')
+  const buffer = Buffer.alloc(256 * 1024)
+  let position = 0
+  while (position < Number(reader.info.size)) {
+    const { bytesRead } = await reader.handle.read(
+      buffer,
+      0,
+      Math.min(buffer.length, Number(reader.info.size) - position),
+      position
+    )
+    if (bytesRead === 0) {
+      throw new Error('SquashFS reader changed while being hashed')
+    }
+    hash.update(buffer.subarray(0, bytesRead))
+    position += bytesRead
+  }
+  await assertPathStillMatches(reader.path, reader, 'SquashFS reader')
+  return hash.digest('hex')
+}
+
 export async function verifyReader(readerPath) {
   const pinned = await openPinnedRegularFile(readerPath, 'SquashFS reader', MAX_READER_BYTES, {
     privateFile: true
@@ -49,18 +73,19 @@ export async function verifyReader(readerPath) {
     if ((pinned.info.mode & 0o111n) === 0n) {
       throw new Error('Private SquashFS reader is not executable')
     }
-    const digest = await hashPinnedFile(readerPath, 'SquashFS reader', MAX_READER_BYTES)
+    const digest = await hashOpenedReader(pinned)
     if (digest !== READER_SHA256) {
       throw new Error('SquashFS reader does not match the approved private binary digest')
     }
-    return { path: pinned.path, digest }
-  } finally {
+    return { ...pinned, digest }
+  } catch (error) {
     await pinned.handle.close()
+    throw error
   }
 }
 
 export async function assertReaderUnchanged(reader) {
-  const digest = await hashPinnedFile(reader.path, 'SquashFS reader', MAX_READER_BYTES)
+  const digest = await hashOpenedReader(reader)
   if (digest !== reader.digest) {
     throw new Error('SquashFS reader changed while being used')
   }

@@ -17,12 +17,19 @@ const USAGE = [
   '    --artifact /path/to/ash-ide-linux.AppImage \\',
   '    --stage-root /private/existing/staging/directory \\',
   '    --architecture x64|arm64 --installed-version X.Y.Z',
+  'Optional signed embedded-payload evidence:',
+  '    --attestation PATH --attestation-signature PATH \\',
+  '    --attestation-public-key PATH --attestation-key-sha256 HEX \\',
+  '    --attestation-source-commit HEX|none',
   'Manifest bytes must be compact JSON.stringify serialization (no duplicate keys).',
+  'Attestation bytes use fixed canonical JSON field order and bind the exact manifest and artifact digests.',
   'Signature is exactly 64 raw Ed25519 bytes over the original manifest file bytes.',
+  'Attestation signature is exactly 64 raw Ed25519 bytes over canonical attestation bytes.',
   'Fingerprint is SHA-256 of the exact PEM file bytes; authenticate it independently.',
   'Key and manifest input files must be regular, single-link files; symlinks are refused.',
-  'A signed packaging-input snapshot is only an input claim until the embedded AppImage payload is inspected.',
-  'The manifest version is not an inspected payload version; activation is unavailable.'
+  'A caller-key attestation remains unverified as Ash production identity and cannot enable activation.',
+  'A signed packaging-input snapshot alone does not verify the embedded AppImage payload.',
+  'Without a matching attestation, the manifest version is only a claim. Activation remains unavailable.'
 ].join('\n')
 
 const REQUIRED = [
@@ -34,6 +41,13 @@ const REQUIRED = [
   'stage-root',
   'architecture',
   'installed-version'
+]
+const OPTIONAL_ATTESTATION = [
+  'attestation',
+  'attestation-signature',
+  'attestation-public-key',
+  'attestation-key-sha256',
+  'attestation-source-commit'
 ]
 
 /** Bind metadata and trusted key bytes to one opened inode, never a second path lookup. */
@@ -55,7 +69,7 @@ async function readPinnedInput(filename, label, maxBytes, exactBytes = null) {
       throw new Error(`${label} must be a regular single-link file of the expected size`)
     }
     if (
-      label === 'Trusted public key' &&
+      label.endsWith('public key') &&
       ((before.uid !== BigInt(process.getuid()) && before.uid !== 0n) ||
         (before.mode & 0o022n) !== 0n)
     ) {
@@ -95,7 +109,9 @@ export async function runStageAshAppImageCli(args = process.argv.slice(2), write
     args,
     options: {
       help: { type: 'boolean' },
-      ...Object.fromEntries(REQUIRED.map((name) => [name, { type: 'string' }]))
+      ...Object.fromEntries(
+        [...REQUIRED, ...OPTIONAL_ATTESTATION].map((name) => [name, { type: 'string' }])
+      )
     },
     strict: true,
     allowPositionals: false
@@ -127,6 +143,52 @@ export async function runStageAshAppImageCli(args = process.argv.slice(2), write
   }
   const manifestBytes = await readPinnedInput(values.manifest, 'Signed manifest', 16 * 1024)
   const signature = await readPinnedInput(values.signature, 'Manifest signature', 64, 64)
+  const attestationValues = OPTIONAL_ATTESTATION.map((name) => values[name])
+  const hasAttestation = attestationValues.some((value) => value !== undefined)
+  let embeddedPayloadAttestation
+  if (hasAttestation) {
+    if (attestationValues.some((value) => !value?.trim())) {
+      throw new Error(`All attestation inputs are required: ${OPTIONAL_ATTESTATION.join(', ')}`)
+    }
+    if (!/^[a-f0-9]{64}$/.test(values['attestation-key-sha256'])) {
+      throw new Error('Attestation public key SHA-256 must be 64 lowercase hex characters')
+    }
+    const attestationPublicKeyBytes = await readPinnedInput(
+      values['attestation-public-key'],
+      'Trusted attestation public key',
+      8192
+    )
+    const attestationPublicKeySha256 = createHash('sha256')
+      .update(attestationPublicKeyBytes)
+      .digest('hex')
+    if (attestationPublicKeySha256 !== values['attestation-key-sha256']) {
+      throw new Error('Attestation public key does not match the independently approved SHA-256')
+    }
+    const sourceCommitInput = values['attestation-source-commit']
+    const expectedSourceCommit = sourceCommitInput === 'none' ? null : sourceCommitInput
+    if (expectedSourceCommit !== null && !/^[a-f0-9]{40}$/.test(expectedSourceCommit)) {
+      throw new Error('Attestation source commit must be 40 lowercase hex characters or none')
+    }
+    embeddedPayloadAttestation = {
+      attestationBytes: await readPinnedInput(
+        values.attestation,
+        'Embedded payload attestation',
+        16 * 1024
+      ),
+      signature: await readPinnedInput(
+        values['attestation-signature'],
+        'Embedded payload attestation signature',
+        64,
+        64
+      ),
+      policy: {
+        publicKey: createPublicKey(attestationPublicKeyBytes),
+        publicKeyPemBytes: attestationPublicKeyBytes,
+        publicKeySha256: attestationPublicKeySha256,
+        expectedSourceCommit
+      }
+    }
+  }
   const result = await stageAshAppImage({
     manifestBytes,
     signature,
@@ -136,7 +198,8 @@ export async function runStageAshAppImageCli(args = process.argv.slice(2), write
       installedVersion: values['installed-version']
     },
     artifactPath: values.artifact,
-    stageRoot: values['stage-root']
+    stageRoot: values['stage-root'],
+    embeddedPayloadAttestation
   })
   write(JSON.stringify(result))
 }

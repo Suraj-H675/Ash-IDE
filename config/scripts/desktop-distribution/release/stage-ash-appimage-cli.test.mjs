@@ -18,18 +18,26 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { serializeAshAppImageEmbeddedPayloadAttestation } from './ash-appimage-embedded-payload-attestation.mjs'
+import { runStageAshAppImageCli } from './stage-ash-appimage-cli.mjs'
 
 const cli = fileURLToPath(new URL('./stage-ash-appimage-cli.mjs', import.meta.url))
 const repo = resolve(import.meta.dirname, '../../../..')
 const { privateKey, publicKey } = generateKeyPairSync('ed25519')
+const { privateKey: attestationPrivateKey, publicKey: attestationPublicKey } =
+  generateKeyPairSync('ed25519')
 const trustedKeyBytes = Buffer.from(publicKey.export({ format: 'pem', type: 'spki' }))
 const trustedKeySha256 = createHash('sha256').update(trustedKeyBytes).digest('hex')
+const attestationKeyBytes = Buffer.from(
+  attestationPublicKey.export({ format: 'pem', type: 'spki' })
+)
 const asset = 'ash-ide-linux.AppImage'
 let temp
 let stageRoot
 let manifestPath
 let signaturePath
 let keyPath
+let attestationKeyPath
 let artifactPath
 let manifest
 let bytes
@@ -45,6 +53,7 @@ beforeEach(async () => {
   manifestPath = join(temp, 'manifest.json')
   signaturePath = join(temp, 'manifest.sig')
   keyPath = join(temp, 'trusted.pem')
+  attestationKeyPath = join(temp, 'attestation-trusted.pem')
   manifest = {
     schema: 1,
     product: 'com.ashide.desktop',
@@ -62,6 +71,7 @@ beforeEach(async () => {
   }
   await writeFile(artifactPath, bytes)
   await writeFile(keyPath, trustedKeyBytes)
+  await writeFile(attestationKeyPath, attestationKeyBytes)
   await signFixture()
 })
 
@@ -104,6 +114,133 @@ function invoke(overrides = [], { replaceArgs = false } = {}) {
 }
 
 describe.skipIf(process.platform !== 'linux')('offline release staging CLI', () => {
+  it('accepts explicitly pinned signed embedded-payload evidence in process', async () => {
+    manifest.packageInputIdentityClaim = {
+      schema: 1,
+      evidenceKind: 'packaging-input-snapshot',
+      appId: 'com.ashide.desktop',
+      productName: 'Ash IDE',
+      packageName: 'ash-ide',
+      version: manifest.version,
+      architecture: manifest.architecture,
+      sourceCommit: 'a'.repeat(40),
+      capturedAppAsarSha256: 'b'.repeat(64),
+      capturedCompiledCliPackageJsonSha256: 'c'.repeat(64)
+    }
+    const manifestBytes = Buffer.from(JSON.stringify(manifest))
+    await writeFile(manifestPath, manifestBytes)
+    await writeFile(signaturePath, sign(null, manifestBytes, privateKey))
+    const payload = {
+      schema: 1,
+      kind: 'ash-appimage-embedded-payload-attestation',
+      manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'),
+      manifest: {
+        sha256: manifest.sha256,
+        identity: {
+          product: manifest.product,
+          repository: manifest.repository,
+          platform: manifest.platform,
+          architecture: manifest.architecture,
+          format: manifest.format,
+          version: manifest.version,
+          tag: manifest.tag,
+          asset: manifest.asset,
+          size: manifest.size,
+          sha256: manifest.sha256,
+          issuedAtMs: manifest.issuedAtMs,
+          expiresAtMs: manifest.expiresAtMs
+        }
+      },
+      embedded: {
+        packageInputIdentityClaim: manifest.packageInputIdentityClaim,
+        files: {
+          appAsarSha256: 'b'.repeat(64),
+          compiledCliPackageJsonSha256: 'c'.repeat(64),
+          desktopSha256: 'd'.repeat(64),
+          sidecarSha256: 'e'.repeat(64)
+        },
+        desktop: {
+          name: 'Ash IDE',
+          startupWmClass: 'com.ashide.desktop',
+          version: manifest.version
+        }
+      },
+      claimProvenance: {
+        kind: 'embedded-packaging-input-snapshot',
+        sourceCommit: 'a'.repeat(40),
+        callerPinnedSourceCommit: 'a'.repeat(40),
+        sourceCommitBinding: 'caller-pinned-match'
+      },
+      qa: {
+        checkpoint: 'PK-05',
+        kind: 'embedded-appimage-identity-diagnostic',
+        outcome: 'matched',
+        artifactSha256Before: manifest.sha256,
+        artifactSha256After: manifest.sha256,
+        architecture: 'x64',
+        reader: { version: 'unsquashfs 4.7.5', sha256: '1'.repeat(64) },
+        squashfs: {
+          offset: 194183,
+          version: '4.0',
+          compression: 'zstd',
+          blockSize: 131072,
+          bytesUsed: 1000,
+          inodeCount: 20
+        }
+      }
+    }
+    const attestationBytes = serializeAshAppImageEmbeddedPayloadAttestation(payload)
+    const attestationPath = join(temp, 'attestation.json')
+    const attestationSignaturePath = join(temp, 'attestation.sig')
+    await writeFile(attestationPath, attestationBytes)
+    await writeFile(attestationSignaturePath, sign(null, attestationBytes, attestationPrivateKey))
+    // The independently approved fingerprint applies to the exact pinned PEM
+    // bytes, including valid alternative line endings, not a normalized export.
+    const pinnedPemBytes = Buffer.from(attestationKeyBytes.toString().replaceAll('\n', '\r\n'))
+    await writeFile(attestationKeyPath, pinnedPemBytes)
+    const pinnedPemSha256 = createHash('sha256').update(pinnedPemBytes).digest('hex')
+    let output
+
+    await runStageAshAppImageCli(
+      [
+        '--manifest',
+        manifestPath,
+        '--signature',
+        signaturePath,
+        '--public-key',
+        keyPath,
+        '--trusted-key-sha256',
+        trustedKeySha256,
+        '--artifact',
+        artifactPath,
+        '--stage-root',
+        stageRoot,
+        '--architecture',
+        'x64',
+        '--installed-version',
+        '0.1.0',
+        '--attestation',
+        attestationPath,
+        '--attestation-signature',
+        attestationSignaturePath,
+        '--attestation-public-key',
+        attestationKeyPath,
+        '--attestation-key-sha256',
+        pinnedPemSha256,
+        '--attestation-source-commit',
+        'a'.repeat(40)
+      ],
+      (value) => {
+        output = value
+      }
+    )
+
+    const staged = JSON.parse(output)
+    expect(staged.candidateIdentity.state).toBe('unverified')
+    expect(staged.offlineAttestation.state).toBe('verified-under-caller-key')
+    expect(staged.activationAvailable).toBe(false)
+  })
+
   it('exposes an explicit package script and help without staging', async () => {
     const scripts = JSON.parse(readFileSync(join(repo, 'package.json'), 'utf8')).scripts
     expect(scripts['release:stage:appimage:offline']).toBe(
@@ -112,8 +249,10 @@ describe.skipIf(process.platform !== 'linux')('offline release staging CLI', () 
     const help = invoke(['--help'], { replaceArgs: true })
     expect(help.status).toBe(0)
     expect(help.stdout).toContain('no installation, no download')
-    expect(help.stdout).toContain('manifest version is not an inspected payload version')
-    expect(help.stdout).toContain('input snapshot is only an input claim')
+    expect(help.stdout).toContain(
+      'Without a matching attestation, the manifest version is only a claim'
+    )
+    expect(help.stdout).toContain('packaging-input snapshot alone does not verify')
     expect(await readdir(stageRoot)).toEqual([])
   })
 

@@ -53,7 +53,8 @@ export async function verifyAshAppImageEmbeddedIdentity({
   artifactPath,
   expectedSha256,
   architecture,
-  readerPath
+  readerPath,
+  onVerified
 }) {
   if (process.platform !== 'linux') {
     throw new Error('Embedded AppImage identity QA requires Linux')
@@ -75,6 +76,7 @@ export async function verifyAshAppImageEmbeddedIdentity({
 
   const workRoot = await mkdtemp(join(tmpdir(), 'ash-appimage-identity-qa-'))
   let pinnedArtifact
+  let reader
   try {
     await assertPrivateDirectory(workRoot, 'AppImage QA scratch directory')
     const snapshotPath = join(workRoot, 'candidate.AppImage')
@@ -92,16 +94,16 @@ export async function verifyAshAppImageEmbeddedIdentity({
     }
 
     const superblock = await findSquashfsSuperblock(snapshotPath, Number(pinnedArtifact.info.size))
-    const reader = await verifyReader(readerPath)
+    reader = await verifyReader(readerPath)
     const statOutput = runReader(
-      reader.path,
+      reader,
       squashfsArgs(superblock.offset, '-stat', snapshotPath),
       READER_MAX_BUFFER_BYTES,
       workRoot
     )
     parseSquashfsStats(statOutput, superblock)
     const listingOutput = runReader(
-      reader.path,
+      reader,
       squashfsArgs(superblock.offset, '-lln', snapshotPath),
       MAX_LISTING_BYTES,
       workRoot
@@ -111,7 +113,7 @@ export async function verifyAshAppImageEmbeddedIdentity({
     for (const [target, maxBytes] of Object.entries(REQUIRED_FILES)) {
       const entry = entries.get(target)
       const output = runReader(
-        reader.path,
+        reader,
         squashfsArgs(superblock.offset, '-cat', snapshotPath, target),
         Math.min(maxBytes + 1, entry.size + 1),
         workRoot
@@ -133,7 +135,7 @@ export async function verifyAshAppImageEmbeddedIdentity({
     }
     await assertPathStillMatches(artifactPath, pinnedArtifact, 'AppImage')
 
-    return {
+    const result = {
       checkpoint: {
         id: 'PK-05',
         kind: 'embedded-appimage-identity-diagnostic',
@@ -143,6 +145,7 @@ export async function verifyAshAppImageEmbeddedIdentity({
         sha256: expectedSha256,
         sha256VerifiedBefore: true,
         sha256VerifiedAfter: true,
+        size: Number(pinnedArtifact.info.size),
         architecture
       },
       squashfs: {
@@ -154,6 +157,8 @@ export async function verifyAshAppImageEmbeddedIdentity({
         inodeCount: superblock.inodeCount
       },
       embeddedIdentity: {
+        schema: identity.claim.schema,
+        evidenceKind: identity.claim.evidenceKind,
         appId: identity.claim.appId,
         productName: identity.claim.productName,
         packageName: identity.claim.packageName,
@@ -162,6 +167,9 @@ export async function verifyAshAppImageEmbeddedIdentity({
         sourceCommit: identity.claim.sourceCommit,
         capturedAppAsarSha256: identity.claim.capturedAppAsarSha256,
         capturedCompiledCliPackageJsonSha256: identity.claim.capturedCompiledCliPackageJsonSha256,
+        appAsarSha256: identity.appAsarSha256,
+        compiledCliPackageJsonSha256: identity.compiledCliPackageJsonSha256,
+        desktopSha256: identity.desktopSha256,
         sidecarSha256: identity.sidecarSha256,
         desktopName: identity.desktop.name,
         desktopStartupWMClass: identity.desktop.startupWmClass,
@@ -175,9 +183,18 @@ export async function verifyAshAppImageEmbeddedIdentity({
       ashPackageIdentityVerified: false,
       activationAvailable: false
     }
+    onVerified?.(result)
+    return result
   } finally {
-    await pinnedArtifact?.handle.close()
-    await rm(workRoot, { recursive: true, force: true })
+    try {
+      await reader?.handle.close()
+    } finally {
+      try {
+        await pinnedArtifact?.handle.close()
+      } finally {
+        await rm(workRoot, { recursive: true, force: true })
+      }
+    }
   }
 }
 

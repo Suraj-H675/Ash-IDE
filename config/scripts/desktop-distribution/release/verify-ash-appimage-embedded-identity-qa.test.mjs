@@ -1,6 +1,18 @@
 import { createHash } from 'node:crypto'
 import { constants } from 'node:fs'
-import { mkdir, mkdtemp, open, readFile, rm, symlink, writeFile } from 'node:fs/promises'
+import {
+  chmod,
+  copyFile,
+  link,
+  mkdir,
+  mkdtemp,
+  open,
+  readFile,
+  rename,
+  rm,
+  symlink,
+  writeFile
+} from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -14,6 +26,15 @@ import {
   parseDesktopIdentity,
   verifyEmbeddedIdentityFiles
 } from './ash-appimage-embedded-identity-payload.mjs'
+import {
+  assertPathStillMatches,
+  openPinnedRegularFile
+} from './ash-appimage-embedded-identity-files.mjs'
+import {
+  assertReaderUnchanged,
+  runReader,
+  verifyReader
+} from './ash-appimage-embedded-identity-reader.mjs'
 import { verifyAshAppImageEmbeddedIdentity } from './verify-ash-appimage-embedded-identity-qa.mjs'
 
 const APP_ID = 'com.ashide.desktop'
@@ -161,6 +182,36 @@ afterEach(async () => {
   await rm(root, { recursive: true, force: true })
 })
 
+describe('pinned AppImage path', () => {
+  it('rejects symlink, hardlink, and inode replacement aliases', async () => {
+    const candidate = join(root, 'candidate.AppImage')
+    const bytes = Buffer.from('caller-pinned image bytes')
+    await writeFile(candidate, bytes)
+    const pinned = await openPinnedRegularFile(candidate, 'AppImage', bytes.length)
+    const previous = join(root, 'previous.AppImage')
+    try {
+      await rename(candidate, previous)
+      await writeFile(candidate, bytes)
+      await expect(assertPathStillMatches(candidate, pinned, 'AppImage')).rejects.toThrow(
+        /changed while being inspected/
+      )
+    } finally {
+      await pinned.handle.close()
+    }
+
+    const linked = join(root, 'hardlinked.AppImage')
+    await link(previous, linked)
+    await expect(openPinnedRegularFile(previous, 'AppImage', bytes.length)).rejects.toThrow(
+      /single-link/
+    )
+    const symlinkPath = join(root, 'symlink.AppImage')
+    await symlink(previous, symlinkPath)
+    await expect(openPinnedRegularFile(symlinkPath, 'AppImage', bytes.length)).rejects.toThrow(
+      /symlink aliases/
+    )
+  })
+})
+
 describe('SquashFS superblock bounds', () => {
   it('accepts one bounded v4.0 layout and rejects the ELF marker and corrupt table bounds', () => {
     expect(parseSquashfsSuperblock(squashfsSuperblock(), 944632, 944632 + 4096)).toMatchObject({
@@ -259,6 +310,11 @@ describe('embedded identity payload', () => {
     expect(result.sidecarSha256).toBe(
       digest(identityFiles.get('resources/ash-package-input-identity.json'))
     )
+    expect(result.appAsarSha256).toBe(identityClaim.capturedAppAsarSha256)
+    expect(result.compiledCliPackageJsonSha256).toBe(
+      identityClaim.capturedCompiledCliPackageJsonSha256
+    )
+    expect(result.desktopSha256).toBe(digest(identityFiles.get('com.ashide.desktop.desktop')))
   })
 
   it('rejects mismatched hashes, application IDs, architectures, and absent metadata', async () => {
@@ -310,6 +366,27 @@ describe('embedded identity payload', () => {
 })
 
 describe.skipIf(!hasRealFixtures)('real AppImage embedded identity QA', () => {
+  it('executes the opened verified reader inode even when its pathname is replaced', async () => {
+    const localReader = join(root, 'private-unsquashfs')
+    await copyFile(readerPath, localReader)
+    await chmod(localReader, 0o700)
+    const pinned = await verifyReader(localReader)
+    try {
+      await rename(localReader, join(root, 'old-reader-inode'))
+      await writeFile(localReader, Buffer.from('not an executable'), { mode: 0o700 })
+      const output = runReader(
+        pinned,
+        ['-offset', '944632', '-mem', '32M', '-processors', '1', '-stat', realFixture],
+        64 * 1024,
+        root
+      )
+      expect(output.toString('utf8')).toMatch(/^Found a valid SQUASHFS 4:0 superblock/)
+      await expect(assertReaderUnchanged(pinned)).rejects.toThrow(/changed while being inspected/)
+    } finally {
+      await pinned.handle.close()
+    }
+  })
+
   it('matches actual embedded bytes while keeping candidate identity unverified', async () => {
     const result = await verifyAshAppImageEmbeddedIdentity({
       artifactPath: realFixture,
@@ -325,7 +402,9 @@ describe.skipIf(!hasRealFixtures)('real AppImage embedded identity QA', () => {
         productName: 'Ash IDE',
         packageName: 'ash-ide',
         version: '0.1.0',
-        architecture: realFixtureArchitecture
+        architecture: realFixtureArchitecture,
+        appAsarSha256: result.embeddedIdentity.capturedAppAsarSha256,
+        compiledCliPackageJsonSha256: result.embeddedIdentity.capturedCompiledCliPackageJsonSha256
       },
       candidateIdentity: { state: 'unverified' },
       ashPackageIdentityVerified: false,
