@@ -3223,8 +3223,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "99192ff49a9227a92f6c40a7e4036d21eeed153a3400cce4e51dd29e15f2c1ff",
-      "reason": "Ash M8 EX-03: remove general IDE app-plugin contracts and retain Ash boundaries. M8 release: keep offline-only staging disabled for installation and require real compiled CLI checkpoint/rollback smoke after asset builds."
+      "sha256": "4740097fa51a1d3f3e670f4ebad08b435b32044b4a91c628b728dc934b434a12",
+      "reason": "Ash M8 EX-03: remove general IDE app-plugin contracts and retain Ash boundaries. M8 release: keep offline-only staging disabled for installation and require real compiled CLI checkpoint/rollback smoke after asset builds. M8 QA: expose only a local read-only, fail-closed embedded AppImage identity diagnostic; no updater activation or bundled GPL extractor."
     },
     {
       "path": "pnpm-lock.yaml",
