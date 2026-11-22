@@ -6,7 +6,9 @@ const fixture = vi.hoisted(() => ({
   loadedIds: ['native-1', 'native-2', 'resting-3'],
   executingIds: ['native-1', 'native-2'],
   missingHost: false,
-  failRead: false
+  failRead: false,
+  remoteObserved: 0,
+  remoteFails: false
 }))
 
 vi.mock('../daemon/providers/lifecycle/daemon-provider-state', () => ({
@@ -32,15 +34,37 @@ vi.mock('../native-chat/agent-session-wire/structured-agent-session-registry', (
           }
         }
 }))
+vi.mock('./update-runtime-provider-socket-observation', () => ({
+  observeLocalRuntimeProviderChildren: async () => {
+    if (fixture.remoteFails) throw new Error('remote probe failed')
+    return fixture.remoteObserved
+  }
+}))
 
 afterEach(() => {
   fixture.loadedIds = ['native-1', 'native-2', 'resting-3']
   fixture.executingIds = ['native-1', 'native-2']
   fixture.missingHost = false
   fixture.failRead = false
+  fixture.remoteObserved = 0
+  fixture.remoteFails = false
 })
 
 describe('RT-15 desktop native Chat provider evidence', () => {
+  it('takes the stronger positive local or authenticated runtime count, not the sum', async () => {
+    fixture.remoteObserved = 4
+    const census = await collectAshUpdateRuntimeCensus(
+      () => 0,
+      () => false,
+      '/private-fixture'
+    )
+    expect(census.providerAgentSessions).toEqual({
+      state: 'unknown',
+      reason: 'provider-agent-inventory-unavailable',
+      lowerBound: 4
+    })
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census).decision).toBe('busy')
+  })
   it('reports observed host-owned provider children as busy without relying on daemon availability', async () => {
     const census = await collectAshUpdateRuntimeCensus(
       () => 0,

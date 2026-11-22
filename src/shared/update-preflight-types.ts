@@ -54,7 +54,7 @@ export type UpdateRuntimeCensus = {
   providerAgentSessions: {
     state: 'unknown'
     reason: 'provider-agent-inventory-unavailable'
-    /** Positive host-owned Structured Chat children in this process only; never host-wide idle proof. */
+    /** Positive native Chat children observed locally or in the authenticated runtime; never a complete provider census. */
     lowerBound?: number
   }
   pendingDiskWrites: {

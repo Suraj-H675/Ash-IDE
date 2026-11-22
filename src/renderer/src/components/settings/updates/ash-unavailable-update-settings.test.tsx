@@ -236,7 +236,7 @@ it('shows locally observed native Chat provider children without claiming a comp
       'At least 2 observed; The provider agent inventory is unavailable.'
     )
     expect(host.textContent).toContain(
-      'A native Chat provider child owned by this process was observed.'
+      'A native Chat provider child was observed by a local Ash runtime.'
     )
     expect(host.textContent).toContain('Ash cannot see every provider-native agent session.')
     expect(host.textContent).toContain('Activation is unavailable.')

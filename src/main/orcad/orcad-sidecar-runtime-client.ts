@@ -6,6 +6,13 @@ import { BROWSER_UNAVAILABLE_ERROR_CODE } from '../../shared/runtime-types'
 import { BrowserError } from '../browser/browser-error'
 const SIDECAR_MAX_RESPONSE_BYTES = 64 * 1024 * 1024
 
+/** Only bounded read-only probes opt in; browser sidecar streams retain their idle timeout. */
+export type StrictLocalRpcBudget = {
+  maxResponseBytes: number
+  /** Fixed total deadline, cumulative bytes, and immediate socket destruction on settlement. */
+  strict: true
+}
+
 const RuntimeResponse = z.discriminatedUnion('ok', [
   z.object({ id: z.string(), ok: z.literal(true), result: z.unknown() }).passthrough(),
   z
@@ -21,8 +28,11 @@ export async function sendOrcadSidecarRequest(
   metadata: RuntimeMetadata,
   method: string,
   params: unknown,
-  timeoutMs = 90_000
+  timeoutMs = 90_000,
+  responseBudget: number | StrictLocalRpcBudget = SIDECAR_MAX_RESPONSE_BYTES
 ): Promise<unknown> {
+  const strict = typeof responseBudget !== 'number'
+  const maxResponseBytes = strict ? responseBudget.maxResponseBytes : responseBudget
   const transport = findTransport(metadata, 'unix', 'named-pipe')
   if (!transport) {
     throw new BrowserError(
@@ -35,6 +45,7 @@ export async function sendOrcadSidecarRequest(
     const requestId = randomUUID()
     let buffer = ''
     let retainedBytes = 0
+    let receivedBytes = 0
     let settled = false
     const finish = (error: Error | null, result?: unknown): void => {
       if (settled) {
@@ -42,7 +53,12 @@ export async function sendOrcadSidecarRequest(
       }
       settled = true
       clearTimeout(timer)
-      socket.end()
+      if (strict) {
+        // A peer that never half-closes must not retain a completed diagnostic socket.
+        socket.destroy()
+      } else {
+        socket.end()
+      }
       if (error) {
         reject(error)
       } else {
@@ -73,8 +89,12 @@ export async function sendOrcadSidecarRequest(
     })
     socket.on('data', (chunk: string) => {
       buffer += chunk
-      retainedBytes += Buffer.byteLength(chunk, 'utf8')
-      if (retainedBytes > SIDECAR_MAX_RESPONSE_BYTES) {
+      const bytes = Buffer.byteLength(chunk, 'utf8')
+      retainedBytes += bytes
+      receivedBytes += bytes
+      // Ordinary sidecar payloads retain the existing buffered limit. Strict
+      // diagnostic probes account for every keepalive and every parsed line.
+      if ((strict ? receivedBytes : retainedBytes) > maxResponseBytes) {
         socket.destroy()
         finish(new BrowserError('browser_error', 'Electron browser sidecar response is too large.'))
         return
@@ -102,7 +122,9 @@ export async function sendOrcadSidecarRequest(
           return
         }
         if (raw && typeof raw === 'object' && '_keepalive' in raw) {
-          timer.refresh()
+          if (!strict) {
+            timer.refresh()
+          }
           continue
         }
         const parsed = RuntimeResponse.safeParse(raw)

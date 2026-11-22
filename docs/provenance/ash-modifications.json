@@ -922,6 +922,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/orcad/orcad-sidecar-runtime-client.ts",
+      "sha256": "f558293c3b291a679738a55fd622ced4a810a487fa4cbe8a8f8c4148943cb964",
+      "reason": "Ash RT-15: permit a response-size limit for authenticated read-only local runtime provider activity, retaining existing sidecar defaults and error handling. RT-15 security: strict opt-in read-only diagnostic sockets enforce fixed deadline, cumulative size and forced close while preserving browser sidecar defaults."
+    },
+    {
       "path": "src/main/persistence/applying-settings/ui-selection-normalization.ts",
       "sha256": "6bdbf4a2ecd5c6ddb22531e75ef100b19a259889bec8d2df057b5403d20d89ae",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1063,8 +1068,8 @@
     },
     {
       "path": "src/main/runtime/rpc/methods/index.ts",
-      "sha256": "06d3132258981ac50d65810862d2b8a73c3a1ecb130beb3db67f05660b79f978",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "4458da7d50336b358bc18a3636c4271a102720a4d432f6479ad7548ddd5e62ef",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger. Ash RT-15: add authenticated owner-only read-only provider-child observation to the runtime method manifest."
     },
     {
       "path": "src/main/runtime/rpc/methods/jira-saved-filter-state.test.ts",

@@ -42,6 +42,7 @@ import { HOST_CAPABILITY_METHODS } from './host-capabilities'
 import { RUNTIME_CLIENT_CAPABILITY_METHODS } from './runtime-client-capabilities'
 import { UPDATER_METHODS } from './updater'
 import { ASH_RUNTIME_CONTROL_METHODS } from './ash-runtime-control'
+import { ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS } from './ash-runtime-provider-activity'
 import { AGENT_SESSION_METHODS } from './agent-session'
 import { STRUCTURED_AGENT_SESSION_METHODS } from './structured-agent-session'
 import { STRUCTURED_AGENT_SESSION_ATTACHMENT_METHODS } from './structured-agent-session-attachments'
@@ -171,5 +172,6 @@ export const ASH_RPC_METHODS = [
       !ASH_UNAVAILABLE_RPC_METHODS.has(name) &&
       !ASH_UNAVAILABLE_RPC_PREFIXES.some((prefix) => name.startsWith(prefix))
   ),
-  ...ASH_RUNTIME_CONTROL_METHODS
+  ...ASH_RUNTIME_CONTROL_METHODS,
+  ...ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS
 ]

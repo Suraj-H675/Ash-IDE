@@ -31,7 +31,7 @@ const blockerCopy: Record<UpdatePreflightBlocker, string> = {
   'provider-agent-inventory-unknown':
     'Ash cannot see every provider-native agent session. Review provider sessions before relying on an empty PTY inventory.',
   'provider-agent-session-observed':
-    'A native Chat provider child owned by this process was observed. Other provider processes may also exist; this is not a complete inventory.',
+    'A native Chat provider child was observed by a local Ash runtime. Other provider processes may also exist; this is not a complete inventory.',
   'pending-disk-writes-unknown':
     'Ash cannot prove that writes are drained. Finish ongoing saves and writes, then recheck; this diagnostic still cannot prove they are clear.',
   'pending-disk-writes-observed':

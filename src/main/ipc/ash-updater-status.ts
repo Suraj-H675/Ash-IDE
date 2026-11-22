@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { NO_STAGED_UPDATE_CANDIDATE, assessUpdatePreflight } from '../updater/update-preflight'
 import { collectAshUpdateRuntimeCensus } from '../updater/update-runtime-ash-census'
+import { getCanonicalUserDataPath } from '../persistence/loading-store/user-data-path'
 import type { UpdatePreflightReport } from '../../shared/update-preflight-types'
 import type { UpdateStatus } from '../../shared/update-status-types'
 import type { Store } from '../persistence/loading-store/store'
@@ -32,7 +33,8 @@ export function registerAshUpdaterReadOnlyHandlers(
     assertTrustedSender(event)
     const runtime = await collectAshUpdateRuntimeCensus(
       () => BrowserWindow.getAllWindows().length,
-      () => store.hasObservedPendingLocalWrite()
+      () => store.hasObservedPendingLocalWrite(),
+      getCanonicalUserDataPath()
     )
     return assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, runtime)
   })
