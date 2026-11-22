@@ -4,10 +4,47 @@ import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { assertSelectedImageTree } from './ash-two-version-native-embedded-fixture.mjs'
 
 const require = createRequire(import.meta.url)
 const { main } = require('./ash-two-version-native-profile-qa.cjs')
 const pidfdTool = fileURLToPath(new URL('./ash-two-version-native-pidfd.py', import.meta.url))
+
+describe('in-image executable and module tree safety', () => {
+  const required = new Map([
+    ['resources/node-runtime', { kind: 'd' }],
+    ['resources/node-modules-unrelated', { kind: 'l' }],
+    ['resources/node_modules', { kind: 'd' }],
+    ['resources/app.asar.unpacked/out', { kind: 'd' }],
+    ['resources/ash-package-input-identity.json', { kind: '-' }]
+  ])
+
+  it('accepts regular in-image executable files without blocking unrelated entries', () => {
+    const entries = new Map(required)
+    entries.set('resources/node-runtime/bin/node', { kind: '-' })
+    entries.set('resources/node_modules/zod/index.js', { kind: '-' })
+    entries.set('resources/app.asar.unpacked/out/cli/index.js', { kind: '-' })
+    expect(() => assertSelectedImageTree(entries)).not.toThrow()
+  })
+
+  it.each([
+    'resources/node-runtime/bin/node',
+    'resources/node_modules/zod',
+    'resources/app.asar.unpacked/out/cli/runtime/client.js'
+  ])('rejects a symlink at executable dependency %s before extraction', (path) => {
+    const entries = new Map(required)
+    entries.set(path, { kind: 'l' })
+    expect(() => assertSelectedImageTree(entries)).toThrow(/symlink or unsafe entry/)
+  })
+
+  it('rejects a symlink replacing a required executable tree or identity file', () => {
+    for (const path of ['resources/node-runtime', 'resources/ash-package-input-identity.json']) {
+      const entries = new Map(required)
+      entries.set(path, { kind: 'l' })
+      expect(() => assertSelectedImageTree(entries)).toThrow()
+    }
+  })
+})
 
 describe('native shared-profile QA cleanup boundaries', () => {
   it('refuses a fixture path outside the private authenticated test root', async () => {

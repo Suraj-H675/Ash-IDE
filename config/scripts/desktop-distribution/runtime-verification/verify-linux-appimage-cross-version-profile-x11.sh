@@ -144,6 +144,10 @@ run_private_session() {
       return 1
     fi
     app_identity="$("$node" "$helper" status "$root/${name}.status.json" "$version")"
+    [[ "$app_identity" == "$app_pid" ]] || {
+      echo 'Authenticated app PID differs from the pinned AppImage launch child' >&2
+      return 1
+    }
     "$root/x11-window-control" probe "$app_identity" > "$root/${name}.x11-window.json"
     "$node" "$helper" settings "$out" > "$root/${name}.settings.json"
     "$root/x11-window-control" close "$app_identity" > "$root/${name}.close.json"

@@ -1,7 +1,7 @@
 // Manual QA only: snapshot the pinned AppImage, then use *its* embedded
 // CLI, profile-state code and Node runtime. No adjacent build files are used.
 import assert from 'node:assert/strict'
-import { chmod, mkdir, readFile } from 'node:fs/promises'
+import { chmod, mkdir, readFile, readdir } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -19,8 +19,55 @@ import {
   verifyReader
 } from '../release/ash-appimage-embedded-identity-reader.mjs'
 import { verifyAshAppImageEmbeddedIdentity } from '../release/verify-ash-appimage-embedded-identity-qa.mjs'
+import { parseSquashfsListing } from '../release/ash-appimage-embedded-identity-squashfs.mjs'
 
 const VALID_IMAGE_VERSION = /^(0|[1-9]\d{0,8})\.(0|[1-9]\d{0,8})\.(0|[1-9]\d{0,8})$/
+const EXECUTED_IMAGE_TREES = Object.freeze([
+  'resources/node-runtime',
+  'resources/node_modules',
+  'resources/app.asar.unpacked/out'
+])
+
+/** No link or device in any tree that will be executed or require()-loaded. */
+export function assertSelectedImageTree(entries) {
+  for (const path of EXECUTED_IMAGE_TREES) {
+    if (entries.get(path)?.kind !== 'd') {
+      throw new Error(`Embedded executable tree is not a real directory: ${path}`)
+    }
+  }
+  if (entries.get('resources/ash-package-input-identity.json')?.kind !== '-') {
+    throw new Error('Embedded package identity is not a real file')
+  }
+  for (const [path, entry] of entries) {
+    if (
+      EXECUTED_IMAGE_TREES.some((root) => path === root || path.startsWith(`${root}/`)) &&
+      entry.kind !== 'd' &&
+      entry.kind !== '-'
+    ) {
+      throw new Error(`Embedded executable tree contains a symlink or unsafe entry: ${path}`)
+    }
+  }
+}
+
+async function assertExtractedTreeHasNoLinks(root) {
+  const pending = [root]
+  let count = 0
+  while (pending.length > 0) {
+    const dir = pending.pop()
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      count++
+      if (count > 50_000) {
+        throw new Error('Embedded execution tree exceeds the file count budget')
+      }
+      const path = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        pending.push(path)
+      } else if (!entry.isFile()) {
+        throw new Error('Embedded execution tree extracted a symlink or unsafe filesystem object')
+      }
+    }
+  }
+}
 
 export async function extractEmbeddedFixture({
   artifact,
@@ -65,6 +112,23 @@ export async function extractEmbeddedFixture({
     await mkdir(output, { mode: 0o700 })
     await assertPrivateDirectory(output, 'Private QA embedded resources')
     const offset = diagnostic.squashfs.offset
+    const listing = runReader(
+      reader,
+      [
+        '-offset',
+        String(offset),
+        '-mem',
+        '32M',
+        '-processors',
+        '1',
+        '-lln',
+        PINNED_APPIMAGE_FD_PATH
+      ],
+      8 * 1024 * 1024,
+      root,
+      pinned
+    )
+    assertSelectedImageTree(parseSquashfsListing(listing, diagnostic.squashfs.inodeCount))
     runReader(
       reader,
       [
@@ -88,6 +152,7 @@ export async function extractEmbeddedFixture({
       root,
       pinned
     )
+    await assertExtractedTreeHasNoLinks(output)
     const resources = join(output, 'resources')
     const embeddedPackage = await readFile(join(resources, 'app.asar.unpacked/out/package.json'))
     const packageSha = createHash('sha256').update(embeddedPackage).digest('hex')
