@@ -21,18 +21,25 @@ type CimProcessRow = {
   ProcessId?: unknown
 }
 
-function fieldAsString(value: unknown): string {
-  if (typeof value === 'string') {
-    return value
-  }
-  return value === null || value === undefined ? '' : String(value)
-}
-
 function fieldAsNumber(value: unknown): number {
   if (typeof value === 'number') {
     return value
   }
   return typeof value === 'string' ? Number.parseInt(value, 10) : Number.NaN
+}
+
+function fieldAsStrictNumber(value: unknown): number {
+  if (typeof value === 'number') {
+    return value
+  }
+  return typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : Number.NaN
+}
+
+function fieldAsString(value: unknown): string {
+  if (typeof value === 'string') {
+    return value
+  }
+  return value === null || value === undefined ? '' : String(value)
 }
 
 export function parseWindowsCimProcessRows(stdout: string): WindowsProcessRow[] | null {
@@ -63,6 +70,51 @@ export function parseWindowsCimProcessRows(stdout: string): WindowsProcessRow[] 
   })
 }
 
+/** Strict variant for recovery decisions: no dropped rows may become false proof of absence. */
+export function parseCompleteWindowsCimProcessRows(stdout: string): WindowsProcessRow[] | null {
+  const trimmed = stdout.trim()
+  if (!trimmed) {
+    return []
+  }
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(trimmed)
+  } catch {
+    return null
+  }
+  const items = Array.isArray(parsed) ? parsed : [parsed]
+  const rows: WindowsProcessRow[] = []
+  for (const item of items) {
+    if (!item || typeof item !== 'object') {
+      return null
+    }
+    const row = item as CimProcessRow
+    const pid = fieldAsStrictNumber(row.ProcessId)
+    const ppid = fieldAsStrictNumber(row.ParentProcessId)
+    if (
+      !Number.isSafeInteger(pid) ||
+      pid < 0 ||
+      !Number.isSafeInteger(ppid) ||
+      ppid < 0 ||
+      typeof row.Name !== 'string' ||
+      row.Name.length === 0 ||
+      (row.CommandLine !== null &&
+        row.CommandLine !== undefined &&
+        typeof row.CommandLine !== 'string')
+    ) {
+      return null
+    }
+    const name = row.Name
+    rows.push({
+      pid,
+      ppid,
+      name,
+      command: typeof row.CommandLine === 'string' && row.CommandLine ? row.CommandLine : name
+    })
+  }
+  return rows
+}
+
 /** Reject failures: an empty table would falsely prove process trees dead. */
 export async function readWindowsProcessRowsWithCim(): Promise<WindowsProcessRow[]> {
   const result = await runProcess({
@@ -79,6 +131,30 @@ export async function readWindowsProcessRowsWithCim(): Promise<WindowsProcessRow
   const rows = parseWindowsCimProcessRows(result.stdout)
   if (!rows || rows.length === 0) {
     throw new Error('windows process table CIM scan returned no rows')
+  }
+  return rows
+}
+
+/** Full bounded snapshot for profile recovery; all ambiguous output fails closed. */
+export async function readWindowsProcessRowsForProfileRecovery(): Promise<WindowsProcessRow[]> {
+  const result = await runProcess({
+    program: windowsPowerShellPath(),
+    args: ['-NoProfile', '-NonInteractive', '-Command', POWERSHELL_PROCESS_QUERY],
+    timeoutMs: WINDOWS_CIM_QUERY_TIMEOUT_MS,
+    maxOutputBytes: WINDOWS_CIM_MAX_OUTPUT_BYTES
+  })
+  if (
+    result.timedOut ||
+    result.code !== 0 ||
+    result.signal !== null ||
+    result.outputTruncated ||
+    result.stderr.length > 0
+  ) {
+    throw new Error('windows process table CIM recovery scan was incomplete')
+  }
+  const rows = parseCompleteWindowsCimProcessRows(result.stdout)
+  if (!rows || rows.length === 0) {
+    throw new Error('windows process table CIM recovery scan returned no complete rows')
   }
   return rows
 }

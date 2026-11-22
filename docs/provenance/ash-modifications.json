@@ -3983,13 +3983,13 @@
     },
     {
       "path": "src/main/orcad/electron-serve-browser-process.ts",
-      "sha256": "fd9b8bded6076a475825d71f15aed3af46ae2251f88e2d4035bd2987d523a10a",
-      "reason": "Ash RT-15: retain Electron cleanup state until the spawned helper exits and remove its profile only after cleanup is confirmed."
+      "sha256": "9c1d5594aebd135406df0cd301dac263777b8b4d8f6ef4f26d546b9123b8209b",
+      "reason": "Ash RT-15 repair: validate sidecar metadata and require owned-child exit plus profile-use evidence before cleanup."
     },
     {
       "path": "src/main/orcad/electron-sidecar-profile.ts",
-      "sha256": "62263fb3ea7bba3c3094a4c3a5f52a6c7c8869f5320024e13e617ed6f3a51d22",
-      "reason": "Ash RT-15: stop Electron through its owned ChildProcess, confirm exit, and retain profiles for unidentified orphans."
+      "sha256": "ed0600a883b5e9c4f018feda4d075126e98e0c3875ac0414c24fcc6f6f6d3e23",
+      "reason": "Ash RT-15 repair: preserve backward-compatible profile records and remove profiles only after complete cross-platform process evidence."
     },
     {
       "path": "src/main/orcad/external-chromium-browser-process.ts",
@@ -4010,6 +4010,16 @@
       "path": "src/main/orcad/orcad-browser-startup.ts",
       "sha256": "e3e05ab7c7b3fa8ee51ec11de3cbe88bdd01022f7a89aa3939109e93dc84fde2",
       "reason": "Ash RT-15: retain positive predecessor evidence and allow bounded stop retries until each provider owner confirms cleanup."
+    },
+    {
+      "path": "src/main/orcad/__fixtures__/fake-orcad-electron-sidecar.cjs",
+      "sha256": "46bfe582dc9b4685c5df24172c4bab8e1e13253a67863fa9d6384c88c330ff22",
+      "reason": "Ash RT-15 test fixture: model runtime-metadata removal and exit on parent IPC disconnect for crash/relaunch recovery."
+    },
+    {
+      "path": "src/main/windows/windows-process-table-cim-scan.ts",
+      "sha256": "38f01894398c3c06a433e54f2f38b266c6be9a434816e01eaf1d70c1fa149c87",
+      "reason": "Ash RT-15 repair: strict bounded CIM snapshots keep malformed or incomplete process census unknown."
     }
   ]
 }

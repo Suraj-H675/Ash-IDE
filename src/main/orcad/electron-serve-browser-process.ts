@@ -16,7 +16,6 @@ import type { RuntimeBrowserCommands } from '../runtime/browser/commands/browser
 import type { RuntimeMetadata } from '../../shared/runtime-bootstrap'
 import { BROWSER_UNAVAILABLE_ERROR_CODE } from '../../shared/runtime-types'
 import { readRuntimeMetadata } from '../runtime/rpc/server/runtime-metadata'
-import { removeTree } from '../../shared/windows-transient-lock-removal'
 import { sendOrcadSidecarRequest } from './orcad-sidecar-runtime-client'
 import { browserWaitRequestTimeoutMs } from '../../shared/browser-wait-timeout'
 import { reserveLoopbackPort } from './loopback-port-reservation'
@@ -43,6 +42,50 @@ const BrowserPageResult = z.object({ browserPageId: z.string() }).passthrough()
 const BrowserCloseResult = z.object({ closed: z.boolean() }).passthrough()
 const BrowserTabListResult = z.object({ tabs: z.array(ElectronSidecarTabSchema) }).passthrough()
 const RuntimeStatusResult = z.object({ capabilities: z.array(z.string()).optional() }).passthrough()
+const RuntimeTransportMetadata = z
+  .object({
+    kind: z.enum(['unix', 'named-pipe', 'websocket']),
+    endpoint: z.string().min(1)
+  })
+  .passthrough()
+const SidecarRuntimeMetadata = z
+  .object({
+    runtimeId: z.string().min(1),
+    pid: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+    transports: z.array(RuntimeTransportMetadata).optional(),
+    transport: RuntimeTransportMetadata.optional(),
+    authToken: z.string().nullable(),
+    startedAt: z.number().finite()
+  })
+  .passthrough()
+  .refine(
+    (metadata) =>
+      metadata.transports?.some((transport) => transport.kind !== 'websocket') === true ||
+      (metadata.transport !== undefined && metadata.transport.kind !== 'websocket')
+  )
+
+function readSidecarRuntimeMetadata(userDataPath: string): RuntimeMetadata | null {
+  try {
+    const parsed = SidecarRuntimeMetadata.safeParse(readRuntimeMetadata(userDataPath))
+    if (!parsed.success) {
+      return null
+    }
+    const metadata = parsed.data
+    return {
+      runtimeId: metadata.runtimeId,
+      pid: metadata.pid,
+      transports: metadata.transports?.length
+        ? metadata.transports
+        : metadata.transport
+          ? [metadata.transport]
+          : [],
+      authToken: metadata.authToken,
+      startedAt: metadata.startedAt
+    }
+  } catch {
+    return null
+  }
+}
 
 export class ElectronServeBrowserProcess {
   private child: ChildProcess | null = null
@@ -65,10 +108,15 @@ export class ElectronServeBrowserProcess {
     }
     if (!(await removeLeftoverElectronSidecarProfile(this.orcadUserDataPath))) {
       this.cleanupUncertain = true
-      throw new Error('A previous Electron browser sidecar may still be running.')
+      throw new Error(
+        'A previous Electron browser profile could not be verified as unused. Close other Ash/Orca browser processes and retry; the profile was preserved.'
+      )
     }
     this.cleanupUncertain = false
-    const userDataPath = await createElectronSidecarProfile(this.orcadUserDataPath)
+    const userDataPath = await createElectronSidecarProfile(
+      this.orcadUserDataPath,
+      this.executablePath
+    )
     this.sidecarDataPath = userDataPath
     const port = await reserveLoopbackPort()
     signal?.throwIfAborted()
@@ -87,7 +135,7 @@ export class ElectronServeBrowserProcess {
     let lastError: unknown = null
     while (Date.now() < deadline) {
       signal?.throwIfAborted()
-      const metadata = readRuntimeMetadata(userDataPath)
+      const metadata = readSidecarRuntimeMetadata(userDataPath)
       if (metadata) {
         try {
           const status = RuntimeStatusResult.parse(
@@ -154,18 +202,11 @@ export class ElectronServeBrowserProcess {
 
   async stop(): Promise<void> {
     const child = this.child
-    const metadata = this.metadata
     const sidecarDataPath = this.sidecarDataPath
-    const wasCleanupUncertain = this.cleanupUncertain
-    this.cleanupUncertain = Boolean(child || wasCleanupUncertain)
+    this.cleanupUncertain = Boolean(child || sidecarDataPath || this.cleanupUncertain)
     this.tabs.clear()
     if (
-      !(await confirmElectronSidecarCleanup(
-        child,
-        metadata?.pid ?? null,
-        this.orcadUserDataPath,
-        wasCleanupUncertain
-      ))
+      !(await confirmElectronSidecarCleanup(child, this.orcadUserDataPath, this.cleanupUncertain))
     ) {
       throw new Error('Electron browser sidecar cleanup remains unresolved.')
     }
@@ -175,12 +216,6 @@ export class ElectronServeBrowserProcess {
     this.sidecarCapabilities = []
     this.sidecarDataPath = null
     this.cleanupUncertain = false
-    if (sidecarDataPath) {
-      // Windows helpers may briefly hold this temp profile; cleanup failure must not strand the instance lock.
-      await removeTree(sidecarDataPath).catch((error: unknown) =>
-        console.warn('[orcad] Electron browser sidecar data was not removed:', error)
-      )
-    }
   }
 
   private async invoke(

@@ -1,5 +1,6 @@
 import type { ChildProcess } from 'node:child_process'
-import { lstat, mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { lstat, mkdtemp, open } from 'node:fs/promises'
+import type { Stats } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 import { z } from 'zod'
@@ -9,16 +10,31 @@ import { electronIsolatedProfileSwitches } from '../../shared/electron-isolated-
 import { headlessServeOzonePlatformSwitches } from '../../shared/headless-serve-ozone-platform'
 import { electronServeEnvironment } from './electron-serve-browser-environment'
 import { isSafeOwnedDirectory } from '../../shared/owned-private-directory'
+import { writeSecureJsonFile } from '../../shared/secure-file'
+import { readPrivateWindowsFile } from '../../shared/secure-path-windows-acl'
 import { isProcessAlive } from '../../shared/serve-bundle-coordination'
 import { removeTree } from '../../shared/windows-transient-lock-removal'
 import { isDirectChild } from '../window/owned-temp-staging-root'
-import { readRuntimeMetadataAsync } from '../runtime/rpc/server/runtime-metadata'
+import { readSidecarProfileUse } from './electron-sidecar-profile-process-evidence'
 
 const STOP_TIMEOUT_MS = 5_000
 const PROFILE_PREFIX = 'orcad-browser-'
 // Lives in orcad's private data root, so only this instance can name a profile for removal.
 const PROFILE_RECORD_FILE = 'browser-sidecar-profile.json'
-const ProfileRecord = z.object({ profilePath: z.string() })
+const MAX_PROFILE_RECORD_BYTES = 4_096
+const ProfileRecord = z
+  .object({ profilePath: z.string(), sidecarExecutableName: z.string().optional() })
+  .passthrough()
+
+type RecordedProfile =
+  | { kind: 'missing' }
+  | { kind: 'invalid' }
+  | {
+      kind: 'valid'
+      profilePath: string
+      sidecarExecutableName?: string
+      recordStats: Stats
+    }
 
 // Short /tmp, not macOS's long tmpdir(): the sidecar binds its runtime socket in its profile.
 function temporaryRoot(): string {
@@ -104,11 +120,15 @@ export async function stopElectronSidecar(
   return (await waitForChildExit(child, STOP_TIMEOUT_MS)) ? 'confirmed' : 'unresolved'
 }
 
+function isSafePid(pid: number | null | undefined): pid is number {
+  return typeof pid === 'number' && Number.isSafeInteger(pid) && pid > 0
+}
+
 export function electronSidecarIsAvailable(
   child: ChildProcess | null,
   runtimePid: number | null
 ): boolean {
-  if (runtimePid === null) {
+  if (!isSafePid(runtimePid)) {
     return false
   }
   if (child?.pid === runtimePid) {
@@ -122,7 +142,8 @@ export function electronSidecarPid(
   child: ChildProcess | null,
   runtimePid: number | null
 ): number | null {
-  return child?.pid &&
+  return isSafePid(runtimePid) &&
+    isSafePid(child?.pid) &&
     child.pid === runtimePid &&
     child.exitCode === null &&
     child.signalCode === null
@@ -131,12 +152,22 @@ export function electronSidecarPid(
 }
 
 /** Unpredictable per start, so no other account can claim the name first. */
-export async function createElectronSidecarProfile(orcadUserDataPath: string): Promise<string> {
+export async function createElectronSidecarProfile(
+  orcadUserDataPath: string,
+  executablePath?: string
+): Promise<string> {
   const profilePath = await mkdtemp(join(temporaryRoot(), PROFILE_PREFIX))
   try {
-    await writeFile(join(orcadUserDataPath, PROFILE_RECORD_FILE), JSON.stringify({ profilePath }), {
-      mode: 0o600
-    })
+    if (
+      !writeSecureJsonFile(join(orcadUserDataPath, PROFILE_RECORD_FILE), {
+        profilePath,
+        ...(executablePath ? { sidecarExecutableName: basename(executablePath) } : {})
+      })
+    ) {
+      throw new Error(
+        'Could not verify private permissions on the Electron browser profile record.'
+      )
+    }
   } catch (error) {
     await removeTree(profilePath).catch(() => undefined)
     throw error
@@ -144,53 +175,175 @@ export async function createElectronSidecarProfile(orcadUserDataPath: string): P
   return profilePath
 }
 
-async function readRecordedProfile(orcadUserDataPath: string): Promise<string | null> {
+function isPrivateRegularFile(stats: Stats): boolean {
+  if (!stats.isFile() || stats.isSymbolicLink()) {
+    return false
+  }
+  return (
+    process.platform === 'win32' ||
+    ((typeof process.getuid !== 'function' || stats.uid === process.getuid()) &&
+      (stats.mode & 0o077) === 0 &&
+      (stats.mode & 0o600) === 0o600)
+  )
+}
+
+function sameFileSnapshot(left: Stats, right: Stats): boolean {
+  return (
+    left.dev === right.dev &&
+    left.ino === right.ino &&
+    left.size === right.size &&
+    left.mtimeMs === right.mtimeMs
+  )
+}
+
+function sameDirectoryIdentity(left: Stats, right: Stats): boolean {
+  return left.dev === right.dev && left.ino === right.ino
+}
+
+function errorCode(error: unknown): string | undefined {
+  return error instanceof Error && 'code' in error && typeof error.code === 'string'
+    ? error.code
+    : undefined
+}
+
+async function lstatProfile(
+  profilePath: string
+): Promise<{ kind: 'missing' } | { kind: 'unknown' } | { kind: 'present'; stats: Stats }> {
   try {
-    const raw = await readFile(join(orcadUserDataPath, PROFILE_RECORD_FILE), 'utf8')
-    const { profilePath } = ProfileRecord.parse(JSON.parse(raw))
-    return isDirectChild(temporaryRoot(), profilePath) &&
-      basename(profilePath).startsWith(PROFILE_PREFIX)
-      ? profilePath
-      : null
-  } catch {
-    return null
+    return { kind: 'present', stats: await lstat(profilePath) }
+  } catch (error) {
+    return errorCode(error) === 'ENOENT' ? { kind: 'missing' } : { kind: 'unknown' }
   }
 }
 
-async function orphanSidecarHasExited(profilePath: string): Promise<boolean> {
-  const orphan = await readRuntimeMetadataAsync(profilePath).catch(() => undefined)
-  // A restarted parent has no ChildProcess handle for this PID. Metadata cannot make a
-  // numeric-PID signal atomic with process exit, so preserve the profile when identity is unknown.
-  return orphan ? !isProcessAlive(orphan.pid) : false
+async function readRecordedProfile(orcadUserDataPath: string): Promise<RecordedProfile> {
+  const recordPath = join(orcadUserDataPath, PROFILE_RECORD_FILE)
+  let before: Stats
+  try {
+    before = await lstat(recordPath)
+  } catch (error) {
+    return errorCode(error) === 'ENOENT' ? { kind: 'missing' } : { kind: 'invalid' }
+  }
+  if (!isPrivateRegularFile(before) || before.size > MAX_PROFILE_RECORD_BYTES) {
+    return { kind: 'invalid' }
+  }
+
+  let file
+  try {
+    file = await open(recordPath, 'r')
+    const opened = await file.stat()
+    if (!isPrivateRegularFile(opened) || !sameFileSnapshot(before, opened)) {
+      return { kind: 'invalid' }
+    }
+    const buffer = Buffer.alloc(MAX_PROFILE_RECORD_BYTES + 1)
+    const { bytesRead } = await file.read(buffer, 0, buffer.length, 0)
+    if (bytesRead > MAX_PROFILE_RECORD_BYTES) {
+      return { kind: 'invalid' }
+    }
+    if (process.platform === 'win32') {
+      const protectedContent = readPrivateWindowsFile(recordPath, MAX_PROFILE_RECORD_BYTES)
+      if (!protectedContent || !protectedContent.equals(buffer.subarray(0, bytesRead))) {
+        return { kind: 'invalid' }
+      }
+    }
+    const afterOpenRead = await file.stat()
+    const afterPathRead = await lstat(recordPath)
+    if (
+      !sameFileSnapshot(opened, afterOpenRead) ||
+      !sameFileSnapshot(afterOpenRead, afterPathRead) ||
+      !isPrivateRegularFile(afterPathRead)
+    ) {
+      return { kind: 'invalid' }
+    }
+    const parsed = ProfileRecord.parse(JSON.parse(buffer.toString('utf8', 0, bytesRead)))
+    const { profilePath, sidecarExecutableName } = parsed
+    if (
+      !isDirectChild(temporaryRoot(), profilePath) ||
+      !basename(profilePath).startsWith(PROFILE_PREFIX) ||
+      (sidecarExecutableName !== undefined &&
+        (!sidecarExecutableName || basename(sidecarExecutableName) !== sidecarExecutableName))
+    ) {
+      return { kind: 'invalid' }
+    }
+    return {
+      kind: 'valid',
+      profilePath,
+      recordStats: afterPathRead,
+      ...(sidecarExecutableName ? { sidecarExecutableName } : {})
+    }
+  } catch (error) {
+    return { kind: 'invalid' }
+  } finally {
+    await file?.close().catch(() => undefined)
+  }
 }
 
-/** Remove a recorded profile only when its sidecar is absent or confirmed dead. */
+async function recordedProfileIsUnchanged(
+  orcadUserDataPath: string,
+  recordStats: Stats
+): Promise<boolean> {
+  try {
+    const current = await lstat(join(orcadUserDataPath, PROFILE_RECORD_FILE))
+    return isPrivateRegularFile(current) && sameFileSnapshot(recordStats, current)
+  } catch {
+    return false
+  }
+}
+
+/** Remove a recorded profile only after a complete host snapshot proves its random marker absent. */
 export async function removeLeftoverElectronSidecarProfile(
   orcadUserDataPath: string
 ): Promise<boolean> {
-  const profilePath = await readRecordedProfile(orcadUserDataPath)
-  if (!profilePath) {
+  const record = await readRecordedProfile(orcadUserDataPath)
+  if (record.kind === 'missing') {
     return true
   }
-  const stats = await lstat(profilePath).catch(() => null)
-  if (!stats) {
-    return true
+  if (record.kind !== 'valid') {
+    return false
   }
+  const { profilePath, sidecarExecutableName, recordStats } = record
+  const beforeScan = await lstatProfile(profilePath)
+  if (beforeScan.kind === 'missing') {
+    return recordedProfileIsUnchanged(orcadUserDataPath, recordStats)
+  }
+  if (beforeScan.kind !== 'present') {
+    return false
+  }
+  const stats = beforeScan.stats
   if (!isSafeOwnedDirectory(stats)) {
     return false
   }
-  if (!(await orphanSidecarHasExited(profilePath))) {
+  if (
+    !isDirectChild(temporaryRoot(), profilePath) ||
+    (await readSidecarProfileUse(profilePath, sidecarExecutableName)) !== 'absent'
+  ) {
     return false
   }
-  await removeTree(profilePath).catch((error: unknown) =>
+  if (!(await recordedProfileIsUnchanged(orcadUserDataPath, recordStats))) {
+    return false
+  }
+  const afterScan = await lstatProfile(profilePath)
+  if (afterScan.kind === 'missing') {
+    return recordedProfileIsUnchanged(orcadUserDataPath, recordStats)
+  }
+  if (
+    afterScan.kind !== 'present' ||
+    !isSafeOwnedDirectory(afterScan.stats) ||
+    !sameDirectoryIdentity(stats, afterScan.stats)
+  ) {
+    return false
+  }
+  try {
+    await removeTree(profilePath)
+  } catch (error) {
     console.warn('[orcad] Leftover Electron browser sidecar data was not removed:', error)
-  )
+    return false
+  }
   return true
 }
 
 export async function confirmElectronSidecarCleanup(
   child: ChildProcess | null,
-  runtimePid: number | null,
   orcadUserDataPath: string,
   cleanupUncertain: boolean
 ): Promise<boolean> {
@@ -198,10 +351,7 @@ export async function confirmElectronSidecarCleanup(
     if ((await stopElectronSidecar(child)) !== 'confirmed') {
       return false
     }
-    if (runtimePid !== null && child.pid !== runtimePid) {
-      return removeLeftoverElectronSidecarProfile(orcadUserDataPath)
-    }
-    return true
+    return removeLeftoverElectronSidecarProfile(orcadUserDataPath)
   }
   return cleanupUncertain ? removeLeftoverElectronSidecarProfile(orcadUserDataPath) : true
 }

@@ -4,7 +4,7 @@
 'use strict'
 
 const { createServer } = require('node:net')
-const { appendFileSync, readFileSync, renameSync, writeFileSync } = require('node:fs')
+const { appendFileSync, readFileSync, renameSync, rmSync, writeFileSync } = require('node:fs')
 const { join } = require('node:path')
 
 const USER_DATA_FLAG = '--user-data-dir='
@@ -19,6 +19,13 @@ if (!userDataDir) {
   process.exit(2)
 }
 if (process.env.ORCA_FAKE_SIDECAR_MODE === 'exit-before-ready') {
+  process.exit(3)
+}
+if (process.env.ORCA_FAKE_SIDECAR_MODE === 'invalid-metadata-then-exit') {
+  writeFileSync(
+    join(userDataDir, 'ash-runtime.json'),
+    process.env.ORCA_FAKE_SIDECAR_METADATA || '{}'
+  )
   process.exit(3)
 }
 
@@ -139,8 +146,22 @@ const server = createServer((socket) => {
   })
 })
 
+const metadataPath = join(userDataDir, 'ash-runtime.json')
+let shuttingDown = false
+
+function shutdown() {
+  if (shuttingDown) {
+    return
+  }
+  shuttingDown = true
+  rmSync(metadataPath, { force: true })
+  server.close(() => process.exit(0))
+}
+
+process.once('disconnect', shutdown)
+process.once('SIGTERM', shutdown)
+
 server.listen(endpoint, () => {
-  const metadataPath = join(userDataDir, 'ash-runtime.json')
   // Publish atomically so polling cannot parse partial metadata.
   writeFileSync(
     `${metadataPath}.staging`,
