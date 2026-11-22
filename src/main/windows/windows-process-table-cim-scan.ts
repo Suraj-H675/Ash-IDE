@@ -14,11 +14,8 @@ const POWERSHELL_PROCESS_QUERY =
   'Select-Object CommandLine,Name,ParentProcessId,ProcessId | ' +
   'ConvertTo-Json -Compress'
 
-type CimProcessRow = {
-  CommandLine?: unknown
-  Name?: unknown
-  ParentProcessId?: unknown
-  ProcessId?: unknown
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function fieldAsNumber(value: unknown): number {
@@ -55,18 +52,17 @@ export function parseWindowsCimProcessRows(stdout: string): WindowsProcessRow[] 
   }
   const items = Array.isArray(parsed) ? parsed : [parsed]
   return items.flatMap((item) => {
-    if (!item || typeof item !== 'object') {
+    if (!isRecord(item)) {
       return []
     }
-    const row = item as CimProcessRow
-    const pid = fieldAsNumber(row.ProcessId)
-    const ppid = fieldAsNumber(row.ParentProcessId)
+    const pid = fieldAsNumber(item.ProcessId)
+    const ppid = fieldAsNumber(item.ParentProcessId)
     if (!Number.isFinite(pid) || !Number.isFinite(ppid)) {
       return []
     }
-    const name = fieldAsString(row.Name)
+    const name = fieldAsString(item.Name)
     // Omit unused working sets to limit an already expensive scan.
-    return [{ pid, ppid, name, command: fieldAsString(row.CommandLine) || name }]
+    return [{ pid, ppid, name, command: fieldAsString(item.CommandLine) || name }]
   })
 }
 
@@ -85,31 +81,31 @@ export function parseCompleteWindowsCimProcessRows(stdout: string): WindowsProce
   const items = Array.isArray(parsed) ? parsed : [parsed]
   const rows: WindowsProcessRow[] = []
   for (const item of items) {
-    if (!item || typeof item !== 'object') {
+    if (!isRecord(item)) {
       return null
     }
-    const row = item as CimProcessRow
-    const pid = fieldAsStrictNumber(row.ProcessId)
-    const ppid = fieldAsStrictNumber(row.ParentProcessId)
+    const pid = fieldAsStrictNumber(item.ProcessId)
+    const ppid = fieldAsStrictNumber(item.ParentProcessId)
     if (
       !Number.isSafeInteger(pid) ||
       pid < 0 ||
       !Number.isSafeInteger(ppid) ||
       ppid < 0 ||
-      typeof row.Name !== 'string' ||
-      row.Name.length === 0 ||
-      (row.CommandLine !== null &&
-        row.CommandLine !== undefined &&
-        typeof row.CommandLine !== 'string')
+      typeof item.Name !== 'string' ||
+      item.Name.length === 0 ||
+      (item.CommandLine !== null &&
+        item.CommandLine !== undefined &&
+        typeof item.CommandLine !== 'string')
     ) {
       return null
     }
-    const name = row.Name
+    const name = item.Name
     rows.push({
       pid,
       ppid,
       name,
-      command: typeof row.CommandLine === 'string' && row.CommandLine ? row.CommandLine : name
+      command: typeof item.CommandLine === 'string' && item.CommandLine ? item.CommandLine : name,
+      commandLineReadable: typeof item.CommandLine === 'string' && item.CommandLine.length > 0
     })
   }
   return rows

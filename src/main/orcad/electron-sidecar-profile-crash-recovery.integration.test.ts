@@ -1,10 +1,11 @@
 import { spawn, type ChildProcess } from 'node:child_process'
 import { once } from 'node:events'
-import { existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import * as portReservation from './loopback-port-reservation'
 import type * as ElectronSidecarProfileModule from './electron-sidecar-profile'
 
 const { spawnFakeSidecar } = vi.hoisted(() => ({ spawnFakeSidecar: vi.fn() }))
@@ -35,9 +36,13 @@ describe('Electron sidecar profile crash recovery', () => {
     fakeMode = undefined
     fakeMetadata = undefined
     spawnFakeSidecar.mockImplementation((_executablePath: string, userDataPath: string) => {
+      expect(
+        JSON.parse(readFileSync(join(root, 'browser-sidecar-profile.json'), 'utf8')).profilePath
+      ).toBe(userDataPath)
       profiles.push(userDataPath)
       const child = spawn(process.execPath, [FIXTURE_PATH, `--user-data-dir=${userDataPath}`], {
         stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+        detached: process.platform !== 'win32',
         env: {
           ...process.env,
           ...(fakeMode ? { ORCA_FAKE_SIDECAR_MODE: fakeMode } : {}),
@@ -50,6 +55,7 @@ describe('Electron sidecar profile crash recovery', () => {
   })
 
   afterEach(async () => {
+    vi.restoreAllMocks()
     for (const child of children) {
       if (child.exitCode === null && child.signalCode === null) {
         child.kill('SIGKILL')
@@ -77,6 +83,14 @@ describe('Electron sidecar profile crash recovery', () => {
     expect(existsSync(join(oldProfile, 'ash-runtime.json'))).toBe(false)
 
     const restarted = new ElectronServeBrowserProcess('fake-electron.exe', root)
+    await expect(restarted.start()).rejects.toThrow('data was preserved')
+    expect(profiles).toHaveLength(1)
+    expect(existsSync(oldProfile)).toBe(true)
+
+    await first.stop()
+    expect(first.hasHostOwnedCleanup()).toBe(false)
+    expect(existsSync(oldProfile)).toBe(false)
+
     await restarted.start()
     expect(restarted.isAvailable()).toBe(true)
     expect(profiles).toHaveLength(2)
@@ -85,6 +99,25 @@ describe('Electron sidecar profile crash recovery', () => {
     await restarted.stop()
     expect(restarted.hasHostOwnedCleanup()).toBe(false)
     expect(existsSync(profiles[1])).toBe(false)
+  })
+
+  it('cleans an allocated profile when port reservation fails before spawn', async () => {
+    vi.spyOn(portReservation, 'reserveLoopbackPort').mockRejectedValue(
+      new Error('fixture port reservation failure')
+    )
+    const browser = new ElectronServeBrowserProcess('fake-electron.exe', root)
+
+    await expect(browser.start()).rejects.toThrow('fixture port reservation failure')
+    const ownerRecord: { profilePath: string } = JSON.parse(
+      readFileSync(join(root, 'browser-sidecar-profile.json'), 'utf8')
+    )
+    const profile = ownerRecord.profilePath
+    expect(existsSync(profile)).toBe(true)
+    expect(children).toHaveLength(0)
+
+    await browser.stop()
+    expect(browser.hasHostOwnedCleanup()).toBe(false)
+    expect(existsSync(profile)).toBe(false)
   })
 
   it('treats malformed records and unsafe runtime PIDs as startup unknown', async () => {

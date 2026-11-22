@@ -14,7 +14,7 @@ const KNOWN_ELECTRON_PROCESS_NAMES = new Set([
   'orca.exe'
 ])
 
-export type SidecarProfileUse = 'in-use' | 'absent' | 'unknown'
+export type SidecarProfileUse = 'in-use' | 'absent' | 'unknown' | 'unavailable'
 
 /** A path match is positive evidence even if the process table was truncated after that row. */
 export function classifyPosixProcessSnapshot(
@@ -38,7 +38,7 @@ export function classifyPosixProcessSnapshot(
   return 'absent'
 }
 
-/** Unreadable command lines for the expected app or a known browser process stay unknown. */
+/** Any unreadable process command line keeps a Windows ownership census unknown. */
 export function classifyWindowsProcessRows(
   rows: readonly WindowsProcessRow[],
   profilePath: string,
@@ -48,6 +48,9 @@ export function classifyWindowsProcessRows(
     return 'in-use'
   }
   if (rows.length === 0) {
+    return 'unknown'
+  }
+  if (rows.some((row) => row.commandLineReadable === false)) {
     return 'unknown'
   }
   const candidates = new Set(KNOWN_ELECTRON_PROCESS_NAMES)
@@ -67,23 +70,27 @@ export function classifyWindowsProcessRows(
 }
 
 /** Read-only bounded snapshot; no PID from this result is ever signaled. */
+export async function readWindowsSidecarProfileUse(
+  profilePath: string,
+  sidecarExecutableName?: string,
+  readRows: typeof readWindowsProcessRowsForProfileRecovery = readWindowsProcessRowsForProfileRecovery
+): Promise<SidecarProfileUse> {
+  try {
+    return classifyWindowsProcessRows(await readRows(), profilePath, sidecarExecutableName)
+  } catch {
+    return 'unavailable'
+  }
+}
+
 export async function readSidecarProfileUse(
   profilePath: string,
   sidecarExecutableName?: string
 ): Promise<SidecarProfileUse> {
   if (process.platform === 'win32') {
-    try {
-      return classifyWindowsProcessRows(
-        await readWindowsProcessRowsForProfileRecovery(),
-        profilePath,
-        sidecarExecutableName
-      )
-    } catch {
-      return 'unknown'
-    }
+    return readWindowsSidecarProfileUse(profilePath, sidecarExecutableName)
   }
   if (process.platform !== 'linux' && process.platform !== 'darwin') {
-    return 'unknown'
+    return 'unavailable'
   }
   try {
     const result = await runProcess({
@@ -101,10 +108,10 @@ export async function readSidecarProfileUse(
       result.stderr.length > 0
     ) {
       // Preserve on an error; a positive marker in a partial snapshot is still enough to preserve.
-      return result.stdout.includes(profilePath) ? 'in-use' : 'unknown'
+      return result.stdout.includes(profilePath) ? 'in-use' : 'unavailable'
     }
     return classifyPosixProcessSnapshot(result.stdout, profilePath)
   } catch {
-    return 'unknown'
+    return 'unavailable'
   }
 }

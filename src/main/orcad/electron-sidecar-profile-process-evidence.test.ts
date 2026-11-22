@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   classifyPosixProcessSnapshot,
-  classifyWindowsProcessRows
+  classifyWindowsProcessRows,
+  readWindowsSidecarProfileUse
 } from './electron-sidecar-profile-process-evidence'
 import type { WindowsProcessRow } from '../windows/windows-process-table'
 import { parseCompleteWindowsCimProcessRows } from '../windows/windows-process-table-cim-scan'
@@ -40,13 +41,42 @@ describe('Electron sidecar profile process evidence', () => {
       name: 'Ash.exe',
       command: '"C:\\Program Files\\Ash\\Ash.exe" --user-data-dir=C:\\Temp\\orcad-browser-x'
     }
+    const unreadableUnknownProcess: WindowsProcessRow = {
+      pid: 8,
+      ppid: 1,
+      name: 'unknown-host.exe',
+      command: 'unknown-host.exe',
+      commandLineReadable: false
+    }
 
     expect(classifyWindowsProcessRows([unrelated], 'C:\\Temp\\orcad-browser-x')).toBe('absent')
     expect(
       classifyWindowsProcessRows([unreadableSidecar], 'C:\\Temp\\orcad-browser-x', 'Ash.exe')
     ).toBe('unknown')
     expect(classifyWindowsProcessRows([liveSidecar], 'C:\\Temp\\orcad-browser-x')).toBe('in-use')
+    expect(
+      classifyWindowsProcessRows([unreadableUnknownProcess], 'C:\\Temp\\orcad-browser-x')
+    ).toBe('unknown')
     expect(classifyWindowsProcessRows([], 'C:\\Temp\\orcad-browser-x')).toBe('unknown')
+  })
+
+  it('keeps a Windows scan failure retryable without treating failure as absence', async () => {
+    let attempts = 0
+    const readRows = async (): Promise<WindowsProcessRow[]> => {
+      attempts += 1
+      if (attempts === 1) {
+        throw new Error('CIM unavailable')
+      }
+      return [{ pid: 1, ppid: 0, name: 'System', command: 'System', commandLineReadable: true }]
+    }
+
+    await expect(
+      readWindowsSidecarProfileUse('C:\\Temp\\orcad-browser-x', undefined, readRows)
+    ).resolves.toBe('unavailable')
+    await expect(
+      readWindowsSidecarProfileUse('C:\\Temp\\orcad-browser-x', undefined, readRows)
+    ).resolves.toBe('absent')
+    expect(attempts).toBe(2)
   })
 
   it('rejects partial or malformed Windows process snapshots', () => {
@@ -54,7 +84,7 @@ describe('Electron sidecar profile process evidence', () => {
       parseCompleteWindowsCimProcessRows(
         '[{"ProcessId":1,"ParentProcessId":0,"Name":"System","CommandLine":null}]'
       )
-    ).toEqual([{ pid: 1, ppid: 0, name: 'System', command: 'System' }])
+    ).toEqual([{ pid: 1, ppid: 0, name: 'System', command: 'System', commandLineReadable: false }])
     expect(
       parseCompleteWindowsCimProcessRows(
         '[{"ProcessId":1,"ParentProcessId":0,"Name":"System","CommandLine":3}]'

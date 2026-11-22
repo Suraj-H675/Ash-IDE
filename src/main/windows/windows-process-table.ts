@@ -21,6 +21,8 @@ export type WindowsProcessIdentityRow = {
 export type WindowsProcessRow = WindowsProcessIdentityRow & {
   /** Full command line. Empty when the process denied a query handle. */
   command: string
+  /** True only when CIM returned a nonempty command line for this process. */
+  commandLineReadable?: boolean
 }
 
 type NativeProcessInfo = {
@@ -61,6 +63,38 @@ type WindowsProcessTreeAddon = {
   getProcessCreationTime?: (pid: number) => number | undefined
   getProcessList: (callback: (processes: NativeProcessSnapshot) => void, flags: number) => void
   supportedProcessDataFlags?: number
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isWindowsProcessTreeModule(value: unknown): value is WindowsProcessTreeModule {
+  if (!isRecord(value) || !isRecord(value.ProcessDataFlag)) {
+    return false
+  }
+  const flags = value.ProcessDataFlag
+  return (
+    typeof flags.None === 'number' &&
+    typeof flags.CommandLine === 'number' &&
+    (flags.CreationTime === undefined || typeof flags.CreationTime === 'number') &&
+    typeof value.getAllProcesses === 'function' &&
+    (value.supportedProcessDataFlags === undefined ||
+      typeof value.supportedProcessDataFlags === 'number') &&
+    (value.getProcessCreationTime === undefined ||
+      typeof value.getProcessCreationTime === 'function')
+  )
+}
+
+function isWindowsProcessTreeAddon(value: unknown): value is WindowsProcessTreeAddon {
+  return (
+    isRecord(value) &&
+    typeof value.getProcessList === 'function' &&
+    (value.supportedProcessDataFlags === undefined ||
+      typeof value.supportedProcessDataFlags === 'number') &&
+    (value.getProcessCreationTime === undefined ||
+      typeof value.getProcessCreationTime === 'function')
+  )
 }
 
 /** Raw addon flags; Memory stays off. CreationTime in this enum requests it but only supportedProcessDataFlags proves binary support. */
@@ -113,15 +147,18 @@ function loadWindowsProcessTree(): WindowsProcessTreeModule | null {
     return cachedModule
   }
   try {
-    cachedModule = requireNative('@vscode/windows-process-tree') as WindowsProcessTreeModule
-    return cachedModule
+    const candidate = requireNative('@vscode/windows-process-tree')
+    if (isWindowsProcessTreeModule(candidate)) {
+      cachedModule = candidate
+      return cachedModule
+    }
   } catch {
     // Relays lack the npm package; try their staged addon.
   }
   try {
-    const addon = requireNative(RELAY_ADDON_FILENAME) as WindowsProcessTreeAddon
+    const candidate = requireNative(RELAY_ADDON_FILENAME)
     // Reject unusable shapes so an invalid addon can fall back to CIM.
-    if (typeof addon?.getProcessList !== 'function') {
+    if (!isWindowsProcessTreeAddon(candidate)) {
       /* v8 ignore next 2 */
       cachedModule = null
       return cachedModule
@@ -136,7 +173,7 @@ function loadWindowsProcessTree(): WindowsProcessTreeModule | null {
       cachedModule = null
       return cachedModule
     }
-    cachedModule = adaptAddon(addon)
+    cachedModule = adaptAddon(candidate)
   } catch {
     cachedModule = null
   }

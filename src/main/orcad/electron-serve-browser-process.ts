@@ -1,4 +1,4 @@
-import type { ChildProcess } from 'node:child_process'
+import type { ChildProcessHandle as ChildProcess } from '@orca/process-host/process-spec'
 import {
   BROWSER_EXPECT_URL_RUNTIME_CAPABILITY,
   BROWSER_GOOGLE_COOKIE_CLEAR_CAPABILITY
@@ -24,6 +24,7 @@ import {
   confirmElectronSidecarCleanup,
   electronSidecarIsAvailable,
   electronSidecarPid,
+  removeNeverLaunchedElectronSidecarProfile,
   removeLeftoverElectronSidecarProfile,
   spawnElectronSidecar
 } from './electron-sidecar-profile'
@@ -93,6 +94,7 @@ export class ElectronServeBrowserProcess {
   private readonly tabs = new ElectronSidecarTabRegistry()
   private sidecarCapabilities: readonly string[] = []
   private sidecarDataPath: string | null = null
+  private sidecarProfileSpawned = false
   private cleanupUncertain = false
 
   constructor(
@@ -103,13 +105,13 @@ export class ElectronServeBrowserProcess {
   async start(signal?: AbortSignal): Promise<void> {
     this.sidecarCapabilities = []
     signal?.throwIfAborted()
-    if (this.child || this.cleanupUncertain) {
+    if (this.child || this.sidecarDataPath || this.cleanupUncertain) {
       await this.stop()
     }
     if (!(await removeLeftoverElectronSidecarProfile(this.orcadUserDataPath))) {
       this.cleanupUncertain = true
       throw new Error(
-        'A previous Electron browser profile could not be verified as unused. Close other Ash/Orca browser processes and retry; the profile was preserved.'
+        'A previous Electron browser profile has no verifiable owner. Its data was preserved, and startup is blocked to avoid duplicating an uncertain live session. Close all Ash/Orca browser processes and get user-mediated recovery of the saved profile before retrying.'
       )
     }
     this.cleanupUncertain = false
@@ -118,10 +120,12 @@ export class ElectronServeBrowserProcess {
       this.executablePath
     )
     this.sidecarDataPath = userDataPath
+    this.sidecarProfileSpawned = false
     const port = await reserveLoopbackPort()
     signal?.throwIfAborted()
     const child = spawnElectronSidecar(this.executablePath, userDataPath, port)
     this.child = child
+    this.sidecarProfileSpawned = true
     let spawnError: unknown = null
     // Bundle swaps can race restart; report ENOENT as start failure without crashing orcad.
     child.on('error', (error) => {
@@ -169,7 +173,8 @@ export class ElectronServeBrowserProcess {
   }
 
   createCommands(host: RuntimeBrowserCommandHost): RuntimeBrowserCommands {
-    return new Proxy({} as RuntimeBrowserCommands, {
+    const target: RuntimeBrowserCommands = Object.create(null)
+    return new Proxy(target, {
       // Startup checks membership before resolving commands dynamically.
       has: (_target, property) => typeof property === 'string' && property !== 'then',
       get: (_target, property) => {
@@ -205,9 +210,12 @@ export class ElectronServeBrowserProcess {
     const sidecarDataPath = this.sidecarDataPath
     this.cleanupUncertain = Boolean(child || sidecarDataPath || this.cleanupUncertain)
     this.tabs.clear()
-    if (
-      !(await confirmElectronSidecarCleanup(child, this.orcadUserDataPath, this.cleanupUncertain))
-    ) {
+    const cleanupConfirmed = child
+      ? await confirmElectronSidecarCleanup(child, this.orcadUserDataPath, this.cleanupUncertain)
+      : sidecarDataPath && !this.sidecarProfileSpawned
+        ? await removeNeverLaunchedElectronSidecarProfile(this.orcadUserDataPath, sidecarDataPath)
+        : await confirmElectronSidecarCleanup(null, this.orcadUserDataPath, this.cleanupUncertain)
+    if (!cleanupConfirmed) {
       throw new Error('Electron browser sidecar cleanup remains unresolved.')
     }
 
@@ -215,6 +223,7 @@ export class ElectronServeBrowserProcess {
     this.metadata = null
     this.sidecarCapabilities = []
     this.sidecarDataPath = null
+    this.sidecarProfileSpawned = false
     this.cleanupUncertain = false
   }
 
@@ -236,7 +245,8 @@ export class ElectronServeBrowserProcess {
         'The Electron browser provider is not running.'
       )
     }
-    const original = (args[0] ?? {}) as Record<string, unknown>
+    const parsedOriginal = z.record(z.string(), z.unknown()).safeParse(args[0] ?? {})
+    const original = parsedOriginal.success ? parsedOriginal.data : {}
     // The sidecar is the installed app, which can be older and would drop the field.
     if (
       original.expectUrl !== undefined &&

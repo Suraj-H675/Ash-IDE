@@ -3983,13 +3983,13 @@
     },
     {
       "path": "src/main/orcad/electron-serve-browser-process.ts",
-      "sha256": "9c1d5594aebd135406df0cd301dac263777b8b4d8f6ef4f26d546b9123b8209b",
-      "reason": "Ash RT-15 repair: validate sidecar metadata and require owned-child exit plus profile-use evidence before cleanup."
+      "sha256": "5b6a45cb6b18a4fb8cb35f3eb98f803e84f1ab21b426b47782c0b91bfdf2aae9",
+      "reason": "Ash RT-15 recovery safety: distinguish allocated-but-never-spawned cleanup from owned-child cleanup and unknown-orphan recovery; retain retryable in-process ownership."
     },
     {
       "path": "src/main/orcad/electron-sidecar-profile.ts",
-      "sha256": "ed0600a883b5e9c4f018feda4d075126e98e0c3875ac0414c24fcc6f6f6d3e23",
-      "reason": "Ash RT-15 repair: preserve backward-compatible profile records and remove profiles only after complete cross-platform process evidence."
+      "sha256": "a43a11a888d62d12b2ee90604329c28018522716fd0af2f1c6b379053be0932a",
+      "reason": "Ash RT-15 recovery safety: preserve unknown orphans, require owned-child or never-spawned authority, publish secure durable GC intent, quarantine by identity before deletion, and retain retryable ownership on failure."
     },
     {
       "path": "src/main/orcad/external-chromium-browser-process.ts",
@@ -4018,8 +4018,13 @@
     },
     {
       "path": "src/main/windows/windows-process-table-cim-scan.ts",
-      "sha256": "38f01894398c3c06a433e54f2f38b266c6be9a434816e01eaf1d70c1fa149c87",
-      "reason": "Ash RT-15 repair: strict bounded CIM snapshots keep malformed or incomplete process census unknown."
+      "sha256": "91a4248fc75afe570f738f9cd8499131e5b1f8d276bd380b59e571803eb81454",
+      "reason": "Ash RT-15 recovery safety: carry command-line readability into complete CIM snapshots and distinguish unavailable scans from absence for retryable cleanup."
+    },
+    {
+      "path": "src/main/windows/windows-process-table.ts",
+      "sha256": "3f322ec66df54a30ea0e4019385a1f99834630a4d70ec3f6e2c6adf43efebbb4",
+      "reason": "Ash RT-15 recovery safety: validate Windows process-table module shapes and preserve command-line readability metadata for conservative profile recovery."
     }
   ]
 }
