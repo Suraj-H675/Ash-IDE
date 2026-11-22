@@ -69,6 +69,54 @@ describe('connected-only daemon session census', () => {
     })
   })
 
+  it('detects a PTY spawned on the real authenticated daemon after an initially quiet inventory', async () => {
+    const activeHarness = getHarness()
+    const client = (activeHarness.adapter as unknown as { client: DaemonClient }).client
+    // Establish authentication through the adapter's real connection lifecycle
+    // (not the raw transport), so its authenticated incarnation is pinned.
+    await (
+      activeHarness.adapter as unknown as { ensureConnected(): Promise<void> }
+    ).ensureConnected()
+    expect(client.isConnected()).toBe(true)
+    const connect = vi.spyOn(client, 'ensureConnected')
+    const initialRead = activeHarness.adapter.listSessionsIfAlreadyConnected.bind(
+      activeHarness.adapter
+    )
+    let reads = 0
+    vi.spyOn(activeHarness.adapter, 'listSessionsIfAlreadyConnected').mockImplementation(
+      async () => {
+        const inventory = await initialRead()
+        if (++reads === 1) {
+          expect(inventory).toMatchObject({ state: 'complete', sessions: [] })
+          await activeHarness.adapter.spawn({ cols: 80, rows: 24 })
+        }
+        return inventory
+      }
+    )
+
+    const census = await collectUpdateRuntimeCensus({
+      getWindowCount: () => 0,
+      getProvider: () => ({
+        identity: activeHarness.adapter,
+        adapters: [activeHarness.adapter]
+      }),
+      now: () => 1_800_000_000_000
+    })
+    const report = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)
+
+    expect(reads).toBe(2)
+    expect(census.ptys).toEqual({
+      state: 'unknown',
+      reason: 'inventory-partial',
+      lowerBound: 1
+    })
+    expect(report.decision).toBe('busy')
+    expect(report.blockers).toEqual(expect.arrayContaining(['pty-inventory-unknown', 'pty-active']))
+    expect(report.activationAvailable).toBe(false)
+    // The read-only census must not initiate new connection or session admission.
+    expect(connect).toHaveBeenCalledTimes(1) // Only the intentional fixture spawn.
+  })
+
   it('keeps an authenticated agent PTY busy after the last window closes', async () => {
     const activeHarness = getHarness()
     await activeHarness.adapter.spawn({

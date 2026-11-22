@@ -23,6 +23,19 @@ function census(overrides: Partial<UpdateRuntimeCensus> = {}): UpdateRuntimeCens
 }
 
 describe('safe update preflight decision', () => {
+  it('marks observed windows busy even if the final window inventory is incomplete', () => {
+    const report = assessUpdatePreflight(
+      NO_STAGED_UPDATE_CANDIDATE,
+      census({
+        windows: { state: 'unknown', reason: 'window-inventory-unavailable', lowerBound: 1 }
+      })
+    )
+    expect(report.decision).toBe('busy')
+    expect(report.blockers).toEqual(
+      expect.arrayContaining(['window-inventory-unknown', 'gui-window-active'])
+    )
+    expect(report.activationAvailable).toBe(false)
+  })
   it('defers even when visible windows and PTYs are empty', () => {
     const report = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census())
 

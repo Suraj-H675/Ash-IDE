@@ -157,7 +157,7 @@ it.each([
         'A PTY was observed with an agent owner during this check. Stop it with its provider, then confirm the PTY ended in Manage Sessions.'
       )
       expect(host.textContent).toContain(
-        'At least 1 observed; The daemon returned only part of its inventory.'
+        'At least 1 observed; The daemon inventory was incomplete or changed during this check.'
       )
       expect(host.textContent).toContain('Activation is unavailable.')
       expect(host.textContent).toContain('Snapshot observed')

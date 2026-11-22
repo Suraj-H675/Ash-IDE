@@ -225,7 +225,13 @@ export function stableWindowCount(
 ): UpdateRuntimeCensus['windows'] {
   return before.state === 'known' && after.state === 'known' && before.count === after.count
     ? after
-    : unknown('window-inventory-unavailable')
+    : unknown(
+        'window-inventory-unavailable',
+        Math.max(
+          before.state === 'known' ? before.count : before.lowerBound,
+          after.state === 'known' ? after.count : after.lowerBound
+        )
+      )
 }
 
 export function parseFallbackPtyIds(value: unknown): ParsedFallbackPtyIds {

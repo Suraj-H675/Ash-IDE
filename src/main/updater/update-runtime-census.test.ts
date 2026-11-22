@@ -102,6 +102,334 @@ function read(currentProvider: UpdateCensusProvider | null, getWindowCount = () 
 }
 
 describe('Ash update runtime census', () => {
+  it('re-reads an authenticated quiet daemon before reporting zero PTYs', async () => {
+    const quiet = adapter([])
+    const original = quiet.listSessionsIfAlreadyConnected.bind(quiet)
+    let reads = 0
+    quiet.listSessionsIfAlreadyConnected = () => {
+      reads += 1
+      return original()
+    }
+    const census = await read(provider([quiet]))
+    expect(reads).toBe(2)
+    expect(census.ptys).toEqual({ state: 'known', count: 0 })
+    expect(census.ptyOwnedAgentSessions).toEqual({ state: 'known', count: 0 })
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)).toMatchObject({
+      decision: 'defer',
+      activationAvailable: false
+    })
+  })
+
+  it('reports busy when a PTY-owned agent appears between two authenticated inventories', async () => {
+    const quiet = adapter([])
+    let reads = 0
+    quiet.listSessionsIfAlreadyConnected = async () => ({
+      state: 'complete' as const,
+      identity: IDENTITY,
+      sessions: reads++ === 0 ? [] : [session('late-agent-pty', [OWNER])],
+      agentOwnershipComplete: true
+    })
+    const census = await read(provider([quiet]))
+    const report = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)
+    expect(reads).toBe(2)
+    expect(census.ptys).toEqual({
+      state: 'unknown',
+      reason: 'inventory-partial',
+      lowerBound: 1
+    })
+    expect(census.ptyOwnedAgentSessions).toEqual({
+      state: 'unknown',
+      reason: 'inventory-partial',
+      lowerBound: 1
+    })
+    expect(report.decision).toBe('busy')
+    expect(report.blockers).toEqual(
+      expect.arrayContaining(['pty-inventory-unknown', 'pty-active', 'agent-session-active'])
+    )
+    expect(report.activationAvailable).toBe(false)
+  })
+
+  it('detects late degraded fallback PTYs rather than reusing an earlier empty fallback', async () => {
+    let fallbackReads = 0
+    const census = await read(
+      provider([adapter([])], async () =>
+        fallbackReads++ === 0 ? [] : ['late-local-fallback-pty']
+      )
+    )
+    expect(fallbackReads).toBe(2)
+    expect(census.ptys).toEqual({
+      state: 'unknown',
+      reason: 'inventory-partial',
+      lowerBound: 1
+    })
+    expect(census.ptyOwnedAgentSessions.state).toBe('unknown')
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census).decision).toBe('busy')
+  })
+
+  it('fails closed when a second quiet snapshot disconnects or fails', async () => {
+    const quiet = adapter([])
+    let reads = 0
+    quiet.listSessionsIfAlreadyConnected = async () => {
+      if (reads++ === 0) {
+        return { state: 'complete', identity: IDENTITY, sessions: [], agentOwnershipComplete: true }
+      }
+      return { state: 'unknown', reason: 'daemon-disconnected' }
+    }
+    const census = await read(provider([quiet]))
+    expect(census.ptys).toEqual({
+      state: 'unknown',
+      reason: 'daemon-disconnected',
+      lowerBound: 0
+    })
+    expect(census.ptyOwnedAgentSessions.state).toBe('unknown')
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)).toMatchObject({
+      decision: 'defer',
+      activationAvailable: false
+    })
+  })
+
+  it('treats a malformed quiet replay as an invalid inventory, never known zero', async () => {
+    const quiet = adapter([])
+    let reads = 0
+    quiet.listSessionsIfAlreadyConnected = async () =>
+      reads++ === 0
+        ? {
+            state: 'complete' as const,
+            identity: IDENTITY,
+            sessions: [],
+            agentOwnershipComplete: true
+          }
+        : {
+            state: 'complete' as const,
+            identity: IDENTITY,
+            sessions: [{ sessionId: 'bad' }] as never,
+            agentOwnershipComplete: true
+          }
+    const census = await read(provider([quiet]))
+    expect(reads).toBe(2)
+    expect(census.ptys).toEqual({
+      state: 'unknown',
+      reason: 'inventory-invalid',
+      lowerBound: 0
+    })
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)).toMatchObject({
+      decision: 'defer',
+      activationAvailable: false
+    })
+  })
+
+  it('rejects a replacement daemon incarnation during the quiet replay', async () => {
+    const quiet = adapter([])
+    let reads = 0
+    quiet.listSessionsIfAlreadyConnected = async () => ({
+      state: 'complete' as const,
+      identity: reads++ === 0 ? IDENTITY : SECOND_IDENTITY,
+      sessions: [],
+      agentOwnershipComplete: true
+    })
+    const census = await read(provider([quiet]))
+    expect(reads).toBe(2)
+    expect(census.ptys).toEqual({
+      state: 'unknown',
+      reason: 'daemon-identity-changed',
+      lowerBound: 0
+    })
+    expect(census.daemonGenerations.state).toBe('unknown')
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census).decision).toBe('defer')
+  })
+
+  it('keeps late PTY and agent lower bounds from an authenticated replacement incarnation', async () => {
+    const quiet = adapter([])
+    let current = IDENTITY
+    quiet.getDaemonIdentity = () => current
+    quiet.getLastAuthenticatedDaemonIdentity = () => current
+    let reads = 0
+    quiet.listSessionsIfAlreadyConnected = async () => {
+      if (++reads === 1) {
+        return {
+          state: 'complete' as const,
+          identity: IDENTITY,
+          sessions: [],
+          agentOwnershipComplete: true
+        }
+      }
+      current = SECOND_IDENTITY
+      return {
+        state: 'complete' as const,
+        identity: SECOND_IDENTITY,
+        sessions: [session('authenticated-replacement-agent-pty', [OWNER])],
+        agentOwnershipComplete: true
+      }
+    }
+    const census = await read(provider([quiet]))
+    const report = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)
+    expect(reads).toBe(2)
+    expect(census.ptys).toEqual({
+      state: 'unknown',
+      reason: 'daemon-identity-changed',
+      lowerBound: 1
+    })
+    expect(census.ptyOwnedAgentSessions).toEqual({
+      state: 'unknown',
+      reason: 'daemon-identity-changed',
+      lowerBound: 1
+    })
+    expect(report.decision).toBe('busy')
+    expect(report.blockers).toEqual(
+      expect.arrayContaining(['pty-inventory-unknown', 'pty-active', 'agent-session-active'])
+    )
+    expect(report.activationAvailable).toBe(false)
+  })
+
+  it('does not treat a quiet replay timeout as an authoritative zero count', async () => {
+    const quiet = adapter([])
+    let reads = 0
+    quiet.listSessionsIfAlreadyConnected = () =>
+      reads++ === 0
+        ? Promise.resolve({
+            state: 'complete' as const,
+            identity: IDENTITY,
+            sessions: [],
+            agentOwnershipComplete: true
+          })
+        : new Promise(() => {})
+    const census = await read(provider([quiet]))
+    expect(reads).toBe(2)
+    expect(census.ptys).toEqual({
+      state: 'unknown',
+      reason: 'inventory-partial',
+      lowerBound: 0
+    })
+    expect(census.ptyOwnedAgentSessions.state).toBe('unknown')
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census).decision).toBe('defer')
+  }, 3_000)
+
+  it('rejects degraded fallback inventory that fails only during quiet confirmation', async () => {
+    let reads = 0
+    const census = await read(
+      provider([adapter([])], () =>
+        reads++ === 0 ? Promise.resolve([]) : Promise.reject(new Error('fallback lost'))
+      )
+    )
+    expect(reads).toBe(2)
+    expect(census.ptys).toEqual({
+      state: 'unknown',
+      reason: 'fallback-inventory-unavailable',
+      lowerBound: 0
+    })
+    expect(census.ptyOwnedAgentSessions.state).toBe('unknown')
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census).decision).toBe('defer')
+  })
+
+  it('rejects a daemon identity change while the second fallback scan runs', async () => {
+    const quiet = adapter([])
+    let replaced = false
+    const currentIdentity = () =>
+      replaced ? { ...IDENTITY, launchNonce: 'changed-after-recheck' } : IDENTITY
+    quiet.getDaemonIdentity = currentIdentity
+    quiet.getLastAuthenticatedDaemonIdentity = currentIdentity
+    let fallbackReads = 0
+    const census = await read(
+      provider([quiet], async () => {
+        if (++fallbackReads === 2) {
+          replaced = true
+        }
+        return []
+      })
+    )
+    expect(fallbackReads).toBe(2)
+    expect(census.ptys).toEqual({
+      state: 'unknown',
+      reason: 'daemon-identity-changed',
+      lowerBound: 0
+    })
+    expect(census.ptyOwnedAgentSessions.state).toBe('unknown')
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census).decision).toBe('defer')
+  })
+
+  it('does not retain a known-zero PTY inventory after its provider is replaced during replay', async () => {
+    const quiet = adapter([])
+    const first = provider([quiet])
+    const second = provider([adapter([], { identity: SECOND_IDENTITY })])
+    let selected = first
+    let reads = 0
+    const original = quiet.listSessionsIfAlreadyConnected.bind(quiet)
+    quiet.listSessionsIfAlreadyConnected = async () => {
+      const reply = await original()
+      if (++reads === 2) {
+        selected = second
+      }
+      return reply
+    }
+    const census = await collectUpdateRuntimeCensus({
+      getWindowCount: () => 0,
+      getProvider: () => selected,
+      now: () => 1_800_000_000_000
+    })
+    expect(reads).toBe(2)
+    expect(census.ptys).toEqual({
+      state: 'unknown',
+      reason: 'provider-changed',
+      lowerBound: 0
+    })
+    expect(census.hostOwnership.state).toBe('unknown')
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census).decision).toBe('defer')
+  })
+
+  it('does not perform unnecessary replay RPCs after a busy authenticated inventory', async () => {
+    const busy = adapter([session('already-active-pty', [OWNER])])
+    const original = busy.listSessionsIfAlreadyConnected.bind(busy)
+    let reads = 0
+    busy.listSessionsIfAlreadyConnected = () => {
+      reads += 1
+      return original()
+    }
+    const census = await read(provider([busy]))
+    expect(reads).toBe(1)
+    expect(census.ptys).toEqual({ state: 'known', count: 1 })
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census).decision).toBe('busy')
+  })
+
+  it('skips extra quiet PTY reads when an Ash window is already open', async () => {
+    const quiet = adapter([])
+    const original = quiet.listSessionsIfAlreadyConnected.bind(quiet)
+    let reads = 0
+    quiet.listSessionsIfAlreadyConnected = () => {
+      reads += 1
+      return original()
+    }
+    const census = await read(provider([quiet]), () => 1)
+    expect(reads).toBe(1)
+    expect(census.windows).toEqual({ state: 'known', count: 1 })
+    expect(census.ptys).toEqual({ state: 'known', count: 0 })
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census).decision).toBe('busy')
+  })
+
+  it('does not replay daemon RPCs if window inventory is unknown or becomes busy', async () => {
+    for (const sample of [
+      () => Number.NaN,
+      (() => {
+        let reads = 0
+        return () => (reads++ === 0 ? 0 : 1)
+      })()
+    ]) {
+      const quiet = adapter([])
+      const original = quiet.listSessionsIfAlreadyConnected.bind(quiet)
+      let daemonReads = 0
+      quiet.listSessionsIfAlreadyConnected = () => {
+        daemonReads += 1
+        return original()
+      }
+      const census = await read(provider([quiet]), sample)
+      expect(daemonReads).toBe(1)
+      expect(census.windows.state).toBe('unknown')
+      expect(census.ptys).toEqual({ state: 'known', count: 0 })
+      expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census).activationAvailable).toBe(
+        false
+      )
+    }
+  })
+
   it('accepts a finite fractional authenticated daemon start timestamp', async () => {
     // The real daemon derives its start time from Date.now() minus process.uptime(),
     // so a genuine incarnation commonly has fractional milliseconds.
@@ -267,8 +595,31 @@ describe('Ash update runtime census', () => {
     expect(census.windows).toEqual({
       state: 'unknown',
       reason: 'window-inventory-unavailable',
-      lowerBound: 0
+      lowerBound: 1
     })
+    const report = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)
+    expect(report.decision).toBe('busy')
+    expect(report.blockers).toEqual(
+      expect.arrayContaining(['window-inventory-unknown', 'gui-window-active'])
+    )
+    expect(report.activationAvailable).toBe(false)
+  })
+
+  it('preserves a seen window as busy even if it closes before the final census observation', async () => {
+    let calls = 0
+    const census = await collectUpdateRuntimeCensus({
+      getWindowCount: () => (calls++ === 0 ? 1 : 0),
+      getProvider: () => provider([adapter([])]),
+      now: () => 1_800_000_000_000
+    })
+    expect(census.windows).toEqual({
+      state: 'unknown',
+      reason: 'window-inventory-unavailable',
+      lowerBound: 1
+    })
+    const report = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)
+    expect(report.decision).toBe('busy')
+    expect(report.blockers).toContain('gui-window-active')
   })
 
   it('bounds an adapter inventory call even if its promise never resolves', async () => {

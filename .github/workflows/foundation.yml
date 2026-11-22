@@ -83,6 +83,14 @@ jobs:
             config/scripts/desktop-distribution/release/inspect-ash-profile-sqlite-qa.test.mjs
       - name: Check TypeScript projects
         run: node config/scripts/typecheck/project-execution/run-typecheck-projects-in-parallel.mjs
+      - name: Verify updater quiet-runtime evidence and authenticated daemon preflight
+        run: |
+          node node_modules/vitest/vitest.mjs run \
+            --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
+            --no-file-parallelism \
+            src/main/updater/update-preflight.test.ts \
+            src/main/updater/update-runtime-census.test.ts \
+            src/main/daemon/providers/adapter/testing/daemon-pty-session-inventory-preflight.test.ts
       - name: Test the persistent runtime and provider boundaries
         run: |
           node config/scripts/test-runtime/execution-policy/run-vitest.mjs run \

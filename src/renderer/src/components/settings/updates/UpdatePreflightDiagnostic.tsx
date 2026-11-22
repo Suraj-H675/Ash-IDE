@@ -37,13 +37,14 @@ const blockerCopy: Record<UpdatePreflightBlocker, string> = {
 const unknownReasonCopy: Record<UpdatePreflightUnknownReason, string> = {
   'daemon-unavailable': 'The local daemon is unavailable.',
   'daemon-disconnected': 'The local daemon is disconnected.',
-  'inventory-partial': 'The daemon returned only part of its inventory.',
+  'inventory-partial': 'The daemon inventory was incomplete or changed during this check.',
   'inventory-invalid': 'The daemon returned an invalid inventory.',
   'daemon-identity-changed': 'The daemon identity changed during the check.',
   'provider-changed': 'The active provider changed during the check.',
   'generation-limit-exceeded': 'The check reached its daemon generation limit.',
   'fallback-inventory-unavailable': 'The fallback session inventory is unavailable.',
-  'window-inventory-unavailable': 'The Ash window inventory is unavailable.',
+  'window-inventory-unavailable':
+    'The Ash window inventory was unavailable or changed during this check.',
   'provider-agent-inventory-unavailable': 'The provider agent inventory is unavailable.',
   'agent-owner-inventory-incomplete': 'PTY agent ownership is incomplete.',
   'pending-write-census-unavailable': 'The pending disk write census is unavailable.',

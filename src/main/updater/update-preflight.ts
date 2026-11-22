@@ -38,7 +38,8 @@ export function assessUpdatePreflight(
   }
   if (runtime.windows.state === 'unknown') {
     blockers.add('window-inventory-unknown')
-  } else if (runtime.windows.count > 0) {
+  }
+  if (isActive(runtime.windows)) {
     blockers.add('gui-window-active')
   }
   if (runtime.ptys.state === 'unknown') {

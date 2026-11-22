@@ -30,6 +30,7 @@ import type {
   UpdateCensusProvider,
   UpdateRuntimeCensusDependencies
 } from './update-runtime-census-evidence'
+import { recheckQuietRuntime } from './update-runtime-quiet-recheck'
 
 export type {
   UpdateCensusDaemonAdapter,
@@ -234,8 +235,41 @@ export async function collectUpdateRuntimeCensus(
   if (!ownersComplete) {
     ownerReason ??= 'agent-owner-inventory-incomplete'
   }
-  const stableWindows = stableWindowCount(windows, readWindowCount(dependencies))
-  const sessionLowerBound = sessionsById.size + fallbackIds.length
+  // The common Settings diagnostic runs in an open window. Never add a
+  // second daemon round-trip when a window already makes preflight busy.
+  const windowsAtIdleGate =
+    windows.state === 'known' && windows.count === 0 ? readWindowCount(dependencies) : windows
+  const windowsBeforeReplay = stableWindowCount(windows, windowsAtIdleGate)
+  // An authenticated daemon can gain a PTY after the first inventory reply.
+  // Re-read only an apparently quiet and fully enumerated runtime. This
+  // narrows the blind spot, but cannot replace an exclusive maintenance fence.
+  let latePtyLowerBound = 0
+  let lateOwnerLowerBound = 0
+  if (
+    windowsBeforeReplay.state === 'known' &&
+    windowsBeforeReplay.count === 0 &&
+    !daemonReason &&
+    !ownerReason &&
+    !fallbackReason &&
+    providerStableThroughRead &&
+    sessionsById.size === 0 &&
+    fallbackIds.length === 0
+  ) {
+    const replay = await recheckQuietRuntime(
+      stableInventories,
+      provider,
+      dependencies,
+      DAEMON_LIST_TIMEOUT_MS,
+      FALLBACK_LIST_TIMEOUT_MS
+    )
+    daemonReason ??= replay.daemonReason
+    ownerReason ??= replay.ownerReason
+    fallbackReason ??= replay.fallbackReason
+    latePtyLowerBound = replay.observedPtys
+    lateOwnerLowerBound = replay.observedAgentOwners
+  }
+  const stableWindows = stableWindowCount(windowsBeforeReplay, readWindowCount(dependencies))
+  const sessionLowerBound = Math.max(sessionsById.size + fallbackIds.length, latePtyLowerBound)
   const generationLowerBound = stableInventories.length
 
   return {
@@ -250,8 +284,8 @@ export async function collectUpdateRuntimeCensus(
         ? unknown(daemonReason ?? fallbackReason ?? 'inventory-partial', sessionLowerBound)
         : count(sessionLowerBound),
     ptyOwnedAgentSessions: ownerReason
-      ? unknown(ownerReason, agentSessionDigests.size)
-      : count(agentSessionDigests.size),
+      ? unknown(ownerReason, Math.max(agentSessionDigests.size, lateOwnerLowerBound))
+      : count(Math.max(agentSessionDigests.size, lateOwnerLowerBound)),
     providerAgentSessions: providerAgentInventory(),
     pendingDiskWrites: pendingWrites()
   }
