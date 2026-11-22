@@ -750,7 +750,8 @@ describe('Ash update runtime census', () => {
       expect(census.ptys).toEqual({ state: 'known', count: 0 })
       expect(census.pendingDiskWrites).toEqual({
         state: 'unknown',
-        reason: 'pending-write-census-unavailable'
+        reason: 'pending-write-census-unavailable',
+        lowerBound: 0
       })
     } finally {
       if (profile.db.isTransaction) {

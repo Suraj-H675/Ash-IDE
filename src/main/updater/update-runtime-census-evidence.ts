@@ -30,6 +30,8 @@ export type UpdateCensusProvider = {
 export type UpdateRuntimeCensusDependencies = {
   getWindowCount: () => number
   getProvider: () => UpdateCensusProvider | null
+  /** Optional in-process Store probe. False must never imply host-wide idle. */
+  getLocalPendingWriteActivity?: () => boolean
   now?: () => number
 }
 
@@ -52,8 +54,21 @@ export function providerAgentInventory(): UpdateRuntimeCensus['providerAgentSess
   return { state: 'unknown', reason: 'provider-agent-inventory-unavailable' }
 }
 
-export function pendingWrites(): UpdateRuntimeCensus['pendingDiskWrites'] {
-  return { state: 'unknown', reason: 'pending-write-census-unavailable' }
+export function pendingWrites(observedLowerBound = 0): UpdateRuntimeCensus['pendingDiskWrites'] {
+  return {
+    state: 'unknown',
+    reason: 'pending-write-census-unavailable',
+    lowerBound: observedLowerBound > 0 ? 1 : 0
+  }
+}
+
+/** A read failure is unknown, never a negative completeness verdict. */
+export function observedLocalPendingWrite(dependencies: UpdateRuntimeCensusDependencies): 0 | 1 {
+  try {
+    return dependencies.getLocalPendingWriteActivity?.() === true ? 1 : 0
+  } catch {
+    return 0
+  }
 }
 
 export function hostOwnership(): UpdateRuntimeCensus['hostOwnership'] {
@@ -63,7 +78,8 @@ export function hostOwnership(): UpdateRuntimeCensus['hostOwnership'] {
 export function censusWithUnknownRuntime(
   observedAtMs: number,
   windows: UpdateRuntimeCensus['windows'],
-  reason: UpdatePreflightUnknownReason
+  reason: UpdatePreflightUnknownReason,
+  pendingWriteLowerBound = 0
 ): UpdateRuntimeCensus {
   return {
     observedAtMs,
@@ -77,7 +93,7 @@ export function censusWithUnknownRuntime(
         : reason
     ),
     providerAgentSessions: providerAgentInventory(),
-    pendingDiskWrites: pendingWrites()
+    pendingDiskWrites: pendingWrites(pendingWriteLowerBound)
   }
 }
 

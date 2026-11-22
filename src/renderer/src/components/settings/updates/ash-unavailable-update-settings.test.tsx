@@ -3,9 +3,11 @@ import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, expect, it, vi } from 'vitest'
 import { GeneralUpdateSettingsSection } from './GeneralUpdateSettingsSection'
+import { UpdatePreflightDiagnostic } from './UpdatePreflightDiagnostic'
 
 const fixture = vi.hoisted(() => ({
   reason: 'source-build' as 'source-build' | 'not-configured',
+  pendingObserved: false,
   version: vi.fn(async () => '0.0.0-ash-qa'),
   check: vi.fn(),
   download: vi.fn(),
@@ -45,7 +47,8 @@ const fixture = vi.hoisted(() => ({
       },
       pendingDiskWrites: {
         state: 'unknown' as const,
-        reason: 'pending-write-census-unavailable' as const
+        reason: 'pending-write-census-unavailable' as const,
+        lowerBound: fixture.pendingObserved ? 1 : 0
       }
     },
     blockers: [
@@ -53,7 +56,8 @@ const fixture = vi.hoisted(() => ({
       'pty-active',
       'agent-session-active',
       'provider-agent-inventory-unknown',
-      'pending-disk-writes-unknown'
+      'pending-disk-writes-unknown',
+      ...(fixture.pendingObserved ? (['pending-disk-writes-observed'] as const) : [])
     ] as const,
     activationAvailable: false as const
   }))
@@ -90,6 +94,7 @@ vi.mock('./UpdateDelaySetting', () => ({
 }))
 
 afterEach(() => {
+  fixture.pendingObserved = false
   vi.unstubAllGlobals()
   vi.clearAllMocks()
 })
@@ -149,7 +154,7 @@ it.each([
       expect(host.textContent).toContain('Ash cannot see every provider-native agent session.')
       expect(host.textContent).toContain('Ash cannot prove that writes are drained.')
       expect(host.textContent).toContain('Unknown; The provider agent inventory is unavailable.')
-      expect(host.textContent).toContain('Unknown; The pending disk write census is unavailable.')
+      expect(host.textContent).toContain('Unknown; local Store activity not observed.')
       expect(host.textContent).toContain(
         'A PTY was observed during this check. Confirm it has ended in Manage Sessions; closing its window does not stop it.'
       )
@@ -171,3 +176,36 @@ it.each([
     }
   }
 )
+
+it('shows observed local write activity without implying host-wide write safety', async () => {
+  fixture.pendingObserved = true
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
+  Object.defineProperty(window, 'api', {
+    configurable: true,
+    value: { updater: { getPreflight: fixture.preflight } }
+  })
+  const host = document.createElement('div')
+  document.body.appendChild(host)
+  const root = createRoot(host)
+  try {
+    await act(async () => root.render(<UpdatePreflightDiagnostic />))
+    const inspect = Array.from(host.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Inspect local update blockers')
+    )
+    expect(inspect).toBeDefined()
+    await act(async () => inspect?.click())
+    expect(host.textContent).toContain('Admission: busy')
+    expect(host.textContent).toContain(
+      'Local persistence activity observed; host-wide write status unknown.'
+    )
+    expect(host.textContent).toContain(
+      'Local profile persistence activity or a pending save was observed.'
+    )
+    expect(host.textContent).toContain('Ash cannot prove that writes are drained.')
+    expect(host.textContent).toContain('Activation is unavailable.')
+  } finally {
+    act(() => root.unmount())
+    host.remove()
+    Reflect.deleteProperty(window, 'api')
+  }
+})

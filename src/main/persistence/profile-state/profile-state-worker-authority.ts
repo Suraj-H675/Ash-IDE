@@ -12,6 +12,7 @@ import {
   ProfileStateWriterError,
   type ProfileStateWriterInitialization
 } from './profile-state-writer-worker-client'
+import { closedWriterError } from './profile-state-writer-closed-error'
 import {
   ProfileStateWriterReopenPolicy,
   reportTerminalReopenFailure
@@ -122,6 +123,10 @@ export class ProfileStateWorkerAuthority implements AsyncProfileStateAuthority {
     if (!this.closing) {
       this.backups.schedule()
     }
+  }
+
+  hasPendingBackup(): boolean {
+    return this.backups.hasPendingBackup()
   }
 
   drainBackups(cancel = false): Promise<void> {
@@ -333,12 +338,4 @@ export class ProfileStateWorkerAuthority implements AsyncProfileStateAuthority {
     }
     return this.stoppedRevision
   }
-}
-
-function closedWriterError(): ProfileStateWriterError {
-  return new ProfileStateWriterError(
-    'profile-state-writer-closed',
-    'Profile state writer is closing',
-    'known-failure'
-  )
 }

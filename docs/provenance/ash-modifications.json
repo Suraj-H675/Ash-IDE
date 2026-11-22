@@ -1368,7 +1368,7 @@
     },
     {
       "path": "src/main/startup/main-process-ready-duplicate-pty-repair.test.ts",
-      "sha256": "a6548628e8e59a907e18ffccf0989c933d1517e61f5777330a07a8201a475343",
+      "sha256": "d4d7964004741d2b5e560860dcfe3bea9f2e96c38d0efdef80472831d1713f2a",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -1378,7 +1378,7 @@
     },
     {
       "path": "src/main/startup/main-process-ready-runtime.ts",
-      "sha256": "22f9deb88024294c5cc5eb4c9daf759a773b3b829efc7ff60502ac8323895021",
+      "sha256": "459faea49c348c76493b786c02cc02339437f43814c673d23d97d469cdfd3628",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -3920,6 +3920,36 @@
       "path": "src/renderer/src/web/preload-api/web-updater-api.ts",
       "sha256": "128652af67f39b4c66ef259043d2f6128f13f1b6d3b794ee356d1645a7c3fd00",
       "reason": "Ash M8: reject the desktop-only runtime census from the web preload instead of fabricating desktop process state."
+    },
+    {
+      "path": "src/main/persistence/loading-store/store.ts",
+      "reason": "Ash RT-15 read-only Store persistence activity API for fail-closed updater diagnostics; original upstream hash remains pinned.",
+      "sha256": "027e8d0535321dd49a4df6e719766580ac0afaaa4f4d38284d0604b6348c644f"
+    },
+    {
+      "path": "src/main/persistence/preferences/active-view-preference.ts",
+      "reason": "Ash RT-15 read-only observation of active-view scheduled and in-flight writes; original upstream hash remains pinned.",
+      "sha256": "0b82ade1d17eb8fafe8c8c774c91fe4dc98d6e1640a2833c86e36b74c99c7440"
+    },
+    {
+      "path": "src/main/persistence/loading-store/profile-state-authority.ts",
+      "sha256": "38436846ca25a9bb5b0ae5cf6f79a21c9d6302a660a708f82fb76023389e5b6b",
+      "reason": "Ash RT-15: add a read-only optional profile database backup-pending observation to existing authority contracts; original pinned source preserved."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-backup-rotation.ts",
+      "sha256": "e75f08762f726186b38a4de9ca6ff097adc5a71469283a46ebbd5558ee503c00",
+      "reason": "Ash RT-15: observe in-flight profile backup rotation without scheduling or modifying backups; original pinned source preserved."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-sqlite-authority.ts",
+      "sha256": "f70ee362e5c4e515d5c2e2a1d6e06f2f29a3fb8a716ea1bd4c635e89f83f2811",
+      "reason": "Ash RT-15: expose pending backup rotation from the synchronous SQLite authority; original pinned source preserved."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-worker-authority.ts",
+      "sha256": "d82670bd4bdd6fae1b8365760433009664c2f7a5f091ed0da5f812762e032f4b",
+      "reason": "Ash RT-15: expose pending backup rotation from worker SQLite authority and extract existing closed-writer error helper to respect source length; original pinned source preserved."
     }
   ]
 }

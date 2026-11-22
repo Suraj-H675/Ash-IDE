@@ -227,6 +227,10 @@ export class ProfileStateSqliteAuthority implements ProfileStateAuthority {
     this.backupRotation.schedule()
   }
 
+  hasPendingBackup(): boolean {
+    return this.backupRotation?.hasPendingBackup() ?? false
+  }
+
   async drainBackups(): Promise<void> {
     this.assertActive()
     await this.backupRotation?.drain()

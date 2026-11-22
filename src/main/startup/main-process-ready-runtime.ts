@@ -76,7 +76,7 @@ export async function initializeReadyRuntimeServices(): Promise<void> {
   registerSkillDeleteIpcHandlers(store, runtime)
   // Local bundled-skill maintenance is retained; Cloud managed installs remain absent.
   registerLocalBundledSkillIpcHandlers(runtime)
-  registerAshUpdaterReadOnlyHandlers()
+  registerAshUpdaterReadOnlyHandlers(store)
   installFirstWorkRenameHookSubscription()
   state.agentBrowserBridge = new AgentBrowserBridge(browserManager)
   runtime.setAgentBrowserBridge(state.agentBrowserBridge)

@@ -9,6 +9,7 @@ import { registerPersistedPaneKeyAlias } from '../restoring-sessions/pane-alias-
 import { normalizePersistedPaneIdentityState } from '../restoring-sessions/workspace-pane-normalization'
 import { nameEmptyPersistedTerminalLayoutRoots } from '../restoring-sessions/empty-terminal-layout-root-repair'
 import { StoreRuntimeState, type StoreRuntimeOptions } from './store-runtime-state'
+import { hasObservedStorePendingWrite } from './store-pending-write-observation'
 import {
   createStoreDomains,
   installStoreDomainContexts,
@@ -178,6 +179,11 @@ export class Store {
 
   getProfileStorageDirectory(): string {
     return dirname(this.runtime.dataFile)
+  }
+
+  /** Only reports positive local evidence; false is never a safe-to-update claim. */
+  hasObservedPendingLocalWrite(): boolean {
+    return hasObservedStorePendingWrite(this.runtime)
   }
 
   /** Accept secret retention only after the export commits, preserving sealed fallback on failed migration. */

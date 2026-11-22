@@ -31,7 +31,9 @@ const blockerCopy: Record<UpdatePreflightBlocker, string> = {
   'provider-agent-inventory-unknown':
     'Ash cannot see every provider-native agent session. Review provider sessions before relying on an empty PTY inventory.',
   'pending-disk-writes-unknown':
-    'Ash cannot prove that writes are drained. Finish ongoing saves and writes, then recheck; this diagnostic still cannot prove they are clear.'
+    'Ash cannot prove that writes are drained. Finish ongoing saves and writes, then recheck; this diagnostic still cannot prove they are clear.',
+  'pending-disk-writes-observed':
+    'Local profile persistence activity or a pending save was observed. Wait for persistence to settle, then recheck; other writers may still exist.'
 }
 
 const unknownReasonCopy: Record<UpdatePreflightUnknownReason, string> = {
@@ -150,8 +152,12 @@ export function UpdatePreflightDiagnostic(): React.JSX.Element {
                   <dd>{describeCount(report.runtime.providerAgentSessions)}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Pending disk writes</dt>
-                  <dd>{describeCount(report.runtime.pendingDiskWrites)}</dd>
+                  <dt className="text-muted-foreground">Local Store write activity</dt>
+                  <dd>
+                    {report.runtime.pendingDiskWrites.lowerBound > 0
+                      ? 'Local persistence activity observed; host-wide write status unknown.'
+                      : 'Unknown; local Store activity not observed.'}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Exclusive host ownership</dt>

@@ -26,6 +26,11 @@ export class ProfileStateBackupRotation {
     private readonly runBackup = runProfileStateBackup
   ) {}
 
+  /** Read-only evidence that a rotation (including its cleanup) is unresolved. */
+  hasPendingBackup(): boolean {
+    return this.pending !== undefined
+  }
+
   schedule(): void {
     if (this.stopped || this.pending || this.now() < this.nextAttemptAt) {
       return

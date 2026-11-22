@@ -227,4 +227,5 @@ it('finishes the duplicate-terminal repair before ready services resolve, even b
   expect(registerSkillDeleteIpcHandlers).toHaveBeenCalledWith(store, fixture.state.runtime)
   expect(registerLocalBundledSkillIpcHandlers).toHaveBeenCalledWith(fixture.state.runtime)
   expect(registerAshUpdaterReadOnlyHandlers).toHaveBeenCalledOnce()
+  expect(registerAshUpdaterReadOnlyHandlers).toHaveBeenCalledWith(store)
 })

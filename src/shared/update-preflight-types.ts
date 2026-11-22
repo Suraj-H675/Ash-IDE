@@ -58,6 +58,8 @@ export type UpdateRuntimeCensus = {
   pendingDiskWrites: {
     state: 'unknown'
     reason: 'pending-write-census-unavailable'
+    /** Positive local Store evidence, not a complete host-wide write count. */
+    lowerBound: number
   }
 }
 
@@ -77,6 +79,7 @@ export type UpdatePreflightBlocker =
   | 'agent-session-active'
   | 'provider-agent-inventory-unknown'
   | 'pending-disk-writes-unknown'
+  | 'pending-disk-writes-observed'
 
 export type UpdatePreflightReport = {
   decision: 'busy' | 'defer'

@@ -1,9 +1,6 @@
 import { sameEndpointIdentity } from '../daemon/endpoint/identity/daemon-endpoint-incarnation'
 import type { DaemonEndpointIdentity } from '../daemon/protocol/daemon-hello-protocol'
 import type { ConnectedSessionInventory } from '../daemon/providers/adapter/daemon-pty-session-inventory'
-import { DegradedDaemonPtyProvider } from '../daemon/providers/routing/degraded-daemon-pty-provider'
-import { getAllDaemonAdapters } from '../daemon/providers/lifecycle/daemon-provider-routing'
-import { getDaemonProvider } from '../daemon/providers/lifecycle/daemon-provider-state'
 import type {
   UpdatePreflightUnknownReason,
   UpdateRuntimeCensus
@@ -15,6 +12,7 @@ import {
   hostOwnership,
   isConnectedInventory,
   isUnknownInventory,
+  observedLocalPendingWrite,
   parseFallbackPtyIds,
   pendingWrites,
   providerAgentInventory,
@@ -47,12 +45,14 @@ export async function collectUpdateRuntimeCensus(
 ): Promise<UpdateRuntimeCensus> {
   const observedAtMs = dependencies.now?.() ?? Date.now()
   const windows = readWindowCount(dependencies)
+  const pendingAtStart = observedLocalPendingWrite(dependencies)
+  const pendingObserved = () => Math.max(pendingAtStart, observedLocalPendingWrite(dependencies))
 
   let provider: UpdateCensusProvider | null
   try {
     provider = dependencies.getProvider()
   } catch {
-    return censusWithUnknownRuntime(observedAtMs, windows, 'daemon-unavailable')
+    return censusWithUnknownRuntime(observedAtMs, windows, 'daemon-unavailable', pendingObserved())
   }
   if (
     !provider ||
@@ -61,10 +61,15 @@ export async function collectUpdateRuntimeCensus(
     !Array.isArray(provider.adapters) ||
     provider.adapters.length === 0
   ) {
-    return censusWithUnknownRuntime(observedAtMs, windows, 'daemon-unavailable')
+    return censusWithUnknownRuntime(observedAtMs, windows, 'daemon-unavailable', pendingObserved())
   }
   if (provider.adapters.length > MAX_DAEMON_GENERATIONS) {
-    return censusWithUnknownRuntime(observedAtMs, windows, 'generation-limit-exceeded')
+    return censusWithUnknownRuntime(
+      observedAtMs,
+      windows,
+      'generation-limit-exceeded',
+      pendingObserved()
+    )
   }
 
   type StableInventory = {
@@ -287,30 +292,6 @@ export async function collectUpdateRuntimeCensus(
       ? unknown(ownerReason, Math.max(agentSessionDigests.size, lateOwnerLowerBound))
       : count(Math.max(agentSessionDigests.size, lateOwnerLowerBound)),
     providerAgentSessions: providerAgentInventory(),
-    pendingDiskWrites: pendingWrites()
+    pendingDiskWrites: pendingWrites(pendingObserved())
   }
-}
-
-export function collectAshUpdateRuntimeCensus(
-  getWindowCount: () => number
-): Promise<UpdateRuntimeCensus> {
-  return collectUpdateRuntimeCensus({
-    getWindowCount,
-    getProvider: () => {
-      const provider = getDaemonProvider()
-      if (!provider) {
-        return null
-      }
-      return {
-        identity: provider,
-        adapters: [...getAllDaemonAdapters(provider)],
-        ...(provider instanceof DegradedDaemonPtyProvider
-          ? {
-              listFallbackPtyIds: async () =>
-                (await provider.fallback.listProcesses()).map((session) => session.id)
-            }
-          : {})
-      }
-    }
-  })
 }

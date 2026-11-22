@@ -90,6 +90,10 @@ jobs:
             --no-file-parallelism \
             src/main/updater/update-preflight.test.ts \
             src/main/updater/update-runtime-census.test.ts \
+            src/main/updater/update-runtime-pending-write.integration.test.ts \
+            src/main/ipc/ash-updater-status.test.ts \
+            src/main/startup/main-process-ready-duplicate-pty-repair.test.ts \
+            src/renderer/src/components/settings/updates/ash-unavailable-update-settings.test.tsx \
             src/main/daemon/providers/adapter/testing/daemon-pty-session-inventory-preflight.test.ts
       - name: Test the persistent runtime and provider boundaries
         run: |

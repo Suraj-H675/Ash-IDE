@@ -56,6 +56,17 @@ export class ActiveViewPreference {
     return this.activeView
   }
 
+  /** Read-only local write evidence; an idle result is not a global persistence fence. */
+  hasPendingPersistenceWork(): boolean {
+    return (
+      this.writeTimer !== null ||
+      this.pendingWrite !== null ||
+      this.pendingFlush !== null ||
+      this.inFlightTmpFile !== null ||
+      (this.writeGeneration > 0 && this.activeView !== this.persistedActiveView)
+    )
+  }
+
   set(value: unknown): boolean {
     if (!isTopLevelView(value)) {
       return false

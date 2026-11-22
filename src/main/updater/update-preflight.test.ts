@@ -16,13 +16,31 @@ function census(overrides: Partial<UpdateRuntimeCensus> = {}): UpdateRuntimeCens
     },
     pendingDiskWrites: {
       state: 'unknown',
-      reason: 'pending-write-census-unavailable'
+      reason: 'pending-write-census-unavailable',
+      lowerBound: 0
     },
     ...overrides
   }
 }
 
 describe('safe update preflight decision', () => {
+  it('keeps an observed pending local write busy even with no visible PTYs or windows', () => {
+    const report = assessUpdatePreflight(
+      NO_STAGED_UPDATE_CANDIDATE,
+      census({
+        pendingDiskWrites: {
+          state: 'unknown',
+          reason: 'pending-write-census-unavailable',
+          lowerBound: 1
+        }
+      })
+    )
+    expect(report.decision).toBe('busy')
+    expect(report.blockers).toEqual(
+      expect.arrayContaining(['pending-disk-writes-unknown', 'pending-disk-writes-observed'])
+    )
+    expect(report.activationAvailable).toBe(false)
+  })
   it('marks observed windows busy even if the final window inventory is incomplete', () => {
     const report = assessUpdatePreflight(
       NO_STAGED_UPDATE_CANDIDATE,

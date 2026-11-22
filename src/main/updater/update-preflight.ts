@@ -60,7 +60,12 @@ export function assessUpdatePreflight(
   if (runtime.pendingDiskWrites.state === 'unknown') {
     blockers.add('pending-disk-writes-unknown')
   }
-  const busy = [runtime.windows, runtime.ptys, runtime.ptyOwnedAgentSessions].some(isActive)
+  if (runtime.pendingDiskWrites.lowerBound > 0) {
+    blockers.add('pending-disk-writes-observed')
+  }
+  const busy =
+    [runtime.windows, runtime.ptys, runtime.ptyOwnedAgentSessions].some(isActive) ||
+    runtime.pendingDiskWrites.lowerBound > 0
   return {
     decision: busy ? 'busy' : 'defer',
     candidateIdentity,

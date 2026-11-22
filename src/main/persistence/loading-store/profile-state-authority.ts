@@ -31,6 +31,9 @@ export type ProfileStateAuthority = {
 
   scheduleBackup?: () => void
 
+  /** Positive-only observation; idle does not prove writes are globally drained. */
+  hasPendingBackup?: () => boolean
+
   drainBackups?: (cancel?: boolean) => Promise<void>
 
   writeJsonExport?: (targetPath: string) => number

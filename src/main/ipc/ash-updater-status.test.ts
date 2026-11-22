@@ -7,6 +7,7 @@ const fixture = vi.hoisted(() => ({
   isPackaged: false,
   version: '0.0.0-ash-qa',
   windows: 2,
+  localPendingWrite: false,
   census: {
     observedAtMs: 1,
     hostOwnership: { state: 'unknown', reason: 'exclusive-host-ownership-unavailable' },
@@ -22,7 +23,11 @@ const fixture = vi.hoisted(() => ({
       state: 'unknown',
       reason: 'provider-agent-inventory-unavailable'
     },
-    pendingDiskWrites: { state: 'unknown', reason: 'pending-write-census-unavailable' }
+    pendingDiskWrites: {
+      state: 'unknown',
+      reason: 'pending-write-census-unavailable',
+      lowerBound: 0
+    }
   }
 }))
 
@@ -40,11 +45,18 @@ vi.mock('electron', () => ({
     getVersion: vi.fn(() => fixture.version)
   }
 }))
-vi.mock('../updater/update-runtime-census', () => ({
-  collectAshUpdateRuntimeCensus: vi.fn(async (getWindowCount: () => number) => ({
-    ...fixture.census,
-    windows: { state: 'known', count: getWindowCount() }
-  }))
+vi.mock('../updater/update-runtime-ash-census', () => ({
+  collectAshUpdateRuntimeCensus: vi.fn(
+    async (getWindowCount: () => number, getLocalPendingWriteActivity: () => boolean) => ({
+      ...fixture.census,
+      windows: { state: 'known', count: getWindowCount() },
+      pendingDiskWrites: {
+        state: 'unknown',
+        reason: 'pending-write-census-unavailable',
+        lowerBound: getLocalPendingWriteActivity() ? 1 : 0
+      }
+    })
+  )
 }))
 vi.mock('./ui', () => ({
   getTrustedUIRendererWebContents: () => fixture.trustedSender
@@ -53,11 +65,15 @@ vi.mock('./ui', () => ({
 afterEach(() => {
   fixture.handlers.clear()
   fixture.isPackaged = false
+  fixture.windows = 2
+  fixture.localPendingWrite = false
   vi.clearAllMocks()
 })
 
 it('exposes only trusted read-only Ash updater status and version, with truthful build modes', async () => {
-  registerAshUpdaterReadOnlyHandlers()
+  registerAshUpdaterReadOnlyHandlers({
+    hasObservedPendingLocalWrite: () => fixture.localPendingWrite
+  })
   expect([...fixture.handlers.keys()].sort()).toEqual([
     'updater:getPreflight',
     'updater:getStatus',
@@ -90,4 +106,37 @@ it('exposes only trusted read-only Ash updater status and version, with truthful
       /Unauthorized Ash updater/
     )
   }
+})
+
+it('reports observed local Store persistence as busy through trusted IPC only', async () => {
+  fixture.windows = 0
+  fixture.localPendingWrite = true
+  const store = { hasObservedPendingLocalWrite: vi.fn(() => fixture.localPendingWrite) }
+  registerAshUpdaterReadOnlyHandlers(store)
+  const handler = fixture.handlers.get('updater:getPreflight')!
+
+  await expect(handler({ sender: { id: 1000 } })).rejects.toThrow(/Unauthorized Ash updater/)
+  expect(store.hasObservedPendingLocalWrite).not.toHaveBeenCalled()
+
+  const busy = await handler({ sender: fixture.trustedSender })
+  expect(busy).toMatchObject({
+    decision: 'busy',
+    activationAvailable: false,
+    runtime: {
+      windows: { state: 'known', count: 0 },
+      pendingDiskWrites: { state: 'unknown', lowerBound: 1 }
+    },
+    blockers: expect.arrayContaining([
+      'pending-disk-writes-observed',
+      'pending-disk-writes-unknown'
+    ])
+  })
+  fixture.localPendingWrite = false
+  const quiet = await handler({ sender: fixture.trustedSender })
+  expect(quiet).toMatchObject({
+    decision: 'defer',
+    activationAvailable: false,
+    runtime: { pendingDiskWrites: { state: 'unknown', lowerBound: 0 } }
+  })
+  expect(store.hasObservedPendingLocalWrite).toHaveBeenCalledTimes(2)
 })
