@@ -11,6 +11,7 @@ import {
   type OrcadBrowserProviderOptions
 } from './orcad-browser-provider'
 import { orcadClientPageCommand } from './orcad-client-page-commands'
+import { registerHostedBrowserBackendProbe } from './orcad-browser-backend-positive-evidence'
 
 /** Discover browsers asynchronously so authorization UI cannot block core RPC readiness. */
 export function startOrcadBrowserProvider(options: OrcadBrowserProviderOptions): {
@@ -21,7 +22,20 @@ export function startOrcadBrowserProvider(options: OrcadBrowserProviderOptions):
   let provider: OrcadBrowserProvider | null = null
   let startupError: unknown
   let stopping: Promise<void> | undefined
+  let startupCleanupUncertain = false
   const engineAvailable = (): boolean => !controller.signal.aborted && !!provider?.isAvailable()
+  let stoppingBackendWasAvailable = false
+  // Read-only updater diagnostics observe the provider that this process
+  // actually created, including while stop is still waiting on its cleanup.
+  // Do not use engineAvailable: aborting command admission does not prove that
+  // its process has stopped.
+  const unregisterBrowserObservation = registerHostedBrowserBackendProbe(
+    () =>
+      stoppingBackendWasAvailable ||
+      startupCleanupUncertain ||
+      provider?.hasHostOwnedCleanup?.() === true ||
+      provider?.isAvailable() === true
+  )
   setRuntimeBrowserCommandsFactory(
     (host) => {
       let commands: RuntimeBrowserCommands | undefined
@@ -53,7 +67,15 @@ export function startOrcadBrowserProvider(options: OrcadBrowserProviderOptions):
     }
   )
   const ready = Promise.resolve()
-    .then(() => resolveOrcadBrowserProvider({ ...options, signal: controller.signal }))
+    .then(() =>
+      resolveOrcadBrowserProvider({
+        ...options,
+        signal: controller.signal,
+        onUnresolvedStartupCleanup: () => {
+          startupCleanupUncertain = true
+        }
+      })
+    )
     .then(
       // The factory still serves desktop-hosted pages when no engine provider resolves.
       (resolved) => {
@@ -71,7 +93,18 @@ export function startOrcadBrowserProvider(options: OrcadBrowserProviderOptions):
     stop: () => {
       controller.abort()
       stopping ??= ready.then(async () => {
+        // Both Chromium and Electron clear availability before awaiting child
+        // cleanup. Preserve a positive observation until cleanup succeeds.
+        try {
+          stoppingBackendWasAvailable = provider?.isAvailable() === true
+        } catch {
+          // A failed status read cannot establish absence of a helper.
+        }
         await provider?.stop()
+        if (provider?.hasHostOwnedCleanup?.() !== true && !startupCleanupUncertain) {
+          unregisterBrowserObservation()
+          stoppingBackendWasAvailable = false
+        }
         // Resolver errors may include failed cleanup of partially started providers.
         if (startupError) {
           throw startupError

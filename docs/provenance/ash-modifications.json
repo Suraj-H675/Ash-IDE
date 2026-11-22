@@ -3980,6 +3980,26 @@
       "path": "src/main/persistence/profile-state/profile-state-worker-authority.ts",
       "sha256": "d82670bd4bdd6fae1b8365760433009664c2f7a5f091ed0da5f812762e032f4b",
       "reason": "Ash RT-15: expose pending backup rotation from worker SQLite authority and extract existing closed-writer error helper to respect source length; original pinned source preserved."
+    },
+    {
+      "path": "src/main/orcad/external-chromium-browser-process.ts",
+      "sha256": "6483ba784b22cc2bd3a7a3e65fb1f04cf43a478111e95b5726b9a1819061091e",
+      "reason": "Ash RT-15: keep hosted Chromium cleanup uncertainty separate from command availability and report it through the positive-only updater observation."
+    },
+    {
+      "path": "src/main/orcad/external-chromium-browser-session.ts",
+      "sha256": "c332cbd1a635e7ca36b678185b14d611d69c24e365529b3c39522f44e0204e19",
+      "reason": "Ash RT-15: distinguish confirmed Chromium helper close from unresolved close so failed cleanup cannot be reported as idle."
+    },
+    {
+      "path": "src/main/orcad/orcad-browser-provider.ts",
+      "sha256": "100f318bf614466e2aa2d0c5009c0cc68bb00e50b23c385d74715f7991732695",
+      "reason": "Ash RT-15: observe pending and unresolved helper cleanup in Electron install-park and failed startup paths for authenticated local update-safety diagnostics."
+    },
+    {
+      "path": "src/main/orcad/orcad-browser-startup.ts",
+      "sha256": "3ad2e90eab9827494f526af9e27dd17627634323ebaa69b21879a4a5f0364ce7",
+      "reason": "Ash RT-15: retain hosted browser evidence through asynchronous stop, uncertain cleanup, and failed startup cleanup before provider return."
     }
   ]
 }

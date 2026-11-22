@@ -7,6 +7,7 @@ import type {
 } from '../../shared/update-preflight-types'
 import {
   MAX_CENSUS_SESSIONS,
+  browserBackendInventory,
   censusWithUnknownRuntime,
   count,
   hostOwnership,
@@ -309,6 +310,7 @@ export async function collectUpdateRuntimeCensus(
       ? unknown(ownerReason, Math.max(agentSessionDigests.size, lateOwnerLowerBound))
       : count(Math.max(agentSessionDigests.size, lateOwnerLowerBound)),
     providerAgentSessions: providerAgentInventory(providerSessionsObserved()),
+    browserBackends: browserBackendInventory(),
     pendingDiskWrites: pendingWrites(pendingObserved())
   }
 }

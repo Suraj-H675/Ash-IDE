@@ -18,6 +18,8 @@ export type OrcadBrowserProvider = {
   kind: 'electron' | 'chromium'
   factory: RuntimeBrowserCommandsFactory
   isAvailable(): boolean
+  /** A host-owned helper stop is pending or unconfirmed; separate from command availability. */
+  hasHostOwnedCleanup?: () => boolean
   supportsGoogleCookieClear?(): boolean
   stop(): Promise<void>
 }
@@ -28,6 +30,7 @@ export type OrcadBrowserProviderOptions = {
   environment?: NodeJS.ProcessEnv
   resolveInstalledElectronExecutable?: () => Promise<string | null>
   resolveAgentBrowserBinary?: () => string | null
+  onUnresolvedStartupCleanup?: () => void
 }
 
 type ExecutableProbe = 'ok' | 'missing' | 'not_executable'
@@ -35,13 +38,18 @@ type ExecutableProbe = 'ok' | 'missing' | 'not_executable'
 class OrcadBrowserCleanupError extends AggregateError {}
 
 async function cleanupFailedProvider(
-  processHandle: { stop(): Promise<void> },
-  startupError: unknown
+  processHandle: { stop(): Promise<void>; hasHostOwnedCleanup?(): boolean },
+  startupError: unknown,
+  onUnresolvedCleanup?: () => void
 ): Promise<never> {
   try {
     await processHandle.stop()
   } catch (cleanupError) {
+    onUnresolvedCleanup?.()
     throw new OrcadBrowserCleanupError([startupError, cleanupError], 'orcad_browser_cleanup_failed')
+  }
+  if (processHandle.hasHostOwnedCleanup?.() === true) {
+    onUnresolvedCleanup?.()
   }
   throw startupError
 }
@@ -127,18 +135,20 @@ async function startProvider(
   agentBrowserPath: string,
   launch: ExternalChromiumLaunch,
   userDataPath: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  onUnresolvedCleanup?: () => void
 ): Promise<OrcadBrowserProvider> {
   const processHandle = new ExternalChromiumBrowserProcess(agentBrowserPath, launch, userDataPath)
   try {
     await processHandle.start(signal)
   } catch (error) {
-    return cleanupFailedProvider(processHandle, error)
+    return cleanupFailedProvider(processHandle, error, onUnresolvedCleanup)
   }
   return {
     kind: launch.provider,
     factory: (host) => processHandle.createCommands(host),
     isAvailable: () => processHandle.isAvailable(),
+    hasHostOwnedCleanup: () => processHandle.hasHostOwnedCleanup(),
     stop: () => processHandle.stop()
   }
 }
@@ -146,22 +156,39 @@ async function startProvider(
 async function startElectronServeProvider(
   executablePath: string,
   userDataPath: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  onUnresolvedCleanup?: () => void
 ): Promise<OrcadBrowserProvider> {
   const processHandle = new ElectronServeBrowserProcess(executablePath, userDataPath)
   try {
     await processHandle.start(signal)
   } catch (error) {
-    return cleanupFailedProvider(processHandle, error)
+    return cleanupFailedProvider(processHandle, error, onUnresolvedCleanup)
+  }
+  let helperStopsInFlight = 0
+  let failedHelperStop = false
+  const observedStopHelper = async (): Promise<void> => {
+    helperStopsInFlight += 1
+    try {
+      await processHandle.stop()
+      failedHelperStop = false
+    } catch (error) {
+      // The external helper's fate is uncertain after failed cleanup.
+      failedHelperStop = true
+      throw error
+    } finally {
+      helperStopsInFlight -= 1
+    }
   }
   const installPark = openOrcadBrowserInstallPark(executablePath, {
     pid: () => processHandle.pid(),
-    stop: () => processHandle.stop(),
+    stop: observedStopHelper,
     start: async (restartSignal) => {
       try {
         await processHandle.start(restartSignal)
+        failedHelperStop = false
       } catch (error) {
-        await processHandle.stop()
+        await observedStopHelper()
         throw error
       }
     }
@@ -171,9 +198,10 @@ async function startElectronServeProvider(
     supportsGoogleCookieClear: () => processHandle.supportsGoogleCookieClear(),
     factory: (host) => processHandle.createCommands(host),
     isAvailable: () => processHandle.isAvailable(),
+    hasHostOwnedCleanup: () => helperStopsInFlight > 0 || failedHelperStop,
     stop: async () => {
       await installPark?.close()
-      await processHandle.stop()
+      await observedStopHelper()
     }
   }
 }
@@ -206,7 +234,8 @@ export async function resolveOrcadBrowserProvider(
       return await startElectronServeProvider(
         installedElectronExecutable,
         options.userDataPath,
-        options.signal
+        options.signal,
+        options.onUnresolvedStartupCleanup
       )
     } catch (error) {
       if (error instanceof OrcadBrowserCleanupError) {
@@ -248,7 +277,8 @@ export async function resolveOrcadBrowserProvider(
       agentBrowserPath,
       { executablePath: chromiumExecutable, provider: 'chromium' },
       options.userDataPath,
-      options.signal
+      options.signal,
+      options.onUnresolvedStartupCleanup
     )
   } catch (error) {
     if (error instanceof OrcadBrowserCleanupError) {

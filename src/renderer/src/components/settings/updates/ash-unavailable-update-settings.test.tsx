@@ -9,6 +9,7 @@ const fixture = vi.hoisted(() => ({
   reason: 'source-build' as 'source-build' | 'not-configured',
   pendingObserved: false,
   nativeProviderObserved: 0,
+  browserObserved: false,
   version: vi.fn(async () => '0.0.0-ash-qa'),
   check: vi.fn(),
   download: vi.fn(),
@@ -49,6 +50,11 @@ const fixture = vi.hoisted(() => ({
           ? { lowerBound: fixture.nativeProviderObserved }
           : {})
       },
+      browserBackends: {
+        state: 'unknown' as const,
+        reason: 'browser-backend-inventory-unavailable' as const,
+        lowerBound: fixture.browserObserved ? 1 : 0
+      },
       pendingDiskWrites: {
         state: 'unknown' as const,
         reason: 'pending-write-census-unavailable' as const,
@@ -61,6 +67,8 @@ const fixture = vi.hoisted(() => ({
       'agent-session-active',
       'provider-agent-inventory-unknown',
       ...(fixture.nativeProviderObserved > 0 ? (['provider-agent-session-observed'] as const) : []),
+      'browser-backend-inventory-unknown',
+      ...(fixture.browserObserved ? (['browser-backend-observed'] as const) : []),
       'pending-disk-writes-unknown',
       ...(fixture.pendingObserved ? (['pending-disk-writes-observed'] as const) : [])
     ] as const,
@@ -101,6 +109,7 @@ vi.mock('./UpdateDelaySetting', () => ({
 afterEach(() => {
   fixture.pendingObserved = false
   fixture.nativeProviderObserved = 0
+  fixture.browserObserved = false
   vi.unstubAllGlobals()
   vi.clearAllMocks()
 })
@@ -239,6 +248,38 @@ it('shows locally observed native Chat provider children without claiming a comp
       'A native Chat provider child was observed by a local Ash runtime.'
     )
     expect(host.textContent).toContain('Ash cannot see every provider-native agent session.')
+    expect(host.textContent).toContain('Activation is unavailable.')
+  } finally {
+    act(() => root.unmount())
+    host.remove()
+    Reflect.deleteProperty(window, 'api')
+  }
+})
+
+it('shows a host-managed browser backend without implying complete browser inventory or activating updates', async () => {
+  fixture.browserObserved = true
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
+  Object.defineProperty(window, 'api', {
+    configurable: true,
+    value: { updater: { getPreflight: fixture.preflight } }
+  })
+  const host = document.createElement('div')
+  document.body.appendChild(host)
+  const root = createRoot(host)
+  try {
+    await act(async () => root.render(<UpdatePreflightDiagnostic />))
+    const inspect = Array.from(host.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Inspect local update blockers')
+    )
+    await act(async () => inspect?.click())
+    expect(host.textContent).toContain('Host-managed browser backend')
+    expect(host.textContent).toContain(
+      'At least 1 observed; Complete host-wide browser backend and activity coverage is unavailable.'
+    )
+    expect(host.textContent).toContain(
+      'The persistent Ash runtime observed a headless browser backend or unfinished helper shutdown.'
+    )
+    expect(host.textContent).toContain('Ash cannot inventory every browser backend')
     expect(host.textContent).toContain('Activation is unavailable.')
   } finally {
     act(() => root.unmount())

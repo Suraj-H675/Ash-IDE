@@ -29,7 +29,9 @@ vi.mock('../runtime/rpc/server/runtime-metadata', () => ({
 vi.mock('../orcad/orcad-sidecar-runtime-client', () => ({
   sendOrcadSidecarRequest: async (...args: unknown[]) => {
     fixture.calls.push(args)
-    if (fixture.fail) throw new Error('local runtime unavailable')
+    if (fixture.fail) {
+      throw new Error('local runtime unavailable')
+    }
     return fixture.response
   }
 }))
@@ -62,6 +64,11 @@ describe('local runtime provider observation admission', () => {
         reason: 'provider-agent-inventory-unavailable',
         lowerBound: 2
       },
+      browserBackends: {
+        state: 'unknown',
+        reason: 'browser-backend-inventory-unavailable',
+        lowerBound: 1
+      },
       ptys: { state: 'unknown', reason: 'inventory-partial', lowerBound: 3 },
       ptyOwnedAgentSessions: {
         state: 'unknown',
@@ -78,7 +85,8 @@ describe('local runtime provider observation admission', () => {
       providerChildren: 2,
       pendingWrites: 1,
       ptySessions: 3,
-      ptyOwnedAgentSessions: 1
+      ptyOwnedAgentSessions: 1,
+      browserBackend: 1
     })
   })
 
@@ -87,7 +95,8 @@ describe('local runtime provider observation admission', () => {
       providerChildren: 2,
       pendingWrites: 0,
       ptySessions: 0,
-      ptyOwnedAgentSessions: 0
+      ptyOwnedAgentSessions: 0,
+      browserBackend: 0
     })
   })
 
@@ -169,6 +178,26 @@ describe('local runtime provider observation admission', () => {
           reason: 'agent-owner-inventory-incomplete',
           lowerBound: 10_001
         }
+      },
+      {
+        runtimeId: 'runtime-expected',
+        providerAgentSessions: {
+          state: 'unknown',
+          reason: 'provider-agent-inventory-unavailable'
+        },
+        browserBackends: {
+          state: 'unknown',
+          reason: 'browser-backend-inventory-unavailable',
+          lowerBound: 2
+        }
+      },
+      {
+        runtimeId: 'runtime-expected',
+        providerAgentSessions: {
+          state: 'unknown',
+          reason: 'provider-agent-inventory-unavailable'
+        },
+        browserBackends: { state: 'known', count: 0 }
       }
     ]) {
       fixture.response = invalid

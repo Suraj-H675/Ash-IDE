@@ -5,7 +5,11 @@ import { observedHostedStructuredAgentChildren } from '../native-chat/agent-sess
 import type { UpdateRuntimeCensus } from '../../shared/update-preflight-types'
 import { collectUpdateRuntimeCensus } from './update-runtime-census'
 import { observeLocalRuntimeWriterActivity } from './update-runtime-provider-socket-observation'
-import { pendingWrites, providerAgentInventory } from './update-runtime-census-evidence'
+import {
+  browserBackendInventory,
+  pendingWrites,
+  providerAgentInventory
+} from './update-runtime-census-evidence'
 
 /** Bind the read-only census to the actual desktop providers and Store. */
 export function collectAshUpdateRuntimeCensus(
@@ -20,13 +24,15 @@ export function collectAshUpdateRuntimeCensus(
         providerChildren: 0,
         pendingWrites: 0 as const,
         ptySessions: 0,
-        ptyOwnedAgentSessions: 0
+        ptyOwnedAgentSessions: 0,
+        browserBackend: 0 as const
       }))
     : Promise.resolve({
         providerChildren: 0,
         pendingWrites: 0,
         ptySessions: 0,
-        ptyOwnedAgentSessions: 0
+        ptyOwnedAgentSessions: 0,
+        browserBackend: 0 as const
       })
   const local = collectUpdateRuntimeCensus({
     getWindowCount,
@@ -78,6 +84,9 @@ export function collectAshUpdateRuntimeCensus(
       ),
       providerAgentSessions: providerAgentInventory(
         Math.max(census.providerAgentSessions.lowerBound ?? 0, remoteObserved.providerChildren)
+      ),
+      browserBackends: browserBackendInventory(
+        Math.max(census.browserBackends.lowerBound, remoteObserved.browserBackend)
       ),
       pendingDiskWrites: pendingWrites(
         Math.max(census.pendingDiskWrites.lowerBound, remoteObserved.pendingWrites)

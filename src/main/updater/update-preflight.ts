@@ -60,6 +60,12 @@ export function assessUpdatePreflight(
   if ((runtime.providerAgentSessions.lowerBound ?? 0) > 0) {
     blockers.add('provider-agent-session-observed')
   }
+  if (runtime.browserBackends.state === 'unknown') {
+    blockers.add('browser-backend-inventory-unknown')
+  }
+  if (runtime.browserBackends.lowerBound > 0) {
+    blockers.add('browser-backend-observed')
+  }
   if (runtime.pendingDiskWrites.state === 'unknown') {
     blockers.add('pending-disk-writes-unknown')
   }
@@ -69,6 +75,7 @@ export function assessUpdatePreflight(
   const busy =
     [runtime.windows, runtime.ptys, runtime.ptyOwnedAgentSessions].some(isActive) ||
     (runtime.providerAgentSessions.lowerBound ?? 0) > 0 ||
+    runtime.browserBackends.lowerBound > 0 ||
     runtime.pendingDiskWrites.lowerBound > 0
   return {
     decision: busy ? 'busy' : 'defer',

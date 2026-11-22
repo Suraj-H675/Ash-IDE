@@ -11,6 +11,7 @@ export type UpdatePreflightUnknownReason =
   | 'provider-agent-inventory-unavailable'
   | 'agent-owner-inventory-incomplete'
   | 'pending-write-census-unavailable'
+  | 'browser-backend-inventory-unavailable'
   | 'exclusive-host-ownership-unavailable'
 
 export type UpdatePreflightCount =
@@ -57,6 +58,12 @@ export type UpdateRuntimeCensus = {
     /** Positive native Chat children observed locally or in the authenticated runtime; never a complete provider census. */
     lowerBound?: number
   }
+  browserBackends: {
+    state: 'unknown'
+    reason: 'browser-backend-inventory-unavailable'
+    /** Available local backend or unresolved helper cleanup, NOT active tabs, operations, or host-wide process inventory. */
+    lowerBound: 0 | 1
+  }
   pendingDiskWrites: {
     state: 'unknown'
     reason: 'pending-write-census-unavailable'
@@ -81,6 +88,8 @@ export type UpdatePreflightBlocker =
   | 'agent-session-active'
   | 'provider-agent-inventory-unknown'
   | 'provider-agent-session-observed'
+  | 'browser-backend-inventory-unknown'
+  | 'browser-backend-observed'
   | 'pending-disk-writes-unknown'
   | 'pending-disk-writes-observed'
 

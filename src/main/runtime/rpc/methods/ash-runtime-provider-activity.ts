@@ -1,4 +1,5 @@
 import { observedHostedStructuredAgentChildren } from '../../../native-chat/agent-session-wire/structured-agent-session-positive-evidence'
+import { observedHostedBrowserBackend } from '../../../orcad/orcad-browser-backend-positive-evidence'
 import { defineMethod } from '../core'
 
 /** Host-local observation over the authenticated runtime socket, never update admission. */
@@ -28,6 +29,7 @@ export const ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS = [
         }
       }
       const pendingWriteAtStart = observedStoreWrite()
+      const browserBackendAtStart = observedHostedBrowserBackend()
       // Bound even a stalled authenticated daemon; a failed read contributes
       // no positive count, never a verified zero inventory.
       let ptyEvidence = { ptySessions: 0, ptyOwnedAgentSessions: 0 }
@@ -42,12 +44,21 @@ export const ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS = [
       // A write admitted while the daemon inventory awaited a response must
       // not disappear behind an apparently quiet initial Store sample.
       const pendingWriteLowerBound = Math.max(pendingWriteAtStart, observedStoreWrite())
+      const browserBackendLowerBound = Math.max(
+        browserBackendAtStart,
+        observedHostedBrowserBackend()
+      )
       return {
         runtimeId: runtime.getRuntimeId(),
         providerAgentSessions: {
           state: 'unknown' as const,
           reason: 'provider-agent-inventory-unavailable' as const,
           ...(lowerBound > 0 ? { lowerBound: Math.min(lowerBound, 10_000) } : {})
+        },
+        browserBackends: {
+          state: 'unknown' as const,
+          reason: 'browser-backend-inventory-unavailable' as const,
+          lowerBound: browserBackendLowerBound
         },
         pendingDiskWrites: {
           state: 'unknown' as const,

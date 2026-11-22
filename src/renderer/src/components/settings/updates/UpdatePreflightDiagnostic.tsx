@@ -32,6 +32,10 @@ const blockerCopy: Record<UpdatePreflightBlocker, string> = {
     'Ash cannot see every provider-native agent session. Review provider sessions before relying on an empty PTY inventory.',
   'provider-agent-session-observed':
     'A native Chat provider child was observed by a local Ash runtime. Other provider processes may also exist; this is not a complete inventory.',
+  'browser-backend-inventory-unknown':
+    'Ash cannot inventory every browser backend, tab, download, or in-flight action. A quiet snapshot does not prove browser work is finished.',
+  'browser-backend-observed':
+    'The persistent Ash runtime observed a headless browser backend or unfinished helper shutdown. This does not establish how many tabs or operations are active.',
   'pending-disk-writes-unknown':
     'Ash cannot prove that writes are drained. Finish ongoing saves and writes, then recheck; this diagnostic still cannot prove they are clear.',
   'pending-disk-writes-observed':
@@ -52,6 +56,8 @@ const unknownReasonCopy: Record<UpdatePreflightUnknownReason, string> = {
   'provider-agent-inventory-unavailable': 'The provider agent inventory is unavailable.',
   'agent-owner-inventory-incomplete': 'PTY agent ownership is incomplete.',
   'pending-write-census-unavailable': 'The pending disk write census is unavailable.',
+  'browser-backend-inventory-unavailable':
+    'Complete host-wide browser backend and activity coverage is unavailable.',
   'exclusive-host-ownership-unavailable': 'Exclusive host ownership cannot be established.'
 }
 
@@ -152,6 +158,10 @@ export function UpdatePreflightDiagnostic(): React.JSX.Element {
                 <div>
                   <dt className="text-muted-foreground">Provider agent sessions</dt>
                   <dd>{describeCount(report.runtime.providerAgentSessions)}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">Host-managed browser backend</dt>
+                  <dd>{describeCount(report.runtime.browserBackends)}</dd>
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Local Store write activity</dt>

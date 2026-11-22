@@ -6,6 +6,7 @@ import { assertUploadFilesExist } from '../browser/cdp/input/browser-upload-file
 import {
   agentBrowserEvalCommand,
   ExternalChromiumBrowserSession,
+  type ExternalChromiumCleanupOutcome,
   type ExternalChromiumLaunch
 } from './external-chromium-browser-session'
 import { normalizeBrowserNavigationUrl } from '../../shared/browser-url'
@@ -39,6 +40,7 @@ export class ExternalChromiumBrowserProcess {
   private readonly tabs: ExternalChromiumTabRegistry
   private queue: Promise<void> = Promise.resolve()
   private available = false
+  private cleanupUncertain = false
 
   constructor(agentBrowserPath: string, launch: ExternalChromiumLaunch, statePath: string) {
     this.session = new ExternalChromiumBrowserSession(agentBrowserPath, launch, statePath)
@@ -49,6 +51,7 @@ export class ExternalChromiumBrowserProcess {
     const activeTabId = await this.session.start(signal)
     signal?.throwIfAborted()
     this.tabs.initialize(activeTabId)
+    this.cleanupUncertain = false
     this.available = true
   }
 
@@ -71,11 +74,20 @@ export class ExternalChromiumBrowserProcess {
     return this.available
   }
 
+  hasHostOwnedCleanup(): boolean {
+    return this.cleanupUncertain
+  }
+
   async stop(): Promise<void> {
     this.available = false
     await this.enqueue(async () => {
-      await this.session.stop()
-      this.tabs.clear()
+      this.cleanupUncertain = true
+      try {
+        const outcome: ExternalChromiumCleanupOutcome = await this.session.stop()
+        this.cleanupUncertain = outcome === 'unresolved'
+      } finally {
+        this.tabs.clear()
+      }
     })
   }
 

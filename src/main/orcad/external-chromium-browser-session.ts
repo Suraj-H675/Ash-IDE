@@ -28,6 +28,8 @@ export type ExternalChromiumLaunch = {
   provider: 'electron' | 'chromium'
 }
 
+export type ExternalChromiumCleanupOutcome = 'confirmed' | 'unresolved'
+
 const AgentBrowserTab = z.object({
   active: z.boolean(),
   tabId: z.string(),
@@ -180,11 +182,13 @@ export class ExternalChromiumBrowserSession {
     }
   }
 
-  async stop(): Promise<void> {
+  async stop(): Promise<ExternalChromiumCleanupOutcome> {
     try {
       await this.run(['close'], { timeoutMs: CLOSE_TIMEOUT_MS })
+      return 'confirmed'
     } catch {
-      // Closing an already-dead browser is complete cleanup.
+      // A dead browser and an unresponsive live browser are indistinguishable here.
+      return 'unresolved'
     }
   }
 

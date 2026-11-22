@@ -12,6 +12,7 @@ const fixture = vi.hoisted(() => ({
   remoteWrite: false,
   remotePtys: 0,
   remotePtyOwners: 0,
+  remoteBrowser: false,
   remoteFails: false,
   desktopDaemon: null as { adapters: UpdateCensusDaemonAdapter[] } | null
 }))
@@ -41,12 +42,15 @@ vi.mock('../native-chat/agent-session-wire/structured-agent-session-registry', (
 }))
 vi.mock('./update-runtime-provider-socket-observation', () => ({
   observeLocalRuntimeWriterActivity: async () => {
-    if (fixture.remoteFails) throw new Error('remote probe failed')
+    if (fixture.remoteFails) {
+      throw new Error('remote probe failed')
+    }
     return {
       providerChildren: fixture.remoteObserved,
       pendingWrites: fixture.remoteWrite ? 1 : 0,
       ptySessions: fixture.remotePtys,
-      ptyOwnedAgentSessions: fixture.remotePtyOwners
+      ptyOwnedAgentSessions: fixture.remotePtyOwners,
+      browserBackend: fixture.remoteBrowser ? 1 : 0
     }
   }
 }))
@@ -60,11 +64,54 @@ afterEach(() => {
   fixture.remoteWrite = false
   fixture.remotePtys = 0
   fixture.remotePtyOwners = 0
+  fixture.remoteBrowser = false
   fixture.remoteFails = false
   fixture.desktopDaemon = null
 })
 
 describe('RT-15 desktop native Chat provider evidence', () => {
+  it('treats an available host-managed browser backend as a positive busy signal without claiming tabs or operations', async () => {
+    fixture.executingIds = []
+    fixture.remoteBrowser = true
+    const census = await collectAshUpdateRuntimeCensus(
+      () => 0,
+      () => false,
+      '/private-fixture'
+    )
+    expect(census.browserBackends).toEqual({
+      state: 'unknown',
+      reason: 'browser-backend-inventory-unavailable',
+      lowerBound: 1
+    })
+    const preflight = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)
+    expect(preflight.decision).toBe('busy')
+    expect(preflight.blockers).toEqual(
+      expect.arrayContaining(['browser-backend-inventory-unknown', 'browser-backend-observed'])
+    )
+    expect(preflight.activationAvailable).toBe(false)
+  })
+
+  it('never treats missing or refused browser runtime evidence as complete no-browser proof', async () => {
+    fixture.executingIds = []
+    for (const scenario of ['older-response', 'refused-socket'] as const) {
+      fixture.remoteFails = scenario === 'refused-socket'
+      const census = await collectAshUpdateRuntimeCensus(
+        () => 0,
+        () => false,
+        '/private-fixture'
+      )
+      expect(census.browserBackends).toEqual({
+        state: 'unknown',
+        reason: 'browser-backend-inventory-unavailable',
+        lowerBound: 0
+      })
+      expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)).toMatchObject({
+        decision: 'defer',
+        activationAvailable: false
+      })
+    }
+  })
+
   it.each(['older-runtime', 'unreachable-runtime'] as const)(
     'never promotes an authenticated desktop zero to complete cross-process zero with %s',
     async (scenario) => {

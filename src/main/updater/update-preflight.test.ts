@@ -14,6 +14,11 @@ function census(overrides: Partial<UpdateRuntimeCensus> = {}): UpdateRuntimeCens
       state: 'unknown',
       reason: 'provider-agent-inventory-unavailable'
     },
+    browserBackends: {
+      state: 'unknown',
+      reason: 'browser-backend-inventory-unavailable',
+      lowerBound: 0
+    },
     pendingDiskWrites: {
       state: 'unknown',
       reason: 'pending-write-census-unavailable',
@@ -24,6 +29,23 @@ function census(overrides: Partial<UpdateRuntimeCensus> = {}): UpdateRuntimeCens
 }
 
 describe('safe update preflight decision', () => {
+  it('defers an available host-managed browser backend without claiming tabs or operations are fully inventoried', () => {
+    const report = assessUpdatePreflight(
+      NO_STAGED_UPDATE_CANDIDATE,
+      census({
+        browserBackends: {
+          state: 'unknown',
+          reason: 'browser-backend-inventory-unavailable',
+          lowerBound: 1
+        }
+      })
+    )
+    expect(report.decision).toBe('busy')
+    expect(report.blockers).toEqual(
+      expect.arrayContaining(['browser-backend-inventory-unknown', 'browser-backend-observed'])
+    )
+    expect(report.activationAvailable).toBe(false)
+  })
   it('treats loaded native Chat provider sessions as positive busy evidence without claiming complete inventory', () => {
     const report = assessUpdatePreflight(
       NO_STAGED_UPDATE_CANDIDATE,

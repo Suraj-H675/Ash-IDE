@@ -62,6 +62,14 @@ export function providerAgentInventory(
   }
 }
 
+export function browserBackendInventory(available = 0): UpdateRuntimeCensus['browserBackends'] {
+  return {
+    state: 'unknown',
+    reason: 'browser-backend-inventory-unavailable',
+    lowerBound: available > 0 ? 1 : 0
+  }
+}
+
 export function pendingWrites(observedLowerBound = 0): UpdateRuntimeCensus['pendingDiskWrites'] {
   return {
     state: 'unknown',
@@ -114,6 +122,7 @@ export function censusWithUnknownRuntime(
         : reason
     ),
     providerAgentSessions: providerAgentInventory(providerSessionLowerBound),
+    browserBackends: browserBackendInventory(),
     pendingDiskWrites: pendingWrites(pendingWriteLowerBound)
   }
 }

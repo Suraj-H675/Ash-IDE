@@ -23,6 +23,11 @@ const fixture = vi.hoisted(() => ({
       state: 'unknown',
       reason: 'provider-agent-inventory-unavailable'
     },
+    browserBackends: {
+      state: 'unknown',
+      reason: 'browser-backend-inventory-unavailable',
+      lowerBound: 0
+    },
     pendingDiskWrites: {
       state: 'unknown',
       reason: 'pending-write-census-unavailable',

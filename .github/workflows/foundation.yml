@@ -95,6 +95,10 @@ jobs:
             src/main/updater/update-runtime-provider-socket-observation.test.ts \
             src/main/updater/update-runtime-connected-pty-evidence.test.ts \
             src/main/orcad/orcad-sidecar-runtime-request-budget.test.ts \
+            src/main/orcad/orcad-browser-backend-positive-evidence.test.ts \
+            src/main/orcad/orcad-browser-startup-positive-evidence.test.ts \
+            src/main/orcad/orcad-browser-install-park-positive-evidence.test.ts \
+            src/main/orcad/external-chromium-browser-process-positive-evidence.test.ts \
             src/main/runtime/rpc/methods/ash-runtime-provider-activity.test.ts \
             src/main/ipc/ash-updater-status.test.ts \
             src/main/startup/desktop-profile-instance-lock.test.ts \

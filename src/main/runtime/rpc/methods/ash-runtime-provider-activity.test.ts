@@ -23,7 +23,12 @@ const fixture = vi.hoisted(() => ({
   ptyCount: 0,
   ownerCount: 0,
   ptyFails: false,
+  browserAvailable: false,
   onPtyRead: null as (() => void) | null
+}))
+
+vi.mock('../../../orcad/orcad-browser-backend-positive-evidence', () => ({
+  observedHostedBrowserBackend: () => (fixture.browserAvailable ? 1 : 0)
 }))
 
 vi.mock(
@@ -41,7 +46,9 @@ vi.mock(
 vi.mock('../../../updater/update-runtime-connected-pty-evidence', () => ({
   observeConnectedPtyPositiveEvidence: async () => {
     fixture.onPtyRead?.()
-    if (fixture.ptyFails) throw new Error('disconnected daemon')
+    if (fixture.ptyFails) {
+      throw new Error('disconnected daemon')
+    }
     return { ptySessions: fixture.ptyCount, ptyOwnedAgentSessions: fixture.ownerCount }
   }
 }))
@@ -52,6 +59,7 @@ afterEach(() => {
   fixture.ptyCount = 0
   fixture.ownerCount = 0
   fixture.ptyFails = false
+  fixture.browserAvailable = false
   fixture.onPtyRead = null
 })
 
@@ -72,6 +80,11 @@ describe('authenticated runtime provider-native activity RPC', () => {
       ok: true,
       result: {
         runtimeId: 'tested-runtime',
+        browserBackends: {
+          state: 'unknown',
+          reason: 'browser-backend-inventory-unavailable',
+          lowerBound: 0
+        },
         pendingDiskWrites: {
           state: 'unknown',
           reason: 'pending-write-census-unavailable',
@@ -168,6 +181,36 @@ describe('authenticated runtime provider-native activity RPC', () => {
       }
     })
   })
+
+  it.each(['admitted-during-read', 'retired-during-read'] as const)(
+    'retains a positive headless browser backend %s across the asynchronous daemon census',
+    async (phase) => {
+      fixture.browserAvailable = phase === 'retired-during-read'
+      fixture.onPtyRead = () => {
+        fixture.browserAvailable = phase === 'admitted-during-read'
+      }
+      const dispatcher = new RpcDispatcher({
+        runtime,
+        methods: ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS
+      })
+      expect(
+        await dispatcher.dispatch({
+          id: phase,
+          authToken: 'owner-token',
+          method: 'runtime.providerActivity'
+        })
+      ).toMatchObject({
+        ok: true,
+        result: {
+          browserBackends: {
+            state: 'unknown',
+            reason: 'browser-backend-inventory-unavailable',
+            lowerBound: 1
+          }
+        }
+      })
+    }
+  )
 
   it.each(['admitted-during-read', 'drained-during-read'] as const)(
     'retains a Store write %s across an asynchronous daemon observation',
@@ -271,6 +314,8 @@ it.skipIf(process.platform !== 'linux')(
       "const { OrcaRuntimeRpcServer } = require('./src/main/runtime/rpc/server/runtime-rpc.ts')",
       "const { OrcaRuntimeService } = require('./src/main/runtime/orca-runtime.ts')",
       "const { ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS } = require('./src/main/runtime/rpc/methods/ash-runtime-provider-activity.ts')",
+      "const { registerHostedBrowserBackendProbe } = require('./src/main/orcad/orcad-browser-backend-positive-evidence.ts')",
+      'registerHostedBrowserBackendProbe(() => true)',
       "const { setStructuredAgentSessionHost } = require('./src/main/native-chat/agent-session-wire/structured-agent-session-registry.ts')",
       "setStructuredAgentSessionHost({ loadedSessionIds: () => ['private-provider-child', 'resting-chat'], readStatusSummary: (id) => ({ hostExecutionOwned: id === 'private-provider-child' }) })",
       'const runtime = new OrcaRuntimeService()',
@@ -309,6 +354,11 @@ it.skipIf(process.platform !== 'linux')(
       )
       expect(response).toEqual({
         runtimeId: metadata.runtimeId,
+        browserBackends: {
+          state: 'unknown',
+          reason: 'browser-backend-inventory-unavailable',
+          lowerBound: 1
+        },
         ptys: { state: 'unknown', reason: 'inventory-partial', lowerBound: 0 },
         ptyOwnedAgentSessions: {
           state: 'unknown',
@@ -344,12 +394,19 @@ it.skipIf(process.platform !== 'linux')(
         reason: 'pending-write-census-unavailable',
         lowerBound: 1
       })
+      expect(combined.browserBackends).toEqual({
+        state: 'unknown',
+        reason: 'browser-backend-inventory-unavailable',
+        lowerBound: 1
+      })
       const preflight = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, combined)
       expect(preflight.decision).toBe('busy')
       expect(preflight.blockers).toEqual(
         expect.arrayContaining([
           'provider-agent-session-observed',
-          'provider-agent-inventory-unknown'
+          'provider-agent-inventory-unknown',
+          'browser-backend-observed',
+          'browser-backend-inventory-unknown'
         ])
       )
       expect(preflight.activationAvailable).toBe(false)

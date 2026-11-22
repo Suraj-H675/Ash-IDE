@@ -11,6 +11,14 @@ const RuntimeProviderObservation = z.object({
     reason: z.literal('provider-agent-inventory-unavailable'),
     lowerBound: z.number().int().positive().max(10_000).optional()
   }),
+  /** An older host cannot establish browser-backend absence. */
+  browserBackends: z
+    .object({
+      state: z.literal('unknown'),
+      reason: z.literal('browser-backend-inventory-unavailable'),
+      lowerBound: z.union([z.literal(0), z.literal(1)])
+    })
+    .optional(),
   /** Older local runtimes legitimately omit this field. Absence is unknown. */
   pendingDiskWrites: z
     .object({
@@ -40,13 +48,15 @@ export type LocalRuntimeWriterObservation = {
   pendingWrites: 0 | 1
   ptySessions: number
   ptyOwnedAgentSessions: number
+  browserBackend: 0 | 1
 }
 
 const NOTHING_OBSERVED: LocalRuntimeWriterObservation = Object.freeze({
   providerChildren: 0,
   pendingWrites: 0,
   ptySessions: 0,
-  ptyOwnedAgentSessions: 0
+  ptyOwnedAgentSessions: 0,
+  browserBackend: 0
 })
 
 /**
@@ -77,7 +87,8 @@ export async function observeLocalRuntimeWriterActivity(
           providerChildren: response.data.providerAgentSessions.lowerBound ?? 0,
           pendingWrites: response.data.pendingDiskWrites?.lowerBound ?? 0,
           ptySessions: response.data.ptys?.lowerBound ?? 0,
-          ptyOwnedAgentSessions: response.data.ptyOwnedAgentSessions?.lowerBound ?? 0
+          ptyOwnedAgentSessions: response.data.ptyOwnedAgentSessions?.lowerBound ?? 0,
+          browserBackend: response.data.browserBackends?.lowerBound ?? 0
         }
       : NOTHING_OBSERVED
   } catch {
