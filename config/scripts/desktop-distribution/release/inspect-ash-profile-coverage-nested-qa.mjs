@@ -1,16 +1,13 @@
 // Immediate profile-directory metadata, never profile contents or user-defined IDs.
-import { lstatSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
+import {
+  namesFromPinnedDirectory,
+  statPinnedChild,
+  withPinnedOwnedDirectory
+} from './inspect-ash-profile-coverage-pinned-qa.mjs'
 
 const MAX_PROFILES = 512
 const MAX_PROFILE_ENTRIES = 4096
 const MAX_TOTAL_PROFILE_ENTRIES = 20_000
-
-export function sameRootSnapshot(before, after) {
-  return ['dev', 'ino', 'mode', 'nlink', 'mtimeNs', 'ctimeNs'].every(
-    (property) => before[property] === after[property]
-  )
-}
 
 const PROFILE_FILES = new Map([
   ['profile-state.db', 'sqlite-and-recovery'],
@@ -48,83 +45,71 @@ function knownProfileEntry(name, kind) {
   return null
 }
 
-export function inspectImmediateProfiles(rootPath) {
-  const result = {
-    profileDirectoryCount: 0,
-    inspectedProfileEntryCount: 0,
-    unclassifiedProfileEntryCount: 0,
-    unsafeProfileEntryCount: 0,
-    observedProfileDomainEntryCounts: {
-      'sqlite-and-recovery': 0,
-      'profile-layout-and-browser': 0,
-      'profile-identity-and-secrets': 0
+export function inspectImmediateProfiles(pinnedRoot) {
+  return withPinnedOwnedDirectory(`${pinnedRoot.path}/profiles`, (profiles) => {
+    const result = {
+      profileDirectoryCount: 0,
+      inspectedProfileEntryCount: 0,
+      unclassifiedProfileEntryCount: 0,
+      unsafeProfileEntryCount: 0,
+      observedProfileDomainEntryCounts: {
+        'sqlite-and-recovery': 0,
+        'profile-layout-and-browser': 0,
+        'profile-identity-and-secrets': 0
+      }
     }
-  }
-  const profiles = join(rootPath, 'profiles')
-  const rootInfo = lstatSync(profiles, { bigint: true })
-  if (
-    !rootInfo.isDirectory() ||
-    rootInfo.isSymbolicLink() ||
-    rootInfo.uid !== BigInt(process.getuid()) ||
-    (rootInfo.mode & 0o077n) !== 0n
-  ) {
-    throw new Error('PK-06 profiles directory is not private and owned')
-  }
-  const ids = readdirSync(profiles).sort()
-  if (ids.length > MAX_PROFILES) {
-    throw new Error('PK-06 profile count budget exceeded')
-  }
-  for (const id of ids) {
-    const directory = join(profiles, id)
-    const before = lstatSync(directory, { bigint: true })
-    if (
-      !/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(id) ||
-      !before.isDirectory() ||
-      before.isSymbolicLink() ||
-      before.uid !== BigInt(process.getuid()) ||
-      (before.mode & 0o077n) !== 0n
-    ) {
-      result.unsafeProfileEntryCount++
-      continue
-    }
-    result.profileDirectoryCount++
-    const names = readdirSync(directory).sort()
-    if (
-      names.length > MAX_PROFILE_ENTRIES ||
-      result.inspectedProfileEntryCount + names.length > MAX_TOTAL_PROFILE_ENTRIES
-    ) {
-      throw new Error('PK-06 nested profile entry budget exceeded')
-    }
-    for (const name of names) {
-      const info = lstatSync(join(directory, name), { bigint: true })
-      const kind = info.isFile() ? 'file' : info.isDirectory() ? 'directory' : 'unsafe'
-      const unsafe =
-        kind === 'unsafe' ||
+    const ids = namesFromPinnedDirectory(profiles, MAX_PROFILES, 'profile-count')
+    for (const id of ids) {
+      const info = statPinnedChild(profiles, id)
+      if (
+        !/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(id) ||
+        !info.isDirectory() ||
+        info.isSymbolicLink() ||
         info.uid !== BigInt(process.getuid()) ||
-        (kind === 'file' && info.nlink !== 1n)
-      result.inspectedProfileEntryCount++
-      if (unsafe) {
+        (info.mode & 0o077n) !== 0n
+      ) {
         result.unsafeProfileEntryCount++
+        continue
       }
-      const domain = unsafe ? null : knownProfileEntry(name, kind)
-      if (domain) {
-        result.observedProfileDomainEntryCounts[domain]++
-      } else {
-        result.unclassifiedProfileEntryCount++
-      }
+      result.profileDirectoryCount++
+      withPinnedOwnedDirectory(`${profiles.path}/${id}`, (profile) => {
+        const maximum = Math.min(
+          MAX_PROFILE_ENTRIES,
+          MAX_TOTAL_PROFILE_ENTRIES - result.inspectedProfileEntryCount
+        )
+        const names = namesFromPinnedDirectory(profile, maximum, 'nested profile')
+        for (const name of names) {
+          const entry = statPinnedChild(profile, name)
+          const kind = entry.isFile() ? 'file' : entry.isDirectory() ? 'directory' : 'unsafe'
+          const unsafe =
+            kind === 'unsafe' ||
+            entry.uid !== BigInt(process.getuid()) ||
+            (kind === 'file' && entry.nlink !== 1n)
+          result.inspectedProfileEntryCount++
+          if (unsafe) {
+            result.unsafeProfileEntryCount++
+          }
+          const domain = unsafe ? null : knownProfileEntry(name, kind)
+          if (domain) {
+            result.observedProfileDomainEntryCounts[domain]++
+          } else {
+            result.unclassifiedProfileEntryCount++
+          }
+        }
+        if (
+          JSON.stringify(names) !==
+          JSON.stringify(namesFromPinnedDirectory(profile, maximum, 'nested profile'))
+        ) {
+          throw new Error('PK-06 nested profile changed during inspection')
+        }
+      })
     }
     if (
-      !sameRootSnapshot(before, lstatSync(directory, { bigint: true })) ||
-      JSON.stringify(names) !== JSON.stringify(readdirSync(directory).sort())
+      JSON.stringify(ids) !==
+      JSON.stringify(namesFromPinnedDirectory(profiles, MAX_PROFILES, 'profile-count'))
     ) {
-      throw new Error('PK-06 nested profile changed during inspection')
+      throw new Error('PK-06 profiles directory changed during inspection')
     }
-  }
-  if (
-    !sameRootSnapshot(rootInfo, lstatSync(profiles, { bigint: true })) ||
-    JSON.stringify(ids) !== JSON.stringify(readdirSync(profiles).sort())
-  ) {
-    throw new Error('PK-06 profiles directory changed during inspection')
-  }
-  return result
+    return result
+  })
 }

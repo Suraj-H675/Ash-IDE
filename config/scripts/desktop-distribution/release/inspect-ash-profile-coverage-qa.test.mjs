@@ -4,8 +4,10 @@ import {
   linkSync,
   mkdirSync,
   mkdtempSync,
+  renameSync,
   rmSync,
   symlinkSync,
+  unlinkSync,
   writeFileSync
 } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -13,6 +15,11 @@ import { basename, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { inspectAshProfileCoverage } from './inspect-ash-profile-coverage-qa.mjs'
+import {
+  namesFromPinnedDirectory,
+  statPinnedChild,
+  withPinnedOwnedDirectory
+} from './inspect-ash-profile-coverage-pinned-qa.mjs'
 
 const ownedRoots = []
 const script = fileURLToPath(new URL('./inspect-ash-profile-coverage-qa.mjs', import.meta.url))
@@ -159,7 +166,7 @@ describe.skipIf(process.platform !== 'linux')(
     it('rejects a nonprivate root and noncanonical or symlinked root aliases', () => {
       const root = privateRoot()
       chmodSync(root, 0o755)
-      expect(() => inspectAshProfileCoverage(root)).toThrow(/private owned/)
+      expect(() => inspectAshProfileCoverage(root)).toThrow(/private.*owned/)
       chmodSync(root, 0o700)
       expect(() => inspectAshProfileCoverage(`${root}/../${basename(root)}`)).toThrow(
         /absolute canonical/
@@ -167,7 +174,38 @@ describe.skipIf(process.platform !== 'linux')(
       const alias = `${root}-alias`
       ownedRoots.push(alias)
       symlinkSync(root, alias)
-      expect(() => inspectAshProfileCoverage(alias)).toThrow(/private owned/)
+      expect(() => inspectAshProfileCoverage(alias)).toThrow(/unaliased/)
+    })
+
+    it('stops streaming enumeration at its exact entry budget', () => {
+      const root = privateRoot()
+      for (const name of ['a', 'b', 'c', 'd']) {
+        writeFileSync(join(root, name), '', { mode: 0o600 })
+      }
+      withPinnedOwnedDirectory(root, (pinned) => {
+        expect(() => namesFromPinnedDirectory(pinned, 3, 'test')).toThrow(/entry budget exceeded/)
+        expect(namesFromPinnedDirectory(pinned, 4, 'test')).toEqual(['a', 'b', 'c', 'd'])
+      })
+    })
+
+    it('does not follow a swapped symlink while an opened directory stays pinned', () => {
+      const root = privateRoot()
+      const moved = `${root}-renamed`
+      writeFileSync(join(root, 'owned-only'), 'private', { mode: 0o600 })
+      expect(() =>
+        withPinnedOwnedDirectory(root, (pinned) => {
+          renameSync(root, moved)
+          symlinkSync('/etc', root)
+          try {
+            expect(namesFromPinnedDirectory(pinned, 16, 'pinned-root')).toEqual(['owned-only'])
+            expect(statPinnedChild(pinned, 'owned-only').isFile()).toBe(true)
+            expect(() => statPinnedChild(pinned, 'passwd')).toThrow()
+          } finally {
+            unlinkSync(root)
+            renameSync(moved, root)
+          }
+        })
+      ).toThrow(/directory changed/)
     })
 
     it('offers a standalone metadata-only CLI with no sensitive paths in output or failure', () => {

@@ -40,6 +40,7 @@ jobs:
           python3 -c 'from pathlib import Path; p=Path("config/scripts/desktop-distribution/runtime-verification/ash-two-version-native-pidfd.py"); compile(p.read_text(), str(p), "exec")'
           node --check config/scripts/desktop-distribution/release/inspect-ash-profile-coverage-qa.mjs
           node --check config/scripts/desktop-distribution/release/inspect-ash-profile-coverage-nested-qa.mjs
+          node --check config/scripts/desktop-distribution/release/inspect-ash-profile-coverage-pinned-qa.mjs
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-network-audit.sh
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-windowless-linux-native-notification.sh
           bash -n resources/linux/packaging/after-install.sh
