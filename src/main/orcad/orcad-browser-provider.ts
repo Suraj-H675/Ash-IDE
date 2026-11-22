@@ -171,7 +171,7 @@ async function startElectronServeProvider(
     helperStopsInFlight += 1
     try {
       await processHandle.stop()
-      failedHelperStop = false
+      failedHelperStop = processHandle.hasHostOwnedCleanup?.() === true
     } catch (error) {
       // The external helper's fate is uncertain after failed cleanup.
       failedHelperStop = true
@@ -198,7 +198,8 @@ async function startElectronServeProvider(
     supportsGoogleCookieClear: () => processHandle.supportsGoogleCookieClear(),
     factory: (host) => processHandle.createCommands(host),
     isAvailable: () => processHandle.isAvailable(),
-    hasHostOwnedCleanup: () => helperStopsInFlight > 0 || failedHelperStop,
+    hasHostOwnedCleanup: () =>
+      helperStopsInFlight > 0 || failedHelperStop || processHandle.hasHostOwnedCleanup?.() === true,
     stop: async () => {
       await installPark?.close()
       await observedStopHelper()

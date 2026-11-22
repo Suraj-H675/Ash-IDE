@@ -18,6 +18,8 @@ const fixture = vi.hoisted(() => ({
   available: false,
   stopStarted: 0,
   stopFails: false,
+  cleanupUncertainAfterStop: false,
+  cleanupUncertain: false,
   stopGate: null as (() => Promise<void>) | null,
   parkHelper: null as ParkHelper | null
 }))
@@ -33,14 +35,19 @@ vi.mock('./electron-serve-browser-process', () => ({
       fixture.available = false
       await fixture.stopGate?.()
       if (fixture.stopFails) {
+        fixture.cleanupUncertain = true
         throw new Error('park-browser-stop-failed')
       }
+      fixture.cleanupUncertain = fixture.cleanupUncertainAfterStop
     }
     isAvailable() {
       return fixture.available
     }
     pid() {
       return fixture.available ? 1234 : null
+    }
+    hasHostOwnedCleanup() {
+      return fixture.cleanupUncertain
     }
     supportsGoogleCookieClear() {
       return false
@@ -84,6 +91,8 @@ async function startFixtureHost() {
 afterEach(async () => {
   fixture.stopGate = null
   fixture.stopFails = false
+  fixture.cleanupUncertainAfterStop = false
+  fixture.cleanupUncertain = false
   await Promise.allSettled(handles.splice(0).map((handle) => handle.stop()))
   // An intentional failed-stop probe remains installed until a successor or
   // process exit. Reset only the isolated test registry between fixtures.
@@ -131,5 +140,18 @@ describe('Electron browser install-park hosted-backend evidence', () => {
     fixture.stopFails = false
     await helper.start(new AbortController().signal)
     expect(observedHostedBrowserBackend()).toBe(1)
+  })
+
+  it('keeps a resolved stop positive until the process handle confirms cleanup', async () => {
+    await startFixtureHost()
+    const helper = fixture.parkHelper!
+    fixture.cleanupUncertainAfterStop = true
+
+    await helper.stop()
+    expect(observedHostedBrowserBackend()).toBe(1)
+
+    fixture.cleanupUncertainAfterStop = false
+    await helper.stop()
+    expect(observedHostedBrowserBackend()).toBe(0)
   })
 })

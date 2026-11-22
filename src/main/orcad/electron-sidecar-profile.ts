@@ -1,17 +1,20 @@
+import type { ChildProcess } from 'node:child_process'
 import { lstat, mkdtemp, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
-import { setTimeout as delay } from 'node:timers/promises'
 import { z } from 'zod'
+import { spawnProcess } from '@orca/process-host'
+import { BROWSER_SIDECAR_OWNER_ENV } from '../../shared/browser-sidecar-lifetime'
+import { electronIsolatedProfileSwitches } from '../../shared/electron-isolated-profile-switches'
+import { headlessServeOzonePlatformSwitches } from '../../shared/headless-serve-ozone-platform'
+import { electronServeEnvironment } from './electron-serve-browser-environment'
 import { isSafeOwnedDirectory } from '../../shared/owned-private-directory'
 import { isProcessAlive } from '../../shared/serve-bundle-coordination'
 import { removeTree } from '../../shared/windows-transient-lock-removal'
 import { isDirectChild } from '../window/owned-temp-staging-root'
 import { readRuntimeMetadataAsync } from '../runtime/rpc/server/runtime-metadata'
-import { sendOrcadSidecarRequest } from './orcad-sidecar-runtime-client'
 
 const STOP_TIMEOUT_MS = 5_000
-const ORPHAN_PROBE_TIMEOUT_MS = 2_000
 const PROFILE_PREFIX = 'orcad-browser-'
 // Lives in orcad's private data root, so only this instance can name a profile for removal.
 const PROFILE_RECORD_FILE = 'browser-sidecar-profile.json'
@@ -22,23 +25,109 @@ function temporaryRoot(): string {
   return process.platform === 'win32' ? tmpdir() : '/tmp'
 }
 
-function signalProcess(pid: number, signal: NodeJS.Signals): void {
+export function spawnElectronSidecar(
+  executablePath: string,
+  userDataPath: string,
+  port: number
+): ChildProcess {
+  return spawnProcess({
+    program: executablePath,
+    args: [
+      '--serve',
+      '--serve-port',
+      String(port),
+      '--serve-json',
+      '--serve-no-pairing',
+      ...electronIsolatedProfileSwitches(process.env),
+      ...headlessServeOzonePlatformSwitches(process.platform),
+      `--user-data-dir=${userDataPath}`
+    ],
+    env: { ...electronServeEnvironment(userDataPath), [BROWSER_SIDECAR_OWNER_ENV]: '1' },
+    stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+    serialization: 'json'
+  })
+}
+
+function childHasExited(child: ChildProcess): boolean {
+  return child.exitCode !== null || child.signalCode !== null
+}
+
+function waitForChildExit(child: ChildProcess, timeoutMs: number): Promise<boolean> {
+  if (childHasExited(child)) {
+    return Promise.resolve(true)
+  }
+  return new Promise((resolve) => {
+    let settled = false
+    const finish = (exited: boolean): void => {
+      if (settled) {
+        return
+      }
+      settled = true
+      clearTimeout(timer)
+      child.removeListener('exit', onExit)
+      resolve(exited || childHasExited(child))
+    }
+    const onExit = (): void => finish(true)
+    const timer = setTimeout(() => finish(false), timeoutMs)
+    timer.unref?.()
+    child.once('exit', onExit)
+    // Close the gap between the first state check and listener registration.
+    if (childHasExited(child)) {
+      finish(true)
+    }
+  })
+}
+
+function signalOwnedChild(child: ChildProcess, signal: NodeJS.Signals): void {
+  if (!child.pid || childHasExited(child)) {
+    return
+  }
   try {
-    process.kill(pid, signal)
+    child.kill(signal)
   } catch {
-    // The sidecar already exited.
+    // Exit confirmation below, not the signal result, determines cleanup success.
   }
 }
 
-export async function stopElectronSidecar(pid: number): Promise<void> {
-  signalProcess(pid, 'SIGTERM')
-  const deadline = Date.now() + STOP_TIMEOUT_MS
-  while (isProcessAlive(pid) && Date.now() < deadline) {
-    await delay(50)
+/** Stop only the ChildProcess created by this provider, and require its exit event/state. */
+export async function stopElectronSidecar(
+  child: ChildProcess
+): Promise<'confirmed' | 'unresolved'> {
+  if (!child.pid || childHasExited(child)) {
+    return 'confirmed'
   }
-  if (isProcessAlive(pid)) {
-    signalProcess(pid, 'SIGKILL')
+  signalOwnedChild(child, 'SIGTERM')
+  if (await waitForChildExit(child, STOP_TIMEOUT_MS)) {
+    return 'confirmed'
   }
+  signalOwnedChild(child, 'SIGKILL')
+  return (await waitForChildExit(child, STOP_TIMEOUT_MS)) ? 'confirmed' : 'unresolved'
+}
+
+export function electronSidecarIsAvailable(
+  child: ChildProcess | null,
+  runtimePid: number | null
+): boolean {
+  if (runtimePid === null) {
+    return false
+  }
+  if (child?.pid === runtimePid) {
+    return child.exitCode === null && child.signalCode === null
+  }
+  // A mismatched or untracked PID is only a conservative positive signal.
+  return isProcessAlive(runtimePid)
+}
+
+export function electronSidecarPid(
+  child: ChildProcess | null,
+  runtimePid: number | null
+): number | null {
+  return child?.pid &&
+    child.pid === runtimePid &&
+    child.exitCode === null &&
+    child.signalCode === null
+    ? child.pid
+    : null
 }
 
 /** Unpredictable per start, so no other account can claim the name first. */
@@ -68,37 +157,51 @@ async function readRecordedProfile(orcadUserDataPath: string): Promise<string | 
   }
 }
 
-async function stopOrphanedSidecar(profilePath: string): Promise<void> {
-  const orphan = await readRuntimeMetadataAsync(profilePath).catch(() => null)
-  if (!orphan || !isProcessAlive(orphan.pid)) {
-    return
-  }
-  // Answering with its own auth token proves the pid is still that sidecar, not a recycled one.
-  const answered = await sendOrcadSidecarRequest(
-    orphan,
-    'status.get',
-    undefined,
-    ORPHAN_PROBE_TIMEOUT_MS
-  ).then(
-    () => true,
-    () => false
-  )
-  if (answered) {
-    await stopElectronSidecar(orphan.pid)
-  }
+async function orphanSidecarHasExited(profilePath: string): Promise<boolean> {
+  const orphan = await readRuntimeMetadataAsync(profilePath).catch(() => undefined)
+  // A restarted parent has no ChildProcess handle for this PID. Metadata cannot make a
+  // numeric-PID signal atomic with process exit, so preserve the profile when identity is unknown.
+  return orphan ? !isProcessAlive(orphan.pid) : false
 }
 
-/** Remove the profile, and any sidecar still on it, that a crashed or killed orcad left behind. */
+/** Remove a recorded profile only when its sidecar is absent or confirmed dead. */
 export async function removeLeftoverElectronSidecarProfile(
   orcadUserDataPath: string
-): Promise<void> {
+): Promise<boolean> {
   const profilePath = await readRecordedProfile(orcadUserDataPath)
-  const stats = profilePath ? await lstat(profilePath).catch(() => null) : null
-  if (!profilePath || !stats || !isSafeOwnedDirectory(stats)) {
-    return
+  if (!profilePath) {
+    return true
   }
-  await stopOrphanedSidecar(profilePath)
+  const stats = await lstat(profilePath).catch(() => null)
+  if (!stats) {
+    return true
+  }
+  if (!isSafeOwnedDirectory(stats)) {
+    return false
+  }
+  if (!(await orphanSidecarHasExited(profilePath))) {
+    return false
+  }
   await removeTree(profilePath).catch((error: unknown) =>
     console.warn('[orcad] Leftover Electron browser sidecar data was not removed:', error)
   )
+  return true
+}
+
+export async function confirmElectronSidecarCleanup(
+  child: ChildProcess | null,
+  runtimePid: number | null,
+  orcadUserDataPath: string,
+  cleanupUncertain: boolean
+): Promise<boolean> {
+  if (child) {
+    if ((await stopElectronSidecar(child)) !== 'confirmed') {
+      return false
+    }
+    if (runtimePid !== null && child.pid !== runtimePid) {
+      return removeLeftoverElectronSidecarProfile(orcadUserDataPath)
+    }
+    return true
+  }
+  return cleanupUncertain ? removeLeftoverElectronSidecarProfile(orcadUserDataPath) : true
 }

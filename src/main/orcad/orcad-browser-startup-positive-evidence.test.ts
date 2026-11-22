@@ -93,7 +93,7 @@ describe('real orcad browser provider lifecycle publication', () => {
     expect(observedHostedBrowserBackend()).toBe(0)
   })
 
-  it('retains positive evidence after failed cleanup until a successor replaces its owner', async () => {
+  it('retains positive evidence after failed cleanup until that owner confirms cleanup', async () => {
     fixture.available = true
     fixture.stopFails = true
     fixture.cleanupUncertainAfterStop = false
@@ -113,6 +113,7 @@ describe('real orcad browser provider lifecycle publication', () => {
       await next.ready
       expect(observedHostedBrowserBackend()).toBe(1)
       await broken.stop().catch(() => {})
+      fixture.available = true
       expect(observedHostedBrowserBackend()).toBe(1)
     } finally {
       await next.stop()
@@ -139,11 +140,43 @@ describe('real orcad browser provider lifecycle publication', () => {
     try {
       await successor.ready
       expect(observedHostedBrowserBackend()).toBe(1)
+      await uncertain.stop()
+      fixture.available = true
+      expect(observedHostedBrowserBackend()).toBe(1)
       await successor.stop()
     } finally {
       await successor.stop()
     }
     expect(observedHostedBrowserBackend()).toBe(0)
+  })
+
+  it('retains an unresolved predecessor while a failing successor registers, then clears on confirmed retry', async () => {
+    fixture.available = true
+    fixture.stopStarted = false
+    fixture.stopFails = true
+    fixture.cleanupUncertainAfterStop = false
+    fixture.failStartupWithUncertainCleanup = false
+    fixture.stopGate = null
+
+    const predecessor = startOrcadBrowserProvider({ userDataPath: '/disposable-fixture' })
+    await predecessor.ready
+    expect(observedHostedBrowserBackend()).toBe(1)
+    await expect(predecessor.stop()).rejects.toThrow('fixture-browser-stop-failed')
+
+    fixture.available = false
+    const successor = startOrcadBrowserProvider({ userDataPath: '/disposable-fixture' })
+    try {
+      await successor.ready
+      expect(observedHostedBrowserBackend()).toBe(1)
+
+      fixture.stopFails = false
+      await predecessor.stop()
+      expect(observedHostedBrowserBackend()).toBe(0)
+    } finally {
+      fixture.stopFails = false
+      await Promise.allSettled([predecessor.stop(), successor.stop()])
+      fixture.available = true
+    }
   })
 
   it('retains positive evidence when startup cleanup is unresolved before a provider returns', async () => {
@@ -161,7 +194,7 @@ describe('real orcad browser provider lifecycle publication', () => {
       const successor = startOrcadBrowserProvider({ userDataPath: '/disposable-fixture' })
       await successor.ready
       await successor.stop()
-      expect(observedHostedBrowserBackend()).toBe(0)
+      expect(observedHostedBrowserBackend()).toBe(1)
     } finally {
       warning.mockRestore()
       fixture.failStartupWithUncertainCleanup = false

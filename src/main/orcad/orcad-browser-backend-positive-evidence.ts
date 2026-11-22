@@ -1,18 +1,58 @@
 type BrowserBackendProbe = () => boolean
 
-let activeProbe: BrowserBackendProbe | null = null
+type ProbeRegistration = {
+  probe: BrowserBackendProbe
+  observedPositive: boolean
+  retainedPositive: boolean
+  retired: boolean
+}
+
+let activeRegistration: ProbeRegistration | null = null
+let retainedPositiveRegistrations = 0
+
+function readPositive(registration: ProbeRegistration): boolean {
+  try {
+    const positive = registration.probe() === true
+    registration.observedPositive ||= positive
+    return positive
+  } catch {
+    return false
+  }
+}
 
 /**
  * Register the backend currently managed by this local runtime process.
  * Registration is identity-scoped: stopping a replaced backend cannot erase
- * evidence owned by a newer one. A failed cleanup keeps its probe installed
- * until the process exits or another backend replaces it.
+ * evidence owned by a newer one. Replacement retains a prior positive signal
+ * until that exact registration confirms cleanup and retires.
  */
 export function registerHostedBrowserBackendProbe(probe: BrowserBackendProbe): () => void {
-  activeProbe = probe
+  if (activeRegistration) {
+    const previousWasPositive = readPositive(activeRegistration)
+    if (previousWasPositive || activeRegistration.observedPositive) {
+      activeRegistration.retainedPositive = true
+      retainedPositiveRegistrations += 1
+    }
+  }
+
+  const registration: ProbeRegistration = {
+    probe,
+    observedPositive: false,
+    retainedPositive: false,
+    retired: false
+  }
+  activeRegistration = registration
+
   return () => {
-    if (activeProbe === probe) {
-      activeProbe = null
+    if (registration.retired) {
+      return
+    }
+    registration.retired = true
+    if (registration.retainedPositive) {
+      retainedPositiveRegistrations = Math.max(0, retainedPositiveRegistrations - 1)
+    }
+    if (activeRegistration === registration) {
+      activeRegistration = null
     }
   }
 }
@@ -23,9 +63,6 @@ export function registerHostedBrowserBackendProbe(probe: BrowserBackendProbe): (
  * not establish that there are no browser helpers.
  */
 export function observedHostedBrowserBackend(): 0 | 1 {
-  try {
-    return activeProbe?.() === true ? 1 : 0
-  } catch {
-    return 0
-  }
+  const activeIsPositive = activeRegistration ? readPositive(activeRegistration) : false
+  return activeIsPositive || retainedPositiveRegistrations > 0 ? 1 : 0
 }

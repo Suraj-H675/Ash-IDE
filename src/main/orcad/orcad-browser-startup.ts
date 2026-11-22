@@ -92,24 +92,35 @@ export function startOrcadBrowserProvider(options: OrcadBrowserProviderOptions):
     ready,
     stop: () => {
       controller.abort()
-      stopping ??= ready.then(async () => {
-        // Both Chromium and Electron clear availability before awaiting child
-        // cleanup. Preserve a positive observation until cleanup succeeds.
-        try {
-          stoppingBackendWasAvailable = provider?.isAvailable() === true
-        } catch {
-          // A failed status read cannot establish absence of a helper.
-        }
-        await provider?.stop()
-        if (provider?.hasHostOwnedCleanup?.() !== true && !startupCleanupUncertain) {
-          unregisterBrowserObservation()
-          stoppingBackendWasAvailable = false
-        }
-        // Resolver errors may include failed cleanup of partially started providers.
-        if (startupError) {
-          throw startupError
-        }
-      })
+      if (!stopping) {
+        stopping = ready
+          .then(async () => {
+            // Both Chromium and Electron clear availability before awaiting child
+            // cleanup. Preserve a positive observation until cleanup succeeds.
+            try {
+              stoppingBackendWasAvailable = provider?.isAvailable() === true
+            } catch {
+              // A failed status read cannot establish absence of a helper.
+            }
+            await provider?.stop()
+            if (provider?.hasHostOwnedCleanup?.() !== true && !startupCleanupUncertain) {
+              unregisterBrowserObservation()
+              stoppingBackendWasAvailable = false
+            } else {
+              // A bounded stop attempt may resolve while cleanup remains uncertain.
+              // Let a later caller retry instead of caching that unresolved state forever.
+              stopping = undefined
+            }
+            // Resolver errors may include failed cleanup of partially started providers.
+            if (startupError) {
+              throw startupError
+            }
+          })
+          .catch((error: unknown) => {
+            stopping = undefined
+            throw error
+          })
+      }
       return stopping
     }
   }

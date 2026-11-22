@@ -3982,6 +3982,16 @@
       "reason": "Ash RT-15: expose pending backup rotation from worker SQLite authority and extract existing closed-writer error helper to respect source length; original pinned source preserved."
     },
     {
+      "path": "src/main/orcad/electron-serve-browser-process.ts",
+      "sha256": "fd9b8bded6076a475825d71f15aed3af46ae2251f88e2d4035bd2987d523a10a",
+      "reason": "Ash RT-15: retain Electron cleanup state until the spawned helper exits and remove its profile only after cleanup is confirmed."
+    },
+    {
+      "path": "src/main/orcad/electron-sidecar-profile.ts",
+      "sha256": "62263fb3ea7bba3c3094a4c3a5f52a6c7c8869f5320024e13e617ed6f3a51d22",
+      "reason": "Ash RT-15: stop Electron through its owned ChildProcess, confirm exit, and retain profiles for unidentified orphans."
+    },
+    {
       "path": "src/main/orcad/external-chromium-browser-process.ts",
       "sha256": "6483ba784b22cc2bd3a7a3e65fb1f04cf43a478111e95b5726b9a1819061091e",
       "reason": "Ash RT-15: keep hosted Chromium cleanup uncertainty separate from command availability and report it through the positive-only updater observation."
@@ -3993,13 +4003,13 @@
     },
     {
       "path": "src/main/orcad/orcad-browser-provider.ts",
-      "sha256": "100f318bf614466e2aa2d0c5009c0cc68bb00e50b23c385d74715f7991732695",
-      "reason": "Ash RT-15: observe pending and unresolved helper cleanup in Electron install-park and failed startup paths for authenticated local update-safety diagnostics."
+      "sha256": "7fe7d327f04045ba8c1e3be910ab4e01c99afb173488d776036951eb79112081",
+      "reason": "Ash RT-15: retain Electron helper evidence until the actual ChildProcess cleanup is confirmed, including install-park retries."
     },
     {
       "path": "src/main/orcad/orcad-browser-startup.ts",
-      "sha256": "3ad2e90eab9827494f526af9e27dd17627634323ebaa69b21879a4a5f0364ce7",
-      "reason": "Ash RT-15: retain hosted browser evidence through asynchronous stop, uncertain cleanup, and failed startup cleanup before provider return."
+      "sha256": "e3e05ab7c7b3fa8ee51ec11de3cbe88bdd01022f7a89aa3939109e93dc84fde2",
+      "reason": "Ash RT-15: retain positive predecessor evidence and allow bounded stop retries until each provider owner confirms cleanup."
     }
   ]
 }

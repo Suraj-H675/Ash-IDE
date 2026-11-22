@@ -36,4 +36,30 @@ describe('positive-only host browser backend observation', () => {
     retireSecond()
     expect(observedHostedBrowserBackend()).toBe(0)
   })
+
+  it('retains a positive predecessor while a false successor starts', () => {
+    const retireFirst = registerHostedBrowserBackendProbe(() => true)
+    const retireSecond = registerHostedBrowserBackendProbe(() => false)
+    release = retireSecond
+
+    expect(observedHostedBrowserBackend()).toBe(1)
+    retireFirst()
+    expect(observedHostedBrowserBackend()).toBe(0)
+    retireSecond()
+    expect(observedHostedBrowserBackend()).toBe(0)
+  })
+
+  it('keeps multiple predecessor signals until each owner confirms cleanup', () => {
+    const retireFirst = registerHostedBrowserBackendProbe(() => true)
+    const retireSecond = registerHostedBrowserBackendProbe(() => true)
+    const retireThird = registerHostedBrowserBackendProbe(() => false)
+    release = retireThird
+
+    retireFirst()
+    expect(observedHostedBrowserBackend()).toBe(1)
+    retireSecond()
+    expect(observedHostedBrowserBackend()).toBe(0)
+    retireThird()
+    expect(observedHostedBrowserBackend()).toBe(0)
+  })
 })

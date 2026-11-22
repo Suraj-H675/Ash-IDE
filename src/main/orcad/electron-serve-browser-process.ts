@@ -1,3 +1,4 @@
+import type { ChildProcess } from 'node:child_process'
 import {
   BROWSER_EXPECT_URL_RUNTIME_CAPABILITY,
   BROWSER_GOOGLE_COOKIE_CLEAR_CAPABILITY
@@ -15,20 +16,17 @@ import type { RuntimeBrowserCommands } from '../runtime/browser/commands/browser
 import type { RuntimeMetadata } from '../../shared/runtime-bootstrap'
 import { BROWSER_UNAVAILABLE_ERROR_CODE } from '../../shared/runtime-types'
 import { readRuntimeMetadata } from '../runtime/rpc/server/runtime-metadata'
-import { spawnProcess } from '@orca/process-host'
-import { isProcessAlive } from '../../shared/serve-bundle-coordination'
 import { removeTree } from '../../shared/windows-transient-lock-removal'
-import { BROWSER_SIDECAR_OWNER_ENV } from '../../shared/browser-sidecar-lifetime'
-import { electronIsolatedProfileSwitches } from '../../shared/electron-isolated-profile-switches'
-import { headlessServeOzonePlatformSwitches } from '../../shared/headless-serve-ozone-platform'
 import { sendOrcadSidecarRequest } from './orcad-sidecar-runtime-client'
 import { browserWaitRequestTimeoutMs } from '../../shared/browser-wait-timeout'
-import { electronServeEnvironment } from './electron-serve-browser-environment'
 import { reserveLoopbackPort } from './loopback-port-reservation'
 import {
   createElectronSidecarProfile,
+  confirmElectronSidecarCleanup,
+  electronSidecarIsAvailable,
+  electronSidecarPid,
   removeLeftoverElectronSidecarProfile,
-  stopElectronSidecar
+  spawnElectronSidecar
 } from './electron-sidecar-profile'
 import {
   ElectronSidecarTabRegistry,
@@ -47,11 +45,12 @@ const BrowserTabListResult = z.object({ tabs: z.array(ElectronSidecarTabSchema) 
 const RuntimeStatusResult = z.object({ capabilities: z.array(z.string()).optional() }).passthrough()
 
 export class ElectronServeBrowserProcess {
-  private child: ReturnType<typeof spawnProcess> | null = null
+  private child: ChildProcess | null = null
   private metadata: RuntimeMetadata | null = null
   private readonly tabs = new ElectronSidecarTabRegistry()
   private sidecarCapabilities: readonly string[] = []
   private sidecarDataPath: string | null = null
+  private cleanupUncertain = false
 
   constructor(
     private readonly executablePath: string,
@@ -61,27 +60,19 @@ export class ElectronServeBrowserProcess {
   async start(signal?: AbortSignal): Promise<void> {
     this.sidecarCapabilities = []
     signal?.throwIfAborted()
-    await removeLeftoverElectronSidecarProfile(this.orcadUserDataPath)
+    if (this.child || this.cleanupUncertain) {
+      await this.stop()
+    }
+    if (!(await removeLeftoverElectronSidecarProfile(this.orcadUserDataPath))) {
+      this.cleanupUncertain = true
+      throw new Error('A previous Electron browser sidecar may still be running.')
+    }
+    this.cleanupUncertain = false
     const userDataPath = await createElectronSidecarProfile(this.orcadUserDataPath)
     this.sidecarDataPath = userDataPath
     const port = await reserveLoopbackPort()
     signal?.throwIfAborted()
-    const child = spawnProcess({
-      program: this.executablePath,
-      args: [
-        '--serve',
-        '--serve-port',
-        String(port),
-        '--serve-json',
-        '--serve-no-pairing',
-        ...electronIsolatedProfileSwitches(process.env),
-        ...headlessServeOzonePlatformSwitches(process.platform),
-        `--user-data-dir=${userDataPath}`
-      ],
-      env: { ...electronServeEnvironment(userDataPath), [BROWSER_SIDECAR_OWNER_ENV]: '1' },
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-      serialization: 'json'
-    })
+    const child = spawnElectronSidecar(this.executablePath, userDataPath, port)
     this.child = child
     let spawnError: unknown = null
     // Bundle swaps can race restart; report ENOENT as start failure without crashing orcad.
@@ -149,27 +140,41 @@ export class ElectronServeBrowserProcess {
   }
 
   isAvailable(): boolean {
-    return this.metadata !== null && isProcessAlive(this.metadata.pid)
+    return electronSidecarIsAvailable(this.child, this.metadata?.pid ?? null)
+  }
+
+  hasHostOwnedCleanup(): boolean {
+    return this.cleanupUncertain
   }
 
   /** Read child exit state so recycled PIDs cannot identify an unrelated process. */
   pid(): number | null {
-    const child = this.child
-    return child?.pid && child.exitCode === null && child.signalCode === null ? child.pid : null
+    return electronSidecarPid(this.child, this.metadata?.pid ?? null)
   }
 
   async stop(): Promise<void> {
     const child = this.child
-    const sidecarPid = this.metadata?.pid ?? child?.pid ?? null
+    const metadata = this.metadata
     const sidecarDataPath = this.sidecarDataPath
+    const wasCleanupUncertain = this.cleanupUncertain
+    this.cleanupUncertain = Boolean(child || wasCleanupUncertain)
+    this.tabs.clear()
+    if (
+      !(await confirmElectronSidecarCleanup(
+        child,
+        metadata?.pid ?? null,
+        this.orcadUserDataPath,
+        wasCleanupUncertain
+      ))
+    ) {
+      throw new Error('Electron browser sidecar cleanup remains unresolved.')
+    }
+
     this.child = null
     this.metadata = null
     this.sidecarCapabilities = []
     this.sidecarDataPath = null
-    this.tabs.clear()
-    if (sidecarPid) {
-      await stopElectronSidecar(sidecarPid)
-    }
+    this.cleanupUncertain = false
     if (sidecarDataPath) {
       // Windows helpers may briefly hold this temp profile; cleanup failure must not strand the instance lock.
       await removeTree(sidecarDataPath).catch((error: unknown) =>

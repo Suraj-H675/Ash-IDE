@@ -1,80 +1,55 @@
-# RT-15 — hosted browser backend positive observation
+# RT-15 hosted browser backend positive observation
 
-**Disposition: candidate for QA-only acceptance; production update NO-GO.**
+**Disposition: QA-only candidate; production update NO-GO.**
 
-Ash's persistent `orcad` runtime may retain a headless Electron or Chromium
-browser provider when every desktop window has closed, including a helper
-whose shutdown or install-park cleanup is still unresolved. The existing RT-15
-read-only updater diagnostic now receives a positive browser-backend
-availability observation from the same authenticated local runtime RPC used
-for native Chat, PTY and Store write evidence. No new socket, remote endpoint,
-IPC permission, browser navigation, or updater activation is added.
+Ash's persistent `orcad` runtime can retain a headless Electron or Chromium
+browser provider after desktop windows close. The existing local-owner-only
+`runtime.providerActivity` diagnostic reports only a positive lower bound over
+the authenticated local runtime RPC. It starts no browser work and returns no
+page IDs, URLs, tabs, cookies, paths, or process IDs. Unknown or invalid reads
+remain unknown. `activationAvailable` stays `false`.
 
-`startOrcadBrowserProvider` registers a process-local, read-only availability
-probe against the **actual resolved provider**. The probe does not start or
-connect to a browser. On clean stop it is removed only after the provider's
-asynchronous cleanup resolves. This includes a positive latch at the start
-of shutdown because actual Chromium and Electron providers clear their
-availability flags **before** waiting for child cleanup. Aborting command
-admission cannot prematurely hide a helper that is still shutting down.
-A replaced provider's cleanup cannot erase its successor's observation.
-Failed cleanup retains the probe until a successor registers or the process
-exits. If startup launches a helper but then fails before returning a provider,
-unresolved startup cleanup also retains the positive lower bound. Failed reads
-contribute no positive count but do not prove absence.
+Electron helper cleanup now follows the `ChildProcess` created by the provider.
+It sends TERM, waits up to five seconds for the child exit event or state, then
+sends KILL and waits another bounded five seconds. Signal errors do not count as
+cleanup. If the owned process does not show exit, cleanup stays uncertain and
+the profile and positive evidence are retained. Install-park stop/start uses
+the same owner state and retries unresolved cleanup without an indefinite wait.
 
-An installed Electron provider also supports a macOS bundle install-park,
-which can stop or restart its helper without going through the outer
-`orcad` shutdown. The actual provider's internal stop/start callbacks track
-pending helper cleanup and a failed-cleanup uncertainty signal until the next
-successful stop or restart. This is separate from command availability and
-never launches browser work from the diagnostic.
+A restarted parent has no owned `ChildProcess` handle for a recorded orphan.
+It does not signal that numeric PID. The profile is removed only when runtime
+metadata identifies a process that is already absent. Missing or unusable
+metadata, an unsafe profile, or a live process keeps the profile and fails
+Electron startup closed. Normal in-process close, restart, and install-park
+cleanup use the owned child handle.
 
-The local-owner-only `runtime.providerActivity` snapshot samples provider
-availability or unresolved helper cleanup before and after its bounded daemon
-observation, retaining a positive across a startup/stop race. The response
-includes only `browserBackends: {state: 'unknown',
-reason: 'browser-backend-inventory-unavailable', lowerBound: 0|1}`; no page
-IDs, URLs, tabs, cookies, host paths or process IDs are returned. Older servers
-may omit the optional field. The desktop validates the schema, runtime identity
-and strict two-second/eight-KiB socket budget; absent, unreachable or invalid
-responses remain **unknown**, never a verified no-browser condition. Positive
-evidence yields `busy` with an explicit blocker. The UI describes an observed
-browser backend **or unfinished helper shutdown**, not a live tab, running
-navigation or complete browser-process census.
+The process-local observation registry keeps one active probe and a scalar
+count of replaced registrations that observed a positive backend. A replaced
+positive remains visible until that exact provider retires its registration
+after confirmed cleanup. Retirement is identity-scoped and idempotent. The
+registry does not retain a probe inventory; its public result remains only
+`0 | 1` and is not a complete process census.
 
-**Test boundaries:** process-local registry tests cover false/exception reads,
-available backend state, replacement ownership and cleanup. The real
-`startOrcadBrowserProvider` control flow is tested against simulated resolved
-providers, including pending asynchronous stop, failed cleanup, and unresolved
-startup cleanup before a provider object is returned. A Linux opt-in integration
-fixture starts the actual Chrome for Testing 156.0.8078.4 backend with
-agent-browser 0.39.4 in a unique disposable profile under Xvfb. It pauses the
-identified Chrome process with `SIGSTOP`, starts provider shutdown, verifies
-shutdown remains pending and the positive lower bound stays set, resumes the
-process, and verifies confirmed cleanup clears the signal. A second run injects
-a nonzero `close` helper result after startup, confirms the real Chromium
-process remains alive, and verifies the positive lower bound is retained even
-though provider shutdown returns. The fixture is opt-in with
-`ASH_RT15_CHROMIUM_EXECUTABLE` and `ASH_RT15_AGENT_BROWSER_BINARY`; without
-both variables it is skipped. Each run owns and removes its unique temporary
-profile and only targets processes whose arguments name that profile.
+**Verification.** Targeted lifecycle, registry, provider, authenticated socket,
+and updater regression checks passed: 12 test files passed, one file skipped,
+106 tests passed, and two tests skipped. This includes the separate-process
+authenticated local socket and updater gates. Electron child-stop tests use a
+real disposable Node child and signal-failure fixtures. Orphan tests verify
+that a live or unidentified process profile is preserved without signaling its
+numeric PID.
 
-An additional integration fixture uses the **actual Electron provider
-install-park stop/start callbacks** through the real startup/provider code,
-substituting a mocked Electron child. It covers clearing availability before
-awaited cleanup, failed stop, and successful restart. Existing separate-process
-authenticated socket tests exercise the response and desktop merge using an
-injected availability probe, **not a real Chromium/Electron child**. Additional
-negative tests reject fabricated complete/invalid availability reports.
-Regression checks cover React Settings copy, updater decisions, TypeScript,
-provenance, source formatting, release JavaScript build and existing
-startup/runtime-admission gates.
+The Linux real-Chromium integration fixture is opt-in. It observes the unique
+fixture child's `/proc` start time and profile command-line arguments, sends no
+PID signals, and uses provider-owned stop/retry for teardown. It retains the
+temporary profile if the fixture child cannot be shown absent. Both integration
+cases were skipped here because `ASH_RT15_CHROMIUM_EXECUTABLE`,
+`ASH_RT15_AGENT_BROWSER_BINARY`, and `DISPLAY` were unset. The existing socket
+test uses an injected probe, not an actual Chromium or Electron backend.
+Typecheck, scoped lint, formatting, source provenance, and the release
+JavaScript build passed.
 
-**Not established:** actual macOS installed-Electron child/install-park
-lifetime, Wayland or production X11 display integration, complete browser
-tab/download/session inventory, network activity, all persistence-worker
-identities, global writer admission, update exclusive fencing, package signing
-or data-compatible rollback. Availability is a **conservative positive
-signal**, not proof that a user is actively browsing. `activationAvailable`
-remains `false`; RT-15 production, PK-05 and PK-06 remain **NO-GO**.
+Actual macOS Electron bundle/install-park behavior and production X11 or
+Wayland display integration remain unverified. No native GUI acceptance is
+claimed. Browser tabs, downloads, sessions, network activity, complete process
+inventory, global writer admission, update fencing, signing, and rollback are
+outside this proof. RT-15 production, PK-05, and PK-06 remain **NO-GO**.

@@ -1,33 +1,65 @@
-import { execFileSync } from 'node:child_process'
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { observedHostedBrowserBackend } from './orcad-browser-backend-positive-evidence'
 import { startOrcadBrowserProvider } from './orcad-browser-startup'
 
-function processState(pid: number): string | null {
+type FixtureProcess = { pid: number; startTime: string; commandLine: string }
+
+function processIdentity(pid: number): FixtureProcess | null {
   try {
-    return execFileSync('ps', ['-o', 'stat=', '-p', String(pid)], { encoding: 'utf8' }).trim()
+    const stat = readFileSync(`/proc/${pid}/stat`, 'utf8')
+    const commandEnd = stat.lastIndexOf(')')
+    const fields = stat
+      .slice(commandEnd + 1)
+      .trim()
+      .split(/\s+/)
+    const commandLine = readFileSync(`/proc/${pid}/cmdline`, 'utf8')
+      .split('\0')
+      .filter(Boolean)
+      .join(' ')
+    return { pid, startTime: fields[19], commandLine }
   } catch {
     return null
   }
 }
 
-function hostedChromiumPids(executable: string, profilePath: string): number[] {
-  const rows = execFileSync('ps', ['-eo', 'pid=,args='], { encoding: 'utf8' })
-  return rows.split('\n').flatMap((row) => {
-    const match = /^\s*(\d+)\s+(.*)$/.exec(row)
-    return match &&
-      match[2].includes(executable) &&
-      match[2].includes(`--user-data-dir=${profilePath}`)
-      ? [Number(match[1])]
+function hostedChromiumProcesses(executable: string, profilePath: string): FixtureProcess[] {
+  return readdirSync('/proc', { withFileTypes: true }).flatMap((entry) => {
+    if (!entry.isDirectory() || !/^\d+$/.test(entry.name)) {
+      return []
+    }
+    const identity = processIdentity(Number(entry.name))
+    return identity &&
+      identity.commandLine.includes(executable) &&
+      identity.commandLine.includes(`--user-data-dir=${profilePath}`)
+      ? [identity]
       : []
   })
 }
 
-function hostedChromiumPid(executable: string, profilePath: string): number | null {
-  return hostedChromiumPids(executable, profilePath)[0] ?? null
+function fixtureProcessStillOwned(
+  original: FixtureProcess,
+  executable: string,
+  profilePath: string
+): boolean {
+  const current = processIdentity(original.pid)
+  return Boolean(
+    current &&
+    current.startTime === original.startTime &&
+    current.commandLine.includes(executable) &&
+    current.commandLine.includes(`--user-data-dir=${profilePath}`)
+  )
 }
 
 function isolateBrowserEnvironment(root: string): () => void {
@@ -37,6 +69,11 @@ function isolateBrowserEnvironment(root: string): () => void {
     'XDG_CONFIG_HOME',
     'XDG_CACHE_HOME',
     'XDG_DATA_HOME',
+    'ASH_RT15_CLOSE_GATE',
+    'ASH_RT15_CLOSE_REACHED',
+    'ASH_RT15_CLOSE_RELEASE',
+    'ASH_RT15_CLOSE_FAULT_MARKER',
+    'ASH_RT15_CLOSE_FAULT_OBSERVED',
     ...Object.keys(process.env).filter(
       (key) =>
         key.startsWith('AGENT_BROWSER_') ||
@@ -69,11 +106,115 @@ function isolateBrowserEnvironment(root: string): () => void {
   }
 }
 
+function writeCloseGateDriver(
+  driverPath: string,
+  gatePath: string,
+  reachedPath: string,
+  releasePath: string
+): void {
+  writeFileSync(
+    driverPath,
+    `#!/bin/sh
+input=$(cat)
+if [ -f "$ASH_RT15_CLOSE_GATE" ] && printf '%s' "$input" | grep -q close; then
+  : > "$ASH_RT15_CLOSE_REACHED"
+  attempts=0
+  while [ ! -f "$ASH_RT15_CLOSE_RELEASE" ] && [ "$attempts" -lt 300 ]; do
+    sleep 0.05
+    attempts=$((attempts + 1))
+  done
+  if [ ! -f "$ASH_RT15_CLOSE_RELEASE" ]; then
+    echo close-gate-timeout >&2
+    exit 74
+  fi
+fi
+printf '%s\\n' "$input" | exec "$ASH_RT15_AGENT_BROWSER_BINARY" "$@"
+`
+  )
+  chmodSync(driverPath, 0o700)
+  process.env.ASH_RT15_CLOSE_GATE = gatePath
+  process.env.ASH_RT15_CLOSE_REACHED = reachedPath
+  process.env.ASH_RT15_CLOSE_RELEASE = releasePath
+}
+
+function writeCloseFailureDriver(driverPath: string, gatePath: string, observedPath: string): void {
+  writeFileSync(
+    driverPath,
+    `#!/bin/sh
+input=$(cat)
+if [ -f "$ASH_RT15_CLOSE_FAULT_MARKER" ] && printf '%s' "$input" | grep -q close; then
+  : > "$ASH_RT15_CLOSE_FAULT_OBSERVED"
+  echo injected-close-failure >&2
+  exit 73
+fi
+printf '%s\\n' "$input" | exec "$ASH_RT15_AGENT_BROWSER_BINARY" "$@"
+`
+  )
+  chmodSync(driverPath, 0o700)
+  process.env.ASH_RT15_CLOSE_FAULT_MARKER = gatePath
+  process.env.ASH_RT15_CLOSE_FAULT_OBSERVED = observedPath
+}
+
+async function waitForFixtureProcesses(
+  executable: string,
+  profilePath: string,
+  expected: 'present' | 'absent',
+  timeoutMs: number
+): Promise<FixtureProcess[]> {
+  const deadline = Date.now() + timeoutMs
+  let current: FixtureProcess[] = []
+  while (Date.now() < deadline) {
+    current = hostedChromiumProcesses(executable, profilePath)
+    if (
+      (expected === 'present' && current.length > 0) ||
+      (expected === 'absent' && !current.length)
+    ) {
+      return current
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+  return current
+}
+
+async function stopProviderAndConfirmFixture(
+  provider: ReturnType<typeof startOrcadBrowserProvider>,
+  executable: string,
+  profilePath: string,
+  releaseCloseGate?: string
+): Promise<boolean> {
+  if (releaseCloseGate) {
+    writeFileSync(releaseCloseGate, '')
+  }
+  await provider.stop().catch(() => undefined)
+  await provider.stop().catch(() => undefined)
+  return (await waitForFixtureProcesses(executable, profilePath, 'absent', 10_000)).length === 0
+}
+
+function within<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), timeoutMs)
+    promise.then(
+      (value) => {
+        clearTimeout(timer)
+        resolve(value)
+      },
+      (error: unknown) => {
+        clearTimeout(timer)
+        reject(error)
+      }
+    )
+  })
+}
+
 const chromiumExecutable = process.env.ASH_RT15_CHROMIUM_EXECUTABLE
 const agentBrowserBinary = process.env.ASH_RT15_AGENT_BROWSER_BINARY
 const realBrowserProofEnabled =
-  process.platform === 'linux' && Boolean(chromiumExecutable && agentBrowserBinary)
-const delay = (ms: number) => new Promise((done) => setTimeout(done, ms))
+  process.platform === 'linux' &&
+  Boolean(process.env.DISPLAY && chromiumExecutable && agentBrowserBinary)
+
+afterEach(() => {
+  expect(observedHostedBrowserBackend()).toBe(0)
+})
 
 describe('RT-15 real Chromium child lifetime', () => {
   it.skipIf(!realBrowserProofEnabled)(
@@ -83,55 +224,67 @@ describe('RT-15 real Chromium child lifetime', () => {
       const restoreEnvironment = isolateBrowserEnvironment(root)
       const executable = chromiumExecutable!
       const profilePath = join(root, 'orcad', 'browser-chromium')
+      const driverPath = join(root, 'agent-browser-close-gate')
+      const closeGate = join(root, 'close-gate')
+      const closeReached = join(root, 'close-reached')
+      const closeRelease = join(root, 'close-release')
+      writeCloseGateDriver(driverPath, closeGate, closeReached, closeRelease)
       const provider = startOrcadBrowserProvider({
         userDataPath: join(root, 'orcad'),
         resolveInstalledElectronExecutable: async () => null,
+        resolveAgentBrowserBinary: () => driverPath,
         environment: { ORCA_BROWSER_EXECUTABLE: executable }
       })
-      let childPid: number | null = null
-      let stoppedChild: Promise<void> | undefined
+      let fixtureCleaned = false
 
       try {
-        await Promise.race([
+        await within(
           provider.ready,
-          delay(45_000).then(() => {
-            throw new Error('The real Chromium backend did not become ready within 45 seconds.')
-          })
-        ])
+          45_000,
+          'The real Chromium backend did not become ready within 45 seconds.'
+        )
         expect(observedHostedBrowserBackend()).toBe(1)
 
-        const deadline = Date.now() + 10_000
-        while (!childPid && Date.now() < deadline) {
-          childPid = hostedChromiumPid(executable, profilePath)
-          if (!childPid) {
-            await delay(100)
-          }
-        }
-        expect(childPid).not.toBeNull()
-        process.kill(childPid!, 'SIGSTOP')
-        await delay(100)
-        expect(processState(childPid!)).toMatch(/^T/)
+        const ownedProcesses = await waitForFixtureProcesses(
+          executable,
+          profilePath,
+          'present',
+          10_000
+        )
+        expect(ownedProcesses.length).toBeGreaterThan(0)
+        writeFileSync(closeGate, '')
 
         let stopSettled = false
-        stoppedChild = provider.stop().then(() => {
+        const stopping = provider.stop().then(() => {
           stopSettled = true
         })
-        await delay(300)
+        const reachedDeadline = Date.now() + 3_000
+        while (!existsSync(closeReached) && Date.now() < reachedDeadline) {
+          await new Promise((resolve) => setTimeout(resolve, 50))
+        }
+        expect(existsSync(closeReached)).toBe(true)
         expect(stopSettled).toBe(false)
-        expect(processState(childPid!)).toMatch(/^T/)
         expect(observedHostedBrowserBackend()).toBe(1)
+        expect(
+          ownedProcesses.every((owned) => fixtureProcessStillOwned(owned, executable, profilePath))
+        ).toBe(true)
 
-        process.kill(childPid!, 'SIGCONT')
-        await stoppedChild
+        writeFileSync(closeRelease, '')
+        await stopping
         expect(observedHostedBrowserBackend()).toBe(0)
       } finally {
-        if (childPid && processState(childPid)?.startsWith('T')) {
-          process.kill(childPid, 'SIGCONT')
-        }
-        await (stoppedChild ?? provider.stop().catch(() => undefined))
+        fixtureCleaned = await stopProviderAndConfirmFixture(
+          provider,
+          executable,
+          profilePath,
+          closeRelease
+        )
         restoreEnvironment()
-        rmSync(root, { recursive: true, force: true })
+        if (fixtureCleaned) {
+          rmSync(root, { recursive: true, force: true })
+        }
       }
+      expect(fixtureCleaned).toBe(true)
     },
     70_000
   )
@@ -146,64 +299,47 @@ describe('RT-15 real Chromium child lifetime', () => {
       const driverPath = join(root, 'agent-browser-close-fault')
       const failCloseMarker = join(root, 'fail-close-enabled')
       const failureObserved = join(root, 'injected-close-failure')
-      process.env.ASH_RT15_CLOSE_FAULT_MARKER = failCloseMarker
-      process.env.ASH_RT15_CLOSE_FAULT_OBSERVED = failureObserved
-      writeFileSync(
-        driverPath,
-        `#!/bin/sh
-input=$(cat)
-if [ -f "$ASH_RT15_CLOSE_FAULT_MARKER" ] && printf '%s' "$input" | grep -q close; then : > "$ASH_RT15_CLOSE_FAULT_OBSERVED"; echo injected-close-failure >&2; exit 73; fi
-printf '%s\\n' "$input" | exec "$ASH_RT15_AGENT_BROWSER_BINARY" "$@"
-`
-      )
-      chmodSync(driverPath, 0o700)
-      const statePath = join(root, 'orcad')
+      writeCloseFailureDriver(driverPath, failCloseMarker, failureObserved)
       const provider = startOrcadBrowserProvider({
-        userDataPath: statePath,
+        userDataPath: join(root, 'orcad'),
         resolveInstalledElectronExecutable: async () => null,
         resolveAgentBrowserBinary: () => driverPath,
         environment: { ORCA_BROWSER_EXECUTABLE: executable }
       })
+      let fixtureCleaned = false
 
-      let childPid: number | null = null
       try {
-        await Promise.race([
+        await within(
           provider.ready,
-          delay(45_000).then(() => {
-            throw new Error('The real Chromium backend did not become ready within 45 seconds.')
-          })
-        ])
+          45_000,
+          'The real Chromium backend did not become ready within 45 seconds.'
+        )
         expect(observedHostedBrowserBackend()).toBe(1)
-        childPid = hostedChromiumPid(executable, profilePath)
-        expect(childPid).not.toBeNull()
+        const ownedProcesses = await waitForFixtureProcesses(
+          executable,
+          profilePath,
+          'present',
+          10_000
+        )
+        expect(ownedProcesses.length).toBeGreaterThan(0)
         writeFileSync(failCloseMarker, '')
 
         await provider.stop()
 
         expect(existsSync(failureObserved)).toBe(true)
-        expect(hostedChromiumPids(executable, profilePath).length).toBeGreaterThan(0)
+        expect(
+          ownedProcesses.every((owned) => fixtureProcessStillOwned(owned, executable, profilePath))
+        ).toBe(true)
         expect(observedHostedBrowserBackend()).toBe(1)
       } finally {
-        for (const pid of hostedChromiumPids(executable, profilePath)) {
-          try {
-            process.kill(pid, 'SIGTERM')
-          } catch {}
-        }
-        await delay(500)
-        for (const pid of hostedChromiumPids(executable, profilePath)) {
-          try {
-            process.kill(pid, 'SIGKILL')
-          } catch {}
-        }
-        if (childPid && processState(childPid)?.startsWith('T')) {
-          process.kill(childPid, 'SIGCONT')
-        }
-        await provider.stop().catch(() => undefined)
-        delete process.env.ASH_RT15_CLOSE_FAULT_MARKER
-        delete process.env.ASH_RT15_CLOSE_FAULT_OBSERVED
+        rmSync(failCloseMarker, { force: true })
+        fixtureCleaned = await stopProviderAndConfirmFixture(provider, executable, profilePath)
         restoreEnvironment()
-        rmSync(root, { recursive: true, force: true })
+        if (fixtureCleaned) {
+          rmSync(root, { recursive: true, force: true })
+        }
       }
+      expect(fixtureCleaned).toBe(true)
     },
     70_000
   )
