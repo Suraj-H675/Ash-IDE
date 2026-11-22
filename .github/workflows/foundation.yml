@@ -42,6 +42,8 @@ jobs:
           node --check config/scripts/desktop-distribution/release/inspect-ash-profile-coverage-nested-qa.mjs
           node --check config/scripts/desktop-distribution/release/inspect-ash-profile-coverage-pinned-qa.mjs
           node --check config/scripts/desktop-distribution/release/inspect-ash-profile-index-qa.mjs
+          node --check config/scripts/desktop-distribution/release/inspect-ash-profile-sqlite-qa.mjs
+          node --check config/scripts/desktop-distribution/release/inspect-ash-profile-sqlite-worker-qa.cjs
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-network-audit.sh
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-windowless-linux-native-notification.sh
           bash -n resources/linux/packaging/after-install.sh
@@ -77,7 +79,8 @@ jobs:
             config/scripts/desktop-distribution/release/verify-two-version-packaged-profile-qa.test.mjs \
             config/scripts/desktop-distribution/runtime-verification/ash-two-version-native-profile-qa.test.mjs \
             config/scripts/desktop-distribution/release/inspect-ash-profile-coverage-qa.test.mjs \
-            config/scripts/desktop-distribution/release/inspect-ash-profile-index-qa.test.mjs
+            config/scripts/desktop-distribution/release/inspect-ash-profile-index-qa.test.mjs \
+            config/scripts/desktop-distribution/release/inspect-ash-profile-sqlite-qa.test.mjs
       - name: Check TypeScript projects
         run: node config/scripts/typecheck/project-execution/run-typecheck-projects-in-parallel.mjs
       - name: Test the persistent runtime and provider boundaries

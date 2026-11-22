@@ -4,10 +4,12 @@ import {
   statPinnedChild,
   withPinnedOwnedDirectory
 } from './inspect-ash-profile-coverage-pinned-qa.mjs'
+import { inspectPinnedProfileSqlite } from './inspect-ash-profile-sqlite-qa.mjs'
 
 const MAX_PROFILES = 512
 const MAX_PROFILE_ENTRIES = 4096
 const MAX_TOTAL_PROFILE_ENTRIES = 20_000
+const MAX_SQLITE_PROBES = 64
 
 const PROFILE_FILES = new Map([
   ['profile-state.db', 'sqlite-and-recovery'],
@@ -45,7 +47,11 @@ function knownProfileEntry(name, kind) {
   return null
 }
 
-export function inspectImmediateProfiles(pinnedRoot, expectedProfileIds = null) {
+export function inspectImmediateProfiles(
+  pinnedRoot,
+  expectedProfileIds = null,
+  verifyProfileSqlite = false
+) {
   return withPinnedOwnedDirectory(`${pinnedRoot.path}/profiles`, (profiles) => {
     const result = {
       profileDirectoryCount: 0,
@@ -59,6 +65,19 @@ export function inspectImmediateProfiles(pinnedRoot, expectedProfileIds = null) 
       }
     }
     const ids = namesFromPinnedDirectory(profiles, MAX_PROFILES, 'profile-count')
+    const sqliteCounts = verifyProfileSqlite
+      ? {
+          'schema-3-identity-observed': 0,
+          'unsupported-schema': 0,
+          'integrity-unproven': 0,
+          'identity-mismatch': 0,
+          'unfrozen-journal-state': 0,
+          missing: 0,
+          unavailable: 0
+        }
+      : null
+    const canProbeSqlite =
+      sqliteCounts && expectedProfileIds && expectedProfileIds.size <= MAX_SQLITE_PROBES
     let unindexedProfileDirectoryCount = 0
     const matchedProfileIds = new Set()
     for (const id of ids) {
@@ -111,6 +130,10 @@ export function inspectImmediateProfiles(pinnedRoot, expectedProfileIds = null) 
         ) {
           throw new Error('PK-06 nested profile changed during inspection')
         }
+        if (canProbeSqlite && expectedProfileIds.has(id)) {
+          const status = inspectPinnedProfileSqlite(profile, id)
+          sqliteCounts[status]++
+        }
       })
     }
     if (
@@ -131,6 +154,20 @@ export function inspectImmediateProfiles(pinnedRoot, expectedProfileIds = null) 
         indexedProfileCount: expectedProfileIds.size,
         missingProfileDirectoryCount,
         unindexedProfileDirectoryCount
+      }
+    }
+    if (verifyProfileSqlite) {
+      const completeObserved =
+        canProbeSqlite &&
+        result.indexDirectoryConsistency?.state === 'matching-ids-only' &&
+        sqliteCounts['schema-3-identity-observed'] === expectedProfileIds.size
+      result.profileSqliteEvidence = {
+        state: completeObserved ? 'schema-3-shape-and-identities-observed' : 'incomplete',
+        ...(canProbeSqlite ? { statuses: sqliteCounts } : {}),
+        maxProbes: MAX_SQLITE_PROBES,
+        readOnlyImmutable: true,
+        liveWriterFenceEstablished: false,
+        crossVersionCompatibilityVerified: false
       }
     }
     return result

@@ -101,7 +101,13 @@ function requireCanonicalProfileRoot(rootPath) {
 }
 
 /** Metadata only; no profile bytes, user-defined filenames or absolute paths leave this call. */
-export function inspectAshProfileCoverage(rootPath, { verifyProfileIndex = false } = {}) {
+export function inspectAshProfileCoverage(
+  rootPath,
+  { verifyProfileIndex = false, verifyProfileSqlite = false } = {}
+) {
+  if (verifyProfileSqlite && !verifyProfileIndex) {
+    throw new Error('PK-06 SQLite profile check requires verified profile-index opt-in')
+  }
   requireCanonicalProfileRoot(rootPath)
   return withPinnedOwnedDirectory(rootPath, (root) => {
     const names = namesFromPinnedDirectory(root, MAX_ROOT_ENTRIES, 'profile-root')
@@ -133,18 +139,21 @@ export function inspectAshProfileCoverage(rootPath, { verifyProfileIndex = false
     const secondPass = namesFromPinnedDirectory(root, MAX_ROOT_ENTRIES, 'profile-root')
     const index = verifyProfileIndex ? inspectPinnedProfileIndexIds(root) : null
     const profileInventory = seen.has('profiles')
-      ? inspectImmediateProfiles(root, index?.ids ?? null)
+      ? inspectImmediateProfiles(root, index?.ids ?? null, verifyProfileSqlite)
       : null
-    const { indexDirectoryConsistency, ...publicProfileInventory } = profileInventory ?? {}
+    const { indexDirectoryConsistency, profileSqliteEvidence, ...publicProfileInventory } =
+      profileInventory ?? {}
     if (JSON.stringify(names) !== JSON.stringify(secondPass)) {
       throw new Error('PK-06 profile root changed during inspection')
     }
     return {
       checkpoint: 'PK-06',
       schema: 1,
-      scope: verifyProfileIndex
-        ? 'owned-linux-profile-root-and-index-id-reconciliation'
-        : 'owned-linux-profile-root-and-immediate-profiles-metadata-only',
+      scope: verifyProfileSqlite
+        ? 'owned-linux-profile-root-and-sqlite-schema3-observation'
+        : verifyProfileIndex
+          ? 'owned-linux-profile-root-and-index-id-reconciliation'
+          : 'owned-linux-profile-root-and-immediate-profiles-metadata-only',
       outcome: 'coverage-unproven',
       activationAvailable: false,
       requiredAnchorsPresent: seen.has('profiles') && seen.has('orca-profile-index.json'),
@@ -164,6 +173,13 @@ export function inspectAshProfileCoverage(rootPath, { verifyProfileIndex = false
             profileIndexCompletedReadBytes: index?.completedReadBytes ?? null
           }
         : {}),
+      ...(verifyProfileSqlite
+        ? {
+            profileSqliteEvidence: profileSqliteEvidence ?? {
+              state: 'incomplete'
+            }
+          }
+        : {}),
       uninspectedNestedState: true,
       liveWriterAdmissionVerified: false,
       crossVersionCompatibilityVerified: false,
@@ -175,16 +191,22 @@ export function inspectAshProfileCoverage(rootPath, { verifyProfileIndex = false
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
     if (
-      (process.argv.length !== 4 && process.argv.length !== 5) ||
+      (process.argv.length !== 4 && process.argv.length !== 5 && process.argv.length !== 6) ||
       process.argv[2] !== '--root' ||
-      (process.argv.length === 5 && process.argv[4] !== '--verify-profile-index')
+      (process.argv.length >= 5 && process.argv[4] !== '--verify-profile-index') ||
+      (process.argv.length === 6 && process.argv[5] !== '--verify-profile-sqlite')
     ) {
       throw new Error(
-        'Usage: inspect-ash-profile-coverage-qa.mjs --root ABSOLUTE_PRIVATE_PATH [--verify-profile-index]'
+        'Usage: inspect-ash-profile-coverage-qa.mjs --root ABSOLUTE_PRIVATE_PATH [--verify-profile-index [--verify-profile-sqlite]]'
       )
     }
     process.stdout.write(
-      `${JSON.stringify(inspectAshProfileCoverage(process.argv[3], { verifyProfileIndex: process.argv.length === 5 }))}\n`
+      `${JSON.stringify(
+        inspectAshProfileCoverage(process.argv[3], {
+          verifyProfileIndex: process.argv.length >= 5,
+          verifyProfileSqlite: process.argv.length === 6
+        })
+      )}\n`
     )
   } catch {
     // Do not echo arbitrary profile paths, filesystem names or native errors.
