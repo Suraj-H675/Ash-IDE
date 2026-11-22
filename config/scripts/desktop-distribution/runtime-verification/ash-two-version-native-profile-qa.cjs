@@ -112,6 +112,7 @@ function verifyPhase(root, name, version) {
   const settings = file('settings')
   const daemon = file('daemon-stop')
   const runtime = file('runtime-stop')
+  const naturalExit = file('natural-exit')
   assert.equal(status.ok, true)
   assert.equal(status.result.runtime.appVersion, version)
   assert.equal(status.result.runtime.state, 'ready')
@@ -130,11 +131,25 @@ function verifyPhase(root, name, version) {
   assert.equal(runtime.ok, true)
   assert.equal(runtime.result.status, 'stopping')
   assert.equal(runtime.result.runtimeId, status.result.runtime.runtimeId)
+  assert.ok(
+    ['exited', 'already-exited'].includes(naturalExit.status),
+    'a runtime.stop acceptance is not proof that the app exited'
+  )
   return status.result.runtime.runtimeId
 }
 
 function verifySummary(root, previousVersion, candidateVersion) {
   requireFixture(root)
+  for (const [label, version] of [
+    ['previous', previousVersion],
+    ['candidate', candidateVersion]
+  ]) {
+    const embedded = readJson(join(root, `${label}-embedded-receipt.json`))
+    assert.equal(embedded.status, 'matched-offline-QA-only')
+    assert.equal(embedded.version, version)
+    assert.equal(embedded.embeddedRuntime, true)
+    assert.equal(embedded.productionActivationAvailable, false)
+  }
   const phases = [
     ['first-previous', previousVersion],
     ['second-candidate', candidateVersion],
@@ -159,6 +174,8 @@ function verifySummary(root, previousVersion, candidateVersion) {
     nativeX11: true,
     actualAppVersions: [previousVersion, candidateVersion, previousVersion],
     separateRuntimeCount: ids.length,
+    naturalRuntimeExitVerified: true,
+    helperCodeFromVerifiedAppImages: true,
     restoredDisposableProfile: true,
     productionUpdaterActivated: false
   }
@@ -204,10 +221,10 @@ async function main(argv) {
       stopVerifiedFixtureDaemon(args[0])
       return
     case 'stop-fixture-app':
-      stopVerifiedFixtureApp(args[0], Number(args[1]))
+      stopVerifiedFixtureApp(args[0], Number(args[1]), args[2])
       return
     case 'stop-fixture-xvfb':
-      stopVerifiedFixtureXvfb(args[0], Number(args[1]))
+      stopVerifiedFixtureXvfb(args[0], Number(args[1]), args[2])
       return
     default:
       throw new Error('Unknown native two-version QA operation')

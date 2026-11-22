@@ -5,6 +5,8 @@ set -euo pipefail
 
 script_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 helper="$script_root/config/scripts/desktop-distribution/runtime-verification/ash-two-version-native-profile-qa.cjs"
+pidfd_tool="$script_root/config/scripts/desktop-distribution/runtime-verification/ash-two-version-native-pidfd.py"
+embedded_tool="$script_root/config/scripts/desktop-distribution/runtime-verification/ash-two-version-native-embedded-fixture.mjs"
 
 require_command() {
   command -v "$1" >/dev/null 2>&1 || { echo "Required QA tool unavailable: $1" >&2; exit 2; }
@@ -17,17 +19,27 @@ require_fixture() {
 }
 
 run_private_session() {
-  local root="$1" previous_image="$2" previous_version="$3" candidate_image="$4" candidate_version="$5"
+  # These process-ownership values intentionally outlive the function frame:
+  # an EXIT trap still needs them when an inner command fails under set -e.
+  root="$1"
+  local previous_image="$2" previous_version="$3" candidate_image="$4" candidate_version="$5"
   require_fixture "$root" || { echo 'Unsafe private native test root' >&2; exit 2; }
-  local previous_dist="$(dirname "$previous_image")" candidate_dist="$(dirname "$candidate_image")"
-  local previous_resources="$previous_dist/linux-unpacked/resources"
-  local candidate_resources="$candidate_dist/linux-unpacked/resources"
-  local previous_node="$previous_resources/node-runtime/bin/node"
+  [[ "$previous_image" == "$root/previous.AppImage" && "$candidate_image" == "$root/candidate.AppImage" ]] || {
+    echo 'Private launches must use the exact hashed in-fixture AppImage snapshots' >&2; exit 2;
+  }
+  # All CLI code and Node binaries below were extracted from those two pinned
+  # AppImages. Never load an adjacent linux-unpacked tree from a build checkout.
+  local previous_resources="$root/previous-embedded/resources"
+  local candidate_resources="$root/candidate-embedded/resources"
+  previous_node="$previous_resources/node-runtime/bin/node"
   local candidate_node="$candidate_resources/node-runtime/bin/node"
   local previous_out="$previous_resources/app.asar.unpacked/out"
   local candidate_out="$candidate_resources/app.asar.unpacked/out"
   local previous_cli="$previous_out/cli/index.js" candidate_cli="$candidate_out/cli/index.js"
-  local xvfb_pid='' app_pid=''
+  xvfb_pid=''
+  xvfb_ticks=''
+  app_pid=''
+  app_ticks=''
 
   cleanup() {
     local exit_code=$?
@@ -38,11 +50,21 @@ run_private_session() {
       "$previous_node" "$helper" stop-fixture-daemon "$root/profile/daemon/daemon-v55.pid" || exit_code=1
     fi
     if [[ -n "$app_pid" ]]; then
-      "$previous_node" "$helper" stop-fixture-app "$root" "$app_pid" || exit_code=1
+      if [[ -n "$app_ticks" ]]; then
+        "$previous_node" "$helper" stop-fixture-app "$root" "$app_pid" "$app_ticks" || exit_code=1
+      else
+        echo 'App incarnation not pinned; refusing numeric-PID signaling' >&2
+        exit_code=1
+      fi
       wait "$app_pid" 2>/dev/null || true
     fi
     if [[ -n "$xvfb_pid" ]]; then
-      "$previous_node" "$helper" stop-fixture-xvfb "$root" "$xvfb_pid" || exit_code=1
+      if [[ -n "$xvfb_ticks" ]]; then
+        "$previous_node" "$helper" stop-fixture-xvfb "$root" "$xvfb_pid" "$xvfb_ticks" || exit_code=1
+      else
+        echo 'Xvfb incarnation not pinned; refusing numeric-PID signaling' >&2
+        exit_code=1
+      fi
       wait "$xvfb_pid" 2>/dev/null || true
     fi
     echo "CLEANUP original_exit=$exit_code test-owned desktop and daemon checked" >> "$root/lifecycle.txt"
@@ -73,15 +95,18 @@ run_private_session() {
     chmod 600 "$XAUTHORITY"
     Xvfb "$DISPLAY" -screen 0 1280x800x24 -nolisten tcp -noreset -auth "$XAUTHORITY" > "$root/xvfb.log" 2>&1 &
     xvfb_pid=$!
+    xvfb_ticks="$(python3 "$pidfd_tool" snapshot xvfb "$root" "$xvfb_pid" |
+      python3 -c 'import json,sys; print(json.load(sys.stdin)["linuxStartTicks"])')"
     for ((i=0; i<40; i++)); do
       if xprop -root -notype WM_NAME > "$root/x11-root.log" 2>&1; then ready=1; break; fi
       kill -0 "$xvfb_pid" 2>/dev/null || break
       sleep .2
     done
     ((ready == 1)) && break
-    kill "$xvfb_pid" 2>/dev/null || true
+    python3 "$pidfd_tool" signal xvfb "$root" "$xvfb_pid" "$xvfb_ticks" > "$root/xvfb-retry-stop.json"
     wait "$xvfb_pid" 2>/dev/null || true
     xvfb_pid=''
+    xvfb_ticks=''
   done
   ((ready == 1)) || { echo 'Could not create a private authenticated Xvfb server' >&2; return 1; }
 
@@ -99,6 +124,8 @@ run_private_session() {
     printf 'Starting %s\n' "$name" >> "$root/lifecycle.txt"
     "$image" --ozone-platform=x11 > "$root/${name}.app.log" 2>&1 &
     app_pid=$!
+    app_ticks="$(python3 "$pidfd_tool" snapshot app "$root" "$app_pid" |
+      python3 -c 'import json,sys; print(json.load(sys.stdin)["linuxStartTicks"])')"
     local app_ready=0 app_identity
     for ((i=0; i<100; i++)); do
       if [[ -f "$root/profile/ash-runtime.json" ]]; then
@@ -124,15 +151,18 @@ run_private_session() {
     # independent Ash runtime, or the next AppImage may adopt its old daemon.
     "$node" "$cli" terminal-daemon stop --yes --json > "$root/${name}.daemon-stop.json" 2> "$root/${name}.daemon-stop.err"
     "$node" "$cli" runtime stop --yes --json > "$root/${name}.runtime-stop.json" 2> "$root/${name}.runtime-stop.err"
-    for ((i=0; i<50; i++)); do
-      kill -0 "$app_pid" 2>/dev/null || break
-      sleep .2
-    done
-    if kill -0 "$app_pid" 2>/dev/null; then
-      "$node" "$helper" stop-fixture-app "$root" "$app_pid"
+    # 'stopping' only acknowledges the RPC. A successful version switch also
+    # requires this *same pinned app process* to exit without a fallback kill.
+    python3 "$pidfd_tool" wait app "$root" "$app_pid" "$app_ticks" > "$root/${name}.natural-exit.json" || {
+      echo "Runtime $name accepted stop but failed to exit normally" >&2
+      return 1
+    }
+    if ! wait "$app_pid"; then
+      echo "Runtime $name exited with an unsuccessful native process status" >&2
+      return 1
     fi
-    wait "$app_pid" 2>/dev/null || true
     app_pid=''
+    app_ticks=''
     printf 'Completed %s\n' "$name" >> "$root/lifecycle.txt"
   }
 
@@ -158,11 +188,11 @@ if [[ "${1:-}" == '--inner' ]]; then
   exit
 fi
 
-[[ $(uname -s) == Linux && $# == 6 ]] || {
-  echo 'Usage: verify-linux-appimage-cross-version-profile-x11.sh PREVIOUS_APPIMAGE PREVIOUS_SHA256 PREVIOUS_VERSION CANDIDATE_APPIMAGE CANDIDATE_SHA256 CANDIDATE_VERSION' >&2
+[[ $(uname -s) == Linux && $# == 7 ]] || {
+  echo 'Usage: verify-linux-appimage-cross-version-profile-x11.sh PREVIOUS_APPIMAGE PREVIOUS_SHA256 PREVIOUS_VERSION CANDIDATE_APPIMAGE CANDIDATE_SHA256 CANDIDATE_VERSION PINNED_SQUASHFS_READER' >&2
   exit 2
 }
-for command in node sha256sum stat realpath id mktemp Xvfb xauth xprop mcookie cc dbus-run-session timeout; do
+for command in node python3 sha256sum stat realpath id mktemp Xvfb xauth xprop mcookie cc dbus-run-session timeout; do
   require_command "$command"
 done
 previous_image="$(realpath -e "$1")"
@@ -171,6 +201,7 @@ previous_version="$3"
 candidate_image="$(realpath -e "$4")"
 candidate_sha="$5"
 candidate_version="$6"
+reader_path="$(realpath -e "$7")"
 [[ "$previous_sha" =~ ^[a-f0-9]{64}$ && "$candidate_sha" =~ ^[a-f0-9]{64}$ ]] || {
   echo 'AppImages must be pinned by exact SHA-256' >&2; exit 2;
 }
@@ -179,18 +210,12 @@ for image in "$previous_image" "$candidate_image"; do
 done
 [[ "$(sha256sum "$previous_image" | cut -d' ' -f1)" == "$previous_sha" ]] || exit 2
 [[ "$(sha256sum "$candidate_image" | cut -d' ' -f1)" == "$candidate_sha" ]] || exit 2
-node - "$previous_version" "$candidate_version" "$(dirname "$previous_image")" "$(dirname "$candidate_image")" <<'NODE'
-const a=require('node:assert/strict'),fs=require('node:fs'),p=require('node:path');
-const [oldVersion,newVersion,oldDist,newDist]=process.argv.slice(2);
+node - "$previous_version" "$candidate_version" <<'NODE'
+const a=require('node:assert/strict');
+const [oldVersion,newVersion]=process.argv.slice(2);
 for(const version of [oldVersion,newVersion])a.match(version,/^(0|[1-9]\d{0,8})\.(0|[1-9]\d{0,8})\.(0|[1-9]\d{0,8})$/);
 const left=oldVersion.split('.').map(Number),right=newVersion.split('.').map(Number);
 const changed=left.findIndex((part,i)=>part!==right[i]);a.ok(changed!==-1&&right[changed]>left[changed],'Candidate must be newer');
-for(const [dist,version] of [[oldDist,oldVersion],[newDist,newVersion]]){
- const base=p.join(dist,'linux-unpacked/resources'),meta=JSON.parse(fs.readFileSync(p.join(base,'ash-package-input-identity.json'),'utf8'));
- const compiled=JSON.parse(fs.readFileSync(p.join(base,'app.asar.unpacked/out/package.json'),'utf8'));
- a.equal(meta.appId,'com.ashide.desktop');a.equal(meta.version,version);a.equal(compiled.version,version);
- for(const file of ['node-runtime/bin/node','app.asar.unpacked/out/cli/index.js'])a.ok(fs.statSync(p.join(base,file)).isFile());
-}
 NODE
 
 # Keep the authenticated X11 display and Ash data in a private test-owned home.
@@ -198,10 +223,14 @@ NODE
 test_root="$(mktemp -d /var/tmp/ashcross.XXXXXX)"
 chmod 700 "$test_root"
 printf '%s\n' 'Test-owned Ash IDE native cross-version fixture' > "$test_root/.ash-native-cross-version-fixture"
+# This materializes *only* the exact verified AppImage bytes and their embedded
+# CLI/Node trees into the private fixture. Build-output directories are ignored.
+node "$embedded_tool" "$previous_image" "$previous_sha" "$previous_version" "$reader_path" "$test_root" previous > "$test_root/previous-embedded-receipt.json"
+node "$embedded_tool" "$candidate_image" "$candidate_sha" "$candidate_version" "$reader_path" "$test_root" candidate > "$test_root/candidate-embedded-receipt.json"
 set +e
 env -i PATH=/usr/bin:/bin LANG=C.UTF-8 HOME="$test_root/home" \
   timeout --kill-after=8s 230s dbus-run-session -- "$0" --inner \
-  "$test_root" "$previous_image" "$previous_version" "$candidate_image" "$candidate_version" \
+  "$test_root" "$test_root/previous.AppImage" "$previous_version" "$test_root/candidate.AppImage" "$candidate_version" \
   > "$test_root/driver.log" 2>&1
 result=$?
 set -e

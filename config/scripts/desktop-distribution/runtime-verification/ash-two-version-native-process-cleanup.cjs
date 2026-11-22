@@ -1,6 +1,7 @@
-// Identity-bound cleanup for disposable Ash native X11 process fixtures.
+// QA-only pidfd signaling. Never send a signal through a reusable numeric PID.
 const assert = require('node:assert/strict')
-const { existsSync, lstatSync, readFileSync } = require('node:fs')
+const { spawnSync } = require('node:child_process')
+const { lstatSync, readFileSync } = require('node:fs')
 const { join, isAbsolute } = require('node:path')
 
 function requireFixture(root) {
@@ -9,83 +10,50 @@ function requireFixture(root) {
   assert.ok(info.isDirectory() && !info.isSymbolicLink())
   assert.equal(info.uid, process.getuid())
   assert.equal(info.mode & 0o777, 0o700)
+  assert.equal(
+    readFileSync(join(root, '.ash-native-cross-version-fixture'), 'utf8'),
+    'Test-owned Ash IDE native cross-version fixture\n'
+  )
   return root
+}
+
+function signalBoundInstance(kind, root, pid, ticks) {
+  requireFixture(root)
+  assert.ok(['daemon', 'app', 'xvfb'].includes(kind))
+  assert.ok(Number.isSafeInteger(pid) && pid > 1)
+  assert.match(String(ticks), /^[1-9]\d*$/)
+  const result = spawnSync(
+    'python3',
+    [
+      join(__dirname, 'ash-two-version-native-pidfd.py'),
+      'signal',
+      kind,
+      root,
+      String(pid),
+      String(ticks)
+    ],
+    { encoding: 'utf8', timeout: 8_000, maxBuffer: 64 * 1024 }
+  )
+  if (result.error || result.status !== 0) {
+    throw new Error(`Refused ${kind} signal: ${result.error?.message ?? result.stderr?.trim()}`)
+  }
+  return JSON.parse(result.stdout)
 }
 
 function stopVerifiedFixtureDaemon(recordPath) {
   assert.ok(isAbsolute(recordPath))
   const root = requireFixture(join(recordPath, '..', '..', '..'))
   assert.equal(recordPath, join(root, 'profile', 'daemon', 'daemon-v55.pid'))
-  if (!existsSync(recordPath)) {
-    return
-  }
   const record = JSON.parse(readFileSync(recordPath, 'utf8'))
-  assert.ok(Number.isSafeInteger(record.pid) && record.pid > 1)
-  try {
-    const command = readFileSync(`/proc/${record.pid}/cmdline`, 'utf8').split('\0')
-    const stat = readFileSync(`/proc/${record.pid}/stat`, 'utf8')
-      .split(') ')
-      .at(-1)
-      .trim()
-      .split(' ')
-    assert.ok(command.some((arg) => arg.endsWith('/daemon-entry.js')))
-    assert.ok(command[0].startsWith(`${root}/home/.cache/ash-ide/appimage/`))
-    assert.ok(command.indexOf('--pid-record') > 0)
-    assert.ok(command.indexOf('--token') > 0)
-    assert.equal(command[command.indexOf('--pid-record') + 1], recordPath)
-    assert.equal(
-      command[command.indexOf('--token') + 1],
-      join(root, 'profile', 'daemon', 'daemon-v55.token')
-    )
-    const uid = Number(
-      readFileSync(`/proc/${record.pid}/status`, 'utf8').match(/^Uid:\s+(\d+)/m)?.[1]
-    )
-    assert.equal(uid, process.getuid())
-    assert.equal(stat[19], record.linuxStartTicks)
-    process.kill(record.pid, 'SIGTERM')
-    console.error('[native-two-version-qa] signaled verified test-owned daemon')
-  } catch (error) {
-    if (error.code !== 'ENOENT' && error.code !== 'ESRCH') {
-      throw error
-    }
-  }
+  return signalBoundInstance('daemon', root, record.pid, record.linuxStartTicks)
 }
 
-function processIdentity(pid) {
-  assert.ok(Number.isSafeInteger(pid) && pid > 1)
-  const status = readFileSync(`/proc/${pid}/status`, 'utf8')
-  assert.equal(Number(status.match(/^Uid:\s+(\d+)/m)?.[1]), process.getuid())
-  return readFileSync(`/proc/${pid}/cmdline`, 'utf8').split('\0')
+function stopVerifiedFixtureApp(root, pid, startTicks) {
+  return signalBoundInstance('app', root, pid, startTicks)
 }
 
-function stopVerifiedFixtureApp(root, pid) {
-  requireFixture(root)
-  try {
-    const command = processIdentity(pid)
-    const env = readFileSync(`/proc/${pid}/environ`, 'utf8').split('\0')
-    assert.ok(env.includes(`ASH_USER_DATA_PATH=${root}/profile`))
-    assert.ok(command.some((arg) => arg.includes('ash-ide')))
-    process.kill(pid, 'SIGTERM')
-  } catch (error) {
-    if (error.code !== 'ENOENT' && error.code !== 'ESRCH') {
-      throw error
-    }
-  }
-}
-
-function stopVerifiedFixtureXvfb(root, pid) {
-  requireFixture(root)
-  try {
-    const command = processIdentity(pid)
-    assert.match(command[0], /(?:^|\/)Xvfb$/)
-    assert.ok(command.indexOf('-auth') > 0)
-    assert.equal(command[command.indexOf('-auth') + 1], join(root, 'Xauthority'))
-    process.kill(pid, 'SIGTERM')
-  } catch (error) {
-    if (error.code !== 'ENOENT' && error.code !== 'ESRCH') {
-      throw error
-    }
-  }
+function stopVerifiedFixtureXvfb(root, pid, startTicks) {
+  return signalBoundInstance('xvfb', root, pid, startTicks)
 }
 
 module.exports = {

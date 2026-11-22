@@ -36,6 +36,8 @@ jobs:
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-cross-version-profile-x11.sh
           node --check config/scripts/desktop-distribution/runtime-verification/ash-two-version-native-profile-qa.cjs
           node --check config/scripts/desktop-distribution/runtime-verification/ash-two-version-native-process-cleanup.cjs
+          node --check config/scripts/desktop-distribution/runtime-verification/ash-two-version-native-embedded-fixture.mjs
+          python3 -c 'from pathlib import Path; p=Path("config/scripts/desktop-distribution/runtime-verification/ash-two-version-native-pidfd.py"); compile(p.read_text(), str(p), "exec")'
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-linux-appimage-network-audit.sh
           bash -n config/scripts/desktop-distribution/runtime-verification/verify-windowless-linux-native-notification.sh
           bash -n resources/linux/packaging/after-install.sh
