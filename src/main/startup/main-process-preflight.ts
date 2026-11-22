@@ -234,8 +234,10 @@ function initializeMainProcessPreflight(options: MainProcessPreflightOptions): b
     app.exit(SINGLE_INSTANCE_ALREADY_RUNNING_EXIT_CODE)
     return false
   }
-  // Electron's lock fences desktops; the shared profile lock also fences orcad serve.
-  if (!skip && !bypass && !acquireDesktopProfileLockOrExplain(getCanonicalUserDataPath())) {
+  // macOS diagnostic bypass skips only Electron's potentially false singleton
+  // verdict; it must never bypass shared desktop/serve writer ownership.
+  // Only disposable E2E profiles retain the explicit test skip.
+  if (!skip && !acquireDesktopProfileLockOrExplain(getCanonicalUserDataPath())) {
     return false
   }
   state.profileStateAdmission = acquireProfileStateRuntimeAdmission(getCanonicalUserDataPath())

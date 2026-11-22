@@ -862,9 +862,19 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/orcad/orcad-instance-lock-reclaim.ts",
+      "sha256": "c6b18d5e912636f76dce2b825c7294b5058351c820d22fb37202060feb3dc427",
+      "reason": "Ash RT-15: reject non-regular instance-lock files with a nonblocking open to avoid FIFO startup hangs."
+    },
+    {
       "path": "src/main/orcad/orcad-instance-lock.ts",
       "sha256": "b4c6623e79cd07486676fc4d438f86cb49ea23d18327cdaefc5063942ad28547",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/orcad/orcad-lifecycle.ts",
+      "sha256": "701bbceaf44414c6784068a9669c5a27956c5056e04a8b1794b4836fa4138dc0",
+      "reason": "Ash RT-15: the server claims the same exclusive runtime-host owner as desktop; release only after successful runtime teardown."
     },
     {
       "path": "src/main/orcad/orcad-lock-clone-machine.ts",
@@ -920,6 +930,11 @@
       "path": "src/main/persistence/loading-store/user-data-path.ts",
       "sha256": "4b5c4e1270a6e0bffdcfc6535446c0d797f294d6a6ab4369e23f2e20085d5702",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/persistence/profile-state/profile-state-access-owner.ts",
+      "sha256": "e6c6b5d96f27100d4c1c1562beb7e5bfe52d56b422039e4bc07522fe922e0876",
+      "reason": "Ash RT-15: add an independently published exclusive runtime-host ownership directory using the existing crash-reclaim protocol. Ash RT-15: fail closed for cloned macOS or unverifiable boot identity during runtime-host recovery. RT-15: deny automatic Linux shared-storage host reclaim to prevent cloned hosts with identical machine IDs from racing."
     },
     {
       "path": "src/main/preflight/agent-detection.ts",
@@ -1317,6 +1332,11 @@
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
+      "path": "src/main/startup/desktop-profile-instance-lock.ts",
+      "sha256": "a461c8064e6348c1148c8d85a9f37b7b515793d97815bdd111686e543a44b6f4",
+      "reason": "Ash RT-15: fail closed on desktop lock acquisition, require an independent runtime host owner, and make lock-loss exit visible where supported without flushing under lost ownership."
+    },
+    {
       "path": "src/main/startup/dev-education-suppression.ts",
       "sha256": "dbc13dab4f1ac3f071a4648638f0222769ceaa180c87b7a6e72089a1edb24290",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
@@ -1343,8 +1363,8 @@
     },
     {
       "path": "src/main/startup/main-process-preflight.ts",
-      "sha256": "36a3467f24701b31a6fb9106d2bf624bfed7408d00317f4781940ded4bb39cc7",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "b06e75166a23ba26ef2bd81e8d2745bfc73fc9ca3a1239a8bd4bcf7a978ebaca",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger. Ash RT-15: macOS diagnostic Electron singleton bypass still requires the shared desktop/server profile writer lock."
     },
     {
       "path": "src/main/startup/main-process-pty-startup.ts",
@@ -3328,13 +3348,13 @@
     },
     {
       "path": "src/main/startup/browser-process-user-agent-ordering.test.ts",
-      "sha256": "c5e02f71c1aa53b1dbb1d03fc1cb11b2fd7f8dfabb63272903f2e7f52fedc9a2",
-      "reason": "Ash M8: update the startup timing expectation after removing system-locale catalog loading."
+      "sha256": "3f4a73692899ef051d895019b272c2aa61ab4faabaf4e54082089c3691c9c54a",
+      "reason": "Ash M8: update the startup timing expectation after removing system-locale catalog loading. RT-15: reject unverifiable shared locks before profile admission or browser initialization. Ash RT-15: verify failure before profile access even when diagnostic Electron singleton bypass is enabled."
     },
     {
       "path": "src/main/startup/main-process-preflight-failure.ts",
-      "sha256": "9d3c38bf1a07bb1d34e6b178ba0f4af742acff459dfeb31436f4274452991d8f",
-      "reason": "Ash M8: document the English startup dialog after removing system-locale catalog loading."
+      "sha256": "abe3d8cbf7fa41605f727969ac40cdc15de01c8ad1e947bb7bc9f532c01804e5",
+      "reason": "Ash M8: document the English startup dialog after removing system-locale catalog loading. RT-15: fail closed unless the shared desktop writer lock was acquired. Ash RT-15: only admit a verified shared lock holder and attempt a native loss-of-ownership alert before emergency exit."
     },
     {
       "path": "src/main/window/dashboard-popout-window.test.ts",
@@ -3783,8 +3803,8 @@
     },
     {
       "path": "src/main/persistence/profile-state/profile-state-access.ts",
-      "sha256": "24120710dd2a9e4a71ec0332f19779c79c3915f4bd9667605ccf8adccab483b3",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "935ca9f728343632f759b360ca50c8a80b8c6910edf137bb9c105d8a8510e0ec",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger. Ash RT-15: introduce host-only exclusive admission while retaining non-exclusive CLI participants and exclusive maintenance. RT-15: restrict independent runtime-host acquisition to Linux until macOS/Windows recovery is verified."
     },
     {
       "path": "src/main/persistence/profile-state/profile-state-backup-job.ts",

@@ -1,4 +1,4 @@
-import { app, dialog } from 'electron'
+import { app, dialog, Notification } from 'electron'
 import { prepareEarlyMainUiLanguage, translateMain } from '../i18n/main-i18n'
 import { formatProfileStateStartupFailure } from '../persistence/profile-state/profile-state-startup-failure'
 import { isBackgroundLaunch } from '../window/foreground-activation-policy'
@@ -6,15 +6,22 @@ import { mainProcessState as state } from './main-process-state'
 import { SINGLE_INSTANCE_ALREADY_RUNNING_EXIT_CODE } from './single-instance-lock'
 import { acquireDesktopProfileInstanceLock } from './desktop-profile-instance-lock'
 
-/** False when orcad holds the profile; unlike a second desktop, nothing else would say why. */
+/** Never admit a desktop writer unless the shared process lock was actually acquired. */
 export function acquireDesktopProfileLockOrExplain(userDataPath: string): boolean {
-  const profileLock = acquireDesktopProfileInstanceLock(userDataPath)
-  if (profileLock.state !== 'held') {
+  const profileLock = acquireDesktopProfileInstanceLock(userDataPath, undefined, undefined, () => {
+    if (Notification.isSupported()) {
+      new Notification({
+        title: 'Ash IDE stopped to protect your profile',
+        body: 'Another process took ownership of this profile. Close the other runtime before reopening Ash IDE; review unsaved changes after recovery.'
+      }).show()
+    }
+  })
+  if (profileLock.state === 'acquired') {
     return true
   }
   handleMainProcessPreflightFailure(
     new Error(profileLock.message),
-    SINGLE_INSTANCE_ALREADY_RUNNING_EXIT_CODE
+    profileLock.state === 'held' ? SINGLE_INSTANCE_ALREADY_RUNNING_EXIT_CODE : 1
   )
   return false
 }

@@ -58,7 +58,7 @@ export function acquireProfileStateRuntimeAdmission(
   userDataPath: string
 ): ProfileStateRuntimeAdmission {
   const paths = profileStateAccessPaths(userDataPath)
-  const owner = publishAccessOwner(paths, false)
+  const owner = publishAccessOwner(paths, 'participant')
   try {
     reclaimExitedOwner(paths.maintenance)
     return owner
@@ -68,10 +68,26 @@ export function acquireProfileStateRuntimeAdmission(
   }
 }
 
+/**
+ * One Linux desktop or serve host at a time, independent of the orcad.lock inode.
+ * CLI readers continue to use the non-exclusive participant registry.
+ * A removed/replaced orcad.lock cannot admit a second runtime while this
+ * independently published owner is live or its process exit is unproven.
+ */
+export function acquireProfileStateRuntimeHost(userDataPath: string): ProfileStateRuntimeAdmission {
+  if (process.platform !== 'linux') {
+    throw new ProfileStateAccessError(
+      'Independent runtime-host ownership is only supported on Linux until native recovery can be verified.'
+    )
+  }
+  const paths = profileStateAccessPaths(userDataPath)
+  return publishAccessOwner(paths, 'runtime-host')
+}
+
 /** Exclude startup and all participating readers/writers through durable recovery publication. */
 export function acquireProfileStateMaintenance(userDataPath: string): ProfileStateMaintenance {
   const paths = profileStateAccessPaths(userDataPath)
-  const owner = publishAccessOwner(paths, true)
+  const owner = publishAccessOwner(paths, 'maintenance')
   try {
     for (const entry of readdirSync(paths.participants)) {
       reclaimExitedOwner(join(paths.participants, entry))

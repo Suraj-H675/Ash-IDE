@@ -35,20 +35,41 @@ const mocks = vi.hoisted(() => {
     events,
     userAgent: () => userAgent,
     showErrorBox: vi.fn(),
+    nativeNoticeCreated: vi.fn(),
+    nativeNoticeShown: vi.fn(),
     backgroundLaunch: vi.fn(() => true),
     admission: vi.fn(),
+    bypass: vi.fn(() => false),
     lock: vi.fn(() => true),
     afterIdentity: vi.fn((): void => {
       throw new Error('preflight-test-stop')
     }),
     recoverMoves: vi.fn(),
-    profileLock: vi.fn((): { state: string; message?: string } => ({ state: 'unavailable' }))
+    profileLock: vi.fn(
+      (
+        _root: string,
+        _acquire?: unknown,
+        _write?: unknown,
+        _notifyOwnershipLost?: () => void
+      ): { state: string; message?: string } => ({ state: 'acquired' })
+    )
   }
 })
 
 vi.mock('electron', () => ({
   app: mocks.app,
   dialog: { showErrorBox: mocks.showErrorBox },
+  Notification: class {
+    static isSupported(): boolean {
+      return true
+    }
+    constructor(options: unknown) {
+      mocks.nativeNoticeCreated(options)
+    }
+    show(): void {
+      mocks.nativeNoticeShown()
+    }
+  },
   ipcMain: {},
   powerMonitor: {},
   session: { defaultSession: {} }
@@ -117,7 +138,7 @@ vi.mock('./desktop-profile-instance-lock', () => ({
   acquireDesktopProfileInstanceLock: mocks.profileLock
 }))
 vi.mock('./single-instance-lock', () => ({
-  shouldBypassSingleInstanceLock: () => false,
+  shouldBypassSingleInstanceLock: mocks.bypass,
   shouldSkipSingleInstanceLock: () => false,
   acquireSingleInstanceLock: () => {
     mocks.events.push('single-instance-lock')
@@ -256,6 +277,85 @@ describe('browser process user-agent startup ordering', () => {
       platform.mockRestore()
       mocks.showErrorBox.mockClear()
       mocks.app.exit.mockClear()
+      mocks.events.length = 0
+    }
+  })
+
+  it('refuses startup before profile admission when the shared lock is unreadable', () => {
+    const platform = vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin')
+    mocks.backgroundLaunch.mockReturnValueOnce(false)
+    mocks.profileLock.mockReturnValueOnce({
+      state: 'refused',
+      message: 'Cannot verify the shared profile lock'
+    })
+    mocks.app.exit.mockClear()
+    mocks.events.length = 0
+    try {
+      expect(
+        runMainProcessPreflight({ focusExistingWindow: vi.fn(), requestDesktopActivation: vi.fn() })
+      ).toBe(false)
+      expect(mocks.showErrorBox).toHaveBeenCalledWith(
+        'Orca could not start',
+        'Cannot verify the shared profile lock'
+      )
+      expect(mocks.app.exit).toHaveBeenCalledWith(1)
+      expect(mocks.events).not.toContain('admission:/canonical-user-data')
+      expect(mocks.events).not.toContain('read-mode:/canonical-user-data')
+    } finally {
+      platform.mockRestore()
+      mocks.showErrorBox.mockClear()
+      mocks.app.exit.mockClear()
+      mocks.events.length = 0
+    }
+  })
+
+  it('requires shared profile ownership even when the macOS Electron lock is bypassed', () => {
+    const platform = vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin')
+    mocks.profileLock.mockClear()
+    mocks.bypass.mockReturnValueOnce(true)
+    mocks.profileLock.mockReturnValueOnce({
+      state: 'refused',
+      message: 'Cannot verify the shared profile lock'
+    })
+    mocks.events.length = 0
+    mocks.app.exit.mockClear()
+    try {
+      expect(
+        runMainProcessPreflight({ focusExistingWindow: vi.fn(), requestDesktopActivation: vi.fn() })
+      ).toBe(false)
+      expect(mocks.events).not.toContain('single-instance-lock')
+      expect(mocks.events).not.toContain('admission:/canonical-user-data')
+      expect(mocks.events).not.toContain('read-mode:/canonical-user-data')
+      expect(mocks.profileLock).toHaveBeenCalledOnce()
+      expect(mocks.app.exit).toHaveBeenCalledWith(1)
+    } finally {
+      platform.mockRestore()
+      mocks.profileLock.mockClear()
+      mocks.app.exit.mockClear()
+      mocks.events.length = 0
+    }
+  })
+
+  it('attempts a native safety notice when desktop lock ownership is lost', () => {
+    mocks.profileLock.mockImplementationOnce((_root, _acquire, _write, notify) => {
+      notify?.()
+      return { state: 'held', message: 'Another runtime owns this profile' }
+    })
+    mocks.nativeNoticeCreated.mockClear()
+    mocks.nativeNoticeShown.mockClear()
+    mocks.events.length = 0
+    try {
+      expect(
+        runMainProcessPreflight({ focusExistingWindow: vi.fn(), requestDesktopActivation: vi.fn() })
+      ).toBe(false)
+      expect(mocks.nativeNoticeCreated).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Ash IDE stopped to protect your profile' })
+      )
+      expect(mocks.nativeNoticeShown).toHaveBeenCalledOnce()
+      expect(mocks.events).not.toContain('admission:/canonical-user-data')
+    } finally {
+      mocks.nativeNoticeCreated.mockClear()
+      mocks.nativeNoticeShown.mockClear()
       mocks.events.length = 0
     }
   })

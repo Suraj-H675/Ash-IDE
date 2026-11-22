@@ -14,6 +14,7 @@ import { hostname } from 'node:os'
 import { dirname, join } from 'node:path'
 import { bestEffortFsyncDirectorySync, fsyncFileSync } from '../../../shared/secure-file'
 import { renameFileWithWindowsRetry } from '../../codex-accounts/fs-utils'
+import { orcadDataRootIsOnLocalDisk } from '../../orcad/orcad-data-root-locality'
 import {
   START_TIME_TOLERANCE_MS,
   startTimesWithinTolerance
@@ -43,7 +44,8 @@ export function profileStateAccessPaths(userDataPath: string) {
     root,
     participants: join(root, 'participants'),
     candidates: join(root, 'candidates'),
-    maintenance: join(root, 'maintenance')
+    maintenance: join(root, 'maintenance'),
+    runtimeHost: join(root, 'runtime-host')
   }
   for (const path of [root, paths.participants, paths.candidates]) {
     mkdirSync(path, { recursive: true, mode: 0o700 })
@@ -133,12 +135,26 @@ function readOwner(path: string): AccessOwner | undefined {
   throw new ProfileStateAccessError(`Profile state ownership is malformed: ${path}`)
 }
 
-function ownerExited(owner: AccessOwner, path: string): boolean {
+function ownerExited(owner: AccessOwner, path: string, runtimeHost: boolean): boolean {
   const currentBoot = profileStateAccessBootIdentity()
   const currentMachine = profileStateAccessMachineIdentity()
   const sameBoot = Boolean(owner.bootIdentity && owner.bootIdentity === currentBoot)
   const sameMachine = Boolean(owner.machineIdentity && owner.machineIdentity === currentMachine)
   const sameHost = owner.host === hostname()
+  // Cloned macOS machines can share hostnames and IOPlatformUUIDs, but have
+  // different boots. File age and a PID lookup on this machine cannot prove
+  // the other machine's host process exited. Refuse automatic runtime-host
+  // reclaim until the original owner can be verified on the same boot.
+  if (runtimeHost && process.platform === 'darwin' && (!sameBoot || !sameMachine || !sameHost)) {
+    return false
+  }
+  // A shared-profile record may belong to a still-running Linux clone with
+  // the same hostname and machine-id but another boot. Its timestamp and PID
+  // cannot prove death. Only locally classified storage supports automatic
+  // runtime-host reclamation; shared/unknown storage requires explicit review.
+  if (runtimeHost && process.platform === 'linux' && !orcadDataRootIsOnLocalDisk(path)) {
+    return false
+  }
   // Windows has no boot UUID to verify a renamed host.
   if (
     (process.platform === 'win32' && !sameHost) ||
@@ -214,7 +230,7 @@ function removeEmptyOwnerDirectory(path: string): void {
 }
 
 /** Reclaim immutable entries only with positive owner-exit proof. */
-export function reclaimExitedOwner(path: string): void {
+export function reclaimExitedOwner(path: string, runtimeHost = false): void {
   let entries: string[]
   try {
     if (!lstatSync(path).isDirectory()) {
@@ -236,7 +252,7 @@ export function reclaimExitedOwner(path: string): void {
     if (owner === undefined) {
       continue
     }
-    if (owner.token !== token || !ownerExited(owner, join(path, entry))) {
+    if (owner.token !== token || !ownerExited(owner, join(path, entry), runtimeHost)) {
       throw new ProfileStateAccessError(
         `Profile state is in use or its owner is unverifiable: ${path}. Stop Orca and orcad on every host using this profile, then retry. If this remains, verify PID ${owner.pid} on ${owner.host} has exited before removing its owner entry ${join(path, entry)}.`
       )
@@ -247,10 +263,19 @@ export function reclaimExitedOwner(path: string): void {
   removeEmptyOwnerDirectory(path)
 }
 
-export function publishAccessOwner(paths: ProfileStateAccessPaths, exclusive: boolean) {
+export function publishAccessOwner(
+  paths: ProfileStateAccessPaths,
+  role: 'participant' | 'maintenance' | 'runtime-host'
+) {
   const token = randomUUID()
   const candidate = join(paths.candidates, token)
-  const target = exclusive ? paths.maintenance : join(paths.participants, token)
+  const exclusive = role !== 'participant'
+  const target =
+    role === 'runtime-host'
+      ? paths.runtimeHost
+      : role === 'maintenance'
+        ? paths.maintenance
+        : join(paths.participants, token)
   const entry = `${token}.owner`
   mkdirSync(candidate, { mode: 0o700 })
   let published = false
@@ -283,7 +308,7 @@ export function publishAccessOwner(paths: ProfileStateAccessPaths, exclusive: bo
         if (!exclusive || attempt >= 2) {
           throw error
         }
-        reclaimExitedOwner(target)
+        reclaimExitedOwner(target, role === 'runtime-host')
       }
     }
     bestEffortFsyncDirectorySync(dirname(target))

@@ -83,7 +83,7 @@ jobs:
             config/scripts/desktop-distribution/release/inspect-ash-profile-sqlite-qa.test.mjs
       - name: Check TypeScript projects
         run: node config/scripts/typecheck/project-execution/run-typecheck-projects-in-parallel.mjs
-      - name: Verify updater quiet-runtime evidence and authenticated daemon preflight
+      - name: Verify RT-15 updater and desktop profile writer admission
         run: |
           node node_modules/vitest/vitest.mjs run \
             --config config/vitest.config.ts --pool=forks --maxWorkers=1 \
@@ -92,6 +92,8 @@ jobs:
             src/main/updater/update-runtime-census.test.ts \
             src/main/updater/update-runtime-pending-write.integration.test.ts \
             src/main/ipc/ash-updater-status.test.ts \
+            src/main/startup/desktop-profile-instance-lock.test.ts \
+            src/main/startup/browser-process-user-agent-ordering.test.ts \
             src/main/startup/main-process-ready-duplicate-pty-repair.test.ts \
             src/renderer/src/components/settings/updates/ash-unavailable-update-settings.test.tsx \
             src/main/daemon/providers/adapter/testing/daemon-pty-session-inventory-preflight.test.ts

@@ -18,6 +18,7 @@ import { recordAgentSessionRuntimeEnd } from '../runtime/agent-session/records/a
 import { ORCAD_SHUTDOWN_DEADLINE_MS } from './orcad-stop-deadlines'
 import { holdOrcadTerminalAdmissionUntilExit } from './orcad-stop-terminal-admission'
 import {
+  acquireProfileStateRuntimeHost,
   acquireProfileStateRuntimeAdmission,
   type ProfileStateRuntimeAdmission
 } from '../persistence/profile-state/profile-state-access'
@@ -150,9 +151,11 @@ export async function startOrcadWithHost<T extends object>(
   start: (registerCleanup: (cleanup: OrcadRuntimeCleanup) => void) => Promise<T>,
   runQuitHandlers: () => void | Promise<void>
 ): Promise<T & { stop(): Promise<void>; instance: OrcadManagedStopInstance }> {
+  let lostSharedOwnership = false
   const instanceLock = acquireOrcadInstanceLock(userDataPath, {
     // Yield the data root to the process that took its lock; supervisors stand by on this code.
     onExclusivityLost: () => {
+      lostSharedOwnership = true
       console.error('[orcad] Stopping so only one runtime writes this data root.')
       installedShutdown?.(
         'instance lock lost',
@@ -161,6 +164,17 @@ export async function startOrcadWithHost<T extends object>(
       )
     }
   })
+  let runtimeHost: ProfileStateRuntimeAdmission | undefined
+  try {
+    // Stage the independent writer owner on Linux only. Native macOS/Windows
+    // cloned-host recovery is not yet safe to enable for live profiles.
+    if (process.platform === 'linux') {
+      runtimeHost = acquireProfileStateRuntimeHost(userDataPath)
+    }
+  } catch (error) {
+    instanceLock.release()
+    throw error
+  }
   const previous = instanceLock.previousUnexpectedExit
   recordOrcadPreviousUnexpectedExit(previous)
   if (previous) {
@@ -185,7 +199,15 @@ export async function startOrcadWithHost<T extends object>(
       // Failed cleanup retains both ownership fences until process exit.
       const host = new OrcadRuntimeLifetime(() => {
         if (runtimeCleanupSucceeded && !orcadRunFailed()) {
-          instanceLock.release()
+          try {
+            // After a lock takeover, keep the independent owner visible
+            // until this server PID has actually exited.
+            if (!lostSharedOwnership) {
+              runtimeHost?.release()
+            }
+          } finally {
+            instanceLock.release()
+          }
         }
       })
       host.add(({ failed }) => {

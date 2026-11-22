@@ -218,7 +218,9 @@ export function unlinkQuietly(path: string): void {
 
 export function readBoundedLockFile(path: string): string | null {
   try {
-    const { buffer, stats } = readNodeFileSyncWithinLimit(path, MAX_ORCAD_LOCK_BYTES)
+    const { buffer, stats } = readNodeFileSyncWithinLimit(path, MAX_ORCAD_LOCK_BYTES, {
+      regularFileOnly: true
+    })
     return stats.isFile() ? buffer.toString('utf8') : null
   } catch {
     return null
