@@ -7,8 +7,69 @@ import { describe, expect, it } from 'vitest'
 import { assertSelectedImageTree } from './ash-two-version-native-embedded-fixture.mjs'
 
 const require = createRequire(import.meta.url)
-const { main } = require('./ash-two-version-native-profile-qa.cjs')
+const { main, verifyPhase } = require('./ash-two-version-native-profile-qa.cjs')
 const pidfdTool = fileURLToPath(new URL('./ash-two-version-native-pidfd.py', import.meta.url))
+
+describe('authenticated runtime identity across phase receipts', () => {
+  it('rejects a daemon shutdown receipt from a different runtime generation', () => {
+    const fixture = mkdtempSync('/var/tmp/ashcross.')
+    chmodSync(fixture, 0o700)
+    try {
+      writeFileSync(
+        join(fixture, '.ash-native-cross-version-fixture'),
+        'Test-owned Ash IDE native cross-version fixture\n',
+        { mode: 0o600 }
+      )
+      const phase = 'phase-identity-test'
+      const phaseRuntimeId = 'auth-runtime-current'
+      const receipts = {
+        status: {
+          ok: true,
+          result: {
+            runtime: { appVersion: '0.1.0', state: 'ready', runtimeId: phaseRuntimeId },
+            app: { desktopWindowStatus: 'available', pid: 12345 }
+          }
+        },
+        'x11-window': {
+          ok: true,
+          nativeX11: true,
+          class: 'com.ashide.desktop',
+          pid: 12345,
+          width: 1280,
+          height: 800
+        },
+        settings: { ok: true, settingsRead: true },
+        'daemon-stop': {
+          ok: true,
+          result: { status: 'stopped', killedCount: 0 },
+          _meta: { runtimeId: phaseRuntimeId }
+        },
+        'runtime-stop': {
+          ok: true,
+          result: { status: 'stopping', runtimeId: phaseRuntimeId }
+        },
+        'natural-exit': { status: 'exited' }
+      }
+      for (const [name, receipt] of Object.entries(receipts)) {
+        writeFileSync(join(fixture, `${phase}.${name}.json`), JSON.stringify(receipt), {
+          mode: 0o600
+        })
+      }
+      expect(verifyPhase(fixture, phase, '0.1.0')).toBe(phaseRuntimeId)
+      receipts['daemon-stop']._meta.runtimeId = 'stale-runtime-generation'
+      writeFileSync(
+        join(fixture, `${phase}.daemon-stop.json`),
+        JSON.stringify(receipts['daemon-stop']),
+        { mode: 0o600 }
+      )
+      expect(() => verifyPhase(fixture, phase, '0.1.0')).toThrow(
+        /exact authenticated phase runtime/
+      )
+    } finally {
+      rmSync(fixture, { recursive: true, force: true })
+    }
+  })
+})
 
 describe('in-image executable and module tree safety', () => {
   const required = new Map([

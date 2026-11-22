@@ -128,6 +128,11 @@ function verifyPhase(root, name, version) {
   assert.equal(daemon.ok, true)
   assert.equal(daemon.result.status, 'stopped')
   assert.equal(daemon.result.killedCount, 0) // No PTYs created in this fixture.
+  assert.equal(
+    daemon._meta?.runtimeId,
+    status.result.runtime.runtimeId,
+    'daemon stop must refer to the exact authenticated phase runtime'
+  )
   assert.equal(runtime.ok, true)
   assert.equal(runtime.result.status, 'stopping')
   assert.equal(runtime.result.runtimeId, status.result.runtime.runtimeId)
@@ -239,4 +244,4 @@ if (require.main === module) {
   })
 }
 
-module.exports = { main }
+module.exports = { main, verifyPhase }
