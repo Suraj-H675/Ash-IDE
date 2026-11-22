@@ -31,23 +31,22 @@ function boundedPinnedIndexBytes(pinnedRoot) {
     const chunks = []
     let total = 0
     const buffer = Buffer.alloc(4096)
-    for (;;) {
-      // Read no more than the remaining budget + one byte to detect growth.
-      const length = Math.min(buffer.length, MAX_INDEX_BYTES + 1 - total)
+    const expectedBytes = Number(before.size)
+    while (total < expectedBytes) {
+      // Consume only the exact size captured on the opened descriptor. A
+      // growing/shrinking index fails the final inode/size/time check.
+      const length = Math.min(buffer.length, expectedBytes - total)
       const read = readSync(fd, buffer, 0, length, null)
       if (read === 0) {
-        break
+        throw new Error('PK-06 profile index became shorter during read')
       }
       total += read
-      if (total > MAX_INDEX_BYTES) {
-        throw new Error('PK-06 profile index exceeded the byte budget during read')
-      }
       chunks.push(Buffer.from(buffer.subarray(0, read)))
     }
     if (
       !sameFile(before, fstatSync(fd, { bigint: true })) ||
       !sameFile(before, lstatSync(pinnedPath, { bigint: true })) ||
-      total !== Number(before.size)
+      total !== expectedBytes
     ) {
       throw new Error('PK-06 profile index changed during read')
     }
@@ -85,13 +84,22 @@ export function parseStrictProfileIndexIds(jsonText) {
 }
 
 export function inspectPinnedProfileIndexIds(pinnedRoot) {
+  let jsonText
+  try {
+    jsonText = boundedPinnedIndexBytes(pinnedRoot)
+  } catch {
+    // Never echo path, profile names, file contents or native error details.
+    return { state: 'unavailable', ids: null, completedReadBytes: null }
+  }
+  const completedReadBytes = Buffer.byteLength(jsonText, 'utf8')
   try {
     return {
       state: 'validated-id-list',
-      ids: parseStrictProfileIndexIds(boundedPinnedIndexBytes(pinnedRoot))
+      ids: parseStrictProfileIndexIds(jsonText),
+      completedReadBytes
     }
   } catch {
-    // Never echo path, profile names, file contents or native error details.
-    return { state: 'unavailable', ids: null }
+    // A complete bounded read may still contain invalid or incompatible JSON.
+    return { state: 'unavailable', ids: null, completedReadBytes }
   }
 }

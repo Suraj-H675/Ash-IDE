@@ -59,7 +59,7 @@ describe.skipIf(process.platform !== 'linux')('opt-in index-to-directory recover
       outcome: 'coverage-unproven',
       activationAvailable: false,
       profileIndexValidationState: 'validated-id-list',
-      profileIndexContentsRead: true,
+      profileIndexReadAttempted: true,
       profileIndexDirectoryCheck: {
         state: 'matching-ids-only',
         indexedProfileCount: 2,
@@ -69,6 +69,8 @@ describe.skipIf(process.platform !== 'linux')('opt-in index-to-directory recover
       fullStateRollbackVerified: false,
       liveWriterAdmissionVerified: false
     })
+    expect(output.profileIndexCompletedReadBytes).toBeGreaterThan(0)
+    expect(output.scope).toBe('owned-linux-profile-root-and-index-id-reconciliation')
     expect(JSON.stringify(output)).not.toMatch(/alpha|beta|private name/)
     const cli = spawnSync(process.execPath, [script, '--root', root, '--verify-profile-index'], {
       encoding: 'utf8'
@@ -125,9 +127,12 @@ describe.skipIf(process.platform !== 'linux')('opt-in index-to-directory recover
     const root = fixture()
     chmodSync(join(root, 'orca-profile-index.json'), 0o000)
     const defaultReport = inspectAshProfileCoverage(root)
-    expect(defaultReport.profileIndexContentsRead).toBeUndefined()
+    expect(defaultReport.profileIndexReadAttempted).toBeUndefined()
+    expect(defaultReport.profileIndexCompletedReadBytes).toBeUndefined()
     expect(defaultReport.profileIndexDirectoryCheck).toBeUndefined()
     const optIn = inspectAshProfileCoverage(root, { verifyProfileIndex: true })
+    expect(optIn.profileIndexReadAttempted).toBe(true)
+    expect(optIn.profileIndexCompletedReadBytes).toBeNull()
     expect(optIn.profileIndexValidationState).toBe('unavailable')
     expect(optIn.profileIndexDirectoryCheck).toEqual({ state: 'unavailable' })
     expect(optIn.activationAvailable).toBe(false)
@@ -138,6 +143,8 @@ describe.skipIf(process.platform !== 'linux')('opt-in index-to-directory recover
     linkSync(join(linked, 'orca-profile-index.json'), join(linked, 'copy'))
     expect(inspectAshProfileCoverage(linked, { verifyProfileIndex: true })).toMatchObject({
       profileIndexValidationState: 'unavailable',
+      profileIndexReadAttempted: true,
+      profileIndexCompletedReadBytes: null,
       activationAvailable: false
     })
     const oversized = fixture()
@@ -146,6 +153,7 @@ describe.skipIf(process.platform !== 'linux')('opt-in index-to-directory recover
     })
     expect(inspectAshProfileCoverage(oversized, { verifyProfileIndex: true })).toMatchObject({
       profileIndexValidationState: 'unavailable',
+      profileIndexCompletedReadBytes: null,
       activationAvailable: false
     })
     const symlinked = fixture()
@@ -153,6 +161,21 @@ describe.skipIf(process.platform !== 'linux')('opt-in index-to-directory recover
     symlinkSync('/etc/passwd', join(symlinked, 'orca-profile-index.json'))
     expect(inspectAshProfileCoverage(symlinked, { verifyProfileIndex: true })).toMatchObject({
       profileIndexValidationState: 'unavailable',
+      profileIndexCompletedReadBytes: null,
+      activationAvailable: false
+    })
+  })
+
+  it('reports exact completed bytes at the 512 KiB bound even when JSON is malformed', () => {
+    const root = fixture()
+    const bound = 512 * 1024
+    writeFileSync(join(root, 'orca-profile-index.json'), ' '.repeat(bound), { mode: 0o600 })
+    const report = inspectAshProfileCoverage(root, { verifyProfileIndex: true })
+    expect(report).toMatchObject({
+      profileIndexReadAttempted: true,
+      profileIndexCompletedReadBytes: bound,
+      profileIndexValidationState: 'unavailable',
+      profileIndexDirectoryCheck: { state: 'unavailable' },
       activationAvailable: false
     })
   })

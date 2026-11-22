@@ -142,7 +142,9 @@ export function inspectAshProfileCoverage(rootPath, { verifyProfileIndex = false
     return {
       checkpoint: 'PK-06',
       schema: 1,
-      scope: 'owned-linux-profile-root-and-immediate-profiles-metadata-only',
+      scope: verifyProfileIndex
+        ? 'owned-linux-profile-root-and-index-id-reconciliation'
+        : 'owned-linux-profile-root-and-immediate-profiles-metadata-only',
       outcome: 'coverage-unproven',
       activationAvailable: false,
       requiredAnchorsPresent: seen.has('profiles') && seen.has('orca-profile-index.json'),
@@ -156,9 +158,10 @@ export function inspectAshProfileCoverage(rootPath, { verifyProfileIndex = false
         ? {
             profileIndexDirectoryCheck: indexDirectoryConsistency ?? { state: 'unavailable' },
             profileIndexValidationState: index?.state ?? 'unavailable',
-            // Opting in attempts a bounded content read; malformed bytes may
-            // still have been read even when validation is unavailable.
-            profileIndexContentsRead: true
+            profileIndexReadAttempted: true,
+            // Null means no *verified complete* read. It does not imply no
+            // bytes were touched before an incomplete read failed.
+            profileIndexCompletedReadBytes: index?.completedReadBytes ?? null
           }
         : {}),
       uninspectedNestedState: true,
