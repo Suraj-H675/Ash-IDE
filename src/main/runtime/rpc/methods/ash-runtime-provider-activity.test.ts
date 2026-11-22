@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { OrcaRuntimeService } from '../../orca-runtime'
+import { OrcaRuntimeService as RealOrcaRuntimeService } from '../../orca-runtime'
+import { fixture as disposableProfileStore } from '../../../persistence/loading-store/profile-state-delayed-authority-fixture'
 import { readRuntimeMetadataAsync } from '../server/runtime-metadata'
 import { RpcDispatcher } from '../dispatcher'
 import { sendOrcadSidecarRequest } from '../../../orcad/orcad-sidecar-runtime-client'
@@ -15,7 +17,14 @@ import {
 } from '../../../updater/update-preflight'
 import { ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS } from './ash-runtime-provider-activity'
 
-const fixture = vi.hoisted(() => ({ count: 2, fails: false }))
+const fixture = vi.hoisted(() => ({
+  count: 2,
+  fails: false,
+  ptyCount: 0,
+  ownerCount: 0,
+  ptyFails: false,
+  onPtyRead: null as (() => void) | null
+}))
 
 vi.mock(
   '../../../native-chat/agent-session-wire/structured-agent-session-positive-evidence',
@@ -29,9 +38,21 @@ vi.mock(
   })
 )
 
+vi.mock('../../../updater/update-runtime-connected-pty-evidence', () => ({
+  observeConnectedPtyPositiveEvidence: async () => {
+    fixture.onPtyRead?.()
+    if (fixture.ptyFails) throw new Error('disconnected daemon')
+    return { ptySessions: fixture.ptyCount, ptyOwnedAgentSessions: fixture.ownerCount }
+  }
+}))
+
 afterEach(() => {
   fixture.count = 2
   fixture.fails = false
+  fixture.ptyCount = 0
+  fixture.ownerCount = 0
+  fixture.ptyFails = false
+  fixture.onPtyRead = null
 })
 
 describe('authenticated runtime provider-native activity RPC', () => {
@@ -51,6 +72,17 @@ describe('authenticated runtime provider-native activity RPC', () => {
       ok: true,
       result: {
         runtimeId: 'tested-runtime',
+        pendingDiskWrites: {
+          state: 'unknown',
+          reason: 'pending-write-census-unavailable',
+          lowerBound: 0
+        },
+        ptys: { state: 'unknown', reason: 'inventory-partial', lowerBound: 0 },
+        ptyOwnedAgentSessions: {
+          state: 'unknown',
+          reason: 'agent-owner-inventory-incomplete',
+          lowerBound: 0
+        },
         providerAgentSessions: {
           state: 'unknown',
           reason: 'provider-agent-inventory-unavailable',
@@ -90,6 +122,125 @@ describe('authenticated runtime provider-native activity RPC', () => {
     }
   })
 
+  it('surfaces a positive connected-daemon PTY and owner count as unknown, without revealing identities', async () => {
+    fixture.ptyCount = 3
+    fixture.ownerCount = 2
+    const dispatcher = new RpcDispatcher({
+      runtime,
+      methods: ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS
+    })
+    const answer = await dispatcher.dispatch({
+      id: 'observed-ptys',
+      authToken: 'owner-token',
+      method: 'runtime.providerActivity'
+    })
+    expect(answer).toMatchObject({
+      ok: true,
+      result: {
+        ptys: { state: 'unknown', reason: 'inventory-partial', lowerBound: 3 },
+        ptyOwnedAgentSessions: {
+          state: 'unknown',
+          reason: 'agent-owner-inventory-incomplete',
+          lowerBound: 2
+        }
+      }
+    })
+    expect(JSON.stringify(answer)).not.toContain('sessionId')
+  })
+
+  it('retains positive native provider evidence if the connected-daemon read fails', async () => {
+    fixture.ptyFails = true
+    const dispatcher = new RpcDispatcher({
+      runtime,
+      methods: ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS
+    })
+    expect(
+      await dispatcher.dispatch({
+        id: 'failed-daemon',
+        authToken: 'owner-token',
+        method: 'runtime.providerActivity'
+      })
+    ).toMatchObject({
+      ok: true,
+      result: {
+        providerAgentSessions: { state: 'unknown', lowerBound: 2 },
+        ptys: { state: 'unknown', lowerBound: 0 }
+      }
+    })
+  })
+
+  it.each(['admitted-during-read', 'drained-during-read'] as const)(
+    'retains a Store write %s across an asynchronous daemon observation',
+    async (phase) => {
+      let writing = phase === 'drained-during-read'
+      const host = {
+        getRuntimeId: () => 'runtime-writing',
+        hasObservedPendingLocalProfileWrite: () => writing
+      } as OrcaRuntimeService
+      fixture.onPtyRead = () => {
+        writing = phase === 'admitted-during-read'
+      }
+      const dispatcher = new RpcDispatcher({
+        runtime: host,
+        methods: ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS
+      })
+      expect(
+        await dispatcher.dispatch({
+          id: phase,
+          authToken: 'owner-token',
+          method: 'runtime.providerActivity'
+        })
+      ).toMatchObject({
+        ok: true,
+        result: {
+          pendingDiskWrites: { state: 'unknown', lowerBound: 1 }
+        }
+      })
+    }
+  )
+
+  it('observes a real paused SQLite Store write on the host runtime without flushing it', async () => {
+    const { store, authority, readState } = await disposableProfileStore()
+    const live = new RealOrcaRuntimeService(store)
+    const dispatcher = new RpcDispatcher({
+      runtime: live,
+      methods: ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS
+    })
+    const request = {
+      id: 'real-store',
+      authToken: 'owner-token',
+      method: 'runtime.providerActivity'
+    }
+    expect((await dispatcher.dispatch(request)).ok).toBe(true)
+    expect(live.hasObservedPendingLocalProfileWrite()).toBe(false)
+    const next = !store.getSettings().agentStatusHooksEnabled
+    const gate = authority.pause()
+    store.updateSettings({ agentStatusHooksEnabled: next })
+    const flushing = store.flushPendingOrThrowAsync()
+    await gate.started.promise
+    try {
+      expect(await dispatcher.dispatch(request)).toMatchObject({
+        ok: true,
+        result: {
+          pendingDiskWrites: {
+            state: 'unknown',
+            reason: 'pending-write-census-unavailable',
+            lowerBound: 1
+          }
+        }
+      })
+      expect(readState().settings.agentStatusHooksEnabled).not.toBe(next)
+    } finally {
+      gate.finish.resolve()
+    }
+    await flushing
+    expect(readState().settings.agentStatusHooksEnabled).toBe(next)
+    expect(await dispatcher.dispatch(request)).toMatchObject({
+      ok: true,
+      result: { pendingDiskWrites: { state: 'unknown', lowerBound: 0 } }
+    })
+  })
+
   it('refuses non-local runtime clients even if they have a broad RPC grant', async () => {
     const dispatcher = new RpcDispatcher({
       runtime,
@@ -122,7 +273,9 @@ it.skipIf(process.platform !== 'linux')(
       "const { ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS } = require('./src/main/runtime/rpc/methods/ash-runtime-provider-activity.ts')",
       "const { setStructuredAgentSessionHost } = require('./src/main/native-chat/agent-session-wire/structured-agent-session-registry.ts')",
       "setStructuredAgentSessionHost({ loadedSessionIds: () => ['private-provider-child', 'resting-chat'], readStatusSummary: (id) => ({ hostExecutionOwned: id === 'private-provider-child' }) })",
-      'const server = new OrcaRuntimeRpcServer({ runtime: new OrcaRuntimeService(), userDataPath: process.argv[1], methods: ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS })',
+      'const runtime = new OrcaRuntimeService()',
+      'runtime.hasObservedPendingLocalProfileWrite = () => true',
+      'const server = new OrcaRuntimeRpcServer({ runtime, userDataPath: process.argv[1], methods: ASH_RUNTIME_PROVIDER_ACTIVITY_METHODS })',
       "server.start().then(() => { process.stdout.write('ready\\n') }, (error) => { console.error(error); process.exitCode = 2 })",
       "process.on('SIGTERM', () => { void server.stop().finally(() => process.exit(0)) })"
     ].join('\n')
@@ -156,6 +309,17 @@ it.skipIf(process.platform !== 'linux')(
       )
       expect(response).toEqual({
         runtimeId: metadata.runtimeId,
+        ptys: { state: 'unknown', reason: 'inventory-partial', lowerBound: 0 },
+        ptyOwnedAgentSessions: {
+          state: 'unknown',
+          reason: 'agent-owner-inventory-incomplete',
+          lowerBound: 0
+        },
+        pendingDiskWrites: {
+          state: 'unknown',
+          reason: 'pending-write-census-unavailable',
+          lowerBound: 1
+        },
         providerAgentSessions: {
           state: 'unknown',
           reason: 'provider-agent-inventory-unavailable',
@@ -173,6 +337,11 @@ it.skipIf(process.platform !== 'linux')(
       expect(combined.providerAgentSessions).toEqual({
         state: 'unknown',
         reason: 'provider-agent-inventory-unavailable',
+        lowerBound: 1
+      })
+      expect(combined.pendingDiskWrites).toEqual({
+        state: 'unknown',
+        reason: 'pending-write-census-unavailable',
         lowerBound: 1
       })
       const preflight = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, combined)

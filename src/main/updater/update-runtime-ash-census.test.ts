@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { UpdateCensusDaemonAdapter } from './update-runtime-census'
 import { NO_STAGED_UPDATE_CANDIDATE, assessUpdatePreflight } from './update-preflight'
 import { collectAshUpdateRuntimeCensus } from './update-runtime-ash-census'
 
@@ -8,14 +9,18 @@ const fixture = vi.hoisted(() => ({
   missingHost: false,
   failRead: false,
   remoteObserved: 0,
-  remoteFails: false
+  remoteWrite: false,
+  remotePtys: 0,
+  remotePtyOwners: 0,
+  remoteFails: false,
+  desktopDaemon: null as { adapters: UpdateCensusDaemonAdapter[] } | null
 }))
 
 vi.mock('../daemon/providers/lifecycle/daemon-provider-state', () => ({
-  getDaemonProvider: () => null
+  getDaemonProvider: () => fixture.desktopDaemon
 }))
 vi.mock('../daemon/providers/lifecycle/daemon-provider-routing', () => ({
-  getAllDaemonAdapters: () => []
+  getAllDaemonAdapters: () => fixture.desktopDaemon?.adapters ?? []
 }))
 vi.mock('../daemon/providers/routing/degraded-daemon-pty-provider', () => ({
   DegradedDaemonPtyProvider: class {}
@@ -35,9 +40,14 @@ vi.mock('../native-chat/agent-session-wire/structured-agent-session-registry', (
         }
 }))
 vi.mock('./update-runtime-provider-socket-observation', () => ({
-  observeLocalRuntimeProviderChildren: async () => {
+  observeLocalRuntimeWriterActivity: async () => {
     if (fixture.remoteFails) throw new Error('remote probe failed')
-    return fixture.remoteObserved
+    return {
+      providerChildren: fixture.remoteObserved,
+      pendingWrites: fixture.remoteWrite ? 1 : 0,
+      ptySessions: fixture.remotePtys,
+      ptyOwnedAgentSessions: fixture.remotePtyOwners
+    }
   }
 }))
 
@@ -47,10 +57,157 @@ afterEach(() => {
   fixture.missingHost = false
   fixture.failRead = false
   fixture.remoteObserved = 0
+  fixture.remoteWrite = false
+  fixture.remotePtys = 0
+  fixture.remotePtyOwners = 0
   fixture.remoteFails = false
+  fixture.desktopDaemon = null
 })
 
 describe('RT-15 desktop native Chat provider evidence', () => {
+  it.each(['older-runtime', 'unreachable-runtime'] as const)(
+    'never promotes an authenticated desktop zero to complete cross-process zero with %s',
+    async (scenario) => {
+      fixture.executingIds = []
+      const identity = { pid: 123, startedAtMs: 1_800_000_000_000, launchNonce: 'desktop-daemon' }
+      fixture.desktopDaemon = {
+        adapters: [
+          {
+            getDaemonIdentity: () => identity,
+            getLastAuthenticatedDaemonIdentity: () => identity,
+            listSessionsIfAlreadyConnected: async () => ({
+              state: 'complete' as const,
+              identity,
+              sessions: [],
+              agentOwnershipComplete: true
+            })
+          }
+        ]
+      }
+      fixture.remoteFails = scenario === 'unreachable-runtime'
+      const census = await collectAshUpdateRuntimeCensus(
+        () => 0,
+        () => false,
+        '/private-fixture'
+      )
+      expect(census.ptys).toEqual({
+        state: 'unknown',
+        reason: 'inventory-partial',
+        lowerBound: 0
+      })
+      expect(census.ptyOwnedAgentSessions).toEqual({
+        state: 'unknown',
+        reason: 'agent-owner-inventory-incomplete',
+        lowerBound: 0
+      })
+      expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)).toMatchObject({
+        decision: 'defer',
+        activationAvailable: false
+      })
+    }
+  )
+
+  it('does not retain an old known-zero desktop PTY census after a separate runtime reports a live PTY', async () => {
+    fixture.executingIds = []
+    const identity = { pid: 123, startedAtMs: 1_800_000_000_000, launchNonce: 'desktop-daemon' }
+    fixture.desktopDaemon = {
+      adapters: [
+        {
+          getDaemonIdentity: () => identity,
+          getLastAuthenticatedDaemonIdentity: () => identity,
+          listSessionsIfAlreadyConnected: async () => ({
+            state: 'complete' as const,
+            identity,
+            sessions: [],
+            agentOwnershipComplete: true
+          })
+        }
+      ]
+    }
+    fixture.remotePtys = 1
+    const census = await collectAshUpdateRuntimeCensus(
+      () => 0,
+      () => false,
+      '/private-fixture'
+    )
+    expect(census.ptys).toEqual({ state: 'unknown', reason: 'inventory-partial', lowerBound: 1 })
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)).toMatchObject({
+      decision: 'busy',
+      activationAvailable: false
+    })
+  })
+
+  it('merges positive authenticated daemon PTYs and owner claims without claiming a complete inventory', async () => {
+    fixture.executingIds = []
+    fixture.remotePtys = 2
+    fixture.remotePtyOwners = 1
+    const census = await collectAshUpdateRuntimeCensus(
+      () => 0,
+      () => false,
+      '/private-fixture'
+    )
+    expect(census.ptys).toEqual({ state: 'unknown', reason: 'inventory-partial', lowerBound: 2 })
+    expect(census.ptyOwnedAgentSessions).toEqual({
+      state: 'unknown',
+      reason: 'agent-owner-inventory-incomplete',
+      lowerBound: 1
+    })
+    const preflight = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)
+    expect(preflight.decision).toBe('busy')
+    expect(preflight.blockers).toEqual(
+      expect.arrayContaining(['pty-active', 'agent-session-active'])
+    )
+    expect(preflight.activationAvailable).toBe(false)
+  })
+
+  it('retains authenticated runtime pending Store writes when this desktop has no local write', async () => {
+    fixture.executingIds = []
+    fixture.remoteWrite = true
+    const census = await collectAshUpdateRuntimeCensus(
+      () => 0,
+      () => false,
+      '/private-fixture'
+    )
+    expect(census.pendingDiskWrites).toEqual({
+      state: 'unknown',
+      reason: 'pending-write-census-unavailable',
+      lowerBound: 1
+    })
+    const preflight = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)
+    expect(preflight.decision).toBe('busy')
+    expect(preflight.blockers).toContain('pending-disk-writes-observed')
+    expect(preflight.activationAvailable).toBe(false)
+  })
+
+  it('uses the maximum of desktop and runtime Store activity, not a claimed complete count', async () => {
+    fixture.remoteWrite = true
+    const census = await collectAshUpdateRuntimeCensus(
+      () => 0,
+      () => true,
+      '/private-fixture'
+    )
+    expect(census.pendingDiskWrites.lowerBound).toBe(1)
+    expect(census.pendingDiskWrites.state).toBe('unknown')
+  })
+
+  it('keeps older, missing and failed runtime writer observations unknown and update activation off', async () => {
+    fixture.executingIds = []
+    fixture.remoteFails = true
+    const census = await collectAshUpdateRuntimeCensus(
+      () => 0,
+      () => false,
+      '/private-fixture'
+    )
+    expect(census.pendingDiskWrites).toEqual({
+      state: 'unknown',
+      reason: 'pending-write-census-unavailable',
+      lowerBound: 0
+    })
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)).toMatchObject({
+      decision: 'defer',
+      activationAvailable: false
+    })
+  })
   it('takes the stronger positive local or authenticated runtime count, not the sum', async () => {
     fixture.remoteObserved = 4
     const census = await collectAshUpdateRuntimeCensus(

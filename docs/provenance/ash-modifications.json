@@ -1013,8 +1013,8 @@
     },
     {
       "path": "src/main/runtime/orca-runtime.ts",
-      "sha256": "07d830a9a8829e9c711c61ff7ee2a06ea9f22d39dfa113c3fc774e5810165346",
-      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+      "sha256": "6075848f5eb9f407abc3e2ac0fa14dd5e9fc6ecd0c7df6d566b8739d1222d536",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger. Ash RT-15: expose a read-only attached Store pending-write observation to the authenticated local runtime diagnostics."
     },
     {
       "path": "src/main/runtime/push/notifications/runtime-mobile-notification-controller.ts",
@@ -1265,6 +1265,11 @@
       "path": "src/main/runtime/runtime-service-command-surface.ts",
       "sha256": "50a2efdc6c71191408bfce6a8314341ae6dac8655ac8f56d719d299eca41714b",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/runtime/runtime-store-contract.ts",
+      "sha256": "b68f7a24f3cb464dfc39ac60ec98519789ba4e0add63ce9f3367352b4d7d1604",
+      "reason": "Ash RT-15: declare the optional local Store pending-write observer for runtime-only read-only updater diagnostics."
     },
     {
       "path": "src/main/runtime/sidebar-inputs/paired-server-rows-producer.ts",

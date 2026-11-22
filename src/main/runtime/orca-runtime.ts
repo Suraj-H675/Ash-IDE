@@ -290,6 +290,11 @@ class OrcaRuntimeService extends OrcaRuntimeSidebarBase {
   openedAgentSessionRecordStore(): AgentSessionRecordStore | null {
     return peekOpenedAgentSessionRecordStore()
   }
+
+  /** Read only this runtime's attached Store; no I/O, flush, write or session change. */
+  hasObservedPendingLocalProfileWrite(): boolean {
+    return this.store?.hasObservedPendingLocalWrite?.() === true
+  }
 }
 type OrcaRuntimeServiceExport = RuntimeCommandSurfaceHost<OrcaRuntimeService>
 const OrcaRuntimeServiceExport: {

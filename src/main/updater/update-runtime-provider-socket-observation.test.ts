@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { observeLocalRuntimeProviderChildren } from './update-runtime-provider-socket-observation'
+import {
+  observeLocalRuntimeProviderChildren,
+  observeLocalRuntimeWriterActivity
+} from './update-runtime-provider-socket-observation'
 
 const fixture = vi.hoisted(() => ({
   metadata: {
@@ -51,6 +54,43 @@ afterEach(() => {
 })
 
 describe('local runtime provider observation admission', () => {
+  it('preserves authenticated remote PTY and Store positive evidence without implying completeness', async () => {
+    fixture.response = {
+      runtimeId: 'runtime-expected',
+      providerAgentSessions: {
+        state: 'unknown',
+        reason: 'provider-agent-inventory-unavailable',
+        lowerBound: 2
+      },
+      ptys: { state: 'unknown', reason: 'inventory-partial', lowerBound: 3 },
+      ptyOwnedAgentSessions: {
+        state: 'unknown',
+        reason: 'agent-owner-inventory-incomplete',
+        lowerBound: 1
+      },
+      pendingDiskWrites: {
+        state: 'unknown',
+        reason: 'pending-write-census-unavailable',
+        lowerBound: 1
+      }
+    }
+    expect(await observeLocalRuntimeWriterActivity('/private-fixture')).toEqual({
+      providerChildren: 2,
+      pendingWrites: 1,
+      ptySessions: 3,
+      ptyOwnedAgentSessions: 1
+    })
+  })
+
+  it('accepts older hosts without new writer fields only as unknown, not as idle evidence', async () => {
+    expect(await observeLocalRuntimeWriterActivity('/private-fixture')).toEqual({
+      providerChildren: 2,
+      pendingWrites: 0,
+      ptySessions: 0,
+      ptyOwnedAgentSessions: 0
+    })
+  })
+
   it('accepts a bounded positive result only from the expected authenticated runtime', async () => {
     expect(await observeLocalRuntimeProviderChildren('/private-fixture')).toBe(2)
     expect(fixture.calls).toHaveLength(1)
@@ -96,6 +136,38 @@ describe('local runtime provider observation admission', () => {
           state: 'unknown',
           reason: 'provider-agent-inventory-unavailable',
           lowerBound: 1.5
+        }
+      },
+      {
+        runtimeId: 'runtime-expected',
+        providerAgentSessions: {
+          state: 'unknown',
+          reason: 'provider-agent-inventory-unavailable'
+        },
+        pendingDiskWrites: {
+          state: 'unknown',
+          reason: 'pending-write-census-unavailable',
+          lowerBound: 2
+        }
+      },
+      {
+        runtimeId: 'runtime-expected',
+        providerAgentSessions: {
+          state: 'unknown',
+          reason: 'provider-agent-inventory-unavailable'
+        },
+        ptys: { state: 'known', count: 1 }
+      },
+      {
+        runtimeId: 'runtime-expected',
+        providerAgentSessions: {
+          state: 'unknown',
+          reason: 'provider-agent-inventory-unavailable'
+        },
+        ptyOwnedAgentSessions: {
+          state: 'unknown',
+          reason: 'agent-owner-inventory-incomplete',
+          lowerBound: 10_001
         }
       }
     ]) {

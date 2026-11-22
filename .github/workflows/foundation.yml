@@ -93,6 +93,7 @@ jobs:
             src/main/updater/update-runtime-pending-write.integration.test.ts \
             src/main/updater/update-runtime-ash-census.test.ts \
             src/main/updater/update-runtime-provider-socket-observation.test.ts \
+            src/main/updater/update-runtime-connected-pty-evidence.test.ts \
             src/main/orcad/orcad-sidecar-runtime-request-budget.test.ts \
             src/main/runtime/rpc/methods/ash-runtime-provider-activity.test.ts \
             src/main/ipc/ash-updater-status.test.ts \

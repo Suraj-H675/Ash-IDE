@@ -60,7 +60,7 @@ export type UpdateRuntimeCensus = {
   pendingDiskWrites: {
     state: 'unknown'
     reason: 'pending-write-census-unavailable'
-    /** Positive local Store evidence, not a complete host-wide write count. */
+    /** Positive desktop/runtime Store evidence, not a complete host-wide write count. */
     lowerBound: number
   }
 }

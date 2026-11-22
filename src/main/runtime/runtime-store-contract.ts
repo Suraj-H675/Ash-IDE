@@ -63,6 +63,8 @@ export type RuntimeStore = {
   runDurableMutation?: Store['runDurableMutation']
   flushOrThrow?: Store['flushOrThrow']
   flushPendingOrThrowAsync?: Store['flushPendingOrThrowAsync']
+  /** Positive evidence from this Store's write worker, not a complete host-wide writer inventory. */
+  hasObservedPendingLocalWrite?: Store['hasObservedPendingLocalWrite']
   stageOrcadMigrationCatalog?: Store['stageOrcadMigrationCatalog']
   commitStagedOrcadMigrationCatalog?: Store['commitStagedOrcadMigrationCatalog']
   stageOrcadMigrationSnapshotChunk?: Store['stageOrcadMigrationSnapshotChunk']

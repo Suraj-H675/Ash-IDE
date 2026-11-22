@@ -10,19 +10,58 @@ const RuntimeProviderObservation = z.object({
     state: z.literal('unknown'),
     reason: z.literal('provider-agent-inventory-unavailable'),
     lowerBound: z.number().int().positive().max(10_000).optional()
-  })
+  }),
+  /** Older local runtimes legitimately omit this field. Absence is unknown. */
+  pendingDiskWrites: z
+    .object({
+      state: z.literal('unknown'),
+      reason: z.literal('pending-write-census-unavailable'),
+      lowerBound: z.union([z.literal(0), z.literal(1)])
+    })
+    .optional(),
+  ptys: z
+    .object({
+      state: z.literal('unknown'),
+      reason: z.literal('inventory-partial'),
+      lowerBound: z.number().int().min(0).max(10_000)
+    })
+    .optional(),
+  ptyOwnedAgentSessions: z
+    .object({
+      state: z.literal('unknown'),
+      reason: z.literal('agent-owner-inventory-incomplete'),
+      lowerBound: z.number().int().min(0).max(10_000)
+    })
+    .optional()
+})
+
+export type LocalRuntimeWriterObservation = {
+  providerChildren: number
+  pendingWrites: 0 | 1
+  ptySessions: number
+  ptyOwnedAgentSessions: number
+}
+
+const NOTHING_OBSERVED: LocalRuntimeWriterObservation = Object.freeze({
+  providerChildren: 0,
+  pendingWrites: 0,
+  ptySessions: 0,
+  ptyOwnedAgentSessions: 0
 })
 
 /**
- * Positive evidence from this profile's separately running authenticated local
- * runtime. A missing/unreachable/replaced runtime never establishes zero idle
- * providers. Do not surface metadata, credentials or session identifiers.
+ * Positive provider, connected PTY and Store writer evidence from this profile's
+ * separately running authenticated local runtime. Missing/unreachable/replaced
+ * runtimes never establish zero active writers or authorize update activation.
+ * Do not surface metadata, credentials, paths or session identifiers.
  */
-export async function observeLocalRuntimeProviderChildren(userDataPath: string): Promise<number> {
+export async function observeLocalRuntimeWriterActivity(
+  userDataPath: string
+): Promise<LocalRuntimeWriterObservation> {
   try {
     const metadata = await readRuntimeMetadataAsync(userDataPath)
     if (!metadata || typeof metadata.runtimeId !== 'string' || !metadata.runtimeId) {
-      return 0
+      return NOTHING_OBSERVED
     }
     const response = RuntimeProviderObservation.safeParse(
       await sendOrcadSidecarRequest(
@@ -34,9 +73,19 @@ export async function observeLocalRuntimeProviderChildren(userDataPath: string):
       )
     )
     return response.success && response.data.runtimeId === metadata.runtimeId
-      ? (response.data.providerAgentSessions.lowerBound ?? 0)
-      : 0
+      ? {
+          providerChildren: response.data.providerAgentSessions.lowerBound ?? 0,
+          pendingWrites: response.data.pendingDiskWrites?.lowerBound ?? 0,
+          ptySessions: response.data.ptys?.lowerBound ?? 0,
+          ptyOwnedAgentSessions: response.data.ptyOwnedAgentSessions?.lowerBound ?? 0
+        }
+      : NOTHING_OBSERVED
   } catch {
-    return 0
+    return NOTHING_OBSERVED
   }
+}
+
+/** Retained for consumers that need only provider-child evidence. */
+export async function observeLocalRuntimeProviderChildren(userDataPath: string): Promise<number> {
+  return (await observeLocalRuntimeWriterActivity(userDataPath)).providerChildren
 }
