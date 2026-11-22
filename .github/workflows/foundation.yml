@@ -91,6 +91,7 @@ jobs:
             src/main/updater/update-preflight.test.ts \
             src/main/updater/update-runtime-census.test.ts \
             src/main/updater/update-runtime-pending-write.integration.test.ts \
+            src/main/updater/update-runtime-ash-census.test.ts \
             src/main/ipc/ash-updater-status.test.ts \
             src/main/startup/desktop-profile-instance-lock.test.ts \
             src/main/startup/browser-process-user-agent-ordering.test.ts \

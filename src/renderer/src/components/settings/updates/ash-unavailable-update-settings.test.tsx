@@ -8,6 +8,7 @@ import { UpdatePreflightDiagnostic } from './UpdatePreflightDiagnostic'
 const fixture = vi.hoisted(() => ({
   reason: 'source-build' as 'source-build' | 'not-configured',
   pendingObserved: false,
+  nativeProviderObserved: 0,
   version: vi.fn(async () => '0.0.0-ash-qa'),
   check: vi.fn(),
   download: vi.fn(),
@@ -43,7 +44,10 @@ const fixture = vi.hoisted(() => ({
       },
       providerAgentSessions: {
         state: 'unknown' as const,
-        reason: 'provider-agent-inventory-unavailable' as const
+        reason: 'provider-agent-inventory-unavailable' as const,
+        ...(fixture.nativeProviderObserved > 0
+          ? { lowerBound: fixture.nativeProviderObserved }
+          : {})
       },
       pendingDiskWrites: {
         state: 'unknown' as const,
@@ -56,6 +60,7 @@ const fixture = vi.hoisted(() => ({
       'pty-active',
       'agent-session-active',
       'provider-agent-inventory-unknown',
+      ...(fixture.nativeProviderObserved > 0 ? (['provider-agent-session-observed'] as const) : []),
       'pending-disk-writes-unknown',
       ...(fixture.pendingObserved ? (['pending-disk-writes-observed'] as const) : [])
     ] as const,
@@ -95,6 +100,7 @@ vi.mock('./UpdateDelaySetting', () => ({
 
 afterEach(() => {
   fixture.pendingObserved = false
+  fixture.nativeProviderObserved = 0
   vi.unstubAllGlobals()
   vi.clearAllMocks()
 })
@@ -202,6 +208,37 @@ it('shows observed local write activity without implying host-wide write safety'
       'Local profile persistence activity or a pending save was observed.'
     )
     expect(host.textContent).toContain('Ash cannot prove that writes are drained.')
+    expect(host.textContent).toContain('Activation is unavailable.')
+  } finally {
+    act(() => root.unmount())
+    host.remove()
+    Reflect.deleteProperty(window, 'api')
+  }
+})
+
+it('shows locally observed native Chat provider children without claiming a complete inventory', async () => {
+  fixture.nativeProviderObserved = 2
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
+  Object.defineProperty(window, 'api', {
+    configurable: true,
+    value: { updater: { getPreflight: fixture.preflight } }
+  })
+  const host = document.createElement('div')
+  document.body.appendChild(host)
+  const root = createRoot(host)
+  try {
+    await act(async () => root.render(<UpdatePreflightDiagnostic />))
+    const inspect = Array.from(host.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Inspect local update blockers')
+    )
+    await act(async () => inspect?.click())
+    expect(host.textContent).toContain(
+      'At least 2 observed; The provider agent inventory is unavailable.'
+    )
+    expect(host.textContent).toContain(
+      'A native Chat provider child owned by this process was observed.'
+    )
+    expect(host.textContent).toContain('Ash cannot see every provider-native agent session.')
     expect(host.textContent).toContain('Activation is unavailable.')
   } finally {
     act(() => root.unmount())

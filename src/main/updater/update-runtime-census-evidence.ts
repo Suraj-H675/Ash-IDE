@@ -32,6 +32,8 @@ export type UpdateRuntimeCensusDependencies = {
   getProvider: () => UpdateCensusProvider | null
   /** Optional in-process Store probe. False must never imply host-wide idle. */
   getLocalPendingWriteActivity?: () => boolean
+  /** Host-owned native Chat provider children in this process, not a complete provider inventory. */
+  getLocalProviderAgentSessionCount?: () => number
   now?: () => number
 }
 
@@ -50,8 +52,14 @@ export function unknown<T extends UpdatePreflightUnknownReason>(
   return { state: 'unknown', reason, lowerBound }
 }
 
-export function providerAgentInventory(): UpdateRuntimeCensus['providerAgentSessions'] {
-  return { state: 'unknown', reason: 'provider-agent-inventory-unavailable' }
+export function providerAgentInventory(
+  lowerBound = 0
+): UpdateRuntimeCensus['providerAgentSessions'] {
+  return {
+    state: 'unknown',
+    reason: 'provider-agent-inventory-unavailable',
+    ...(lowerBound > 0 ? { lowerBound } : {})
+  }
 }
 
 export function pendingWrites(observedLowerBound = 0): UpdateRuntimeCensus['pendingDiskWrites'] {
@@ -71,6 +79,18 @@ export function observedLocalPendingWrite(dependencies: UpdateRuntimeCensusDepen
   }
 }
 
+/** Positive observations survive transient unloads; absent/failed reads are never a zero census. */
+export function observedLocalProviderAgentSessions(
+  dependencies: UpdateRuntimeCensusDependencies
+): number {
+  try {
+    const count = dependencies.getLocalProviderAgentSessionCount?.() ?? 0
+    return Number.isSafeInteger(count) && count > 0 ? Math.min(count, MAX_CENSUS_SESSIONS) : 0
+  } catch {
+    return 0
+  }
+}
+
 export function hostOwnership(): UpdateRuntimeCensus['hostOwnership'] {
   return { state: 'unknown', reason: 'exclusive-host-ownership-unavailable' }
 }
@@ -79,7 +99,8 @@ export function censusWithUnknownRuntime(
   observedAtMs: number,
   windows: UpdateRuntimeCensus['windows'],
   reason: UpdatePreflightUnknownReason,
-  pendingWriteLowerBound = 0
+  pendingWriteLowerBound = 0,
+  providerSessionLowerBound = 0
 ): UpdateRuntimeCensus {
   return {
     observedAtMs,
@@ -92,7 +113,7 @@ export function censusWithUnknownRuntime(
         ? 'agent-owner-inventory-incomplete'
         : reason
     ),
-    providerAgentSessions: providerAgentInventory(),
+    providerAgentSessions: providerAgentInventory(providerSessionLowerBound),
     pendingDiskWrites: pendingWrites(pendingWriteLowerBound)
   }
 }

@@ -13,6 +13,7 @@ import {
   isConnectedInventory,
   isUnknownInventory,
   observedLocalPendingWrite,
+  observedLocalProviderAgentSessions,
   parseFallbackPtyIds,
   pendingWrites,
   providerAgentInventory,
@@ -47,12 +48,21 @@ export async function collectUpdateRuntimeCensus(
   const windows = readWindowCount(dependencies)
   const pendingAtStart = observedLocalPendingWrite(dependencies)
   const pendingObserved = () => Math.max(pendingAtStart, observedLocalPendingWrite(dependencies))
+  const providerSessionsAtStart = observedLocalProviderAgentSessions(dependencies)
+  const providerSessionsObserved = () =>
+    Math.max(providerSessionsAtStart, observedLocalProviderAgentSessions(dependencies))
 
   let provider: UpdateCensusProvider | null
   try {
     provider = dependencies.getProvider()
   } catch {
-    return censusWithUnknownRuntime(observedAtMs, windows, 'daemon-unavailable', pendingObserved())
+    return censusWithUnknownRuntime(
+      observedAtMs,
+      windows,
+      'daemon-unavailable',
+      pendingObserved(),
+      providerSessionsObserved()
+    )
   }
   if (
     !provider ||
@@ -61,14 +71,21 @@ export async function collectUpdateRuntimeCensus(
     !Array.isArray(provider.adapters) ||
     provider.adapters.length === 0
   ) {
-    return censusWithUnknownRuntime(observedAtMs, windows, 'daemon-unavailable', pendingObserved())
+    return censusWithUnknownRuntime(
+      observedAtMs,
+      windows,
+      'daemon-unavailable',
+      pendingObserved(),
+      providerSessionsObserved()
+    )
   }
   if (provider.adapters.length > MAX_DAEMON_GENERATIONS) {
     return censusWithUnknownRuntime(
       observedAtMs,
       windows,
       'generation-limit-exceeded',
-      pendingObserved()
+      pendingObserved(),
+      providerSessionsObserved()
     )
   }
 
@@ -291,7 +308,7 @@ export async function collectUpdateRuntimeCensus(
     ptyOwnedAgentSessions: ownerReason
       ? unknown(ownerReason, Math.max(agentSessionDigests.size, lateOwnerLowerBound))
       : count(Math.max(agentSessionDigests.size, lateOwnerLowerBound)),
-    providerAgentSessions: providerAgentInventory(),
+    providerAgentSessions: providerAgentInventory(providerSessionsObserved()),
     pendingDiskWrites: pendingWrites(pendingObserved())
   }
 }

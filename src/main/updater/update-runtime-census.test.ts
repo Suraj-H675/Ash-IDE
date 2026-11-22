@@ -102,6 +102,96 @@ function read(currentProvider: UpdateCensusProvider | null, getWindowCount = () 
 }
 
 describe('Ash update runtime census', () => {
+  it('retains provider-native loaded-session evidence when the daemon is unavailable', async () => {
+    let loaded = 2
+    const census = await collectUpdateRuntimeCensus({
+      getWindowCount: () => 0,
+      getProvider: () => null,
+      getLocalProviderAgentSessionCount: () => {
+        const observed = loaded
+        loaded = 0
+        return observed
+      }
+    })
+    expect(census.providerAgentSessions).toEqual({
+      state: 'unknown',
+      reason: 'provider-agent-inventory-unavailable',
+      lowerBound: 2
+    })
+    const report = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)
+    expect(report.decision).toBe('busy')
+    expect(report.blockers).toContain('provider-agent-session-observed')
+    expect(report.activationAvailable).toBe(false)
+  })
+
+  it('retains positive native Chat evidence when acquiring the daemon provider throws', async () => {
+    let loaded = 1
+    const census = await collectUpdateRuntimeCensus({
+      getWindowCount: () => 0,
+      getProvider: () => {
+        throw new Error('daemon provider not initialized')
+      },
+      getLocalProviderAgentSessionCount: () => {
+        const observed = loaded
+        loaded = 0
+        return observed
+      }
+    })
+    expect(census.providerAgentSessions).toEqual({
+      state: 'unknown',
+      reason: 'provider-agent-inventory-unavailable',
+      lowerBound: 1
+    })
+    const report = assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census)
+    expect(report.blockers).toContain('provider-agent-session-observed')
+    expect(report.decision).toBe('busy')
+    expect(report.activationAvailable).toBe(false)
+  })
+
+  it('detects provider-native loaded sessions appearing during an authenticated PTY census', async () => {
+    let loaded = 0
+    const quiet = adapter([])
+    const original = quiet.listSessionsIfAlreadyConnected.bind(quiet)
+    quiet.listSessionsIfAlreadyConnected = async () => {
+      loaded = 3
+      return original()
+    }
+    const currentProvider = provider([quiet])
+    const census = await collectUpdateRuntimeCensus({
+      getWindowCount: () => 0,
+      getProvider: () => currentProvider,
+      getLocalProviderAgentSessionCount: () => loaded
+    })
+    expect(census.ptys).toEqual({ state: 'known', count: 0 })
+    expect(census.providerAgentSessions).toMatchObject({
+      state: 'unknown',
+      lowerBound: 3
+    })
+    expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census).decision).toBe('busy')
+  })
+
+  it('keeps failed or invalid provider reads unknown instead of treating them as trusted zero', async () => {
+    for (const read of [
+      () => -2,
+      () => 1.5,
+      () => Number.NaN,
+      () => {
+        throw new Error('unavailable')
+      }
+    ]) {
+      const census = await collectUpdateRuntimeCensus({
+        getWindowCount: () => 0,
+        getProvider: () => null,
+        getLocalProviderAgentSessionCount: read
+      })
+      expect(census.providerAgentSessions).toEqual({
+        state: 'unknown',
+        reason: 'provider-agent-inventory-unavailable'
+      })
+      expect(assessUpdatePreflight(NO_STAGED_UPDATE_CANDIDATE, census).decision).toBe('defer')
+    }
+  })
+
   it('re-reads an authenticated quiet daemon before reporting zero PTYs', async () => {
     const quiet = adapter([])
     const original = quiet.listSessionsIfAlreadyConnected.bind(quiet)

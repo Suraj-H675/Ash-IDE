@@ -54,6 +54,8 @@ export type UpdateRuntimeCensus = {
   providerAgentSessions: {
     state: 'unknown'
     reason: 'provider-agent-inventory-unavailable'
+    /** Positive host-owned Structured Chat children in this process only; never host-wide idle proof. */
+    lowerBound?: number
   }
   pendingDiskWrites: {
     state: 'unknown'
@@ -78,6 +80,7 @@ export type UpdatePreflightBlocker =
   | 'agent-owner-inventory-unknown'
   | 'agent-session-active'
   | 'provider-agent-inventory-unknown'
+  | 'provider-agent-session-observed'
   | 'pending-disk-writes-unknown'
   | 'pending-disk-writes-observed'
 

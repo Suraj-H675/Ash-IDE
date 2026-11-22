@@ -24,6 +24,26 @@ function census(overrides: Partial<UpdateRuntimeCensus> = {}): UpdateRuntimeCens
 }
 
 describe('safe update preflight decision', () => {
+  it('treats loaded native Chat provider sessions as positive busy evidence without claiming complete inventory', () => {
+    const report = assessUpdatePreflight(
+      NO_STAGED_UPDATE_CANDIDATE,
+      census({
+        providerAgentSessions: {
+          state: 'unknown',
+          reason: 'provider-agent-inventory-unavailable',
+          lowerBound: 2
+        }
+      })
+    )
+    expect(report.decision).toBe('busy')
+    expect(report.blockers).toEqual(
+      expect.arrayContaining([
+        'provider-agent-inventory-unknown',
+        'provider-agent-session-observed'
+      ])
+    )
+    expect(report.activationAvailable).toBe(false)
+  })
   it('keeps an observed pending local write busy even with no visible PTYs or windows', () => {
     const report = assessUpdatePreflight(
       NO_STAGED_UPDATE_CANDIDATE,
