@@ -43,14 +43,17 @@ function safeStatChild(pinned, name) {
   }
 }
 
-/** A closed WAL database can retain a nonempty SHM index after a full checkpoint. */
+/** A closed WAL database can retain a nonempty SHM index after a full checkpoint.
+ * A nonempty rollback journal, however, may require recovery: immutable=1
+ * bypasses that recovery and can present stale/uncommitted page data.
+ */
 function coldSidecarState(pinned) {
-  for (const name of [`${DATABASE_NAME}-wal`, `${DATABASE_NAME}-shm`]) {
+  for (const name of [`${DATABASE_NAME}-wal`, `${DATABASE_NAME}-shm`, `${DATABASE_NAME}-journal`]) {
     const file = safeStatChild(pinned, name)
     if (
       file &&
       (!privateRegularFile(file) ||
-        (name.endsWith('-wal') && file.size !== 0n) ||
+        ((name.endsWith('-wal') || name.endsWith('-journal')) && file.size !== 0n) ||
         (name.endsWith('-shm') && file.size > 1024n * 1024n))
     ) {
       return 'unfrozen-journal-state'

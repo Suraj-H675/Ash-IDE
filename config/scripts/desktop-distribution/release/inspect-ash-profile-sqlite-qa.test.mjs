@@ -45,15 +45,20 @@ function seedSqlite(dbPath, id, { version = 3, shape = 'complete', dbIdentity = 
   const db = new DatabaseSync(dbPath)
   try {
     const productionSchema = createProfileStateTablesSql()
-    db.exec(
+    const chosenSchema =
       shape === 'wrong-column-type'
         ? productionSchema.replace(
             'domain_version INTEGER NOT NULL',
             'domain_version TEXT NOT NULL'
           )
-        : productionSchema
-    )
-    if (shape !== 'complete') {
+        : shape === 'composite-meta-primary-key'
+          ? productionSchema.replace(
+              'key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL',
+              "key TEXT NOT NULL, value TEXT NOT NULL, extra TEXT NOT NULL DEFAULT 'fixture', PRIMARY KEY (key, extra)"
+            )
+          : productionSchema
+    db.exec(chosenSchema)
+    if (shape === 'missing-automation-runs') {
       db.exec('DROP TABLE profile_state_automation_runs')
     }
     db.exec(`PRAGMA user_version = ${version}`)
@@ -61,6 +66,13 @@ function seedSqlite(dbPath, id, { version = 3, shape = 'complete', dbIdentity = 
       'profile_id',
       dbIdentity
     )
+    if (shape === 'composite-meta-primary-key') {
+      db.prepare('INSERT INTO profile_state_meta (key, value, extra) VALUES (?, ?, ?)').run(
+        'profile_id',
+        'other-private-profile',
+        'second-component'
+      )
+    }
   } finally {
     db.close()
   }
@@ -113,6 +125,7 @@ describe.skipIf(process.platform !== 'linux')(
       [{ version: 4 }, 'unsupported-schema'],
       [{ version: 3, shape: 'missing-automation-runs' }, 'unsupported-schema'],
       [{ version: 3, shape: 'wrong-column-type' }, 'unsupported-schema'],
+      [{ version: 3, shape: 'composite-meta-primary-key' }, 'unsupported-schema'],
       [{ version: 3, dbIdentity: 'another-private-id' }, 'identity-mismatch']
     ])('rejects incompatible SQLite profile evidence %j', (options, expected) => {
       const { root, id, dbPath } = fixture()
@@ -168,6 +181,56 @@ describe.skipIf(process.platform !== 'linux')(
       expect(report.profileSqliteEvidence).toMatchObject({
         state: 'incomplete',
         statuses: { 'unfrozen-journal-state': 1 }
+      })
+      expect(report.activationAvailable).toBe(false)
+    })
+
+    it('rejects a nonempty rollback journal before immutable SQLite access', () => {
+      const { root, id, dbPath } = fixture()
+      seedSqlite(dbPath, id)
+      writeFileSync(`${dbPath}-journal`, Buffer.from('unresolved-private-rollback-pages'), {
+        mode: 0o600
+      })
+      const report = inspectAshProfileCoverage(root, {
+        verifyProfileIndex: true,
+        verifyProfileSqlite: true
+      })
+      expect(report.profileSqliteEvidence).toMatchObject({
+        state: 'incomplete',
+        statuses: { 'unfrozen-journal-state': 1, 'schema-3-identity-observed': 0 }
+      })
+      expect(report.activationAvailable).toBe(false)
+      expect(JSON.stringify(report)).not.toContain('unresolved-private-rollback-pages')
+    })
+
+    it('rejects an actual interrupted SQLite rollback transaction with a hot journal', () => {
+      const { root, id, dbPath } = fixture()
+      seedSqlite(dbPath, id)
+      const interrupted = spawnSync(
+        process.execPath,
+        [
+          '-e',
+          `
+          const { DatabaseSync } = require('node:sqlite');
+          const db = new DatabaseSync(process.argv[1]);
+          db.exec("PRAGMA journal_mode = DELETE; BEGIN IMMEDIATE");
+          db.prepare("UPDATE profile_state_meta SET value = ? WHERE key = 'profile_id'")
+            .run('wrong-uncommitted-profile-id');
+          process.kill(process.pid, 'SIGKILL');
+        `,
+          dbPath
+        ],
+        { encoding: 'utf8', timeout: 3_000 }
+      )
+      expect(interrupted.signal).toBe('SIGKILL')
+      expect(statSync(`${dbPath}-journal`).size).toBeGreaterThan(0)
+      const report = inspectAshProfileCoverage(root, {
+        verifyProfileIndex: true,
+        verifyProfileSqlite: true
+      })
+      expect(report.profileSqliteEvidence).toMatchObject({
+        state: 'incomplete',
+        statuses: { 'unfrozen-journal-state': 1, 'schema-3-identity-observed': 0 }
       })
       expect(report.activationAvailable).toBe(false)
     })

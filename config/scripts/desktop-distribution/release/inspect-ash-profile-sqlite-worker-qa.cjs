@@ -66,8 +66,15 @@ function inspect(db, profileId) {
   for (const [table, columns] of Object.entries(COLUMNS)) {
     const actual = db.prepare(`PRAGMA table_info(${table})`).all()
     const byName = new Map(actual.map((column) => [column.name, column]))
+    // Extra non-key columns can be tolerated, but an extra PK component
+    // changes uniqueness: (key, extra) permits duplicate meta 'profile_id'.
+    const primaryKeys = actual.filter((column) => column.pk !== 0)
+    const expectedPrimaryKey = columns.find((name) => PRIMARY_KEYS.has(`${table}.${name}`))
     if (
       actual.length < columns.length ||
+      primaryKeys.length !== 1 ||
+      primaryKeys[0].name !== expectedPrimaryKey ||
+      primaryKeys[0].pk !== 1 ||
       columns.some((name) => {
         const observed = byName.get(name)
         const full = `${table}.${name}`
