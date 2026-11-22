@@ -3,6 +3,7 @@
 import { realpathSync } from 'node:fs'
 import { isAbsolute, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { inspectPinnedProfileIndexIds } from './inspect-ash-profile-index-qa.mjs'
 import { inspectImmediateProfiles } from './inspect-ash-profile-coverage-nested-qa.mjs'
 import {
   namesFromPinnedDirectory,
@@ -17,7 +18,7 @@ const MAX_ROOT_ENTRIES = 4096
 const ROOT_DOMAINS = Object.freeze({
   'profile-state': {
     directories: ['profiles', 'profile-move-intents'],
-    files: ['orca-profile-index.json', 'keybindings.json']
+    files: ['orca-profile-index.json', 'orca-profile-index.json.bak', 'keybindings.json']
   },
   'browser-persistent-state': {
     directories: [
@@ -100,7 +101,7 @@ function requireCanonicalProfileRoot(rootPath) {
 }
 
 /** Metadata only; no profile bytes, user-defined filenames or absolute paths leave this call. */
-export function inspectAshProfileCoverage(rootPath) {
+export function inspectAshProfileCoverage(rootPath, { verifyProfileIndex = false } = {}) {
   requireCanonicalProfileRoot(rootPath)
   return withPinnedOwnedDirectory(rootPath, (root) => {
     const names = namesFromPinnedDirectory(root, MAX_ROOT_ENTRIES, 'profile-root')
@@ -130,7 +131,11 @@ export function inspectAshProfileCoverage(rootPath) {
       }
     }
     const secondPass = namesFromPinnedDirectory(root, MAX_ROOT_ENTRIES, 'profile-root')
-    const profileInventory = seen.has('profiles') ? inspectImmediateProfiles(root) : null
+    const index = verifyProfileIndex ? inspectPinnedProfileIndexIds(root) : null
+    const profileInventory = seen.has('profiles')
+      ? inspectImmediateProfiles(root, index?.ids ?? null)
+      : null
+    const { indexDirectoryConsistency, ...publicProfileInventory } = profileInventory ?? {}
     if (JSON.stringify(names) !== JSON.stringify(secondPass)) {
       throw new Error('PK-06 profile root changed during inspection')
     }
@@ -146,7 +151,16 @@ export function inspectAshProfileCoverage(rootPath) {
       unclassifiedEntryCount,
       unsafeEntryCount,
       mismatchedKnownEntryCount,
-      profileInventory,
+      profileInventory: profileInventory ? publicProfileInventory : null,
+      ...(verifyProfileIndex
+        ? {
+            profileIndexDirectoryCheck: indexDirectoryConsistency ?? { state: 'unavailable' },
+            profileIndexValidationState: index?.state ?? 'unavailable',
+            // Opting in attempts a bounded content read; malformed bytes may
+            // still have been read even when validation is unavailable.
+            profileIndexContentsRead: true
+          }
+        : {}),
       uninspectedNestedState: true,
       liveWriterAdmissionVerified: false,
       crossVersionCompatibilityVerified: false,
@@ -157,10 +171,18 @@ export function inspectAshProfileCoverage(rootPath) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
-    if (process.argv.length !== 4 || process.argv[2] !== '--root') {
-      throw new Error('Usage: inspect-ash-profile-coverage-qa.mjs --root ABSOLUTE_PRIVATE_PATH')
+    if (
+      (process.argv.length !== 4 && process.argv.length !== 5) ||
+      process.argv[2] !== '--root' ||
+      (process.argv.length === 5 && process.argv[4] !== '--verify-profile-index')
+    ) {
+      throw new Error(
+        'Usage: inspect-ash-profile-coverage-qa.mjs --root ABSOLUTE_PRIVATE_PATH [--verify-profile-index]'
+      )
     }
-    process.stdout.write(`${JSON.stringify(inspectAshProfileCoverage(process.argv[3]))}\n`)
+    process.stdout.write(
+      `${JSON.stringify(inspectAshProfileCoverage(process.argv[3], { verifyProfileIndex: process.argv.length === 5 }))}\n`
+    )
   } catch {
     // Do not echo arbitrary profile paths, filesystem names or native errors.
     process.stderr.write('PK-06 private profile-root metadata discovery failed closed\n')

@@ -45,7 +45,7 @@ function knownProfileEntry(name, kind) {
   return null
 }
 
-export function inspectImmediateProfiles(pinnedRoot) {
+export function inspectImmediateProfiles(pinnedRoot, expectedProfileIds = null) {
   return withPinnedOwnedDirectory(`${pinnedRoot.path}/profiles`, (profiles) => {
     const result = {
       profileDirectoryCount: 0,
@@ -59,6 +59,8 @@ export function inspectImmediateProfiles(pinnedRoot) {
       }
     }
     const ids = namesFromPinnedDirectory(profiles, MAX_PROFILES, 'profile-count')
+    let unindexedProfileDirectoryCount = 0
+    const matchedProfileIds = new Set()
     for (const id of ids) {
       const info = statPinnedChild(profiles, id)
       if (
@@ -72,6 +74,13 @@ export function inspectImmediateProfiles(pinnedRoot) {
         continue
       }
       result.profileDirectoryCount++
+      if (expectedProfileIds) {
+        if (expectedProfileIds.has(id)) {
+          matchedProfileIds.add(id)
+        } else {
+          unindexedProfileDirectoryCount++
+        }
+      }
       withPinnedOwnedDirectory(`${profiles.path}/${id}`, (profile) => {
         const maximum = Math.min(
           MAX_PROFILE_ENTRIES,
@@ -109,6 +118,20 @@ export function inspectImmediateProfiles(pinnedRoot) {
       JSON.stringify(namesFromPinnedDirectory(profiles, MAX_PROFILES, 'profile-count'))
     ) {
       throw new Error('PK-06 profiles directory changed during inspection')
+    }
+    if (expectedProfileIds) {
+      const missingProfileDirectoryCount = expectedProfileIds.size - matchedProfileIds.size
+      result.indexDirectoryConsistency = {
+        state:
+          missingProfileDirectoryCount === 0 &&
+          unindexedProfileDirectoryCount === 0 &&
+          result.unsafeProfileEntryCount === 0
+            ? 'matching-ids-only'
+            : 'mismatch',
+        indexedProfileCount: expectedProfileIds.size,
+        missingProfileDirectoryCount,
+        unindexedProfileDirectoryCount
+      }
     }
     return result
   })
