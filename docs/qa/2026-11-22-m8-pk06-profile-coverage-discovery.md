@@ -1,0 +1,19 @@
+# M8 PK-06 — read-only real Ash profile storage coverage discovery
+
+**Disposition: diagnostic milestone only. PK-05, PK-06 and RT-15 remain production NO-GO; the updater remains unavailable.** This is not a migration, snapshot, backup, rollback, compatibility certificate or maintenance-admission mechanism.
+
+## Actual native storage observed
+
+The standalone `config/scripts/desktop-distribution/release/inspect-ash-profile-coverage-qa.mjs` accepts an explicitly selected **private, owned, canonical Linux Ash user-data directory**. It inventories only top-level names and the immediate entries of owned profile directories; it reads **no file contents**, credentials, cookies, SQLite rows, profile identifiers or user-defined filenames into its report. Unknown names are counted, not emitted. The result cannot claim full coverage even if all observed entries are recognized. Symlinks, hard-linked files, foreign owners, nonprivate roots, unexpected kinds, and changes during inspection fail or remain explicitly unclassified/unsafe. Root, profile, and entry counts are bounded.
+
+Against the disposable native X11 `0.1.0 → 0.2.0 → 0.1.0` shared profile created and tested in the prior manual QA milestone, the new code observed **38 root entries** across four storage-owner groups: profile (3), browser persistent state (15), runtime/PTY/provider state (9), and cache/diagnostic state (11). Its one owned profile had **9 immediate entries**: six SQLite/recovery items (including retained backup/quarantine and live WAL/SHM), one layout/browser item and two identity/secret metadata items. The private fixture had zero unclassified or unsafe entries at either inspected level. These numbers are _observations of this disposable fixture only_, not a general state registry or completeness claim.
+
+The resulting manifest sets `outcome: coverage-unproven`, `activationAvailable: false`, `uninspectedNestedState: true`, `liveWriterAdmissionVerified: false`, `crossVersionCompatibilityVerified: false` and `fullStateRollbackVerified: false`. Recognizing a file or owner is not evidence it is safe to discard, rewrite, copy live, or migrate. Cache/diagnostic data is explicitly **not** implicitly approved for deletion. No production startup, updater, CLI or persistence code imports this diagnostic.
+
+## Evidence and invocation
+
+Run `node config/scripts/desktop-distribution/release/inspect-ash-profile-coverage-qa.mjs --root ABSOLUTE_PRIVATE_ASH_USER_DATA_PATH` only for an explicitly selected root. The command prints a counts-only JSON report, never absolute paths or unknown names. Its CLI reports a generic failure on invalid roots so arbitrary sensitive filesystem paths do not leak to logs. The tests cover an owned fixture with realistic stores; SQLite backup/WAL, recovery quarantine and secret metadata names; unknown files; symlink and hard-link escape attempts; bad ownership/permissions; noncanonical roots; and private-output suppression. CI runs the new seven-case suite alongside existing native cross-version QA contract tests. It **does not** inspect live user data or run AppImages in hosted CI.
+
+## Remaining PK-06 / RT-15 work
+
+This inventory never traverses browser partition data, provider histories, terminal state, encrypted secrets, extension storage or the contents of recovery snapshots. It does not compare the profile index against every profile, authenticate file contents, freeze writers, inspect schema compatibility, guarantee live filesystem stability against another same-UID process, or prove executable rollback. A future complete policy needs explicit state ownership and compatibility for every retained/mutable domain; tested cross-version migrations, full backups and restoration, crash-safe recovery, and an exclusive runtime/provider/PTY/write maintenance fence. Until then, **all production update gates remain closed**.
