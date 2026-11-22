@@ -1,6 +1,7 @@
 // Opt-in PK-06 check: read only a bounded Ash profile index through an already
 // pinned Linux profile root. Never return profile names, IDs, or file contents.
 import { closeSync, constants, fstatSync, lstatSync, openSync, readSync } from 'node:fs'
+import { TextDecoder } from 'node:util'
 
 const INDEX_FILE_NAME = 'orca-profile-index.json'
 const MAX_INDEX_BYTES = 512 * 1024
@@ -50,7 +51,7 @@ function boundedPinnedIndexBytes(pinnedRoot) {
     ) {
       throw new Error('PK-06 profile index changed during read')
     }
-    return Buffer.concat(chunks, total).toString('utf8')
+    return Buffer.concat(chunks, total)
   } finally {
     closeSync(fd)
   }
@@ -84,18 +85,19 @@ export function parseStrictProfileIndexIds(jsonText) {
 }
 
 export function inspectPinnedProfileIndexIds(pinnedRoot) {
-  let jsonText
+  let bytes
   try {
-    jsonText = boundedPinnedIndexBytes(pinnedRoot)
+    bytes = boundedPinnedIndexBytes(pinnedRoot)
   } catch {
     // Never echo path, profile names, file contents or native error details.
     return { state: 'unavailable', ids: null, completedReadBytes: null }
   }
-  const completedReadBytes = Buffer.byteLength(jsonText, 'utf8')
+  // Count the original file bytes, never the size of decoded/re-encoded text.
+  const completedReadBytes = bytes.length
   try {
     return {
       state: 'validated-id-list',
-      ids: parseStrictProfileIndexIds(jsonText),
+      ids: parseStrictProfileIndexIds(new TextDecoder('utf-8', { fatal: true }).decode(bytes)),
       completedReadBytes
     }
   } catch {

@@ -179,4 +179,33 @@ describe.skipIf(process.platform !== 'linux')('opt-in index-to-directory recover
       activationAvailable: false
     })
   })
+
+  it('reports original one-byte invalid UTF-8 without inflating the completed read count', () => {
+    const root = fixture()
+    writeFileSync(join(root, 'orca-profile-index.json'), Buffer.from([0xff]), { mode: 0o600 })
+    const report = inspectAshProfileCoverage(root, { verifyProfileIndex: true })
+    expect(report).toMatchObject({
+      profileIndexReadAttempted: true,
+      profileIndexCompletedReadBytes: 1,
+      profileIndexValidationState: 'unavailable',
+      profileIndexDirectoryCheck: { state: 'unavailable' },
+      activationAvailable: false
+    })
+  })
+
+  it('rejects invalid UTF-8 inside an otherwise valid indexed profile record', () => {
+    const root = fixture(['valid'])
+    const bytes = Buffer.from(JSON.stringify(index(['valid'])), 'utf8')
+    const nameOffset = bytes.indexOf(Buffer.from('private name valid', 'utf8'))
+    expect(nameOffset).toBeGreaterThan(0)
+    bytes[nameOffset] = 0xff
+    writeFileSync(join(root, 'orca-profile-index.json'), bytes, { mode: 0o600 })
+    const report = inspectAshProfileCoverage(root, { verifyProfileIndex: true })
+    expect(report).toMatchObject({
+      profileIndexValidationState: 'unavailable',
+      profileIndexDirectoryCheck: { state: 'unavailable' },
+      profileIndexCompletedReadBytes: bytes.length,
+      activationAvailable: false
+    })
+  })
 })
