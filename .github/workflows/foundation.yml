@@ -272,6 +272,9 @@ jobs:
             config/scripts/cli-build/verify-cli-bin.test.mjs \
             config/scripts/cli-build/build-cli-clean-outputs.test.mjs \
             config/scripts/desktop-distribution/runtime-verification/verify-ash-packaged-asar-hygiene.test.mjs \
+            config/scripts/desktop-distribution/runtime-verification/inspect-m8-packaged-exclusions.test.mjs \
+            config/scripts/desktop-distribution/release/ash-package-input-identity.test.mjs \
+            config/scripts/desktop-distribution/release/verify-ash-appimage-embedded-identity-qa.test.mjs \
             config/scripts/desktop-distribution/release/stage-ash-appimage.test.mjs \
             config/scripts/desktop-distribution/release/stage-ash-appimage-cli.test.mjs \
             src/main/persistence/profile-state/ash-profile-state-descriptor-copy.test.ts \

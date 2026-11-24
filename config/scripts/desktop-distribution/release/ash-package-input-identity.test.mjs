@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto'
 import { writeFileSync } from 'node:fs'
-import { link, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
+import { link, mkdir, mkdtemp, open, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import asar from '@electron/asar'
 import { createAshPackageInputIdentityClaim } from './ash-package-input-identity.cjs'
 import { verifyPackageCliBin } from '../../cli-build/verify-cli-bin.mjs'
@@ -112,6 +112,19 @@ describe('Ash package input identity claim', () => {
       await writeFile(cliPackagePath, JSON.stringify(cliMetadata(invalid)))
       await expect(attest()).rejects.toThrow(/private CommonJS output/)
     }
+  })
+
+  it('rejects a known source claim when the compiled CLI commit is stale or absent', async () => {
+    for (const commit of ['b'.repeat(40), null, undefined]) {
+      await writeFile(cliPackagePath, JSON.stringify(cliMetadata({ commit })))
+      await expect(attest()).rejects.toThrow(/Compiled CLI commit.*sourceCommit/)
+      await expect(
+        readFile(join(resources, 'ash-package-input-identity.json'))
+      ).rejects.toMatchObject({ code: 'ENOENT' })
+    }
+    // Dirty development builds deliberately carry no verified source claim.
+    await writeFile(cliPackagePath, JSON.stringify(cliMetadata({ commit: 'b'.repeat(40) })))
+    expect((await attest({ sourceCommit: null })).sourceCommit).toBeNull()
   })
 
   it('rejects duplicate JSON keys, malformed input, symlinked metadata, and hard links', async () => {
@@ -258,6 +271,38 @@ describe('Ash package input identity claim', () => {
       ).rejects.toMatchObject({
         code: 'ENOENT'
       })
+    }
+  })
+
+  it('rejects a source change during the final asynchronous inspection-copy hash', async () => {
+    const source = join(resources, 'app.asar')
+    const handle = await open(source, 'r')
+    const prototype = Object.getPrototypeOf(handle)
+    const originalStat = prototype.stat
+    await handle.close()
+    let armed = false
+    let changed = false
+    const stat = vi.spyOn(prototype, 'stat').mockImplementation(function (...args) {
+      if (armed && !changed) {
+        changed = true
+        writeFileSync(source, 'source changed during final copy verification')
+      }
+      return originalStat.apply(this, args)
+    })
+    try {
+      await expect(
+        attest({
+          beforeSidecarPublish: () => {
+            armed = true
+          }
+        })
+      ).rejects.toThrow(/changed while being inspected/)
+      expect(changed).toBe(true)
+      await expect(
+        readFile(join(resources, 'ash-package-input-identity.json'))
+      ).rejects.toMatchObject({ code: 'ENOENT' })
+    } finally {
+      stat.mockRestore()
     }
   })
 })
