@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "repository": "https://github.com/vercel-labs/agent-browser",
+    "version": "0.39.4",
+    "commit": "04ba5264dade678062c3cdcce0f4f293e748249f",
+    "gitTree": "ddad6f281f64c01c83a74aa0b4b6dd0ae2fceed8",
+    "pristineTree": {
+      "entryCount": 602,
+      "sha256": "0ee152293582113691202d4fc20179979dc514ab9ca48c9b740b34140d7401f0"
+    },
+    "patchedTree": {
+      "entryCount": 608,
+      "sha256": "bee89d7a9ae34da72076337c9ec463447d09262157767c276d63e9bc2a1c2767"
+    }
+  },
+  "inputs": {
+    "license": {
+      "path": "LICENSE",
+      "sha256": "014bb31e83d5c2e76aea1cc6e82217346ab41362f32cb355ad0f5c10aa0aeaff"
+    },
+    "cargoLock": {
+      "path": "cli/Cargo.lock",
+      "sha256": "33c48b2f377608ec05f2be6b0528c2ea2f6e778058cf5fe73708e778a265eefb",
+      "packageCount": 344
+    },
+    "pnpmLock": {
+      "path": "pnpm-lock.yaml",
+      "sha256": "b5ee24578ff30887fc9ee33b711c742cc496be9d85bc48cf9985b6153c577e04"
+    },
+    "nodeMajor": 24,
+    "pnpmVersion": "11.1.3",
+    "dashboard": {
+      "packagePath": "packages/dashboard",
+      "outputPath": "packages/dashboard/out",
+      "placeholderText": "Dashboard not built. Run: cd packages/dashboard &amp;&amp; pnpm build",
+      "requiredPublicAssets": [
+        "lightpanda.svg",
+        "providers/agentcore.svg",
+        "providers/browser-use.svg",
+        "providers/browserbase.svg",
+        "providers/browserless.svg",
+        "providers/kernel.svg",
+        "licenses/Geist-OFL-1.1.txt"
+      ],
+      "font": {
+        "package": "geist",
+        "version": "1.4.2",
+        "source": "https://registry.npmjs.org/geist/-/geist-1.4.2.tgz",
+        "integrity": "sha512-OQUga/KUc8ueijck6EbtT07L4tZ5+TZgjw8PyWfxo16sL5FWk7gNViPNU8hgCFjy6bJi9yuTP+CRpywzaGN8zw==",
+        "path": "packages/dashboard/src/app/Geist-Variable.woff2",
+        "sha256": "46525b05bbf4527d263f8624ca7024c7d0dce3c64430267d30c31c6dd3821e4d",
+        "license": "OFL-1.1",
+        "noticePath": "packages/dashboard/public/licenses/Geist-OFL-1.1.txt",
+        "noticeSha256": "930853ee1daa68554d9e35c8a9175affb74f699fad9a5da6ee5ebe76379d9137"
+      }
+    },
+    "generatedDirectoryPolicy": {
+      "nodeModulesPerPnpmImporter": true,
+      "dashboardRelative": [".next", "out"]
+    },
+    "cargoBuild": {
+      "target": "x86_64-unknown-linux-gnu",
+      "profile": "release",
+      "arguments": [
+        "build",
+        "--manifest-path",
+        "cli/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--release",
+        "--target",
+        "x86_64-unknown-linux-gnu",
+        "--jobs",
+        "1"
+      ],
+      "rustToolchain": "The caller supplies and verifies exact rustc and cargo versions."
+    }
+  },
+  "recipe": {
+    "scriptPaths": [
+      "config/scripts/native-build/agent-browser-owned-build-environment.mjs",
+      "config/scripts/native-build/agent-browser-owned-cache-copy.mjs",
+      "config/scripts/native-build/agent-browser-owned-dashboard-gate.mjs",
+      "config/scripts/native-build/agent-browser-owned-dashboard-modes.mjs",
+      "config/scripts/native-build/agent-browser-owned-process.mjs",
+      "config/scripts/native-build/agent-browser-owned-source-build.mjs",
+      "config/scripts/native-build/agent-browser-owned-source-files.mjs",
+      "config/scripts/native-build/agent-browser-owned-source-inputs.mjs",
+      "config/scripts/native-build/agent-browser-owned-source-integrity.mjs",
+      "config/scripts/native-build/agent-browser-owned-source-manifest.mjs",
+      "config/scripts/native-build/agent-browser-owned-source-options.mjs",
+      "config/scripts/native-build/agent-browser-owned-source-prepare.mjs",
+      "config/scripts/native-build/agent-browser-owned-source-recipe.mjs",
+      "config/scripts/native-build/agent-browser-owned-source-tree-snapshot.mjs",
+      "config/scripts/native-build/agent-browser-owned-source.mjs",
+      "config/scripts/native-build/agent-browser-owned-toolchain.mjs"
+    ],
+    "commands": {
+      "pnpmInstall": [
+        "install",
+        "--offline",
+        "--frozen-lockfile",
+        "--ignore-scripts",
+        "--filter",
+        "dashboard..."
+      ],
+      "dashboardBuild": ["--filter", "dashboard", "run", "build"]
+    }
+  },
+  "patch": {
+    "path": "agent-browser-owned-v0.39.4.patch",
+    "sha256": "3eda1de501f3058fae43a598cdba3e411260b104c1a78169dcf32b32538f26c4",
+    "files": [
+      {
+        "path": "cli/src/main.rs",
+        "change": "modified",
+        "originalSha256": "63ad4a897f009c97a0fc64925a6725d390f5c32c05809a5a18d4118e7dc4be77",
+        "patchedSha256": "ca1e45f51a0a72b6dd193381d41a3803a7943392456c10fce79a9cb85a7df5a5"
+      },
+      {
+        "path": "cli/src/connection.rs",
+        "change": "modified",
+        "originalSha256": "914151fa8bbad8468fabc43fdde6a3e37df3e8cdb6ff6bf468ad6166d4df777d",
+        "patchedSha256": "ba51accbbe2e048e14a44c5e2d34d46dc8221af5c8da9dc908609b9a060b974e"
+      },
+      {
+        "path": "cli/src/ash_owned.rs",
+        "change": "added",
+        "originalSha256": null,
+        "patchedSha256": "ba527c111df1ec2b04b56a829a8cfcc2c54e0db50425785f6c8c68121d83dc3e"
+      },
+      {
+        "path": "cli/src/ash_owned_identity.rs",
+        "change": "added",
+        "originalSha256": null,
+        "patchedSha256": "4f707817f3b4bf67ac4f3c11173ba9f98536ccef230cd782072446578676b4c8"
+      },
+      {
+        "path": "cli/src/native/browser.rs",
+        "change": "modified",
+        "originalSha256": "a52c3b89400a23ab2eaeb976a056e458f3540c79bbf164638228dcbbe9c250a7",
+        "patchedSha256": "db87e565d95f253599129f6c6042a49725ee157d8f6ef84bdebd165e7e1a9cf2"
+      },
+      {
+        "path": "packages/dashboard/src/app/layout.tsx",
+        "change": "modified",
+        "originalSha256": "e79983e4fa3b495681299a45fff061777f9a77e301daf8ccf90704ba4c1c5e9e",
+        "patchedSha256": "773312b6f7da27cf9685141c64df32a513fc9e3932d07c48cf4d35ff69a96092"
+      },
+      {
+        "path": "packages/dashboard/src/components/session-tree.tsx",
+        "change": "modified",
+        "originalSha256": "046c2b67518a1deabb0e92f95784cc606dda7ff20932e080e4ea302fec75fa53",
+        "patchedSha256": "d916939251c99d460bbc100340ceec21a84b0efcd281633d7f1a2e6d92f4bcd0"
+      },
+      {
+        "path": "packages/dashboard/src/app/Geist-Variable.woff2",
+        "change": "added",
+        "originalSha256": null,
+        "patchedSha256": "46525b05bbf4527d263f8624ca7024c7d0dce3c64430267d30c31c6dd3821e4d"
+      },
+      {
+        "path": "packages/dashboard/public/licenses/Geist-OFL-1.1.txt",
+        "change": "added",
+        "originalSha256": null,
+        "patchedSha256": "930853ee1daa68554d9e35c8a9175affb74f699fad9a5da6ee5ebe76379d9137"
+      },
+      {
+        "path": "packages/dashboard/next-env.d.ts",
+        "change": "added",
+        "originalSha256": null,
+        "patchedSha256": "7b550dda9686c16f36a17bf9051d5dbf31e98555b30d114ac49fc49a1e712651"
+      },
+      {
+        "path": "cli/src/native/actions.rs",
+        "change": "modified",
+        "originalSha256": "26403b12d6fffd8287d302a84a3147791900dfde10a1060ef61f3c2dd32d3653",
+        "patchedSha256": "d8483a3fee80ffe8aea91991cabd35dd6466f52e7576023402e47a3e8d86cb54"
+      }
+    ]
+  },
+  "preservedNotices": [
+    {
+      "path": "cli/src/native/a11y/LICENSE-axe-core.txt",
+      "sha256": "af175b9d96ee93c21a036152e1b905b0b95304d4ae8c2c921c7609100ba8df7e"
+    },
+    {
+      "path": "cli/src/native/a11y/LICENSE-axe-core-THIRD-PARTY.txt",
+      "sha256": "cadf92d5df0bf94bb4d74f906d5207f6198923e4f96aff0b6793d793f5f80e77"
+    }
+  ],
+  "distributionGate": {
+    "status": "blocked",
+    "blockers": [
+      "The 344-package Cargo.lock graph has no reviewed transitive third-party notice inventory for this binary.",
+      "Dashboard dependency and static asset license notices have not been audited against the pinned pnpm lock and built output."
+    ]
+  },
+  "claims": {
+    "sourceReconstruction": "The exact pinned archive and Ash native/dashboard patch can be reconstructed and hash-checked.",
+    "binaryDeterminism": "not claimed",
+    "distributionReadiness": "not claimed"
+  }
+}

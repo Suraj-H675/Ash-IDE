@@ -1,0 +1,3582 @@
+diff --git a/cli/src/ash_owned.rs b/cli/src/ash_owned.rs
+new file mode 100644
+--- /dev/null
++++ b/cli/src/ash_owned.rs
+@@ -0,0 +1,768 @@
++use serde::Deserialize;
++use serde_json::Value;
++use std::fs;
++use std::path::{Path, PathBuf};
++
++use crate::connection::Response;
++use crate::validation::is_valid_session_name;
++
++pub const MODE_FLAG: &str = "--ash-native-attach-only-v1";
++pub const CAPABILITIES_FLAG: &str = "--ash-native-capabilities";
++pub const CAPABILITY_MARKER: &str = "ash.native.attach-only.linux.v1";
++const MAX_RECEIPT_BYTES: u64 = 16 * 1024;
++const MIN_CLOSE_TIMEOUT_MS: u64 = 100_000;
++// The Ash parent uses Node timers, whose maximum non-wrapping delay is i32::MAX ms.
++const MAX_CLOSE_TIMEOUT_MS: u64 = i32::MAX as u64;
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub enum ModeError {
++    MissingReceipt,
++    MarkerPosition,
++}
++
++impl ModeError {
++    pub fn code(self) -> &'static str {
++        match self {
++            Self::MissingReceipt => "ash_owned_invalid_receipt",
++            Self::MarkerPosition => "ash_owned_invalid_invocation",
++        }
++    }
++
++    pub fn message(self) -> &'static str {
++        match self {
++            Self::MissingReceipt => "Ash attach-only mode requires an absolute owner receipt path",
++            Self::MarkerPosition => {
++                "Ash native client markers are valid only as the first argument"
++            }
++        }
++    }
++}
++
++pub fn extract_mode(args: &mut Vec<String>) -> Result<Option<PathBuf>, ModeError> {
++    let receipt_path = if args.first().map(String::as_str) == Some(MODE_FLAG) {
++        if args.len() < 2 {
++            return Err(ModeError::MissingReceipt);
++        }
++        let path = PathBuf::from(args[1].clone());
++        args.drain(0..2);
++        Some(path)
++    } else {
++        None
++    };
++    if args
++        .iter()
++        .any(|arg| arg == MODE_FLAG || arg == CAPABILITIES_FLAG)
++    {
++        return Err(ModeError::MarkerPosition);
++    }
++    Ok(receipt_path)
++}
++
++#[derive(Debug, Deserialize)]
++#[serde(deny_unknown_fields, rename_all = "camelCase")]
++struct OwnedSessionReceipt {
++    marker: String,
++    version: u32,
++    session: String,
++    socket_path: PathBuf,
++    pid: u32,
++    uid: u32,
++    boot_id: String,
++    start_ticks: u64,
++    socket_dev: u64,
++    socket_ino: u64,
++    #[serde(default)]
++    close_request_id: Option<String>,
++    #[serde(default)]
++    close_timeout_ms: Option<u64>,
++}
++
++#[cfg(target_os = "linux")]
++pub struct AttachOnlyClient {
++    session: String,
++    socket_path: PathBuf,
++    process: crate::ash_owned_identity::ProcessIdentity,
++    socket: crate::ash_owned_identity::SocketIdentity,
++    socket_directory: crate::ash_owned_identity::DirectoryIdentity,
++    close_request_id: Option<String>,
++    close_timeout_ms: u64,
++}
++
++#[cfg(not(target_os = "linux"))]
++pub struct AttachOnlyClient;
++
++#[cfg(not(target_os = "linux"))]
++impl AttachOnlyClient {
++    pub fn session(&self) -> &str {
++        ""
++    }
++
++    pub fn socket_path(&self) -> &Path {
++        Path::new("")
++    }
++
++    pub fn close_request_id(&self) -> Option<&str> {
++        None
++    }
++
++    pub fn send(&self, _command: Value) -> Response {
++        rejected(
++            "ash_owned_unsupported_platform",
++            "Ash attach-only mode is currently supported only on Linux",
++        )
++    }
++
++    pub fn send_in_batch(&self, command: Value, _deadline: Option<std::time::Instant>) -> Response {
++        self.send(command)
++    }
++}
++
++#[cfg(target_os = "linux")]
++impl AttachOnlyClient {
++    pub fn load(path: &Path) -> Result<Self, String> {
++        use std::io::Read;
++        use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
++
++        if !path.is_absolute() {
++            return Err("Owner receipt path must be absolute".to_string());
++        }
++        let file = fs::OpenOptions::new()
++            .read(true)
++            .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK)
++            .open(path)
++            .map_err(|_| "Owner receipt is missing or unavailable".to_string())?;
++        let metadata = file
++            .metadata()
++            .map_err(|_| "Owner receipt metadata is unavailable".to_string())?;
++        let uid = unsafe { libc::geteuid() };
++        if !metadata.is_file()
++            || metadata.uid() != uid
++            || metadata.mode() & 0o077 != 0
++            || metadata.nlink() != 1
++            || metadata.len() > MAX_RECEIPT_BYTES
++        {
++            return Err(
++                "Owner receipt must be a private regular file owned by this user".to_string(),
++            );
++        }
++        let mut contents = Vec::new();
++        file.take(MAX_RECEIPT_BYTES + 1)
++            .read_to_end(&mut contents)
++            .map_err(|_| "Owner receipt could not be read".to_string())?;
++        if contents.len() as u64 > MAX_RECEIPT_BYTES {
++            return Err("Owner receipt exceeds its size limit".to_string());
++        }
++        let receipt: OwnedSessionReceipt = serde_json::from_slice(&contents)
++            .map_err(|_| "Owner receipt is invalid JSON or has an unknown shape".to_string())?;
++        if receipt.marker != CAPABILITY_MARKER
++            || receipt.version != 1
++            || !is_valid_session_name(&receipt.session)
++            || !receipt.socket_path.is_absolute()
++            || receipt.pid == 0
++            || receipt.uid != uid
++            || receipt.boot_id.is_empty()
++            || receipt.start_ticks == 0
++            || receipt.socket_ino == 0
++            || receipt
++                .close_request_id
++                .as_ref()
++                .is_some_and(|id| !is_uuid_text(id))
++            || receipt.close_timeout_ms.is_some_and(|timeout| {
++                receipt.close_request_id.is_none()
++                    || !(MIN_CLOSE_TIMEOUT_MS..=MAX_CLOSE_TIMEOUT_MS).contains(&timeout)
++            })
++        {
++            return Err(
++                "Owner receipt is incomplete or belongs to another client version".to_string(),
++            );
++        }
++
++        let socket_parent = receipt
++            .socket_path
++            .parent()
++            .ok_or_else(|| "Owner socket path has no parent directory".to_string())?;
++        if socket_parent
++            .canonicalize()
++            .map_err(|_| "Owner socket directory is missing or unavailable".to_string())?
++            != socket_parent
++        {
++            return Err(
++                "Owner socket path must use a canonical, non-symlink directory".to_string(),
++            );
++        }
++        let parent = crate::ash_owned_identity::private_directory_identity(socket_parent)
++            .map_err(|_| "Owner socket directory is missing or unavailable".to_string())?;
++        if parent.uid != uid || parent.mode & 0o077 != 0 {
++            return Err(
++                "Owner socket directory must be private and owned by this user".to_string(),
++            );
++        }
++
++        Ok(Self {
++            session: receipt.session,
++            socket_path: receipt.socket_path,
++            process: crate::ash_owned_identity::ProcessIdentity {
++                pid: receipt.pid,
++                uid: receipt.uid,
++                boot_id: receipt.boot_id,
++                start_ticks: receipt.start_ticks,
++            },
++            socket: crate::ash_owned_identity::SocketIdentity {
++                dev: receipt.socket_dev,
++                ino: receipt.socket_ino,
++                uid: receipt.uid,
++            },
++            socket_directory: parent,
++            close_request_id: receipt.close_request_id,
++            close_timeout_ms: receipt.close_timeout_ms.unwrap_or(MIN_CLOSE_TIMEOUT_MS),
++        })
++    }
++
++    pub fn session(&self) -> &str {
++        &self.session
++    }
++
++    pub fn socket_path(&self) -> &Path {
++        &self.socket_path
++    }
++
++    pub fn close_request_id(&self) -> Option<&str> {
++        self.close_request_id.as_deref()
++    }
++
++    pub fn send(&self, command: Value) -> Response {
++        self.send_in_batch(command, None)
++    }
++
++    pub fn send_in_batch(&self, command: Value, deadline: Option<std::time::Instant>) -> Response {
++        self.send_with_hook(command, deadline, || {})
++    }
++
++    fn send_with_hook(
++        &self,
++        command: Value,
++        batch_deadline: Option<std::time::Instant>,
++        before_proof: impl FnOnce(),
++    ) -> Response {
++        use std::os::fd::AsRawFd;
++
++        let action = command
++            .get("action")
++            .and_then(Value::as_str)
++            .unwrap_or_default();
++        if crate::ash_owned_identity::is_management_command("", action, false) {
++            return rejected(
++                "ash_owned_management_rejected",
++                "This command is not available in Ash attach-only mode",
++            );
++        }
++        if action == "close" {
++            let Some(expected_id) = self.close_request_id.as_deref() else {
++                return rejected(
++                    "ash_owned_close_intent_required",
++                    "Owned close requires a durable close request ID in the owner receipt",
++                );
++            };
++            if command.get("id").and_then(Value::as_str) != Some(expected_id) {
++                return rejected(
++                    "ash_owned_invalid_command",
++                    "Owned close request ID does not match the owner receipt",
++                );
++            }
++        } else if self.close_request_id.is_some() {
++            return rejected(
++                "ash_owned_close_in_progress",
++                "The owner receipt is fenced for close; browser actions are no longer admitted",
++            );
++        }
++        let close_timeout = (action == "close").then_some(self.close_timeout_ms);
++        let deadline = match crate::connection::owned_deadline(&command, close_timeout) {
++            Ok(deadline) => deadline,
++            Err(error) => return rejected("ash_owned_invalid_command", error),
++        };
++        let deadline = batch_deadline.map_or(deadline, |batch| batch.min(deadline));
++        if deadline <= std::time::Instant::now() {
++            return rejected(
++                "ash_owned_batch_deadline_exceeded",
++                "Owned batch deadline expired before dispatch",
++            );
++        }
++        match crate::ash_owned_identity::private_directory_identity(
++            self.socket_path.parent().unwrap_or_else(|| Path::new("/")),
++        )
++        .and_then(|actual| {
++            crate::ash_owned_identity::validate_private_directory(
++                self.socket_directory,
++                actual,
++                self.process.uid,
++            )
++        })
++        .and_then(|()| crate::ash_owned_identity::socket_identity(&self.socket_path))
++        .and_then(|actual| crate::ash_owned_identity::validate_socket(self.socket, actual))
++        {
++            Ok(()) => {}
++            Err(error) => return proof_rejected(error),
++        }
++
++        let stream = match crate::connection::connect_owned_endpoint(&self.socket_path, deadline) {
++            Ok(stream) => stream,
++            Err(error) => {
++                let code = if error.kind() == std::io::ErrorKind::NotFound
++                    || error.kind() == std::io::ErrorKind::ConnectionRefused
++                {
++                    "ash_owned_endpoint_missing"
++                } else {
++                    "ash_owned_connect_failed"
++                };
++                return rejected(
++                    code,
++                    format!("Could not connect to the owned daemon: {error}"),
++                );
++            }
++        };
++
++        before_proof();
++
++        let peer = peer_credentials(stream.as_raw_fd());
++        let (peer_pid, peer_uid) = match peer {
++            Ok(peer) => peer,
++            Err(error) => return rejected("ash_owned_peer_unavailable", error),
++        };
++        let actual = match process_identity(peer_pid) {
++            Ok(actual) => actual,
++            Err(error) => return rejected("ash_owned_peer_unavailable", error),
++        };
++        if let Err(error) = crate::ash_owned_identity::validate_process(
++            &self.process,
++            peer_pid,
++            peer_uid,
++            &actual.boot_id,
++            actual.start_ticks,
++            actual.uid,
++        ) {
++            return proof_rejected(error);
++        }
++        match crate::ash_owned_identity::private_directory_identity(
++            self.socket_path.parent().unwrap_or_else(|| Path::new("/")),
++        )
++        .and_then(|actual| {
++            crate::ash_owned_identity::validate_private_directory(
++                self.socket_directory,
++                actual,
++                self.process.uid,
++            )
++        })
++        .and_then(|()| crate::ash_owned_identity::socket_identity(&self.socket_path))
++        .and_then(|actual| crate::ash_owned_identity::validate_socket(self.socket, actual))
++        {
++            Ok(()) => {}
++            Err(error) => return proof_rejected(error),
++        }
++
++        crate::connection::send_command_over_owned_stream(command, stream, deadline)
++    }
++}
++
++#[cfg(target_os = "linux")]
++fn peer_credentials(fd: std::os::fd::RawFd) -> Result<(u32, u32), String> {
++    let mut credentials = std::mem::MaybeUninit::<libc::ucred>::uninit();
++    let mut length = std::mem::size_of::<libc::ucred>() as libc::socklen_t;
++    let result = unsafe {
++        libc::getsockopt(
++            fd,
++            libc::SOL_SOCKET,
++            libc::SO_PEERCRED,
++            credentials.as_mut_ptr().cast(),
++            &mut length,
++        )
++    };
++    if result != 0 || length as usize != std::mem::size_of::<libc::ucred>() {
++        return Err("SO_PEERCRED was unavailable on the connected socket".to_string());
++    }
++    let credentials = unsafe { credentials.assume_init() };
++    if credentials.pid <= 0 {
++        return Err("SO_PEERCRED returned an invalid peer PID".to_string());
++    }
++    Ok((credentials.pid as u32, credentials.uid))
++}
++
++#[cfg(target_os = "linux")]
++fn process_identity(pid: u32) -> Result<crate::ash_owned_identity::ProcessIdentity, String> {
++    let proc_root = PathBuf::from(format!("/proc/{pid}"));
++    let stat = fs::read_to_string(proc_root.join("stat"))
++        .map_err(|_| "The connected daemon process start time is unavailable".to_string())?;
++    let start_ticks = crate::ash_owned_identity::parse_linux_start_ticks(&stat)
++        .ok_or_else(|| "The connected daemon process start time is malformed".to_string())?;
++    let status = fs::read_to_string(proc_root.join("status"))
++        .map_err(|_| "The connected daemon process UID is unavailable".to_string())?;
++    let uid = crate::ash_owned_identity::parse_linux_effective_uid(&status)
++        .ok_or_else(|| "The connected daemon process UID is malformed".to_string())?;
++    let confirm_stat = fs::read_to_string(proc_root.join("stat")).map_err(|_| {
++        "The connected daemon process identity changed during verification".to_string()
++    })?;
++    if crate::ash_owned_identity::parse_linux_start_ticks(&confirm_stat) != Some(start_ticks) {
++        return Err(
++            "The connected daemon process identity changed during verification".to_string(),
++        );
++    }
++    let boot_id = fs::read_to_string("/proc/sys/kernel/random/boot_id")
++        .map_err(|_| "The current Linux boot identity is unavailable".to_string())?
++        .trim()
++        .to_string();
++    Ok(crate::ash_owned_identity::ProcessIdentity {
++        pid,
++        uid,
++        boot_id,
++        start_ticks,
++    })
++}
++
++fn is_uuid_text(value: &str) -> bool {
++    value.len() == 36
++        && value.bytes().enumerate().all(|(index, byte)| match index {
++            8 | 13 | 18 | 23 => byte == b'-',
++            _ => byte.is_ascii_hexdigit(),
++        })
++}
++
++#[cfg(target_os = "linux")]
++fn proof_rejected(error: crate::ash_owned_identity::ProofError) -> Response {
++    let message = match error {
++        crate::ash_owned_identity::ProofError::PeerPid
++        | crate::ash_owned_identity::ProofError::PeerUid => {
++            "Connected socket peer does not match the Ash owner receipt"
++        }
++        crate::ash_owned_identity::ProofError::BootId
++        | crate::ash_owned_identity::ProofError::StartTicks
++        | crate::ash_owned_identity::ProofError::ProcessUid => {
++            "Connected socket peer process incarnation does not match the Ash owner receipt"
++        }
++        crate::ash_owned_identity::ProofError::SocketMissing => "Owned daemon socket is missing",
++        crate::ash_owned_identity::ProofError::SocketType
++        | crate::ash_owned_identity::ProofError::SocketIdentity
++        | crate::ash_owned_identity::ProofError::SocketUid => {
++            "Owned daemon socket path no longer identifies the recorded endpoint"
++        }
++    };
++    rejected(error.code(), message)
++}
++
++fn rejected(code: &str, message: impl Into<String>) -> Response {
++    Response {
++        success: false,
++        data: None,
++        error: Some(message.into()),
++        code: Some(code.to_string()),
++        warning: None,
++    }
++}
++
++pub fn capabilities_json() -> Value {
++    serde_json::json!({
++        "capability": CAPABILITY_MARKER,
++        "version": 1,
++        "platform": if cfg!(target_os = "linux") { "linux" } else { "unsupported" },
++        "attachOnly": cfg!(target_os = "linux"),
++        "explicitTargetAddressing": cfg!(target_os = "linux"),
++        "strictTabBinding": cfg!(target_os = "linux"),
++        "bootstrap": false
++    })
++}
++
++#[cfg(all(test, target_os = "linux"))]
++mod tests {
++    use super::*;
++    use std::io::{BufRead, Read, Write};
++    use std::os::unix::fs::PermissionsExt;
++    use std::os::unix::net::UnixListener;
++    use std::sync::atomic::{AtomicUsize, Ordering};
++    use std::time::{Duration, SystemTime, UNIX_EPOCH};
++
++    fn fixture(name: &str) -> (AttachOnlyClient, UnixListener, PathBuf) {
++        use std::os::unix::fs::MetadataExt;
++
++        let unique = SystemTime::now()
++            .duration_since(UNIX_EPOCH)
++            .unwrap()
++            .as_nanos();
++        let directory =
++            std::env::temp_dir().join(format!("ash-owned-client-{}-{unique}", std::process::id()));
++        fs::create_dir(&directory).unwrap();
++        fs::set_permissions(&directory, fs::Permissions::from_mode(0o700)).unwrap();
++        let socket_path = directory.join(format!("{name}.sock"));
++        let listener = UnixListener::bind(&socket_path).unwrap();
++        let process = process_identity(std::process::id()).unwrap();
++        let socket_metadata = fs::symlink_metadata(&socket_path).unwrap();
++        let directory_metadata = fs::symlink_metadata(&directory).unwrap();
++        let client = AttachOnlyClient {
++            session: "ash-test-session".to_string(),
++            socket_path,
++            process,
++            socket: crate::ash_owned_identity::SocketIdentity {
++                dev: socket_metadata.dev(),
++                ino: socket_metadata.ino(),
++                uid: socket_metadata.uid(),
++            },
++            socket_directory: crate::ash_owned_identity::DirectoryIdentity {
++                dev: directory_metadata.dev(),
++                ino: directory_metadata.ino(),
++                uid: directory_metadata.uid(),
++                mode: directory_metadata.mode(),
++            },
++            close_request_id: None,
++            close_timeout_ms: MIN_CLOSE_TIMEOUT_MS,
++        };
++        (client, listener, directory)
++    }
++
++    #[test]
++    fn advertised_marker_is_private_and_linux_scoped() {
++        let value = capabilities_json();
++        assert_eq!(value["capability"], CAPABILITY_MARKER);
++        assert_eq!(value["version"], 1);
++        assert_eq!(value["bootstrap"], false);
++        assert_eq!(value["strictTabBinding"], true);
++    }
++
++    #[test]
++    fn normal_cli_arguments_do_not_select_attach_only_mode() {
++        let mut args = vec!["open".to_string(), "https://example.test".to_string()];
++        assert_eq!(extract_mode(&mut args), Ok(None));
++        assert_eq!(
++            args,
++            vec!["open".to_string(), "https://example.test".to_string()]
++        );
++    }
++
++    #[test]
++    fn attach_only_mode_requires_a_first_argument_receipt() {
++        let mut missing = vec![MODE_FLAG.to_string()];
++        assert_eq!(extract_mode(&mut missing), Err(ModeError::MissingReceipt));
++
++        let mut misplaced = vec![
++            "open".to_string(),
++            MODE_FLAG.to_string(),
++            "/owner.json".to_string(),
++        ];
++        assert_eq!(extract_mode(&mut misplaced), Err(ModeError::MarkerPosition));
++    }
++
++    #[test]
++    fn attach_only_mode_removes_only_its_private_wrapper_arguments() {
++        let mut args = vec![
++            MODE_FLAG.to_string(),
++            "/private/owner.json".to_string(),
++            "--json".to_string(),
++            "open".to_string(),
++            "https://example.test".to_string(),
++        ];
++        assert_eq!(
++            extract_mode(&mut args),
++            Ok(Some(PathBuf::from("/private/owner.json")))
++        );
++        assert_eq!(
++            args,
++            vec![
++                "--json".to_string(),
++                "open".to_string(),
++                "https://example.test".to_string()
++            ]
++        );
++    }
++
++    #[test]
++    fn connected_same_peer_receives_one_browser_request() {
++        let (client, listener, directory) = fixture("same-peer");
++        let server = std::thread::spawn(move || {
++            let (mut stream, _) = listener.accept().unwrap();
++            let mut request = String::new();
++            std::io::BufReader::new(&mut stream)
++                .read_line(&mut request)
++                .unwrap();
++            assert!(request.contains("\"action\":\"tab_list\""));
++            stream
++                .write_all(b"{\"id\":\"test\",\"success\":true,\"data\":{\"tabs\":[]}}\n")
++                .unwrap();
++        });
++        let response = client.send(serde_json::json!({ "id": "test", "action": "tab_list" }));
++        server.join().unwrap();
++        assert!(response.success);
++        std::fs::remove_dir_all(directory).unwrap();
++    }
++
++    #[test]
++    fn wrong_peer_is_rejected_before_any_request_bytes() {
++        let (mut client, listener, directory) = fixture("wrong-peer");
++        client.process.pid = client.process.pid.saturating_add(1);
++        let server = std::thread::spawn(move || {
++            let (mut stream, _) = listener.accept().unwrap();
++            let mut request = Vec::new();
++            stream.read_to_end(&mut request).unwrap();
++            request
++        });
++        let response = client.send(serde_json::json!({ "id": "test", "action": "tab_list" }));
++        assert_eq!(response.code.as_deref(), Some("ash_owned_peer_mismatch"));
++        assert!(server.join().unwrap().is_empty());
++        std::fs::remove_dir_all(directory).unwrap();
++    }
++
++    #[test]
++    fn replacement_after_connect_fails_before_the_original_peer_receives_bytes() {
++        let (client, original, directory) = fixture("replace");
++        let path = client.socket_path.clone();
++        let original_path = path.with_extension("original");
++        let replacement_path = path.clone();
++        let response = client.send_with_hook(
++            serde_json::json!({ "id": "test", "action": "tab_list" }),
++            None,
++            move || {
++                std::fs::rename(&replacement_path, &original_path).unwrap();
++                UnixListener::bind(&replacement_path).unwrap();
++            },
++        );
++        assert_eq!(
++            response.code.as_deref(),
++            Some("ash_owned_endpoint_replaced")
++        );
++        let (mut accepted, _) = original.accept().unwrap();
++        let mut request = Vec::new();
++        accepted.read_to_end(&mut request).unwrap();
++        assert!(request.is_empty());
++        drop(original);
++        std::fs::remove_dir_all(directory).unwrap();
++    }
++
++    #[test]
++    fn attach_only_send_does_not_replay_an_uncertain_read() {
++        let (client, listener, directory) = fixture("no-retry");
++        let accepts = std::sync::Arc::new(AtomicUsize::new(0));
++        let server_accepts = accepts.clone();
++        let server = std::thread::spawn(move || {
++            let (mut stream, _) = listener.accept().unwrap();
++            server_accepts.fetch_add(1, Ordering::SeqCst);
++            let mut request = String::new();
++            std::io::BufReader::new(&mut stream)
++                .read_line(&mut request)
++                .unwrap();
++            drop(stream);
++            listener.set_nonblocking(true).unwrap();
++            let deadline = std::time::Instant::now() + Duration::from_millis(450);
++            while std::time::Instant::now() < deadline {
++                match listener.accept() {
++                    Ok((mut extra, _)) => {
++                        server_accepts.fetch_add(1, Ordering::SeqCst);
++                        let mut request = String::new();
++                        let _ = std::io::BufReader::new(&mut extra).read_line(&mut request);
++                    }
++                    Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
++                        std::thread::sleep(Duration::from_millis(10));
++                    }
++                    Err(error) => panic!("unexpected listener error: {error}"),
++                }
++            }
++        });
++        let response = client.send(serde_json::json!({ "id": "test", "action": "tab_list" }));
++        server.join().unwrap();
++        assert_eq!(response.code.as_deref(), Some("outcome_unknown"));
++        assert_eq!(accepts.load(Ordering::SeqCst), 1);
++        std::fs::remove_dir_all(directory).unwrap();
++    }
++
++    #[test]
++    fn close_requires_the_receipt_request_id_and_returns_only_its_ack() {
++        let (mut client, listener, directory) = fixture("close-id");
++        client.close_request_id = Some("123e4567-e89b-12d3-a456-426614174000".to_string());
++        let wrong_id = client.send(serde_json::json!({ "id": "generated", "action": "close" }));
++        assert_eq!(wrong_id.code.as_deref(), Some("ash_owned_invalid_command"));
++        let fenced = client.send(serde_json::json!({ "id": "test", "action": "tab_list" }));
++        assert_eq!(fenced.code.as_deref(), Some("ash_owned_close_in_progress"));
++        listener.set_nonblocking(true).unwrap();
++        assert_eq!(
++            listener.accept().unwrap_err().kind(),
++            std::io::ErrorKind::WouldBlock
++        );
++        listener.set_nonblocking(false).unwrap();
++        let server = std::thread::spawn(move || {
++            let (mut stream, _) = listener.accept().unwrap();
++            let mut request = String::new();
++            std::io::BufReader::new(&mut stream)
++                .read_line(&mut request)
++                .unwrap();
++            assert!(request.contains("\"id\":\"123e4567-e89b-12d3-a456-426614174000\""));
++            assert!(request.contains("\"action\":\"close\""));
++            stream
++                .write_all(b"{\"id\":\"123e4567-e89b-12d3-a456-426614174000\",\"success\":true,\"data\":{\"closed\":true}}\n")
++                .unwrap();
++        });
++        let response = client.send(
++            serde_json::json!({ "id": "123e4567-e89b-12d3-a456-426614174000", "action": "close" }),
++        );
++        server.join().unwrap();
++        assert!(response.success);
++        std::fs::remove_dir_all(directory).unwrap();
++    }
++
++    #[test]
++    fn close_without_durable_intent_never_connects() {
++        let (client, listener, directory) = fixture("close-no-intent");
++        let response = client.send(serde_json::json!({ "id": "generated", "action": "close" }));
++        assert_eq!(
++            response.code.as_deref(),
++            Some("ash_owned_close_intent_required")
++        );
++        listener.set_nonblocking(true).unwrap();
++        assert_eq!(
++            listener.accept().unwrap_err().kind(),
++            std::io::ErrorKind::WouldBlock
++        );
++        drop(listener);
++        std::fs::remove_dir_all(directory).unwrap();
++    }
++
++    #[test]
++    fn owned_batch_shares_one_deadline_and_never_sends_after_expiry() {
++        let (client, listener, directory) = fixture("batch-deadline");
++        let server = std::thread::spawn(move || {
++            for (id, delay) in [("first", 100), ("second", 350)] {
++                let (mut stream, _) = listener.accept().unwrap();
++                let mut request = String::new();
++                std::io::BufReader::new(&mut stream)
++                    .read_line(&mut request)
++                    .unwrap();
++                assert!(request.contains(&format!("\"id\":\"{id}\"")));
++                std::thread::sleep(Duration::from_millis(delay));
++                let reply = format!("{{\"id\":\"{id}\",\"success\":true}}\n");
++                let _ = stream.write_all(reply.as_bytes());
++            }
++            listener.set_nonblocking(true).unwrap();
++            assert_eq!(
++                listener.accept().unwrap_err().kind(),
++                std::io::ErrorKind::WouldBlock
++            );
++        });
++        let deadline = std::time::Instant::now() + Duration::from_millis(300);
++        assert!(
++            client
++                .send_in_batch(
++                    serde_json::json!({"id":"first","action":"tab_list"}),
++                    Some(deadline)
++                )
++                .success
++        );
++        let second = client.send_in_batch(
++            serde_json::json!({"id":"second","action":"tab_list"}),
++            Some(deadline),
++        );
++        assert_eq!(second.code.as_deref(), Some("outcome_unknown"));
++        let third = client.send_in_batch(
++            serde_json::json!({"id":"third","action":"tab_list"}),
++            Some(deadline),
++        );
++        assert_eq!(
++            third.code.as_deref(),
++            Some("ash_owned_batch_deadline_exceeded")
++        );
++        server.join().unwrap();
++        std::fs::remove_dir_all(directory).unwrap();
++    }
++}
+diff --git a/cli/src/ash_owned_identity.rs b/cli/src/ash_owned_identity.rs
+new file mode 100644
+index 0000000..66b2490
+--- /dev/null
++++ b/cli/src/ash_owned_identity.rs
+@@ -0,0 +1,424 @@
++use std::fs;
++use std::os::unix::fs::{FileTypeExt, MetadataExt};
++use std::path::Path;
++
++#[derive(Clone, Debug, Eq, PartialEq)]
++pub struct ProcessIdentity {
++    pub pid: u32,
++    pub uid: u32,
++    pub boot_id: String,
++    pub start_ticks: u64,
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub struct SocketIdentity {
++    pub dev: u64,
++    pub ino: u64,
++    pub uid: u32,
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub struct DirectoryIdentity {
++    pub dev: u64,
++    pub ino: u64,
++    pub uid: u32,
++    pub mode: u32,
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub enum ProofError {
++    PeerPid,
++    PeerUid,
++    BootId,
++    StartTicks,
++    ProcessUid,
++    SocketMissing,
++    SocketType,
++    SocketIdentity,
++    SocketUid,
++}
++
++impl ProofError {
++    pub fn code(self) -> &'static str {
++        match self {
++            Self::PeerPid | Self::PeerUid => "ash_owned_peer_mismatch",
++            Self::BootId | Self::StartTicks | Self::ProcessUid => "ash_owned_incarnation_mismatch",
++            Self::SocketMissing => "ash_owned_endpoint_missing",
++            Self::SocketType | Self::SocketIdentity | Self::SocketUid => {
++                "ash_owned_endpoint_replaced"
++            }
++        }
++    }
++}
++
++pub fn validate_process(
++    expected: &ProcessIdentity,
++    peer_pid: u32,
++    peer_uid: u32,
++    actual_boot_id: &str,
++    actual_start_ticks: u64,
++    proc_uid: u32,
++) -> Result<(), ProofError> {
++    if peer_pid != expected.pid {
++        return Err(ProofError::PeerPid);
++    }
++    if peer_uid != expected.uid {
++        return Err(ProofError::PeerUid);
++    }
++    if actual_boot_id != expected.boot_id {
++        return Err(ProofError::BootId);
++    }
++    if actual_start_ticks != expected.start_ticks {
++        return Err(ProofError::StartTicks);
++    }
++    if proc_uid != expected.uid {
++        return Err(ProofError::ProcessUid);
++    }
++    Ok(())
++}
++
++pub fn socket_identity(path: &Path) -> Result<SocketIdentity, ProofError> {
++    let metadata = fs::symlink_metadata(path).map_err(|_| ProofError::SocketMissing)?;
++    if !metadata.file_type().is_socket() {
++        return Err(ProofError::SocketType);
++    }
++    Ok(SocketIdentity {
++        dev: metadata.dev(),
++        ino: metadata.ino(),
++        uid: metadata.uid(),
++    })
++}
++
++pub fn private_directory_identity(path: &Path) -> Result<DirectoryIdentity, ProofError> {
++    let metadata = fs::symlink_metadata(path).map_err(|_| ProofError::SocketMissing)?;
++    if !metadata.is_dir() || metadata.file_type().is_symlink() {
++        return Err(ProofError::SocketType);
++    }
++    Ok(DirectoryIdentity {
++        dev: metadata.dev(),
++        ino: metadata.ino(),
++        uid: metadata.uid(),
++        mode: metadata.mode(),
++    })
++}
++
++pub fn validate_private_directory(
++    expected: DirectoryIdentity,
++    actual: DirectoryIdentity,
++    uid: u32,
++) -> Result<(), ProofError> {
++    if actual.uid != uid || actual.mode & 0o077 != 0 {
++        return Err(ProofError::SocketUid);
++    }
++    if actual.dev != expected.dev || actual.ino != expected.ino {
++        return Err(ProofError::SocketIdentity);
++    }
++    Ok(())
++}
++
++pub fn validate_socket(expected: SocketIdentity, actual: SocketIdentity) -> Result<(), ProofError> {
++    if actual.uid != expected.uid {
++        return Err(ProofError::SocketUid);
++    }
++    if actual.dev != expected.dev || actual.ino != expected.ino {
++        return Err(ProofError::SocketIdentity);
++    }
++    Ok(())
++}
++
++pub fn parse_linux_start_ticks(stat: &str) -> Option<u64> {
++    let command_end = stat.rfind(')')?;
++    let fields = stat.get(command_end + 1..)?.split_whitespace();
++    fields.skip(19).next()?.parse().ok()
++}
++
++pub fn parse_linux_effective_uid(status: &str) -> Option<u32> {
++    let uid_line = status.lines().find_map(|line| line.strip_prefix("Uid:"))?;
++    uid_line.split_whitespace().nth(1)?.parse().ok()
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub enum InvocationError {
++    SessionMismatch,
++    Namespace,
++    LaunchOptions,
++    RestoreOptions,
++    DaemonConfig,
++}
++
++impl InvocationError {
++    pub fn code(self) -> &'static str {
++        match self {
++            Self::SessionMismatch | Self::Namespace => "ash_owned_target_mismatch",
++            Self::LaunchOptions | Self::RestoreOptions | Self::DaemonConfig => {
++                "ash_owned_option_rejected"
++            }
++        }
++    }
++}
++
++pub fn validate_invocation_options(
++    expected_session: &str,
++    requested_session: &str,
++    namespace: Option<&str>,
++    launch_options: bool,
++    restore_options: bool,
++    daemon_config: bool,
++) -> Result<(), InvocationError> {
++    if requested_session != expected_session {
++        return Err(InvocationError::SessionMismatch);
++    }
++    if namespace.is_some_and(|value| !value.is_empty()) {
++        return Err(InvocationError::Namespace);
++    }
++    if launch_options {
++        return Err(InvocationError::LaunchOptions);
++    }
++    if restore_options {
++        return Err(InvocationError::RestoreOptions);
++    }
++    if daemon_config {
++        return Err(InvocationError::DaemonConfig);
++    }
++    Ok(())
++}
++
++pub fn is_management_command(root: &str, action: &str, close_all: bool) -> bool {
++    close_all
++        || matches!(
++            root,
++            "chat"
++                | "dashboard"
++                | "doctor"
++                | "install"
++                | "mcp"
++                | "plugin"
++                | "plugins"
++                | "profiles"
++                | "session"
++                | "skills"
++                | "upgrade"
++                | "read"
++                | "connect"
++        )
++        || action == "launch"
++        || matches!(action, "batch" | "read" | "connect" | "cdp_url")
++        || matches!(action, "reconfigure" | "restart" | "shutdown" | "kill")
++        || action.starts_with("state_")
++        || action.starts_with("session_")
++        || action.starts_with("dashboard_")
++        || action.starts_with("auth_")
++        || action.starts_with("plugin_")
++        || action.starts_with("device_")
++        || action.starts_with("stream_")
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::io::Read;
++    use std::os::unix::net::{UnixListener, UnixStream};
++    use std::time::{SystemTime, UNIX_EPOCH};
++
++    fn expected() -> ProcessIdentity {
++        ProcessIdentity {
++            pid: 42,
++            uid: 1000,
++            boot_id: "boot-a".to_string(),
++            start_ticks: 1234,
++        }
++    }
++
++    fn socket_path(name: &str) -> std::path::PathBuf {
++        let unique = SystemTime::now()
++            .duration_since(UNIX_EPOCH)
++            .unwrap()
++            .as_nanos();
++        std::env::temp_dir().join(format!(
++            "ash-owned-{name}-{}-{unique}.sock",
++            std::process::id()
++        ))
++    }
++
++    #[test]
++    fn same_peer_incarnation_and_uid_are_accepted() {
++        let expected = expected();
++        assert_eq!(
++            validate_process(&expected, 42, 1000, "boot-a", 1234, 1000),
++            Ok(())
++        );
++    }
++
++    #[test]
++    fn wrong_peer_uid_boot_and_start_ticks_fail_closed() {
++        let expected = expected();
++        for (result, code) in [
++            (
++                validate_process(&expected, 43, 1000, "boot-a", 1234, 1000),
++                "ash_owned_peer_mismatch",
++            ),
++            (
++                validate_process(&expected, 42, 1001, "boot-a", 1234, 1000),
++                "ash_owned_peer_mismatch",
++            ),
++            (
++                validate_process(&expected, 42, 1000, "boot-b", 1234, 1000),
++                "ash_owned_incarnation_mismatch",
++            ),
++            (
++                validate_process(&expected, 42, 1000, "boot-a", 1235, 1000),
++                "ash_owned_incarnation_mismatch",
++            ),
++            (
++                validate_process(&expected, 42, 1000, "boot-a", 1234, 1001),
++                "ash_owned_incarnation_mismatch",
++            ),
++        ] {
++            assert_eq!(result.unwrap_err().code(), code);
++        }
++    }
++
++    #[test]
++    fn proc_stat_parser_uses_starttime_after_a_parenthesized_command_name() {
++        let fields = (4..=21)
++            .map(|n| n.to_string())
++            .collect::<Vec<_>>()
++            .join(" ");
++        let stat = format!("123 (name with ) chars) R {fields} 987654");
++        assert_eq!(parse_linux_start_ticks(&stat), Some(987654));
++        assert_eq!(parse_linux_start_ticks("123 (truncated) R 1 2"), None);
++    }
++
++    #[test]
++    fn proc_status_parser_uses_effective_uid() {
++        assert_eq!(
++            parse_linux_effective_uid("Name:\tagent-browser\nUid:\t1000\t1001\t1001\t1001\n"),
++            Some(1001)
++        );
++        assert_eq!(
++            parse_linux_effective_uid("Name:\tagent-browser\nUid:\t1000\n"),
++            None
++        );
++    }
++
++    #[test]
++    fn missing_socket_path_is_a_fail_closed_error() {
++        let path = socket_path("missing");
++        assert_eq!(socket_identity(&path), Err(ProofError::SocketMissing));
++    }
++
++    #[test]
++    fn socket_replacement_after_connect_is_rejected_before_a_write() {
++        let path = socket_path("replace");
++        let original_path = path.with_extension("original");
++        let original = UnixListener::bind(&path).unwrap();
++        let expected = socket_identity(&path).unwrap();
++        let stream = UnixStream::connect(&path).unwrap();
++        let (mut accepted, _) = original.accept().unwrap();
++        std::fs::rename(&path, &original_path).unwrap();
++        let replacement = UnixListener::bind(&path).unwrap();
++
++        let actual = socket_identity(&path).unwrap();
++        assert_eq!(
++            validate_socket(expected, actual),
++            Err(ProofError::SocketIdentity)
++        );
++        drop(stream);
++        let mut request = Vec::new();
++        accepted.read_to_end(&mut request).unwrap();
++        assert!(request.is_empty());
++
++        drop(replacement);
++        drop(original);
++        std::fs::remove_file(path).unwrap();
++        std::fs::remove_file(original_path).unwrap();
++    }
++
++    #[test]
++    fn absent_mode_options_are_allowed_and_target_options_are_denied() {
++        assert_eq!(
++            validate_invocation_options(
++                "ash-session",
++                "ash-session",
++                Some(""),
++                false,
++                false,
++                false
++            ),
++            Ok(())
++        );
++        for result in [
++            validate_invocation_options("ash-session", "other", None, false, false, false),
++            validate_invocation_options(
++                "ash-session",
++                "ash-session",
++                Some("other"),
++                false,
++                false,
++                false,
++            ),
++            validate_invocation_options("ash-session", "ash-session", None, true, false, false),
++            validate_invocation_options("ash-session", "ash-session", None, false, true, false),
++            validate_invocation_options("ash-session", "ash-session", None, false, false, true),
++        ] {
++            assert!(result.is_err());
++        }
++    }
++
++    #[test]
++    fn management_and_lifecycle_dispatches_are_denied() {
++        for root in [
++            "chat",
++            "dashboard",
++            "doctor",
++            "install",
++            "mcp",
++            "plugin",
++            "plugins",
++            "profiles",
++            "read",
++            "session",
++            "skills",
++            "upgrade",
++            "connect",
++        ] {
++            assert!(is_management_command(root, "", false), "{root}");
++        }
++        for action in [
++            "launch",
++            "state_save",
++            "session_list",
++            "dashboard_start",
++            "auth_save",
++            "device_list",
++            "stream_enable",
++            "reconfigure",
++        ] {
++            assert!(is_management_command("other", action, false), "{action}");
++        }
++        assert!(is_management_command("close", "close", true));
++        assert!(!is_management_command("close", "close", false));
++        assert!(!is_management_command("screenshot", "screenshot", false));
++        assert!(!is_management_command("eval", "evaluate", false));
++        assert!(!is_management_command("open", "navigate", false));
++    }
++
++    #[test]
++    fn socket_owner_mismatch_is_distinct_from_socket_identity_mismatch() {
++        assert_eq!(
++            validate_socket(
++                SocketIdentity {
++                    dev: 1,
++                    ino: 2,
++                    uid: 1000
++                },
++                SocketIdentity {
++                    dev: 1,
++                    ino: 2,
++                    uid: 1001
++                }
++            ),
++            Err(ProofError::SocketUid)
++        );
++    }
++}
+diff --git a/cli/src/connection.rs b/cli/src/connection.rs
+index b8c0abb..d96bc68 100644
+--- a/cli/src/connection.rs
++++ b/cli/src/connection.rs
+@@ -1245,10 +1245,156 @@ fn send_command_once(cmd: &Value, session: &str) -> Result<Response, SendError>
+ 
+     let stream = connect(session).map_err(SendError::NotSent)?;
+ 
++    send_command_on_stream(cmd, stream, json_str.as_bytes())
++}
++
++#[cfg(target_os = "linux")]
++pub(crate) fn owned_deadline(
++    cmd: &Value,
++    close_timeout_ms: Option<u64>,
++) -> Result<Instant, String> {
++    let budget = close_timeout_ms
++        .map(Duration::from_millis)
++        .unwrap_or_else(|| read_timeout_for(cmd));
++    // Match the parent's non-wrapping Node timer ceiling. Do not silently
++    // shorten a legitimate operation's requested deadline.
++    if budget.is_zero() || budget.as_millis() > i32::MAX as u128 {
++        return Err("Owned command timeout exceeds the supported budget".to_string());
++    }
++    Instant::now()
++        .checked_add(budget)
++        .ok_or_else(|| "Owned command deadline overflow".to_string())
++}
++
++#[cfg(target_os = "linux")]
++fn remaining_owned_time(deadline: Instant) -> std::io::Result<Duration> {
++    deadline
++        .checked_duration_since(Instant::now())
++        .filter(|remaining| !remaining.is_zero())
++        .map(|remaining| remaining.max(Duration::from_micros(1)))
++        .ok_or_else(|| {
++            std::io::Error::new(
++                std::io::ErrorKind::TimedOut,
++                "Owned command deadline exceeded",
++            )
++        })
++}
++
++#[cfg(target_os = "linux")]
++pub(crate) fn connect_owned_endpoint(
++    path: &std::path::Path,
++    deadline: Instant,
++) -> std::io::Result<UnixStream> {
++    use socket2::{Domain, SockAddr, Socket, Type};
++    remaining_owned_time(deadline)?;
++    let socket = Socket::new(Domain::UNIX, Type::STREAM, None)?;
++    socket.set_nonblocking(true)?;
++    // Linux AF_UNIX returns EAGAIN when the accept queue is full. Fail
++    // closed instead of blocking, retrying, or opening another stream.
++    socket.connect(&SockAddr::unix(path)?)?;
++    remaining_owned_time(deadline)?;
++    socket.set_nonblocking(false)?;
++    Ok(socket.into())
++}
++
++#[cfg(target_os = "linux")]
++struct OwnedDeadlineStream {
++    stream: UnixStream,
++    deadline: Instant,
++    write_deadline: Instant,
++}
++
++#[cfg(target_os = "linux")]
++impl Read for OwnedDeadlineStream {
++    fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
++        // Each kernel call gets only the remaining total budget; a partial
++        // frame or EINTR cannot reset the deadline.
++        self.stream
++            .set_read_timeout(Some(remaining_owned_time(self.deadline)?))?;
++        self.stream.read(buffer)
++    }
++}
++
++#[cfg(target_os = "linux")]
++impl Write for OwnedDeadlineStream {
++    fn write(&mut self, buffer: &[u8]) -> std::io::Result<usize> {
++        self.stream
++            .set_write_timeout(Some(remaining_owned_time(self.write_deadline)?))?;
++        self.stream.write(buffer)
++    }
++
++    fn flush(&mut self) -> std::io::Result<()> {
++        self.stream.flush()
++    }
++}
++
++#[cfg(target_os = "linux")]
++pub(crate) fn send_command_over_owned_stream(
++    cmd: Value,
++    stream: UnixStream,
++    deadline: Instant,
++) -> Response {
++    let expected_id = match cmd.get("id").and_then(Value::as_str) {
++        Some(id) if !id.is_empty() => id.to_string(),
++        _ => {
++            return Response {
++                success: false,
++                error: Some("Owned command is missing its request ID".to_string()),
++                code: Some("ash_owned_invalid_command".to_string()),
++                ..Default::default()
++            }
++        }
++    };
++    let mut json_str = match serde_json::to_string(&cmd) {
++        Ok(json) => json,
++        Err(error) => {
++            return Response {
++                success: false,
++                error: Some(format!("Failed to serialize command: {error}")),
++                code: Some("ash_owned_send_failed".to_string()),
++                ..Default::default()
++            }
++        }
++    };
++    json_str.push('\n');
++    let stream = OwnedDeadlineStream {
++        stream,
++        deadline,
++        write_deadline: deadline.min(Instant::now() + Duration::from_secs(5)),
++    };
++    let result = exchange_owned(stream, json_str.as_bytes(), &expected_id).and_then(|response| {
++        remaining_owned_time(deadline)
++            .map_err(|error| SendError::OutcomeUnknown(error.to_string()))?;
++        Ok(response)
++    });
++    match result {
++        Ok(response) => response,
++        Err(SendError::NotSent(error)) => Response {
++            success: false,
++            error: Some(error),
++            code: Some("ash_owned_send_failed".to_string()),
++            ..Default::default()
++        },
++        Err(SendError::OutcomeUnknown(error)) => Response {
++            success: false,
++            error: Some(format!(
++                "{error} (the request was not retried because its outcome is unknown)"
++            )),
++            code: Some("outcome_unknown".to_string()),
++            ..Default::default()
++        },
++    }
++}
++
++fn send_command_on_stream(
++    cmd: &Value,
++    stream: Connection,
++    request: &[u8],
++) -> Result<Response, SendError> {
+     stream.set_read_timeout(Some(read_timeout_for(cmd))).ok();
+     stream.set_write_timeout(Some(Duration::from_secs(5))).ok();
+ 
+-    exchange(stream, json_str.as_bytes())
++    exchange(stream, request)
+ }
+ 
+ /// Write one request line and read one response line. Unlike write_all, the
+@@ -1284,11 +1430,164 @@ fn exchange<S: Read + Write>(mut stream: S, request: &[u8]) -> Result<Response,
+         .map_err(|e| SendError::OutcomeUnknown(format!("Invalid response: {}", e)))
+ }
+ 
++#[cfg(target_os = "linux")]
++fn exchange_owned<S: Read + Write>(
++    mut stream: S,
++    request: &[u8],
++    expected_id: &str,
++) -> Result<Response, SendError> {
++    let mut written = 0;
++    while written < request.len() {
++        let err = match stream.write(&request[written..]) {
++            Ok(0) => std::io::Error::from(std::io::ErrorKind::WriteZero),
++            Ok(n) => {
++                written += n;
++                continue;
++            }
++            Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
++            Err(e) => e,
++        };
++        let message = format!("Failed to send: {err}");
++        return Err(if written == 0 {
++            SendError::NotSent(message)
++        } else {
++            SendError::OutcomeUnknown(message)
++        });
++    }
++
++    read_owned_response(stream, expected_id, 50 * 1024 * 1024)
++}
++
++#[cfg(target_os = "linux")]
++fn read_owned_response<R: Read>(
++    stream: R,
++    expected_id: &str,
++    max_bytes: usize,
++) -> Result<Response, SendError> {
++    let mut reader = BufReader::new(stream).take(max_bytes as u64 + 1);
++    let mut response_line = Vec::new();
++    reader
++        .read_until(b'\n', &mut response_line)
++        .map_err(|error| SendError::OutcomeUnknown(format!("Failed to read: {error}")))?;
++    if response_line.len() > max_bytes || response_line.last() != Some(&b'\n') {
++        return Err(SendError::OutcomeUnknown(
++            "Owned response exceeded its bound or lacked a complete frame".to_string(),
++        ));
++    }
++    let response_value: Value = serde_json::from_slice(&response_line)
++        .map_err(|error| SendError::OutcomeUnknown(format!("Invalid response: {error}")))?;
++    if response_value.get("id").and_then(Value::as_str) != Some(expected_id) {
++        return Err(SendError::OutcomeUnknown(
++            "Response request ID did not match the owned command".to_string(),
++        ));
++    }
++    serde_json::from_value(response_value)
++        .map_err(|error| SendError::OutcomeUnknown(format!("Invalid response: {error}")))
++}
++
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+     use crate::test_utils::EnvGuard;
+ 
++    #[cfg(target_os = "linux")]
++    #[test]
++    fn owned_deadline_rejects_overflowing_action_budget() {
++        assert!(owned_deadline(&json!({"action":"wait", "timeout":u64::MAX}), None).is_err());
++        assert!(owned_deadline(&json!({"action":"mousemove", "duration":i32::MAX}), None).is_err());
++        assert!(owned_deadline(&json!({"action":"wait", "timeout":55_000}), None).is_ok());
++        assert!(owned_deadline(&json!({"action":"close"}), Some(100_000)).is_ok());
++    }
++
++    #[cfg(target_os = "linux")]
++    #[test]
++    fn owned_deadline_full_accept_queue_never_blocks_or_retries() {
++        use socket2::{Domain, SockAddr, Socket, Type};
++        let directory = tempfile::tempdir().unwrap();
++        let path = directory.path().join("owned.sock");
++        let listener = Socket::new(Domain::UNIX, Type::STREAM, None).unwrap();
++        listener.bind(&SockAddr::unix(&path).unwrap()).unwrap();
++        listener.listen(0).unwrap();
++        let deadline = Instant::now() + Duration::from_secs(2);
++        let _queued = connect_owned_endpoint(&path, deadline).unwrap();
++        let started = Instant::now();
++        let result = connect_owned_endpoint(&path, deadline);
++        assert_eq!(result.unwrap_err().kind(), std::io::ErrorKind::WouldBlock);
++        assert!(started.elapsed() < Duration::from_secs(1));
++    }
++
++    #[cfg(target_os = "linux")]
++    #[test]
++    fn owned_deadline_rejects_slow_trickled_frame() {
++        let (client, mut server) = UnixStream::pair().unwrap();
++        let worker = thread::spawn(move || {
++            let mut request = String::new();
++            BufReader::new(&mut server).read_line(&mut request).unwrap();
++            assert_eq!(request, "request\n");
++            // A normal per-read timeout would be renewed by each byte and
++            // ultimately accept this response well after the total budget.
++            for byte in b"{\"id\":\"test\",\"success\":true}\n" {
++                if server.write_all(&[*byte]).is_err() {
++                    break;
++                }
++                thread::sleep(Duration::from_millis(30));
++            }
++        });
++        let started = Instant::now();
++        let deadline = started + Duration::from_millis(150);
++        let result = exchange_owned(
++            OwnedDeadlineStream {
++                stream: client,
++                deadline,
++                write_deadline: deadline,
++            },
++            b"request\n",
++            "test",
++        );
++        assert!(matches!(result, Err(SendError::OutcomeUnknown(_))));
++        assert!(started.elapsed() < Duration::from_secs(2));
++        worker.join().unwrap();
++    }
++
++    #[cfg(target_os = "linux")]
++    #[test]
++    fn owned_deadline_expired_before_write_sends_no_bytes() {
++        let (client, mut server) = UnixStream::pair().unwrap();
++        let deadline = Instant::now() - Duration::from_millis(1);
++        let response = send_command_over_owned_stream(
++            json!({"id":"test","action":"tab_list"}),
++            client,
++            deadline,
++        );
++        assert_eq!(response.code.as_deref(), Some("ash_owned_send_failed"));
++        let mut bytes = Vec::new();
++        server.read_to_end(&mut bytes).unwrap();
++        assert!(bytes.is_empty());
++    }
++
++    #[cfg(target_os = "linux")]
++    #[test]
++    fn owned_response_rejects_oversize_truncated_and_wrong_id_frames() {
++        let valid = b"{\"id\":\"test\",\"success\":true}\n";
++        assert!(
++            read_owned_response(&valid[..], "test", valid.len())
++                .unwrap()
++                .success
++        );
++        assert!(matches!(
++            read_owned_response(&valid[..], "test", valid.len() - 1),
++            Err(SendError::OutcomeUnknown(_))
++        ));
++        assert!(matches!(
++            read_owned_response(&valid[..valid.len() - 1], "test", valid.len()),
++            Err(SendError::OutcomeUnknown(_))
++        ));
++        assert!(matches!(
++            read_owned_response(&valid[..], "wrong", valid.len()),
++            Err(SendError::OutcomeUnknown(_))
++        ));
++    }
++
+     #[cfg(unix)]
+     #[test]
+     fn unrelated_process_is_not_agent_browser() {
+diff --git a/cli/src/main.rs b/cli/src/main.rs
+--- a/cli/src/main.rs
++++ b/cli/src/main.rs
+@@ -1,3 +1,6 @@
++mod ash_owned;
++#[cfg(target_os = "linux")]
++mod ash_owned_identity;
+ mod ca_bundle;
+ mod chat;
+ mod color;
+@@ -371,6 +374,137 @@
+     }
+ }
+ 
++#[cfg(target_os = "linux")]
++fn validate_owned_cli(
++    client: &ash_owned::AttachOnlyClient,
++    _args: &[String],
++    clean: &[String],
++    flags: &Flags,
++) -> Result<(), (&'static str, String)> {
++    use std::path::Path;
++
++    if flags.cli_pin_tab && !flags.pin_tab {
++        return Err((
++            "ash_owned_invalid_invocation",
++            "Ash attach-only mode requires strict tab binding".to_string(),
++        ));
++    }
++    let root = clean.first().map(String::as_str).unwrap_or_default();
++    let close_all =
++        matches!(root, "close" | "quit" | "exit") && clean.iter().any(|value| value == "--all");
++    if crate::ash_owned_identity::is_management_command(root, "", close_all) {
++        return Err((
++            "ash_owned_management_rejected",
++            format!("'{root}' is not available in Ash attach-only mode"),
++        ));
++    }
++
++    let launch_options = flags.cdp.is_some()
++        || flags.provider.is_some()
++        || flags.auto_connect
++        || flags.device.is_some()
++        || flags.no_xvfb
++        || flags.ignore_https_errors
++        || flags.ca_cert.is_some()
++        || flags.clear_ca_cert
++        || flags.use_system_ca
++        || !flags.plugins.is_empty()
++        || should_send_local_launch_config(flags, &json!({}));
++    let restore_options = flags.restore.is_some()
++        || flags.restore_save.is_some()
++        || flags.restore_check_url.is_some()
++        || flags.restore_check_text.is_some()
++        || flags.restore_check_fn.is_some()
++        || flags.session_name.is_some()
++        || flags.restore_uses_session;
++    let daemon_config = flags.idle_timeout.is_some()
++        || flags.action_policy.is_some()
++        || flags.confirm_actions.is_some()
++        || flags.no_auto_dialog;
++    crate::ash_owned_identity::validate_invocation_options(
++        client.session(),
++        &flags.session,
++        flags.namespace.as_deref(),
++        launch_options,
++        restore_options,
++        daemon_config,
++    )
++    .map_err(|error| {
++        let message = match error {
++            crate::ash_owned_identity::InvocationError::SessionMismatch => {
++                "--session must match the session in the Ash owner receipt".to_string()
++            }
++            crate::ash_owned_identity::InvocationError::Namespace => {
++                "--namespace cannot redirect an Ash attach-only command".to_string()
++            }
++            crate::ash_owned_identity::InvocationError::LaunchOptions => {
++                "Browser launch, attach, plugin, or reconfiguration options are not available in Ash attach-only mode".to_string()
++            }
++            crate::ash_owned_identity::InvocationError::RestoreOptions => {
++                "Restore options are not available in Ash attach-only mode".to_string()
++            }
++            crate::ash_owned_identity::InvocationError::DaemonConfig => {
++                "Daemon configuration options are not available in Ash attach-only mode".to_string()
++            }
++        };
++        (error.code(), message)
++    })?;
++
++    if let Some(socket_dir) = env::var_os("AGENT_BROWSER_SOCKET_DIR") {
++        let expected = client
++            .socket_path()
++            .parent()
++            .unwrap_or_else(|| Path::new(""));
++        if socket_dir.is_empty() || Path::new(&socket_dir) != expected {
++            return Err((
++                "ash_owned_target_mismatch",
++                "AGENT_BROWSER_SOCKET_DIR conflicts with the Ash owner receipt".to_string(),
++            ));
++        }
++    }
++    Ok(())
++}
++
++#[cfg(not(target_os = "linux"))]
++fn validate_owned_cli(
++    _client: &ash_owned::AttachOnlyClient,
++    _args: &[String],
++    _clean: &[String],
++    _flags: &Flags,
++) -> Result<(), (&'static str, String)> {
++    Err((
++        "ash_owned_unsupported_platform",
++        "Ash attach-only mode is currently supported only on Linux".to_string(),
++    ))
++}
++
++#[cfg(target_os = "linux")]
++fn validate_owned_action(
++    root: &str,
++    action: &str,
++    close_all: bool,
++) -> Result<(), (&'static str, String)> {
++    if crate::ash_owned_identity::is_management_command(root, action, close_all) {
++        return Err((
++            "ash_owned_management_rejected",
++            format!("'{root}' is not available in Ash attach-only mode"),
++        ));
++    }
++    Ok(())
++}
++
++#[cfg(not(target_os = "linux"))]
++fn validate_owned_action(
++    _root: &str,
++    _action: &str,
++    _close_all: bool,
++) -> Result<(), (&'static str, String)> {
++    Err((
++        "ash_owned_unsupported_platform",
++        "Ash attach-only mode is currently supported only on Linux".to_string(),
++    ))
++}
++
+ #[derive(Debug, Clone, PartialEq, Eq)]
+ struct ConfirmationPrompt {
+     action: String,
+@@ -424,6 +558,7 @@
+     mut resp: Response,
+     flags: &Flags,
+     output_opts: &OutputOptions,
++    owned_client: Option<&ash_owned::AttachOnlyClient>,
+ ) -> Response {
+     while let Some(prompt) = confirmation_prompt_from_response(&resp) {
+         eprintln!("[agent-browser] Action requires confirmation:");
+@@ -456,7 +591,11 @@
+             })
+         };
+ 
+-        match send_command(confirm_cmd, &flags.session) {
++        let confirm_response = match owned_client {
++            Some(client) => Ok(client.send(confirm_cmd)),
++            None => send_command(confirm_cmd, &flags.session),
++        };
++        match confirm_response {
+             Ok(next_resp) => {
+                 if !approved {
+                     eprintln!("{} Action denied", color::error_indicator());
+@@ -1419,8 +1558,54 @@
+         env::set_var("MSYS2_ARG_CONV_EXCL", "*");
+     }
+ 
+-    // Native daemon mode: when AGENT_BROWSER_DAEMON is set, run as the daemon process
+-    if env::var("AGENT_BROWSER_DAEMON").is_ok() {
++    let mut args: Vec<String> = env::args().skip(1).collect();
++    if args.len() == 1 && args[0] == ash_owned::CAPABILITIES_FLAG {
++        print_json_value(ash_owned::capabilities_json());
++        return;
++    }
++
++    let receipt_path = match ash_owned::extract_mode(&mut args) {
++        Ok(path) => path,
++        Err(error) => {
++            print_json_error_with_code(error.message(), Some(error.code()));
++            exit(1);
++        }
++    };
++
++    #[cfg(target_os = "linux")]
++    let owned_client = match receipt_path {
++        Some(receipt_path) => match ash_owned::AttachOnlyClient::load(&receipt_path) {
++            Ok(client) => Some(client),
++            Err(error) => {
++                print_json_error_with_code(error, Some("ash_owned_invalid_receipt"));
++                exit(1);
++            }
++        },
++        None => None,
++    };
++
++    #[cfg(not(target_os = "linux"))]
++    let owned_client: Option<ash_owned::AttachOnlyClient> = if receipt_path.is_some() {
++        print_json_error_with_code(
++            "Ash attach-only mode is currently supported only on Linux",
++            Some("ash_owned_unsupported_platform"),
++        );
++        exit(1);
++    } else {
++        None
++    };
++
++    if owned_client.is_some() {
++        if env::var_os("AGENT_BROWSER_DAEMON").is_some()
++            || env::var_os("AGENT_BROWSER_DASHBOARD").is_some()
++        {
++            print_json_error_with_code(
++                "Ash attach-only mode cannot enter daemon or dashboard process mode",
++                Some("ash_owned_invalid_invocation"),
++            );
++            exit(1);
++        }
++    } else if env::var("AGENT_BROWSER_DAEMON").is_ok() {
+         // Ignore SIGPIPE so the daemon isn't killed when the parent drops
+         // the piped stderr handle after confirming the daemon is ready.
+         #[cfg(unix)]
+@@ -1431,10 +1616,7 @@
+         let rt = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime");
+         rt.block_on(native::daemon::run_daemon(&session));
+         return;
+-    }
+-
+-    // Standalone dashboard server mode
+-    if env::var("AGENT_BROWSER_DASHBOARD").is_ok() {
++    } else if env::var("AGENT_BROWSER_DASHBOARD").is_ok() {
+         let port: u16 = env::var("AGENT_BROWSER_DASHBOARD_PORT")
+             .ok()
+             .and_then(|s| s.parse().ok())
+@@ -1444,13 +1626,14 @@
+         return;
+     }
+ 
+-    let args: Vec<String> = env::args().skip(1).collect();
+     let mut flags = parse_flags(&args);
+     if flags.restore_uses_session {
+         flags.restore = Some(flags.session.clone());
+     }
+-    if let Some(ref namespace) = flags.namespace {
+-        env::set_var("AGENT_BROWSER_NAMESPACE", namespace);
++    if owned_client.is_none() {
++        if let Some(ref namespace) = flags.namespace {
++            env::set_var("AGENT_BROWSER_NAMESPACE", namespace);
++        }
+     }
+     let clean = clean_args(&args);
+     tls::configure_process(&flags);
+@@ -1476,6 +1659,18 @@
+     if clean.is_empty() {
+         print_help();
+         return;
++    }
++
++    if let Some(client) = owned_client.as_ref() {
++        if let Err((code, message)) = validate_owned_cli(client, &args, &clean, &flags) {
++            if flags.json {
++                print_json_error_with_code(message, Some(code));
++            } else {
++                eprintln!("{} {}", color::error_indicator(), message);
++            }
++            exit(1);
++        }
++        flags.pin_tab = true;
+     }
+ 
+     // Handle install separately
+@@ -1633,6 +1828,39 @@
+             exit(1);
+         }
+     };
++    if owned_client.is_some() && cmd.get("action").and_then(|v| v.as_str()) != Some("batch") {
++        let action = cmd
++            .get("action")
++            .and_then(|v| v.as_str())
++            .unwrap_or_default();
++        let root = clean.first().map(String::as_str).unwrap_or_default();
++        let close_all =
++            matches!(root, "close" | "quit" | "exit") && clean.iter().any(|value| value == "--all");
++        if let Err((code, message)) = validate_owned_action(root, action, close_all) {
++            if flags.json {
++                print_json_error_with_code(message, Some(code));
++            } else {
++                eprintln!("{} {}", color::error_indicator(), message);
++            }
++            exit(1);
++        }
++    }
++    if cmd.get("action").and_then(|v| v.as_str()) == Some("close") {
++        if let Some(client) = owned_client.as_ref() {
++            let Some(request_id) = client.close_request_id() else {
++                let code = "ash_owned_close_intent_required";
++                let message =
++                    "Owned close requires a durable close request ID in the owner receipt";
++                if flags.json {
++                    print_json_error_with_code(message, Some(code));
++                } else {
++                    eprintln!("{} {}", color::error_indicator(), message);
++                }
++                exit(1);
++            };
++            cmd["id"] = json!(request_id);
++        }
++    }
+     attach_input_mode(&mut cmd, &flags);
+     // Stdin batches are read before launch decisions so a batch of `read`
+     // commands is recognized as browserless, like one given as arguments.
+@@ -1642,7 +1870,7 @@
+     }
+     match cmd.get("action").and_then(|v| v.as_str()) {
+         Some("read") => cmd["tls"] = json!(tls::session_options(&flags, &flags.session)),
+-        Some("close") => tls::clear_session(&flags.session),
++        Some("close") if owned_client.is_none() => tls::clear_session(&flags.session),
+         _ => {}
+     }
+     // Handle --password-stdin for auth save
+@@ -1826,19 +2054,24 @@
+         plugins: Some(plugin_registry_json.as_str()),
+     };
+ 
+-    let daemon_result = match ensure_daemon(&flags.session, &daemon_opts) {
+-        Ok(result) => result,
+-        Err(e) => {
+-            if flags.json {
+-                print_json_error(e);
+-            } else {
+-                eprintln!("{} {}", color::error_indicator(), e);
+-            }
+-            exit(1);
++    let daemon_restarted = if owned_client.is_some() {
++        false
++    } else {
++        match ensure_daemon(&flags.session, &daemon_opts) {
++            Ok(result) => {
++                let _daemon_was_already_running = result.already_running;
++                result.restarted
++            }
++            Err(e) => {
++                if flags.json {
++                    print_json_error(e);
++                } else {
++                    eprintln!("{} {}", color::error_indicator(), e);
++                }
++                exit(1);
++            }
+         }
+     };
+-    let _daemon_was_already_running = daemon_result.already_running;
+-    let daemon_restarted = daemon_result.restarted;
+ 
+     // Auto-connect to existing browser. This is sent even when the daemon is
+     // already running so launch compatibility stays idempotent.
+@@ -2171,19 +2404,35 @@
+                     .collect::<Vec<Vec<String>>>()
+             })
+             .or_else(|| serde_json::from_value(cmd.get("argv")?.clone()).ok());
+-        run_batch(&flags, &daemon_opts, bail, arg_commands);
++        run_batch(
++            &flags,
++            &daemon_opts,
++            bail,
++            arg_commands,
++            owned_client.as_ref(),
++        );
+         return;
+     }
+ 
+     let output_opts = OutputOptions::from_flags(&flags);
+ 
+-    match send_command_with_respawn(cmd.clone(), &flags.session, &daemon_opts) {
++    match send_command_for_mode(
++        cmd.clone(),
++        &flags.session,
++        &daemon_opts,
++        owned_client.as_ref(),
++    ) {
+         Ok(mut resp) => {
+             if daemon_restarted {
+                 mark_restarted_background(&mut resp);
+             }
+             if flags.confirm_interactive && confirmation_prompt_from_response(&resp).is_some() {
+-                resp = run_interactive_confirmations(resp, &flags, &output_opts);
++                resp = run_interactive_confirmations(
++                    resp,
++                    &flags,
++                    &output_opts,
++                    owned_client.as_ref(),
++                );
+                 if daemon_restarted {
+                     mark_restarted_background(&mut resp);
+                 }
+@@ -2230,6 +2479,18 @@
+     }
+ }
+ 
++fn send_command_for_mode(
++    cmd: serde_json::Value,
++    session: &str,
++    daemon_opts: &DaemonOptions,
++    owned_client: Option<&ash_owned::AttachOnlyClient>,
++) -> Result<Response, String> {
++    match owned_client {
++        Some(client) => Ok(client.send(cmd)),
++        None => send_command_with_respawn(cmd, session, daemon_opts),
++    }
++}
++
+ /// Read batch commands given on stdin as a JSON array of string arrays.
+ fn read_batch_stdin(flags: &Flags) -> Vec<Vec<String>> {
+     use std::io::Read as _;
+@@ -2269,6 +2530,7 @@
+     daemon_opts: &DaemonOptions,
+     bail: bool,
+     arg_commands: Option<Vec<Vec<String>>>,
++    owned_client: Option<&ash_owned::AttachOnlyClient>,
+ ) {
+     let commands: Vec<Vec<String>> = arg_commands.unwrap_or_else(|| read_batch_stdin(flags));
+ 
+@@ -2277,6 +2539,63 @@
+             println!("[]");
+         }
+         return;
++    }
++
++    // Ash's multi-step helper has a 90s total budget. Keep single-command
++    // stdin batches on their ordinary per-action timeout (including waits).
++    let owned_batch_deadline = if owned_client.is_some()
++        && commands
++            .iter()
++            .filter(|command| !command.is_empty())
++            .take(2)
++            .count()
++            > 1
++    {
++        Some(std::time::Instant::now() + std::time::Duration::from_secs(90))
++    } else {
++        None
++    };
++
++    #[cfg(target_os = "linux")]
++    if owned_client.is_some() {
++        for (i, cmd_args) in commands.iter().enumerate() {
++            if cmd_args.is_empty() {
++                continue;
++            }
++            let root_args = clean_args(cmd_args);
++            let root = root_args.first().map(String::as_str).unwrap_or_default();
++            let close_all = matches!(root, "close" | "quit" | "exit")
++                && cmd_args.iter().any(|value| value == "--all");
++            let action = parse_command(cmd_args, flags).ok().and_then(|parsed| {
++                parsed
++                    .get("action")
++                    .and_then(|value| value.as_str())
++                    .map(str::to_string)
++            });
++            let denied = crate::ash_owned_identity::is_management_command(root, "", close_all)
++                || action.as_deref().is_some_and(|action| {
++                    action == "close"
++                        || crate::ash_owned_identity::is_management_command(root, action, close_all)
++                });
++            if denied {
++                let message = format!("Command {} is not available in Ash attach-only mode", i + 1);
++                if flags.json {
++                    let result = json!({
++                        "command": cmd_args,
++                        "success": false,
++                        "error": message,
++                        "code": "ash_owned_management_rejected"
++                    });
++                    println!(
++                        "[{}]",
++                        serde_json::to_string(&result).unwrap_or_else(|_| "{}".to_string())
++                    );
++                } else {
++                    eprintln!("{} {}", color::error_indicator(), message);
++                }
++                exit(1);
++            }
++        }
+     }
+ 
+     let output_opts = OutputOptions::from_flags(flags);
+@@ -2319,7 +2638,7 @@
+         attach_input_mode(&mut parsed, flags);
+         match parsed.get("action").and_then(|v| v.as_str()) {
+             Some("read") => parsed["tls"] = json!(tls::session_options(flags, &flags.session)),
+-            Some("close") => tls::clear_session(&flags.session),
++            Some("close") if owned_client.is_none() => tls::clear_session(&flags.session),
+             _ => {}
+         }
+ 
+@@ -2332,7 +2651,11 @@
+ 
+         attach_pin_tab_to_command(&mut parsed, flags);
+ 
+-        match send_command_with_respawn(parsed, &flags.session, daemon_opts) {
++        let response = match owned_client {
++            Some(client) => Ok(client.send_in_batch(parsed, owned_batch_deadline)),
++            None => send_command_for_mode(parsed, &flags.session, daemon_opts, None),
++        };
++        match response {
+             Ok(resp) => {
+                 if flags.json {
+                     let mut result = json!({
+@@ -2362,7 +2685,9 @@
+                 }
+                 if !resp.success {
+                     had_error = true;
+-                    if bail {
++                    if bail
++                        || (owned_client.is_some() && owned_batch_must_stop(resp.code.as_deref()))
++                    {
+                         if !flags.json {
+                             exit(1);
+                         }
+@@ -2403,8 +2728,26 @@
+     }
+ }
+ 
++fn owned_batch_must_stop(code: Option<&str>) -> bool {
++    // A later mutation must not run after an uncertain operation or lost
++    // ownership. Ordinary browser-action failures keep upstream bail semantics.
++    code.is_some_and(|code| code == "outcome_unknown" || code.starts_with("ash_owned_"))
++}
++
+ #[cfg(test)]
+ mod tests {
++    #[test]
++    fn owned_batch_stops_on_transport_or_ownership_uncertainty() {
++        assert!(super::owned_batch_must_stop(Some("outcome_unknown")));
++        assert!(super::owned_batch_must_stop(Some(
++            "ash_owned_batch_deadline_exceeded"
++        )));
++        assert!(super::owned_batch_must_stop(Some(
++            "ash_owned_endpoint_replaced"
++        )));
++        assert!(!super::owned_batch_must_stop(Some("tab_gone")));
++        assert!(!super::owned_batch_must_stop(None));
++    }
+     #[test]
+     fn input_mode_session_setting_preserves_command_override() {
+         let args: Vec<String> = ["--input-mode", "smooth", "click", "#button", "--human"]
+diff --git a/cli/src/native/browser.rs b/cli/src/native/browser.rs
+--- a/cli/src/native/browser.rs
++++ b/cli/src/native/browser.rs
+@@ -333,6 +333,14 @@
+         let input = input.trim();
+         if input.is_empty() {
+             return Err("Empty tab reference; expected `t<N>` (e.g. `t2`) or a label".to_string());
++        }
++        // Ash's explicit target namespace never falls back to a tab label or index.
++        if let Some(target) = input.strip_prefix("target:") {
++            if !(16..=64).contains(&target.len()) || !target.bytes().all(|b| b.is_ascii_hexdigit())
++            {
++                return Err("Invalid explicit CDP target id; expected 16-64 hexadecimal characters after target:".to_string());
++            }
++            return Ok(TabRef::Target(target.to_string()));
+         }
+         if let Some(digits) = input.strip_prefix('t').or_else(|| input.strip_prefix('T')) {
+             if !digits.is_empty() && digits.chars().all(|c| c.is_ascii_digit()) {
+@@ -1817,10 +1825,15 @@
+ 
+     /// Exact, case-insensitive match of a CDP target id to a stable tab id.
+     fn find_tab_id_by_target(&self, target_id: &str) -> Option<u32> {
+-        self.pages
++        let mut matches = self
++            .pages
+             .iter()
+-            .find(|p| p.target_id.eq_ignore_ascii_case(target_id))
+-            .map(|p| p.tab_id)
++            .filter(|p| p.target_id.eq_ignore_ascii_case(target_id));
++        let first = matches.next()?;
++        if matches.next().is_some() {
++            return None;
++        }
++        Some(first.tab_id)
+     }
+ 
+     /// Returns true iff a tab already carries the given label.
+@@ -4543,6 +4556,50 @@
+         );
+     }
+ 
++    #[test]
++    fn test_explicit_target_parser_is_strict() {
++        for target in [TARGET_A, TARGET_B] {
++            let explicit = format!("target:{}", target.to_lowercase());
++            assert_eq!(
++                TabRef::parse(&explicit),
++                Ok(TabRef::Target(target.to_lowercase()))
++            );
++        }
++        for malformed in [
++            "target:",
++            "target:deadbeef",
++            "target:docs",
++            "target:t2",
++            "target:0123456789abcdeg",
++            "target: 0123456789abcdef",
++        ] {
++            assert!(TabRef::parse(malformed).is_err(), "{malformed}");
++        }
++        assert!(TabRef::parse(&format!("target:{}", "a".repeat(65))).is_err());
++    }
++
++    #[tokio::test]
++    async fn test_explicit_target_does_not_resolve_label_collision_or_duplicate() {
++        let mut foreign = page(2, TARGET_B, "https://foreign.example");
++        foreign.label = Some(TARGET_A.to_lowercase());
++        let mgr = test_manager(vec![page(1, TARGET_A, "https://mine.example"), foreign]).await;
++        assert_eq!(
++            mgr.resolve_tab_ref(&TabRef::parse(&TARGET_A.to_lowercase()).unwrap())
++                .unwrap(),
++            2
++        );
++        let exact = TabRef::parse(&format!("target:{}", TARGET_A.to_lowercase())).unwrap();
++        assert_eq!(mgr.resolve_tab_ref(&exact).unwrap(), 1);
++        let stale = TabRef::parse("target:0123456789abcdef").unwrap();
++        assert!(mgr.resolve_tab_ref(&stale).is_err());
++        let ambiguous = test_manager(vec![
++            page(1, TARGET_A, "https://mine.example"),
++            page(2, &TARGET_A.to_lowercase(), "https://duplicate.example"),
++        ])
++        .await;
++        assert!(ambiguous.resolve_tab_ref(&exact).is_err());
++    }
++
+     #[tokio::test]
+     async fn test_resolve_tab_ref_unknown_target_id_errors() {
+         let mgr = test_manager(vec![page(1, TARGET_A, "https://mine.example")]).await;
+diff --git a/packages/dashboard/src/app/layout.tsx b/packages/dashboard/src/app/layout.tsx
+--- a/packages/dashboard/src/app/layout.tsx
++++ b/packages/dashboard/src/app/layout.tsx
+@@ -1,12 +1,12 @@
+ import type { Metadata } from "next";
+ import "./globals.css";
+-import { Geist } from "next/font/google";
++import localFont from "next/font/local";
+ import { cn } from "@/lib/utils";
+ import { TooltipProvider } from "@/components/ui/tooltip";
+ import { JotaiProvider } from "@/store/provider";
+ import { ThemeProvider } from "@/components/theme-provider";
+ 
+-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
++const geist = localFont({ src: "./Geist-Variable.woff2", weight: "100 900", style: "normal", display: "swap", variable: "--font-sans" });
+ 
+ export const metadata: Metadata = {
+   title: "agent-browser",
+diff --git a/packages/dashboard/src/components/session-tree.tsx b/packages/dashboard/src/components/session-tree.tsx
+--- a/packages/dashboard/src/components/session-tree.tsx
++++ b/packages/dashboard/src/components/session-tree.tsx
+@@ -1,6 +1,6 @@
+ "use client";
+ 
+-import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
++import { useCallback, useEffect, useRef, useState } from "react";
+ import { useAtom } from "jotai/react";
+ import { useAtomValue, useSetAtom } from "jotai/react";
+ import type { SessionInfo, TabInfo } from "@/types";
+@@ -49,9 +49,6 @@
+ } from "@/components/ui/context-menu";
+ 
+ const ENGINE_LOGOS: Record<string, string> = {
+-  chrome: "https://svgl.app/library/chrome.svg",
+-  firefox: "https://svgl.app/library/firefox.svg",
+-  safari: "https://svgl.app/library/safari.svg",
+   lightpanda: "/lightpanda.svg",
+ };
+ 
+@@ -106,34 +103,9 @@
+   return <BrandLogo name={provider} logos={PROVIDER_LOGOS} />;
+ }
+ 
+-function getFaviconUrl(url: string): string | null {
+-  try {
+-    const { hostname } = new URL(url);
+-    if (!hostname || hostname === "localhost") return null;
+-    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+-  } catch {
+-    return null;
+-  }
+-}
+-
+-function TabFavicon({ url }: { url: string }) {
+-  const src = getFaviconUrl(url);
+-  if (!src) {
+-    return <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-muted text-[8px] text-muted-foreground">&#9679;</span>;
+-  }
+-  const handleError = (e: SyntheticEvent<HTMLImageElement>) => {
+-    (e.target as HTMLImageElement).style.display = "none";
+-  };
+-  return (
+-    <img
+-      src={src}
+-      alt=""
+-      width={16}
+-      height={16}
+-      className="size-4 shrink-0 rounded-sm"
+-      onError={handleError}
+-    />
+-  );
++// Never send a local tab's hostname to a third-party favicon service.
++function TabFavicon() {
++  return <span aria-hidden="true" className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-muted text-[8px] text-muted-foreground">&#9679;</span>;
+ }
+ 
+ function TabNode({ tab, isViewed, isSessionActive, onClose, onSwitch, onSelectSession }: { tab: TabInfo; isViewed: boolean; isSessionActive: boolean; onClose: () => void; onSwitch: () => void; onSelectSession: () => void }) {
+@@ -158,7 +130,7 @@
+               : "text-muted-foreground cursor-pointer hover:text-foreground",
+           )}
+         >
+-          <TabFavicon url={tab.url} />
++          <TabFavicon />
+           <span className="min-w-0 flex-1 truncate">
+             {tab.title || tab.url || `Tab ${tab.label ?? tab.tabId}`}
+           </span>
+diff --git a/packages/dashboard/src/app/Geist-Variable.woff2 b/packages/dashboard/src/app/Geist-Variable.woff2
+new file mode 100644
+index 0000000000000000000000000000000000000000..d1a0cbc66e39c773778eaa989ddad838b1b94901
+GIT binary patch
+literal 58512
+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
+z-D>L=$gB;WyJA6*mxs^l3%0A5|Ex^Ddh*XEX3yQ~VVl2M@l5$;aBYkJ-Jm~$Lb1~=
+z@{D%G3r>i7?a@8^Z}8K~^_%`%X|CGwCDk~|O*Z<OYv73~-Mdm<c|NX|l6*MzFiU2Z
+z-ecC=S3;DHXUdA7+H0G7LXmUhl(#<o>&m<y+U#DPIAtmm@3nxLVpCeqiIlQ#S=z*S
+ztV3e?E2+7>)1|5o8G3EKd@F9MHQOB#lMkn~(_b&XG-cfe<NZeKGCiLks6LRsGnP$g
+zLSV1a_B(PPU8Y~!^=d2YqV>YL`?jh+W92yf?$w6$Mj5{qVJ<EA8(99oZZ1oZEHq;0
+zY8SN>Qkjt)bA0wv`Cac07Nks^y78>0t?k{VlL8k{ESNiUjo0(jZ!%=Px0L>$<hH}%
+z*h*VY;~UG<`S<$l>&^d|uy6<SoRYTvKj*#lw_fKpVO5s@^7VH2a<x29en0JPS;ek&
+zH&Zw8!fTGVcSRnpTb()a<3EpwssFvNneK@0PCox_`i{O6@t5>>%u-)5=YLhm^ZVNG
+zlIHGN`!8{`Fb{9G<E*u7KN|eI{+IvJ|EV9UcPFT8%vh3sMmjRzY;N5`uJx%~g16n~
+ztNLZf)n@U->c_5&QJ$`P;ZFt4E?Yg?YxPJ%D^u~Y4!2L=-H@(k!@@T1OtyK?t+ckw
+ze_QNlu`6R@%)e$wTl>iAkG;yPy^oz|e(jZ+uJOAxg=t6QuFfp3E~^F2rLRi46YrEC
+zo}#Fw7!zWnyQZQ#Z$h1~%A+(1;~ZbvhszJUrKtqD-&enA(&OG!V&waL)868T^S_IC
+zuXW!0RYd-frjO_ij~yEqcE~MNcsI5FO5vAjvL$JLeLXGQZmz2yH2<|Jo}4v>PpLjA
+zp2Jm^#X0eOcwEG?9;1gP>Zb%_rz$C)2;mAowt1D6&9UmhbOpWaX>$Ev>|Y$xEB9;E
+zyBd1paJb?$`EX~GHWB~+{^b*Hf3>pL=d`pu`G9AU<<x(Fy|e;fs2^Q&BfnBq|JE%Q
+zjb8gH=iS!_h3PLoG%K5P;*y6V6>aT5o!y@7&02i9+q5<`MA)UoQoq1&pS8WUblS!Y
+zrNIABGA2ys;s2JdaG*-&``#U5$94Lhj(fU^MoF8>?$^k2I>OhP#JpjD@qy~Rj5N6g
+z8XQZL)7+i39Nm__d%_WPYDUntm}E1N>P>I_O>EM)c!(|iEiGoM7XJAVr-<=_JyPd<
+z&we(s;yvr+dHwUHEd2n5gN0#SFS3_>p4#dpwm0@@#;Fv8!hb;**7!^3ul3sHseaV{
+z#J(NRgB{nFDO|gv_~6=_mvM6nt3yvD`A>hU(DRsMIdj!oiT0Vywwsvkzs!xh6zn(Y
+z*Rn$$9@#0OAIz%k*dEOL-4eOsYpscgy3t96$B|7ZN|S#+`kuT&Nv7V{_3?V=O^*db
+zG&ydb@BMSd-#9~>a}h_6u*c2^qHDKr>*;-8TJZ5z>|Ouo(@OH)<O^=p=R_WHn#Nrz
+z^mCu;#{Dx*7T%G%@Wo1(&8(|zhv?c5=P$GNL|zH+T6&}IPFpRX!tRgVttDl39{r|^
+zr*nTvO`Y&{QLvGJz~;_|x0m0Y{B_@~&c#yetJSo<vK5uv1g<Z7B`oTzrWL#XvS9M>
+ztSxs>wZ%-_#2H%dz2*41=du&oYUO_<HMVdDF8f_Nqd<;Xb-nw6X^(14F6^IMu4A&Q
+z=jG?$C&Q+0GW@JKr{=!HN2L!Qr<dOD;Ov=mHpol1!SS>{*S)SUSr+FiAN~Dy^V+fW
+zy;3_qX#0Ph`;FT+_1HW1ZB1?lp7yI-isznJ?RvtV^Gozz&bwfr_$js@z3PsAHC5YQ
+z6dqtZoxM(RU-z}!r4`K&1+0u8{=RnY#Qd0r0+x4Y@%*XH{n@JjG>NP7zyI`mN36~*
+zem<}IeC?-g33E<yez@m-{_}ZDna%I+F;(AjdagcCWyXt#85RdylnYpn1QvS*hd;Fb
+zvRTR`LVw-L-@&YN3-A4Z;@NntHlN|5>3#jFddh$H&g5TF{NXeERsTbqo-aKf$?&_<
+zd%L*X3cJhfBC8wUosx52_d)JUq^Z3l<DojEex@E-r#G(Ie3KsUjlL9?)OCF6|Ie8l
+z+6>B9bRYB86Mh)EXp8(Y&D6QpT%75Dj`!5mB<fFFTBpRBUVr6QUgYyRK_`9B%1nH~
+ze4&e(Y4yexa}(TWu*nu#?w{go#8rFj&!*K^SLOvOS1&yr{X<Xlh*-+&JElU~)t933
+zK8s(vEnO*QvGrEXtV=>IiZv2`Hgf#ur|u4Px>wm}c{z7$RNb22Z;IwTcj8iNyCiE+
+z;$3nlVp~<nrp^|LNzJ+QABffOZ*RKK<yp1Wu*QAC#@`Fi^jv(kpzzuSqm$M8>z16K
+zbLiU6&NcUHcYbO4{P2N6^_G-H#*SI4X6rUje)3ROPxJ2csXKl*MrbA+eXzjo^5Yek
+zOt=28tmJIhd;a?8e~G8ug|lW_dUY+EqV+CID%?H9OlXEvg6P_<M^uy!o)Ge6kx1J%
+zYkkAki?{bOepss-U00K8`S^9w!3+Q8!@d^0+ghz{veDs4&MODbX0NKZ#uv@j_9a9d
+z-r#(~NWyW$^yTfh*z!)X?pd=U=+5`AGLvrDIcsgL4wMa9^FG5<Ep(CW<Ks1H)Aoe@
+zo)xs&_sy@b%sbESyt+2+^UIzW+tgkKc(hK-b)6LTY7LL$skNHN*Ponu((0I(knuIy
+zqB$AgBd@ND`m!h>SLS=-DQ8u?NvEFGM0Z*BDe&)5)GrgYafo+g?Y*%5WcLHD#Jy}9
+z=eNvu7SVLyut+K5y5Iys|1+!$)2<7g6JYhyI_&iDmg_`M?{yUu`nGMfiD;R<Mdevu
+zo0P=tIlof2Eq}E(Z0aj7-rj$!_UxPaY{dx$r5O1hmJ(GD1=BZz_nunWHoUKipU}uD
+z)9u=B-Juo3w!-h2XhrBAgCrB@r2XNm)~rmhH=byiGrgH%WoTJ!?+>x4<$Aij;>IVf
+zi{?Abt2pd)dkb4wD9eQn&A<2L&f3kSFk}1NV~;-w<dtUd%{6k)eto-O=Hl5~xvZsc
+zPtWX6-F=+X>duZkv$s505b)vQi~NO#Pq}iEKHvPZS#UK&UYFuGwX+iq)~apUbo{8z
+zNfswQV+Akf3O(DmimcHOSZ=?1?7EEABFB17w*U48|6-=^>P_+7Ra<2ARQq9X?RMVc
+zzme{Ri6K>)uPr@zZzlh(Ix$1nkNuR-wxiSQ7tPENEWMy(?WmQn<Qsau>uQ1Wq@J_P
+z>ap{KStl9SS00xub3c*DdghYBv+^gca+WJs=1=j~Qoi}o_}8i#GSB;1*1uAlI(u=;
+zyML={!z%OA_it|UoMV0F&*t!ZnRd;g3LeQ-p_W!Ia<?YEk1q6+)!VRzGi2%3k9z4L
+z9m4FfOHMONY@fX2X7b0vo^uA9+n+x=_)U*%nPlgQHIEV;W($OF<h)R*_gu<hLd1o_
+zRbrn{OgzY_Eb-{S+0Vs=^;28J{Tq|7Tzh&#HC4<0M__H^?;G})oNgQal49w%?hBoF
+zfm21UXG(h7UEygHrd=pGTq3wb=IcrxA(oX^X@4K?(K&Cu&|dL1uTr>-osP1$YwDc4
+z>AOAtoVzL6b$i#Ly<SHGMJDyNEqmx6xv%T_nV)yJ6s=fk`Hy|=E1t^Py3<(scAeO>
+zao?GA4#u7HLef3#cik8Km9{kV@D>Hn4N_$_<@(!L9Ba8|t-NM(#fv$&g}X(@GFr9e
+zfA=Ha-sdw`-R#@xU2stKXUtX6$$bXvxA{i8OLJuPD~8%!TV0;-eeL(nscVb=JveH4
+z<>3Dme(8!#GrqDnuacY1Lwn97CW^e%>SxS1_#nh!XO$2?`QX2NrZsaqbzL~a9CoW#
+zM9=5FqQ8<cc6YenQG@IqH&01_xT&WmcFAPMaWS`Sj_-$FJ-Sr3Jh|>l#Rl60O6^a7
+zb=>{X`8fIH{I{nVZ&zr{si+hW&iR-vw5R*`ja3`dqZS!!muqd4voUa&vbN#vy?A^3
+z*?o?)9)w?P*mGTOmDBpL-McF78?GkGee?YO$-kj0L1>2SR)%fy3tL!oW^Yz&U#O9n
+zb>M=5$G$aI+-C%Sy*_N#&ABye--?p+CmvsYT6sey?LAM6%}Kkd#oWb`yQew(*}t=k
+zmgG=8a`F4Y;tdZUu+=HoYZvA4`e@~!{u#fv*=48P4oN#>6}bf$ncnm@=j~5^RQb#M
+z5%;dR&6XE6;ul*U^|)g9>Eb(M`S3FN>|JxG{+{*l;~eMSeYLfVziLmPANgwTEZG91
+zsh@c^s08+~JU;nhX8$67`y(}HPF*~-v3n868+EmXYy$5+<1CA!y*Q;m7=KDobn1Gv
+zIKd-8c=KgXmpFmWou+zBKBqSy*nd2pCD@r&BrDsh<;6B(=51eRraqd(vdqVX@$@m@
+zsq5ZU)%Nai)41oKID5IqhC-H}TQ7d;J#rJMJUHpK)Y(1*wsl@2yO#Y-PX5cGAFTKF
+zQSQR4PAmK7Hl46pxb|}FzYcjBuJ__Ki)?2)zL>YjYT6OD%VEh6`R7^udX#ZyuWicX
+zD0?ZkFV07M<}SN^m#ymNDvj&eNo-ahF9~<m^6Z(VbNXao<96Qo`%!E`tXgj$PMZ)W
+zZM=ecQR0S$b@r_a$G#M7y6qw<w$E?@n*-~sV=f1_t_;7jf?;Fc=D@C-*KCDX>G)|I
+zD3(vmc$p9%sk7n+^P~eTi|)Hk$yJ-=rs+Lx?c!CdB(CiXU+Px5WYJDX_LVQbJ=>D>
+zb%s{^BbJ<;`SM%`xJ5gsUfrg3tT9T>Bx!r<)8*Y8E?-bkbGSACL~_IKv)pmVrl<%s
+zFn|5Qa^SjUmK(R7yR&WK&TEx%yFECrgh+hl3%TtoTYI9DZFYcaU-z%a*VGT^YHYWb
+z<!G#*>@}J7X@Sy&|9hT%IBj(I>5e~5g8ciXU03b@#V&F(Zl7kj(bqfS8#*j(^x}dp
+zXD`3V@O;vV+?qQ7PwD%&O?_(WEUb8Ky`62FkbmQIs|EpP_s7TY{90<?e(>S1`w>$s
+zx^xRpX!b9R%zQHY+{dYloh17lGWL}49G<`%l%m$$GxPbYbG@_q8oA{TUU+>`@yF3P
+z!TVO1&Xq5BetLDYpk#(~#PTJ7B(jcnF0%iY-RHCT_u-R&vY+fo6#Da6*jl;mf91xX
+z53Fj%*u<8(>hvDg=<Dy=D}3guw^jPV)7#!pnQ(7MWV!)cpV%!9FNJ5qQOq7XS5EDC
+zaMWkgnRBMUA|$<yq~0#v!1`iV?Y3LD+VzVR1oc=R-V^?A>3fN1>!UZ@*K`J-b}AKE
+z7J9$p%dGbu9`#r3PYP^VZTQBPQ!PxWY<@|!DchQu<n7r87A#diwtcvjap_T9_X5?Q
+z5jpA4qowZt*wL@}<=@7?y3F@>?0r4q<ms}mcVhpxaIIUsr>1P#?LwQ0l5W%L>;Eus
+zUvKkEy=}Vb*;$YM?f?Eb{Qds_5AzK7HZvq0k({SBZ@KWy$sd(Z&N!fD>7^mp`Cx5m
+zk2_D;>4QRdHzucaoHUvEVk`G4fx8uV&xMtozxAeM#pdR`{DkJ&W_ew#J&tp42(@*s
+zNIxwg;{0l<&9%cf>$g6&{Km|Xvv*ToxWDgg)whl8|KiGT{PnrNMBj!h!_(b@G2?Vq
+z?uLoylus!6#>T7*ReSoa@8E|cOZbY)RWjad279ik@;g<#<qF$RmjwQ2j=zHqEg3dC
+zh(z`4@9<|ib?Zj#F)e4~0~<ddzx1Os`2WwXIpHsiGHUjeN`KSXvQ_eh(Qg+mE^#pd
+zZle^wOA7)HxL(poVfLMVRVGefv46q+qYB0cQ_EN^Wc<$ab^g9n5_xI;wIpFBM!#LE
+z?Y~wz);-d-`d;@)Xs3ipwDbev$@^|a|6$GO)Y;r||MR;?WwR7F{EUna5v#BMqqby*
+zg2S2}Vrv#RBxl__xNXh8Ei)r!o;*$4|ADJx*6SlRi#Iy!wn~L_v9dH?Wz1jK#&Dc7
+z_&)c?&{x~OpHR=T`21YHKm9;|^t*Fg4Yl?;nS4u2X);g}sMhfHDK1w{@Y7f}(KT(k
+z5zqc<r>l8)e-<_QylzI;i%TvFx3UWue=>c4sTZ*A-x1%agS_n-z9JvL&Q4lY8+g$F
+z*?rwvdKu^PyX<X##vZHuq*LHC=W&j&UFYKrg$=nvijVVl7sllpt$Mh-J-tb`_OpiE
+z_s4G^v+m!>+kf@hgNm;P7Z-K-{Pqmi7nxVG&Cd8_>h@cV0ldkEOI^huJ%|dlxyWMI
+z{^gS2EXQeubNIfOo|uw)vvWd-aNB12-7_9bY98k<+}J4Au5A9VW@f#CyW9L%cMdZ3
+z+^IXa;KfOoh0Grk-ltD|CzGkCbzXn}b|sm@+GF8q3#*nIU%2%w=Dos)mhD-Q=MuP&
+zr^zhTsWsHeuKiR0KI{I5#u96m^5%8hbz3>#^Ii(#T+OyWMmF~QhlnRX&P<efV&<F?
+zceDJ-10EBrh~Gc?9j5qr?Ai3Nz0{s#+OPGD=loAUnU+>sTYBT3)&7ez28@gL#W@7b
+z;bL(qV>5KJvh)9N*f>epZr{f48J^O=ZBN+8D>T$`sg~S(UZ=LS<BI0@oFC_2rSKZe
+z@kl?psw$lQws3N_YN=mqhFHkrR^OH36KCrz3EU>XW{F4lc_|nDy)`wx|7OeyZOIKO
+ze1B`%%Fn5n6h$+qZ;4tvLCa(Ek+=!Q>|ZCU3AWqssk-%d{e2tNqWq0wrRSRbBFiS(
+zeVo){$ZRzIy3FAWiG!uTtDY_Ah*&1K{Obkx%z1l7ZGUk-|J@(+@uY2__<?&X6+dKN
+zO?efxjX`%+Mnc#<XR-AYGG#7kb>Ht@F5dIM{$*?Tq=<JxGv*X=XRxvBJ`3M`UN)xY
+zqwt~|zkl67XD1#1W!L__8)JVRENQHZlie&~-MQU_>G%WVA3eo#Wl{eV)-!Te&3*FK
+z<!hH-#)aDGr>FKLttzb-x7<_v{PXiZwhtSwvp+Zx^M2Dqy<d7iZWlA<FZ|zGA6Fi$
+zb)(;OcL0NADqjY7|LVByn*#OAL#4LnS#LUbH`S#1j+<K~3y-V5!G@~m)80k?VSiv1
+zxFvGk$Ir#u{(k)J6_&TmV?#E~bNH8OxPO=W0h#0THEw-=FT3FWyPDAA)dh!jpM@6e
+zKB@Fkk7>eJ+r<-qMJvU<s;W@DV(`JR`A}<p&E3-CwQU=X&!!rLeRsXJr1I|JrySp+
+zZ9jgW`*W@9=hOdwe$lu8%o9`bN$vNYn2gKor5bJt?99Dg^Q<8;CE-)mk5lKQ*=+5)
+z611IublvKe?bf>!zBhaAHERPePK%Vk20@YsDsud@zp|YaI=-m?58uUIWnRtat|><(
+zKP=pMxOU~I$q99LXZOa%@Ap|?tT7|d;^M*E%WZxylKo@-`&-baPtUi<=f*c4KcHN?
+z=InXp4t2pj=`%Qv{50E~d;9Rw13sHuIX*_%)Mq97ZfvvAeD@}{%$b>Uif^B?zl%U9
+zd+528nyfPgOJ<$_cu{>;+a4By-C<oFhv$agzty!T`L%1G;MqkJJ=x0jMGD0iFOThr
+z)mLIOul%(oQ$KY<z?O-}Wu&wl4{=M_W#-JPZ8JQ3EGADXFSfheb5>rHsm!+}jw^JJ
+zAJ-8oD7I7JYGyI_(^Z};)o!vWg8xpb*}>zwaw*N4Kh?UvzrH_BZBEZ6N70CvPEwb|
+zm|rB?YWo?-&Z#ofe&w)O=+TntLSjCxMFzaS&8?pex1C+~m{EjL<eOJ&mh;|M0q3+n
+zJrlSc^Ue12lt2fcOU+NR0#7U#(Byt0@WF(A>6Fb!*dxQbRtk8D3Hd)WWn*t!lcvsP
+zc3$txW3|kMsf_ED_dKybSQL6sRfZ+;x6Rk7{&vZnQ|8Y$SE#i7d}rZ(N0*BVbNqcC
+zum2;#d}&(AM~{=9CHXte&hfgQ*vHv(DnWF`-tLO)w)H!GALxC0UL0>%=h`{x$;<t_
+zZ5Ql)?i%BjSNDB(^)21Sn*aWklw53fSfRdYe}zr-oY=r8zDtYm9dS;~yz6v)eX`4;
+zPMtr$tmL&@4>_CU7>NAeZdT?dw0G5`ysLUvr`9ak8GA}dqI$P*$v5M9A*}&x_c!k4
+znEb`j&3kWllWMGZ%#UT#^V1B^-oI3nk#peE+i8bughP*;-gxxBUEf=0^4}iUodGL8
+zW&JUYdU!8kX&|SV?CDeTDOPneLM!e{uTi<ba~4--sWV?#{LzAQ6aODzTDai8SJ0xM
+zSyuvYZQgxLTO?=Y>o0RYM*V-XvghN+bw^&b%njTy!@w|Gse!{X>Valh_@SU^*K*%!
+zrot{+D|S~$TYX7L`4UpLQ((a^h0;l$7q0GOk<B!kmJzs6+HB@ofuoGdU+r2}=YLf4
+z=~DTWW8Hl`P{gM4^sL@R!HX3uBMx?KS`s!TrSgty<;8;^6{p-+cNSr9jR>@jnO0hA
+z_)K@1+ELS`bL3v1j)-{EdNSg<s$Y|6@r_M;&Yb-iGWAaPoM%dJ_}0HuN-rx*-}`z&
+zL-{GE%`^Y{Ojvup^zOl3Y%xEslo;)N!QxhR?TO2&n=YBj{hyys=Bzk-j%(%oEw_Jd
+znrl$As`{4Db|*W9J+B;(MdfbpxL|sh?~+$+cGtqH&eYY5br`Q*NxaFr<w^om%VU)-
+zu_Y52_MG8c5_rrvs_+?$SirWwvfOj$9X(uP{YIN5dy%(a=3e;#rFJgI<x^$`_inQC
+z_sRUF?Yi8-`g+sv^q1SBceR`H2)ZxZ!*J^5<CjkxpGs?3UpC$|y}at}znrtbD%Rdv
+z5%p+6V9*RLWuA<zMLO~Krg!JoUw!3y;+Wj08|4$vc>dF`mVI!F_X#V*?f61AEho>X
+z)0P!g)(8K3(X#f`+h{9ij&hqj|F%C_>zj8ozPdBT^=(#ts{O%jC*z#^_H|#e-^=y?
+z?;*i|tN+b>xcaT0kYvn)CXdA>?CinU?*6gne$TU8GylZl#hhnvZ;>~0KjU>)dVQkm
+zg?oZ8_w=$(FKNl18Y>p4Ju|1arodp|ue!doX-{{_yj{F#+RIxJjL8#{RD&az_AU5w
+zI72vbb79AX$)Q5;R?K2x=#N*QFDrFJ<4b|ogIy<DCw<rZba;P)9g}>m_}q4B3H6wR
+z0UzZ09sjf*pCo7LVEuUJbjil#8RmzNsva&}bXsTfKgV80x99D%8Uy#N@O1vs<HPbc
+zLiE_Q7v=XZWq+4=;$hY`WA58~>5JG>cx>iAw_|1#dAO)+8AD*&d$r~U(?5Z^7cKRF
+zFz@hS{MT{K|HZ!h3}+Oa-v2dNH?h)wgI8d=?l-3;>gs<&-Z$xs)$L3yeZ}7JDbeQF
+zsmI;gU+=K~Ug3XD({I6leg<xio^L`7&!#TFySr`bqh9_jwi6dm{8xOnbK&;{#|p+j
+z#xuS-y_ogmjo|jU6_1&;*;|S}F_()Tvb>e0edS^w!*L7F>G^!(+~Q8VA8WNpo3XrL
+zVN)o{UOw--WAYj`Zp+#3pZ<Idi+jwtS5(5{%)|*Tuh?rk`=@a~+!wsW=8xY(sm-<)
+zZ=>EWYT4AYmG}9cJXX~&ZZd^l3-~u(mD~Dd!X?Fm>RamR?&sPhx0-4l3tD@;Vb8wK
+zTYIfSZGCtC3*}>Zx?^!@>Cf+nPRSQuYzlqAZt|4Xpt^m_1TNPs*&WIb7cNORO)F{q
+zJlQ<zd2>+TocnPT6Aal;L~NSLAJ3V+W7qo3?1KkC2TOEnI2|??JH0?iR$%7VtD0_R
+z_mp|x`S&O+aoKvRd)tJqE}5?s)=j;-z#u@`PWeWw!RsqQdymEo=5<$}SY^Iu3;(LC
+z=iOaXmA>5Aee_p>f`|nBA0EdiJ*lE;NlNT>`CGm`vw3Fvq$c3;;bS7woZC`gnLnK@
+zwzBuW;`dLsuT;AAL$gAYR!ulR$@JjO_^!)2Mw4ocx8|K&wqNeXbnnxiP9O7o|MsZu
+z?PfDgS&(%qtTVKG%3T-JImJ5rb{yGmQ=NTDD{I5^AFsq`$#P1`o7=3}qrM^gy==?L
+z==s~aH{{;e{=>HX&--)zB`uqCHhJ6>vE3iALcZk>J6HDM8r9!BcCn@Wy_Dx^Qr-Pt
+zN_?K;d6((?&xN>iJS*59bv{UNW$yFn>y0}<er{E{>M%h<Y2~C_k}b<#3$fKIuQqC*
+z!DBgHe;LQM$bt#B2X4hKoo#egWaaNJi|_(huc`~H?Mmuqw=Usad4k8Rv;T^jLGPN!
+zVcOR!8-q2gZAGru{D?MqT*MdZof5Em&FM2iZrN;C|ETD*tde&-AGVxh-?Wu;ZyfKg
+zUHWa^61VpfMM(nNqCQ>qeX#rd40-dWm0B~`rK}c~Pf%Inkjmj;bfq=q{=v;Et^S&p
+zc{LmPIOmASHYoO7Pw9EM$T-n*{@&#`FE@THXnOKmjZwUdc?m=5rOEkC=hkkjf5z;R
+zbKybT=Zu0anGe+L*LE+uFg5GY`@UPRR~=lRl)>?$<-*PF=S{x<+_ZGrOqKG$Yhs6v
+zc0DWKK10i6YQ<BYGuvx2KP+!dy_k{pr}#<#lmq*&&WveXd#-{zx18<#`KC`#SfB3M
+zy5#xZ(7l_^6)j=V{ct$I^||q?X}5J=ZkXQi+hHc_N;{R`iocV71<#qj+UnwzRHm=d
+zLN7||%U1^-vOAsB5_IG}`@S1C)8@KoIO=k{*R1usm9wvD)@q$BudfTIyfX-yvi!%N
+ztMk_{+CC+23+u7#pY3O_uMxdHmxXas`u4+Hq_{8tZtr9&V_jOY?NiaTQ&Ein=leGP
+z*Ld*0xUr3M!<Rb>3}Sj)CN}>UEp{liKE1yzbEVdg&mNUc)t$Xjrw%<RTV=eWcEO^G
+zZPuw#PIrP2ZfE@QbFJFT+`_Y*43ZB{`&oq6G(Gq+_d&Sdd*3@eP7+*9T#XEA1t+;S
+z#{O6<WLoo}_|o)at_R#-ol^N9-kxlrmnHDv_)5zKL4E}xs*nD^2uwdBaWA_-Z=$aD
+zk)2-5XLp=P6uTag#NB_v^i+(t;mk<cP0MN`i%<5%R*Nz2(s<PH&&9Rb_(UYjIli3@
+zJN`V<@{m018lips>V;IT>j%QT1J8PFd?2()`pDJ`Pngy<$7o%5K6UpFL$>t}!6Nk?
+zo-yYAvtMq~JH2T`Mup1hiuTl=-tx%~OOvi1JoU;+B%8%-+Roc~4=>y~XvJh@Shc3?
+zkXgf?2W#fWcJnm)Jf1An7r(~Qdh<I5-cxb@wI!_2(!Wng_Wd&V?x_`;o|VEXKQ6Bb
+z+PmZLKBb~HQ+B9zvTw?~$|d9~vr^}SOZr-`18daXrhPg%+eg1$a7pJpMz@Pn0(-UR
+zB^2t3UwhWrv2bx8vx9(+f^LSNZ0xj4sqgxN-B%jyOX%G0^x<0a&PSg6*mW<|en|Qk
+zm?H17xp%rEN8};q+{w#w*EC;f_#rUm!$l2l-``E2H(k!?O<p(KMECplUh@anC7VLN
+zr1?9)lwEP_*rHg*i}5EME=j6aH~m<=oaOD&h=-i#*MHN_m~B1l?%9Zyp}m=R-iQ2n
+zQd1L|FyoebPI*(;{SOYTpYj(d1f`Xn-7xv8cibEidCmuW_Hl3*ioDLVUwq}C9ACtt
+zpXP5T8&t8?FwGBn&TY3h<<1Ay9i?ZNC!APfCAxLxKE`L~X75i}_$_<=<LHz_vVnV6
+z9`&B~YDb;q|4*WP7dvb}XL&Nt%{DUHTeo(BX8GQO{I9S57JK@1f8}J^yH%Su6}J>E
+zy*mGi_zPVfExn8CVOhtd|N11}SRVUVrOkddFURdw-y;@J_|-e_6t{eS_Ir;DoZlvR
+zzMnlO>BTJF*!{V;zlPce{Fk-nH9H};ndd3<9p2q0cWVVLijG~#WNmwI*t7d}khJOb
+zL%;p`<*ag?Tmrlg`%OFbrTe>7>X$<0{BIwmbhgU*Zn|f8w9H-Tl3|6)irf=(;#rgL
+zD8B76y~px+(oCKCvtMlZ_HUBvY>u41IZvt{DZjnmva_hSrg2@-Mw`h_#z#XY$9kWd
+z!X;b65}$gX^AEFTmFj~te_oaPHK$*5&B+&cYoD9an5V2ft!k0{;RZ+NwqA(}CRui=
+zZ;v+4(W$*<Y@GJia_8jA7XryQCP!{fyXz+CY3?2IQa4-eQu*7P-w(y{Ync4IuxZnc
+z==VCaEpE9Vf81Fr)KR{9&&}#gd!?_>_n#M@>9q9XMPmaa(^+fFmfwEO-{$DS@vAuU
+z>g1O>`y$p|yRsnp_S}d!(%-7g+mwCJ>aM*Qv1jdG<%=`lyn5&Pb=mJ<>}>6A?l~#i
+zUaNl;Z%%!^?X7j$y$#vhA0;T=Z}sWj>A3&E#Kp(+to-!NjqMaa3d%;hxQH<ZPI662
+z5lm?9aZL0$qolSu|HY!DD9_BuO4roTujP?W_Gv~>yIrj&pMA=GG-zkg+N;t!>F3W}
+zy?gogb$bJgFK>VMmrgGTwySeCNep%MTKZr0@tp&0(=R@|_U+ued;c7-+1OYeJKTNi
+z$d+bV_MZLj%g<Q+`So}CRXbbj{X3SJ?LEB0aNiZ@-KH5P2^T8%8*Q~&-u}g7x5CkT
+zGs0~$*&`3-J$M+fXX3#ElW*M*V{9yKt-q`Di!Xe2eLr_d+i8`ji%ta|4>lFPnIZm9
+zbX8!%NxnI;_wU@hYj0y$H?>|@C&OUY88PjZDMy&Yt*xGZnkRnp!6&ZGUl#7Y@3#5q
+zf?0}_&TI&I7A(@1eA9B*j$a9dFK=wBKN{M<er^7o8+UHqyXk89y=;1zRf-Jb;qafi
+z?x*%nUcRosKC(pOwD6S1=<eVf;^&MMPez`bQzq7Rw$Ejfp|->dGs{z~imEpbybIEJ
+zpwv8vqi22Wts}{a=ln08xVZB7GWY2Ho%bRpFQ0eijcQuCywjG?LI$?)oF2#&T|Dof
+z_3iF~wF&*~ky6bvVk{<Hv(D$~c(AhFX@9;@u+%KNtF?!*@6pjGM}-U5PrKB&a^VZs
+zywdDxZmW%T(%g<5Fg~UjcBo9J`f5<B&-Iv%`-~T+RZS_}sCPCcY=2Adq-0amUZbsB
+zA6~oBQW1Pbv0U0|b!6}Zf!8xiU)ag^&UI4w@FH@#=ahw&9h{pU&N=Jxe%BPYD=U2$
+ze_#(2Uwk&y=*^dxt4-QhTOZur$(Nk^>GSg`Z(Kk8_k9!C$Z^6^;)~79ro)nV*$d=f
+zJWc<(aPvx;Co{?}7f+Brw%A5^g7f9g=R-N1F9<iDd?NcS_kHK&J$lpU8|6gv87tlY
+zbu-!BFpQ6L&1s!%_2X}Hgl6tv_Q7bAXyAn{HzX{LcRe{a|I$n6>6J@@3)gzR-1KT!
+z!rkJ?i=2Nl4j1h{x!Qk)^sL8LZOq5#9Tc1)!nyEYbjggoMHdcmey^1>T-2MqMD=7z
+zrPn>r2Y!2h_}FZAyP9_P|J<4fT{D9ugFkI5@Q&U8>`ijVrjp)Gw=Xa8-CZ5ECAB?P
+zq4wx1zPC5tzVxwwe(GrUn+tj$-c4JRmzb!$dQFx3{o4Gmesx>lzkB+{`|rZ#U+r!;
+z{VwP~wz~APnN+0wKE3Jlzu)AY5x9sqC^tdkBOlY_YQ{4U`A(l%nVsw+Z9H*_O6C+V
+z%_%CqCSC!P%7SKn`&efbmunK5)AG`(ze>3#>QMdW8Alz091AtCq)t0%qsbH7`*feP
+ze>UGL4e{il>k;oRsIFgd=vVN)U)yj0k>24o>qqL9ZOXsCJ)5YlGXGxo#e%0!&iQRl
+z0$B<kh6;KQl9d9q8Uj5Sg~eO67{xqd-KVR`#VIpq@v?{tJn>G;^<io~sCs1jli<aR
+ze+unAw%)mxPcM{#;ef`HPfH8eB`yeDEqRdB>rs-7^VC^dCISLIihHHvlz4>p%ei^K
+ze3#xVz2~*|YpXY<`rG=FuN@V&&2<e<Skb6(^ui8>cy=+3UeOw^85T8qp-Hhz)-CoH
+z=3hUNu`Z^`ftTgyq)6#*hr|NTkE%bfyvW$+vi{@ifceg11`93(`aboZEc)-KYK(WY
+zfr}zvra;>ohNhzjqh8M1Fr~}T>RS7?X{J2!sWt&$=Iz^Xr$0qsrT53wBE{3%g6|4+
+zGo#L?fAB3&bi4L-Rl#<tJ_kov=i@@Xca5@g7+4w=10??JyYa8#PVA0Av(>H3Omolu
+ztvWm>(kE`}!LM!FsvpdM9Clr0taH3<Uc}xyC&`@RxdF=`W<77ZHuv9!)%tqM8(-?&
+z@;z9#_Sl0cX^&*)gRHM&7A)2X@P2q<`hCg3<ivv;<~C>RdL%m*EI8NLrxdZ{_~lxQ
+z8B#^g+gG#ZPTQ7Jc-r&+oH-Y>96hGZ=Um>vz|O(syuiT1X{uwpa_|MNj?9A(3oK$}
+zzT1aXe0o=}$vWHGW(B7U!>nD?EkyQ3e1B?RkX<O&kY88r`(g^q?<tL!!u8gzk2BdH
+z*uHCr@VSiO_|6)qwtvU_Qh26anNVE4>eRVozl17Vi$qtrf8(%IIQL?zgYL>#QDSeN
+z3cX8xy?D~}^R_P0bA)SSW><ZRyr8x$P4Puqp|I)$4krF)SFH(bE;4})im&~6b}am`
+z^5E;I{_FRyS6$Uv{`<VuqCVqmg3EcQTzeCr)^qyXnF|h%9y>Uqy$|2}+c7U~%j@Ot
+zeiP2E;*jf!Nz^}EAb*hkmaE)JTagP#4lX(su-3`y-1h}9TU^!&dAB_8e&6K#s`!tc
+zNVGQNpCw%<*ZYT+8NPRVHLp*V^=4d;!I40z>x)(e*YhwmrK@rm**h$3RB+j((j-5_
+zX3C#GmQUM{Py2mu=I8r@!bc<YJdX!&x?xn>u;k{Yy)U-AsyO7^U)X2VsKVQ@^W1u$
+z;-h*Qn-#j3Uf>Hn#22G$ZS`*6jHC^hPyhcD$ds}#w)gG?z0>CFR<1dHvGTU{_Fpf5
+zE-#S0e1u`z)wfD-UC(TjXu809ljqN?X^W5Wp5uL8!Ma(p!2JDel~>o^T(*(SRw!vr
+rZ0mZwX;q4(t4zzbq}F2}^8@-1&llXZBToEv$n^L7K0B=AU|;|M6~m>N
+
+literal 0
+HcmV?d00001
+
+diff --git a/packages/dashboard/public/licenses/Geist-OFL-1.1.txt b/packages/dashboard/public/licenses/Geist-OFL-1.1.txt
+new file mode 100644
+index 0000000..8d003fe
+--- /dev/null
++++ b/packages/dashboard/public/licenses/Geist-OFL-1.1.txt
+@@ -0,0 +1,92 @@
++Copyright (c) 2023 Vercel, in collaboration with basement.studio
++
++This Font Software is licensed under the SIL Open Font License, Version 1.1.
++This license is copied below, and is also available with a FAQ at:
++http://scripts.sil.org/OFL
++
++-----------------------------------------------------------
++SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
++-----------------------------------------------------------
++
++PREAMBLE
++The goals of the Open Font License (OFL) are to stimulate worldwide
++development of collaborative font projects, to support the font creation
++efforts of academic and linguistic communities, and to provide a free and
++open framework in which fonts may be shared and improved in partnership
++with others.
++
++The OFL allows the licensed fonts to be used, studied, modified and
++redistributed freely as long as they are not sold by themselves. The
++fonts, including any derivative works, can be bundled, embedded,
++redistributed and/or sold with any software provided that any reserved
++names are not used by derivative works. The fonts and derivatives,
++however, cannot be released under any other type of license. The
++requirement for fonts to remain under this license does not apply
++to any document created using the fonts or their derivatives.
++
++DEFINITIONS
++"Font Software" refers to the set of files released by the Copyright
++Holder(s) under this license and clearly marked as such. This may
++include source files, build scripts and documentation.
++
++"Reserved Font Name" refers to any names specified as such after the
++copyright statement(s).
++
++"Original Version" refers to the collection of Font Software components as
++distributed by the Copyright Holder(s).
++
++"Modified Version" refers to any derivative made by adding to, deleting,
++or substituting -- in part or in whole -- any of the components of the
++Original Version, by changing formats or by porting the Font Software to a
++new environment.
++
++"Author" refers to any designer, engineer, programmer, technical
++writer or other person who contributed to the Font Software.
++
++PERMISSION AND CONDITIONS
++Permission is hereby granted, free of charge, to any person obtaining
++a copy of the Font Software, to use, study, copy, merge, embed, modify,
++redistribute, and sell modified and unmodified copies of the Font
++Software, subject to the following conditions:
++
++1) Neither the Font Software nor any of its individual components,
++in Original or Modified Versions, may be sold by itself.
++
++2) Original or Modified Versions of the Font Software may be bundled,
++redistributed and/or sold with any software, provided that each copy
++contains the above copyright notice and this license. These can be
++included either as stand-alone text files, human-readable headers or
++in the appropriate machine-readable metadata fields within text or
++binary files as long as those fields can be easily viewed by the user.
++
++3) No Modified Version of the Font Software may use the Reserved Font
++Name(s) unless explicit written permission is granted by the corresponding
++Copyright Holder. This restriction only applies to the primary font name as
++presented to the users.
++
++4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
++Software shall not be used to promote, endorse or advertise any
++Modified Version, except to acknowledge the contribution(s) of the
++Copyright Holder(s) and the Author(s) or with their explicit written
++permission.
++
++5) The Font Software, modified or unmodified, in part or in whole,
++must be distributed entirely under this license, and must not be
++distributed under any other license. The requirement for fonts to
++remain under this license does not apply to any document created
++using the Font Software.
++
++TERMINATION
++This license becomes null and void if any of the above conditions are
++not met.
++
++DISCLAIMER
++THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
++MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
++OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
++COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
++INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
++DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
++OTHER DEALINGS IN THE FONT SOFTWARE.
+diff --git a/packages/dashboard/next-env.d.ts b/packages/dashboard/next-env.d.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/dashboard/next-env.d.ts
+@@ -0,0 +1,6 @@
++/// <reference types="next" />
++/// <reference types="next/image-types/global" />
++import "./.next/types/routes.d.ts";
++
++// NOTE: This file should not be edited
++// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+diff --git a/cli/src/native/actions.rs b/cli/src/native/actions.rs
+--- a/cli/src/native/actions.rs
++++ b/cli/src/native/actions.rs
+@@ -4583,7 +4583,8 @@
+         options.prepared_nss_home = Some(prepare_nss_home(&ca.bundle)?);
+     }
+     state.session_setup = SessionSetup::from_launch_options(&options);
+-    let mgr = BrowserManager::launch(options, engine.as_deref()).await?;
++    let mut mgr = BrowserManager::launch(options, engine.as_deref()).await?;
++    mgr.set_pin_tab(state.pin_tab);
+     state.reset_input_state();
+     state.browser = Some(mgr);
+     state.launch_hash = Some(hash);
+@@ -5588,7 +5589,9 @@
+     write_extensions_file_from_paths(&state.session_id, launch_options.extensions.as_deref());
+     state.reset_input_state();
+     state.session_setup = SessionSetup::from_launch_options(&launch_options);
+-    state.browser = Some(BrowserManager::launch(launch_options, engine.as_deref()).await?);
++    let mut mgr = BrowserManager::launch(launch_options, engine.as_deref()).await?;
++    mgr.set_pin_tab(state.pin_tab);
++    state.browser = Some(mgr);
+     state.launch_hash = Some(new_hash);
+     state.subscribe_to_browser_events();
+     state.start_fetch_handler();
