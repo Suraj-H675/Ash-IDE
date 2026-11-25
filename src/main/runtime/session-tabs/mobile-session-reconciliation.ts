@@ -1,3 +1,4 @@
+import { activeOffscreenBrowserBackend } from '../browser/installation/active-offscreen-browser-backend'
 import type { OrcaRuntimeWithMergePreservedHeadlessMobileSessionTabs as MergePreservedHeadlessMobileSessionTabsMethods } from './mobile-session-preservation'
 import type { OrcaRuntimeWithStoredMobileSnapshotHasStalePreservedTab as StoredMobileSnapshotHasStalePreservedTabMethods } from './mobile-session-publication-preservation'
 import { OrcaRuntimeWithWriteOrchestrationPointerPty } from '../orchestration/terminal-authority/write-orchestration-pointer-pty'
@@ -94,9 +95,9 @@ export abstract class OrcaRuntimeWithSyncMobileSessionTabs extends OrcaRuntimeWi
     })
     // Scan each persisted host partition once per graph sync, not once per workspace.
     const worktreeSessionsToHydrate = new Map<string, WorkspaceSessionState | null>(
-      this.getWorkspaceSessionHydrationTargets(Boolean(this.offscreenBrowserBackend))
+      this.getWorkspaceSessionHydrationTargets(Boolean(activeOffscreenBrowserBackend(this)))
     )
-    if (this.offscreenBrowserBackend) {
+    if (activeOffscreenBrowserBackend(this)) {
       for (const snapshot of acceptedSnapshots) {
         if (!worktreeSessionsToHydrate.has(snapshot.worktree)) {
           worktreeSessionsToHydrate.set(snapshot.worktree, null)

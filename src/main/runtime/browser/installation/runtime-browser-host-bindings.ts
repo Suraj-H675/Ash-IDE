@@ -22,6 +22,12 @@ export abstract class RuntimeBrowserHostBindings extends RuntimeWorkspaceNavigat
   }
 
   getOffscreenBrowserBackend(): BrowserBackend | null {
+    const host = this as unknown as { getAvailableAuthoritativeWindow(): unknown }
+    return host.getAvailableAuthoritativeWindow() ? null : this.offscreenBrowserBackend
+  }
+
+  /** Shutdown owns the installed backend even while a desktop window is still open. */
+  getInstalledOffscreenBrowserBackend(): BrowserBackend | null {
     return this.offscreenBrowserBackend
   }
 }

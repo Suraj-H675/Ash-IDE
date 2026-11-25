@@ -121,7 +121,7 @@ export abstract class BrowserManagerViewport extends BrowserManagerDownloadLifec
     }
     const guest = webContents.fromId(webContentsId)
     if (!guest || guest.isDestroyed()) {
-      this.unregisterGuest(browserTabId)
+      this.unregisterGuest(browserTabId, 'guest-destroyed', webContentsId)
       return null
     }
     // Offscreen DevTools would open on the server desktop without a route back to the client.
@@ -245,7 +245,7 @@ export abstract class BrowserManagerViewport extends BrowserManagerDownloadLifec
     }
     const guest = webContents.fromId(webContentsId)
     if (!guest || guest.isDestroyed()) {
-      this.unregisterGuest(browserTabId)
+      this.unregisterGuest(browserTabId, 'guest-destroyed', webContentsId)
       return false
     }
 

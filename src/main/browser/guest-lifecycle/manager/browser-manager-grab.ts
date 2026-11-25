@@ -36,7 +36,7 @@ export abstract class BrowserManagerGrab extends BrowserManagerViewport {
     const guest = webContents.fromId(guestId)
     if (!guest || guest.isDestroyed()) {
       // Clear every per-tab entry when a guest is stale.
-      this.unregisterGuest(browserTabId)
+      this.unregisterGuest(browserTabId, 'guest-destroyed', guestId)
       return null
     }
     return guest

@@ -56,6 +56,7 @@ import { DESKTOP_BROWSER_BRIDGE_RUNTIME_CAPABILITY } from '../../shared/desktop-
 import { darkSwitchRuntimeCapabilities } from './dark-switch-runtime-capabilities'
 import { supportsDurableTerminalPromptDelivery } from './durable-terminal-prompt-delivery-support'
 import { RuntimeWorkspaceChangeEvents } from './workspaces/catalog/runtime-workspace-change-events'
+import { activeOffscreenBrowserBackend } from './browser/installation/active-offscreen-browser-backend'
 
 type RuntimeStatusHost = {
   getAvailableAuthoritativeWindow(): unknown
@@ -75,7 +76,7 @@ export abstract class OrcaRuntimeWithGetStatus extends RuntimeWorkspaceChangeEve
     // Advertise screencast for renderer/offscreen backends; headless ownership prevents client-local fallback.
     const statusHost = this.asRuntimeStatusHost()
     const hasRenderer = Boolean(statusHost.getAvailableAuthoritativeWindow())
-    const hasOffscreen = !hasRenderer && Boolean(this.offscreenBrowserBackend)
+    const hasOffscreen = !hasRenderer && Boolean(activeOffscreenBrowserBackend(this))
     const hasHeadlessCommands = runtimeBrowserCommandsFactoryIsHeadless()
     const canBrowse = hasRenderer || hasOffscreen
     const canHostClientPages = runtimeBrowserCommandsFactorySupportsClientHosting()

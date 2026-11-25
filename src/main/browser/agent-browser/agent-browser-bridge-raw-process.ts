@@ -9,11 +9,13 @@ import {
   EXEC_TIMEOUT_MS,
   type AgentBrowserExecOptions
 } from './agent-browser-bridge-types'
+import type { AgentBrowserCleanupOptions } from './agent-browser-bridge-types'
 
 export abstract class AgentBrowserBridgeRawProcess extends AgentBrowserBridgeElementCalls {
   protected abstract destroySession(
     sessionName: string,
-    options?: { closeTimeoutMs?: number }
+    options?: AgentBrowserCleanupOptions,
+    expectedWebContentsId?: number
   ): Promise<void>
 
   protected runAgentBrowserRaw(

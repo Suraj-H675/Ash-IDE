@@ -53,6 +53,8 @@ export type RuntimeBrowserCommandHost = {
   getAvailableAuthoritativeWindow(): BrowserWindow | null
   /** Headless offscreen backend, or null where unsupported. */
   getOffscreenBrowserBackend(): BrowserBackend | null
+  /** Installed backend ownership, including while a renderer window is available. */
+  getInstalledOffscreenBrowserBackend(): BrowserBackend | null
   // Update snapshot focus or paired clients snap back to a terminal.
   markHeadlessBrowserSessionTabActive?(
     worktreeId: string | undefined,
@@ -62,7 +64,11 @@ export type RuntimeBrowserCommandHost = {
   notifyHeadlessBrowserSessionTabsChanged?(worktreeId: string): void
   /** The tab bar's browser tabs, loaded or not, from the published session snapshot. */
   readBrowserTabBar?(worktreeId: string | undefined): BrowserTabBarEntry[]
-  retireRuntimeOwnedBrowserSessionTab?(worktreeId: string, browserPageId: string): boolean | void
+  retireRuntimeOwnedBrowserSessionTab?(
+    worktreeId: string,
+    browserPageId: string,
+    offscreenOwnerClosed?: boolean
+  ): boolean | void
   /** Persist/start only when no host window exists; hasStartable reads saved tabs either way. */
-  serveBrowserTabs?: Pick<ServeBrowserTabs, 'opened' | 'start' | 'hasStartable'>
+  serveBrowserTabs?: Pick<ServeBrowserTabs, 'opened' | 'start' | 'hasStartable' | 'hasSavedPage'>
 }

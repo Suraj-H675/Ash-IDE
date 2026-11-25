@@ -1,3 +1,4 @@
+import { activeOffscreenBrowserBackend } from '../../browser/installation/active-offscreen-browser-backend'
 import type { OrcaRuntimeWithStoredMobileSnapshotHasStalePreservedTab as BrowserOwnership } from '../../session-tabs/mobile-session-publication-preservation'
 import type { OrcaRuntimeWithPruneMobileSessionTabGroupLayout as MobileSessionProjection } from './prune-mobile-session-tab-group-layout'
 import type { OrcaRuntimeWithCloseStructuredAgentSessionTab as StructuredSessionClose } from '../../session-tabs/structured-session-tab-close'
@@ -61,7 +62,7 @@ export abstract class OrcaRuntimeWithReconcileHeadlessMobileSessionBrowserTabs e
     const existingBrowserTabs = existing.tabs.filter(
       (tab): tab is RuntimeMobileSessionBrowserTab => tab.type === 'browser'
     )
-    if (this.offscreenBrowserBackend) {
+    if (activeOffscreenBrowserBackend(this)) {
       return this.reconcileOffscreenOwnedMobileSessionBrowserTabs(
         worktreeId,
         existing,

@@ -1,3 +1,4 @@
+import { activeOffscreenBrowserBackend } from '../browser/installation/active-offscreen-browser-backend'
 import { retireMobileSessionTabSelection } from './mobile-session-tab-selection'
 import { LOCAL_EXECUTION_HOST_ID } from '../../../shared/execution-host'
 import type { OrcaRuntimeWithStoredMobileSnapshotHasStalePreservedTab as BrowserOwnership } from './mobile-session-publication-preservation'
@@ -143,28 +144,28 @@ export abstract class OrcaRuntimeWithCloseStructuredAgentSessionTab extends Orca
     snapshot: RuntimeMobileSessionTabsSnapshot,
     tab: RuntimeMobileSessionBrowserTab
   ): boolean {
-    if (!this.offscreenBrowserBackend || !tab.browserPageId) {
+    if (!activeOffscreenBrowserBackend(this) || !tab.browserPageId) {
       return false
     }
     return this.isHeadlessOwnedMobileBrowserTab(snapshot, tab)
   }
 
   // Public so runtime-side page release (lease fencing) can prune a tab whose page is gone.
-  retireRuntimeOwnedBrowserSessionTab(worktreeId: string, browserPageId: string): boolean {
+  retireRuntimeOwnedBrowserSessionTab(
+    ...args: Parameters<typeof this.serveBrowserTabs.closed>
+  ): boolean {
+    const [worktreeId, browserPageId] = args
     // A saved tab is a row clients list even before its page starts.
-    const savedTabClosed = this.serveBrowserTabs.closed(worktreeId, browserPageId)
+    const savedTabClosed = this.serveBrowserTabs.closed(...args)
     // Retract client-page rows before the snapshot guard; worktree removal may already have dropped the snapshot.
     this.clientHostedBrowserRows.publish(worktreeId)
     this.persistClientHostedBrowserPagesForWorktree(worktreeId)
     const snapshot = this.mobileSessionTabsByWorktree.get(worktreeId)
-    if (!snapshot) {
-      return savedTabClosed
-    }
-    const retiredTab = snapshot.tabs.find(
+    const retiredTab = snapshot?.tabs.find(
       (candidate): candidate is RuntimeMobileSessionBrowserTab =>
         candidate.type === 'browser' && candidate.browserPageId === browserPageId
     )
-    if (!retiredTab) {
+    if (!snapshot || !retiredTab) {
       return savedTabClosed
     }
     const nextTabs = snapshot.tabs.filter((candidate) => candidate.id !== retiredTab.id)
@@ -193,7 +194,7 @@ export abstract class OrcaRuntimeWithCloseStructuredAgentSessionTab extends Orca
     const { targetGroupId, focusesHost } = options
     // Client-placed pages use the registry, not offscreen backing.
     if (
-      !this.offscreenBrowserBackend &&
+      !activeOffscreenBrowserBackend(this) &&
       !getRuntimeBrowserPageRegistry(this).getPage(browserPageId)
     ) {
       return

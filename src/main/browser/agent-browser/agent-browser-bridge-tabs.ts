@@ -160,7 +160,7 @@ export abstract class AgentBrowserBridgeTabs extends AgentBrowserBridgeState {
     for (const [tabId, wcId] of tabs) {
       const wc = this.getWebContents(wcId)
       if (!wc) {
-        this.browserManager.unregisterGuest(tabId)
+        this.browserManager.unregisterGuest(tabId, 'guest-destroyed', wcId)
         continue
       }
       if (firstLiveWcId === null) {
@@ -221,7 +221,7 @@ export abstract class AgentBrowserBridgeTabs extends AgentBrowserBridgeState {
     }
 
     if (!this.getWebContents(webContentsId)) {
-      this.browserManager.unregisterGuest(browserPageId)
+      this.browserManager.unregisterGuest(browserPageId, 'guest-destroyed', webContentsId)
       throw new BrowserError(
         'browser_tab_not_found',
         `Browser page ${browserPageId} is no longer available`
@@ -248,7 +248,7 @@ export abstract class AgentBrowserBridgeTabs extends AgentBrowserBridgeState {
           return { browserPageId: tabId, webContentsId: wcId }
         }
         if (wcId === preferredWcId) {
-          this.browserManager.unregisterGuest(tabId)
+          this.browserManager.unregisterGuest(tabId, 'guest-destroyed', wcId)
           if (this.activeWebContentsId === wcId) {
             this.activeWebContentsId = null
           }
@@ -268,7 +268,7 @@ export abstract class AgentBrowserBridgeTabs extends AgentBrowserBridgeState {
         }
         return { browserPageId: tabId, webContentsId: wcId }
       }
-      this.browserManager.unregisterGuest(tabId)
+      this.browserManager.unregisterGuest(tabId, 'guest-destroyed', wcId)
     }
 
     throw new BrowserError(

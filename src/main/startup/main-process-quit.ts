@@ -136,7 +136,7 @@ function installWillQuitHandler(): void {
     const statsFlush = state.stats?.flushAsync() ?? Promise.resolve()
     // Await per-session close children so browser daemons cannot retain ports/state after quit (#16367); retire headless owners first to avoid duplicate fanout.
     const browserShutdown = (async (): Promise<void> => {
-      await state.runtime?.getOffscreenBrowserBackend()?.destroyAll?.()
+      await state.runtime?.getInstalledOffscreenBrowserBackend()?.destroyAll?.()
       await state.runtime?.getAgentBrowserBridge()?.destroyAllSessions()
     })()
     // Local SSH browser routes own loopback listeners and ssh -N -D children that must not outlive the app (P2-4).

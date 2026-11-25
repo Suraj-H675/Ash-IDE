@@ -24,7 +24,7 @@ import type {
   BrowserDownloadProgressEvent
 } from '../../../../shared/browser-guest-events'
 import type { BrowserGrabCancelReason } from '../../../../shared/browser-grab-types'
-import { BrowserManagerViewportScrollState } from './browser-manager-viewport-scroll-state'
+import { BrowserManagerOffscreenOwnerState } from './browser-manager-offscreen-owner-state'
 import { BrowserGuestDevToolsDock } from '../browser-guest-devtools-dock'
 
 /** A link a headless serve page asked to open as an Orca tab beside it. */
@@ -37,7 +37,7 @@ export type OffscreenBrowserTabOpenRequest = {
   pairedDeviceId: string | null
 }
 
-export abstract class BrowserManagerState extends BrowserManagerViewportScrollState {
+export abstract class BrowserManagerState extends BrowserManagerOffscreenOwnerState {
   protected abstract attachGuestPolicies(
     guest: Electron.WebContents,
     inheritedOwnerContext?: PopupOwnerContext | null,
@@ -94,7 +94,8 @@ export abstract class BrowserManagerState extends BrowserManagerViewportScrollSt
   protected abstract hasActiveGrabOp(browserTabId: string): boolean
   protected abstract unregisterGuest(
     browserTabId: string,
-    reason?: 'page-closed' | 'guest-destroyed'
+    reason?: 'page-closed' | 'guest-destroyed',
+    expectedWebContentsId?: number
   ): void
   protected abstract cancelDownloadInternal(
     downloadId: string,

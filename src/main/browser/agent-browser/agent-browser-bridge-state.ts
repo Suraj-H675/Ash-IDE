@@ -30,7 +30,10 @@ export abstract class AgentBrowserBridgeState {
   protected readonly agentBrowserIdleTimeoutMs: number | null
   // Restore routes after a process swap destroys the session.
   protected readonly pendingInterceptRestore = new Map<string, string[]>()
-  protected readonly pendingSessionCreation = new Map<string, Promise<void>>()
+  protected readonly pendingSessionCreation = new Map<
+    string,
+    { webContentsId: number; promise: Promise<void> }
+  >()
   // Await the old close before reusing its session name, or it can close the replacement.
   protected readonly pendingSessionDestruction = new Map<string, Promise<void>>()
   protected readonly cancelledProcesses = new WeakSet<ChildProcess>()

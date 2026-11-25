@@ -18,6 +18,10 @@ export abstract class BrowserManagerQueries extends BrowserManagerRegistration {
     return this.webContentsIdByTabId.get(browserTabId) ?? null
   }
 
+  getRendererWebContentsIdForTab(browserTabId: string): number | null {
+    return this.rendererWebContentsIdByTabId.get(browserTabId) ?? null
+  }
+
   getWebContentsIdByTabId(): Map<string, number> {
     return this.webContentsIdByTabId
   }

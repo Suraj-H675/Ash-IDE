@@ -37,6 +37,8 @@ export class ServeBrowserTabs {
     private readonly deps: {
       /** The page backend while no window hosts the browser tabs, else null. */
       backend: () => BrowserBackend | null
+      /** Installed backend can still own pages while the desktop is returning. */
+      installedBackend: () => BrowserBackend | null
       livePageIds: (worktreeId: string) => ReadonlySet<string>
       /** Every workspace that holds a saved browser tab, whatever else it holds. */
       savedWorktreeIds: () => Iterable<string>
@@ -73,7 +75,10 @@ export class ServeBrowserTabs {
   }
 
   /** A closed page's tab, true when one was saved; a page destroyed with the process is not a close. */
-  closed(worktreeId: string, pageId: string): boolean {
+  closed(worktreeId: string, pageId: string, offscreenOwnerClosed = false): boolean {
+    if (!this.deps.backend() && !(offscreenOwnerClosed && this.deps.installedBackend())) {
+      return false
+    }
     // Drop page facts before main closes the tab layout.
     if (ORCA_LAYOUT_OWNER_IS_MAIN && this.deps.applyLayout) {
       return this.closeThroughLayout(worktreeId, pageId, this.deps.applyLayout)
@@ -130,6 +135,14 @@ export class ServeBrowserTabs {
     return [...worktreeIds].some((id) => this.startableIn(id).length > 0)
   }
 
+  /** Whether this exact saved page exists, independent of current backend availability. */
+  hasSavedPage(worktreeId: string | undefined, pageId: string): boolean {
+    const worktreeIds = worktreeId ? [worktreeId] : this.deps.savedWorktreeIds()
+    return [...worktreeIds].some((id) =>
+      this.startableIn(id).some((page) => page.pageId === pageId)
+    )
+  }
+
   /** The tab a window shows for a worktree with no page running: the recorded one, else the first. */
   private activeIn(worktreeId: string): RestorableBrowserPage | undefined {
     if (this.deps.livePageIds(worktreeId).size > 0) {
@@ -175,6 +188,7 @@ export class ServeBrowserTabs {
       browserPageId: page.pageId,
       url: page.url,
       worktreeId: page.worktreeId,
+      waitForInitialLoad: true,
       ...(page.profileId ? { profileId: page.profileId } : {})
     })
     return true
@@ -227,7 +241,7 @@ export class ServeBrowserTabs {
     if (this.pendingOpens.delete(pageId)) {
       return true
     }
-    const session = this.deps.backend() ? this.deps.session(worktreeId) : null
+    const session = this.deps.installedBackend() ? this.deps.session(worktreeId) : null
     const saved = session ? findSavedBrowserPage(session, worktreeId, pageId) : null
     if (!session || !saved) {
       return false
@@ -270,7 +284,7 @@ export class ServeBrowserTabs {
       session: WorkspaceSessionState
     ) => WorkspaceSessionState | null
   ): boolean {
-    const session = this.deps.backend() ? this.deps.session(worktreeId) : null
+    const session = this.deps.installedBackend() ? this.deps.session(worktreeId) : null
     const next = session ? change(this.deps.hostId(worktreeId), session) : null
     if (!next) {
       return false

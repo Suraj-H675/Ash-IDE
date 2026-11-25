@@ -1,3 +1,4 @@
+import { activeOffscreenBrowserBackend } from '../browser/installation/active-offscreen-browser-backend'
 import type { OrcaRuntimeWithScheduleMobileSessionTabsChanged as ScheduleMobileSessionTabsChangedMethods } from './session-tabs-change-publication'
 import { OrcaRuntimeWithMergePreservedHeadlessMobileSessionTabs } from './mobile-session-preservation'
 import type {
@@ -82,7 +83,7 @@ export abstract class OrcaRuntimeWithStoredMobileSnapshotHasStalePreservedTab ex
         return true
       }
       // Offscreen browsers exist only server-side; preserve them across renderer graph merges.
-      if (!this.offscreenBrowserBackend) {
+      if (!activeOffscreenBrowserBackend(this)) {
         return false
       }
       // Merges keep the renderer epoch, so runtime-owned pages are those outside the accepted identity set.
@@ -234,7 +235,7 @@ export abstract class OrcaRuntimeWithStoredMobileSnapshotHasStalePreservedTab ex
     this.persistClientHostedBrowserPagesForWorktree(worktreeId)
     const hasClientBrowserPages =
       getRuntimeBrowserPageRegistry(this).listPages(worktreeId).length > 0
-    if (this.offscreenBrowserBackend || hasClientBrowserPages) {
+    if (activeOffscreenBrowserBackend(this) || hasClientBrowserPages) {
       const reconciled = this.hydrateHeadlessMobileSessionTabsFromWorkspaceSession(
         worktreeId,
         hasClientBrowserPages

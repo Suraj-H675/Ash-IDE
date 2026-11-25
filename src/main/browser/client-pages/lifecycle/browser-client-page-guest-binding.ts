@@ -66,7 +66,11 @@ export function createBrowserClientPageGuestBinding(
       ) {
         return
       }
-      browserManager.unregisterGuest(registration.browserPageId)
+      browserManager.unregisterGuest(
+        registration.browserPageId,
+        'page-closed',
+        registration.webContentsId
+      )
     }
   }
 }

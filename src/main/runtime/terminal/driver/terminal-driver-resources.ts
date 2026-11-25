@@ -1,3 +1,4 @@
+import { activeOffscreenBrowserBackend } from '../../browser/installation/active-offscreen-browser-backend'
 import type { RuntimeServiceCommandSurface } from '../../runtime-service-command-surface'
 import type { OrcaRuntimeWithCloseStructuredAgentSessionTab as ChatPresentation } from '../../session-tabs/structured-session-tab-close'
 import {
@@ -86,7 +87,11 @@ export abstract class OrcaRuntimeWithTerminalDrivers extends OrcaRuntimeWithFitO
   ): void
   declare protected readonly accounts: RuntimeAccountController
   declare protected readonly getPairedDeviceNameFn: (pairedDeviceId: string) => string | null
-  abstract retireRuntimeOwnedBrowserSessionTab(worktreeId: string, browserPageId: string): boolean
+  abstract retireRuntimeOwnedBrowserSessionTab(
+    worktreeId: string,
+    browserPageId: string,
+    offscreenOwnerClosed?: boolean
+  ): boolean
   protected abstract resolveEmulatorWorkspaceId(selector: string): Promise<string>
   protected abstract resolveEmulatorCleanupWorkspaceId(selector: string): Promise<string>
   abstract requireStore(): RuntimeStore
@@ -147,7 +152,8 @@ export abstract class OrcaRuntimeWithTerminalDrivers extends OrcaRuntimeWithFitO
   })
 
   protected readonly serveBrowserTabs = new ServeBrowserTabs({
-    backend: () => (this.getAvailableAuthoritativeWindow() ? null : this.offscreenBrowserBackend),
+    backend: () => activeOffscreenBrowserBackend(this),
+    installedBackend: () => this.offscreenBrowserBackend,
     livePageIds: (worktreeId) =>
       new Set(
         (this.agentBrowserBridge?.tabList?.(worktreeId).tabs ?? []).map((tab) => tab.browserPageId)
@@ -193,7 +199,8 @@ export abstract class OrcaRuntimeWithTerminalDrivers extends OrcaRuntimeWithFitO
         this.resolveBrowserNetworkExecutionHostForWorktree(worktree),
       getAuthoritativeWindow: () => this.getAuthoritativeWindow(),
       getAvailableAuthoritativeWindow: () => this.getAvailableAuthoritativeWindow(),
-      getOffscreenBrowserBackend: () => this.offscreenBrowserBackend,
+      getOffscreenBrowserBackend: () => activeOffscreenBrowserBackend(this),
+      getInstalledOffscreenBrowserBackend: () => this.offscreenBrowserBackend,
       markHeadlessBrowserSessionTabActive: this.markHeadlessBrowserSessionTabActive.bind(this),
       notifyHeadlessBrowserSessionTabsChanged: (worktreeId) =>
         this.notifyMobileSessionTabsChanged(worktreeId),
@@ -210,8 +217,8 @@ export abstract class OrcaRuntimeWithTerminalDrivers extends OrcaRuntimeWithFitO
               )
             : (this.store?.getRepos() ?? []).some((repo) => repo.id === getRepoIdFromWorktreeId(id))
         }),
-      retireRuntimeOwnedBrowserSessionTab: (worktreeId, browserPageId) =>
-        this.retireRuntimeOwnedBrowserSessionTab(worktreeId, browserPageId),
+      retireRuntimeOwnedBrowserSessionTab: (worktreeId, browserPageId, offscreenOwnerClosed) =>
+        this.retireRuntimeOwnedBrowserSessionTab(worktreeId, browserPageId, offscreenOwnerClosed),
       serveBrowserTabs: this.serveBrowserTabs
     },
     screencast: {

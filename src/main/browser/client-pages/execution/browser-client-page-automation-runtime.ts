@@ -76,7 +76,11 @@ export class BrowserClientPageAutomationRuntime {
       this.dependencies.browserManager.getGuestWebContentsId(input.browserPageId) ===
         current.webContentsId
     ) {
-      this.dependencies.browserManager.unregisterGuest(input.browserPageId)
+      this.dependencies.browserManager.unregisterGuest(
+        input.browserPageId,
+        'page-closed',
+        current.webContentsId
+      )
     }
     this.registrations.delete(input.browserPageId)
   }

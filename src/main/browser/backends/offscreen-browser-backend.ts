@@ -1,13 +1,17 @@
 import { randomUUID } from 'node:crypto'
 import { BrowserWindow } from 'electron'
-import { ORCA_BROWSER_PARTITION } from '../../../shared/constants'
 import { ORCA_BROWSER_GUEST_WEB_PREFERENCES } from '../../../shared/browser-guest-web-preferences'
 import { mapSettledWithConcurrency } from '../../../shared/map-with-concurrency'
 import type { BrowserBackend, BrowserBackendCreateTab } from '../browser-backend'
 import type { BrowserManager } from '../browser-manager'
 import type { AgentBrowserBridge } from '../agent-browser/agent-browser-bridge'
+import { BrowserError } from '../browser-error'
 import { browserSessionRegistry } from '../sessions/browser-session-registry'
 import { installBrowserJavaScriptDialogs } from '../guest-lifecycle/prompts/browser-javascript-dialogs'
+import {
+  endOffscreenBrowserDebuggerSessions,
+  loadOffscreenBrowserUrl
+} from './offscreen-browser-page-load'
 import type { ServeBrowserPageState } from '../../runtime/serve-browser-tab-layout'
 
 // orca serve has no renderer for webviews; hidden BrowserWindows host its pages.
@@ -15,11 +19,17 @@ import type { ServeBrowserPageState } from '../../runtime/serve-browser-tab-layo
 
 const DEFAULT_VIEWPORT_WIDTH = 1280
 const DEFAULT_VIEWPORT_HEIGHT = 800
-const LOAD_TIMEOUT_MS = 30_000
 const OWNER_RETIREMENT_CONCURRENCY = 4
 
+type OffscreenPageOwner = {
+  window: BrowserWindow
+  webContentsId: number
+  worktreeId?: string
+}
+
 export class OffscreenBrowserBackend implements BrowserBackend {
-  private readonly windowsByPageId = new Map<string, BrowserWindow>()
+  private readonly ownersByPageId = new Map<string, OffscreenPageOwner>()
+  private readonly pendingCloseByPageId = new Map<string, Promise<void>>()
   // Reject creates once shutdown starts so pages cannot escape destroyAll's ownership snapshot.
   private shutdownStarted = false
   private readonly pendingOwnerRetirements = new Set<Promise<void>>()
@@ -27,39 +37,66 @@ export class OffscreenBrowserBackend implements BrowserBackend {
   constructor(
     private readonly browserManager: BrowserManager,
     private readonly options: {
-      getAgentBrowserBridge?: () => Pick<AgentBrowserBridge, 'onPageClosed'> | null
+      getAgentBrowserBridge?: () => Pick<
+        AgentBrowserBridge,
+        'onPageClosed' | 'onProcessSwap'
+      > | null
       onPageNavigated?: (page: ServeBrowserPageState) => void
     } = {}
-  ) {}
+  ) {
+    this.unsubscribeOwnerReplacement = browserManager.onOffscreenGuestOwnerReplaced((replacement) =>
+      this.onOwnerReplaced(replacement)
+    )
+  }
+
+  private readonly unsubscribeOwnerReplacement: () => void
 
   async createTab(params: BrowserBackendCreateTab): Promise<{ browserPageId: string }> {
     if (this.shutdownStarted) {
       throw new Error('Offscreen browser backend is shutting down')
     }
     const browserPageId = params.browserPageId ?? randomUUID()
-    if (this.windowsByPageId.has(browserPageId)) {
-      throw new Error(`Browser page ${browserPageId} already exists`)
+    const pendingClose = this.pendingCloseByPageId.get(browserPageId)
+    if (pendingClose) {
+      await pendingClose
+    }
+    if (this.shutdownStarted) {
+      throw new Error('Offscreen browser backend is shutting down')
+    }
+    if (this.ownersByPageId.has(browserPageId)) {
+      throw new BrowserError('browser_tab_exists', `Browser page ${browserPageId} already exists`)
     }
     // Reuse desktop profile partitions to preserve cookies and storage.
-    const profile = params.profileId
-      ? browserSessionRegistry.getProfile(params.profileId)
-      : browserSessionRegistry.getDefaultProfile()
-    const partition = profile?.partition ?? ORCA_BROWSER_PARTITION
+    const profile =
+      params.profileId === undefined
+        ? browserSessionRegistry.getDefaultProfile()
+        : browserSessionRegistry.getProfile(params.profileId)
+    if (!profile) {
+      throw new BrowserError(
+        'invalid_argument',
+        `Browser profile ${params.profileId} was not found`
+      )
+    }
 
-    const win = new BrowserWindow({
-      show: false,
-      width: DEFAULT_VIEWPORT_WIDTH,
-      height: DEFAULT_VIEWPORT_HEIGHT,
-      webPreferences: {
-        ...ORCA_BROWSER_GUEST_WEB_PREFERENCES,
-        partition,
-        sandbox: true,
-        contextIsolation: true,
-        nodeIntegration: false
-      }
-    })
+    let win: BrowserWindow
+    try {
+      win = new BrowserWindow({
+        show: false,
+        width: DEFAULT_VIEWPORT_WIDTH,
+        height: DEFAULT_VIEWPORT_HEIGHT,
+        webPreferences: {
+          ...ORCA_BROWSER_GUEST_WEB_PREFERENCES,
+          partition: profile.partition,
+          sandbox: true,
+          contextIsolation: true,
+          nodeIntegration: false
+        }
+      })
+    } catch (error) {
+      const cause = error instanceof Error ? error.message : String(error)
+      throw new BrowserError('browser_error', `Offscreen browser is unavailable: ${cause}`)
+    }
 
-    this.windowsByPageId.set(browserPageId, win)
     // Server pages have no window to ask in; agents and phones answer their dialogs.
     installBrowserJavaScriptDialogs(win.webContents, () => null)
 
@@ -67,177 +104,195 @@ export class OffscreenBrowserBackend implements BrowserBackend {
     const registered = this.browserManager.registerOffscreenGuest({
       browserPageId,
       worktreeId: params.worktreeId,
-      sessionProfileId: profile?.id ?? null,
+      sessionProfileId: profile.id,
       webContentsId: win.webContents.id
     })
     if (!registered) {
       // Registration installs guest policies; destroy refused windows before any navigation.
-      this.windowsByPageId.delete(browserPageId)
       win.destroy()
-      throw new Error(`Browser page ${browserPageId} was refused`)
+      throw new BrowserError(
+        'browser_tab_exists',
+        `Browser page ${browserPageId} already has an owner`
+      )
     }
+
+    const owner = { window: win, webContentsId: win.webContents.id, worktreeId: params.worktreeId }
+    this.ownersByPageId.set(browserPageId, owner)
 
     // Install teardown only after registration; a refused id may belong to a document preview.
     win.webContents.once('destroyed', () => {
-      // Explicit close already removed ownership and awaits bridge retirement.
-      if (this.windowsByPageId.get(browserPageId) !== win) {
+      // A stale owner cannot unregister or retire the replacement page.
+      if (this.ownersByPageId.get(browserPageId) !== owner) {
         return
       }
-      void this.retirePageOwner(browserPageId)
-      this.windowsByPageId.delete(browserPageId)
-      this.browserManager.unregisterGuest(browserPageId)
+      void this.closeOwner(browserPageId, owner, 'guest-destroyed')
     })
 
     const { worktreeId } = params
     const { onPageNavigated } = this.options
     if (worktreeId && onPageNavigated) {
-      const report = (): void =>
+      const report = (): void => {
+        if (!this.isCurrentOwner(browserPageId, owner)) {
+          return
+        }
         onPageNavigated({
           worktreeId,
           pageId: browserPageId,
           url: win.webContents.getURL(),
           title: win.webContents.getTitle()
         })
+      }
       // Persist at navigation milestones, avoiding writes for every dynamic title update.
       win.webContents.on('did-navigate-in-page', report)
       win.webContents.on('did-stop-loading', report)
     }
 
     const url = params.url || 'about:blank'
-    void this.loadUrl(win, url).catch((error) => {
+    const initialLoad = loadOffscreenBrowserUrl(win, url).catch((error) => {
       console.warn(
         '[offscreen-browser] page load failed:',
         error instanceof Error ? error.message : String(error)
       )
     })
+    if (params.waitForInitialLoad) {
+      await initialLoad
+    }
 
     return { browserPageId }
   }
 
   async closeTab(browserPageId: string): Promise<void> {
-    const win = this.windowsByPageId.get(browserPageId)
-    this.windowsByPageId.delete(browserPageId)
-    this.browserManager.unregisterGuest(browserPageId)
-    try {
-      if (win) {
-        await this.retirePageOwner(browserPageId)
-      }
-    } finally {
-      if (win && !win.isDestroyed()) {
-        endDebuggerSessions(win)
-        win.destroy()
-      }
+    const owner = this.ownersByPageId.get(browserPageId)
+    if (!owner) {
+      await this.pendingCloseByPageId.get(browserPageId)
+      return
     }
+    await this.closeOwner(browserPageId, owner, 'page-closed')
+  }
+
+  async closeWorktreeTabs(worktreeId: string): Promise<void> {
+    // Snapshot exact owner incarnations, not the bridge's potentially incomplete tab list.
+    const owners = [...this.ownersByPageId].filter(([, owner]) => owner.worktreeId === worktreeId)
+    // Start each owner retirement synchronously before the caller removes its managed profile.
+    await Promise.allSettled(
+      owners.map(([pageId, owner]) => this.closeOwner(pageId, owner, 'page-closed'))
+    )
   }
 
   ownsTab(browserPageId: string): boolean {
-    return this.windowsByPageId.has(browserPageId)
+    return this.ownersByPageId.has(browserPageId)
   }
 
   getWebContentsId(browserPageId: string): number | null {
-    const win = this.windowsByPageId.get(browserPageId)
-    return win && !win.isDestroyed() ? win.webContents.id : null
+    const owner = this.ownersByPageId.get(browserPageId)
+    return owner && !owner.window.isDestroyed() ? owner.webContentsId : null
   }
 
   async destroyAll(): Promise<void> {
     this.shutdownStarted = true
-    const pageIds = [...this.windowsByPageId.keys()]
+    const pageIds = [...this.ownersByPageId.keys()]
     await mapSettledWithConcurrency(pageIds, OWNER_RETIREMENT_CONCURRENCY, (pageId) =>
       this.closeTab(pageId)
     )
     await Promise.all(this.pendingOwnerRetirements)
+    await Promise.all(this.pendingCloseByPageId.values())
+    this.unsubscribeOwnerReplacement()
   }
 
-  private retirePageOwner(browserPageId: string): Promise<void> {
+  private isCurrentOwner(browserPageId: string, owner: OffscreenPageOwner): boolean {
+    return (
+      this.ownersByPageId.get(browserPageId) === owner &&
+      this.browserManager.getGuestWebContentsId(browserPageId) === owner.webContentsId
+    )
+  }
+
+  private onOwnerReplaced(replacement: {
+    browserPageId: string
+    previousWebContentsId: number
+    nextWebContentsId: number
+  }): void {
+    const owner = this.ownersByPageId.get(replacement.browserPageId)
+    if (!owner || owner.webContentsId !== replacement.previousWebContentsId) {
+      return
+    }
+    this.ownersByPageId.delete(replacement.browserPageId)
+    const bridge = this.options.getAgentBrowserBridge?.()
+    const bridgeRetirement = bridge
+      ? bridge
+          .onProcessSwap(
+            replacement.browserPageId,
+            replacement.nextWebContentsId,
+            replacement.previousWebContentsId
+          )
+          .catch(() => {})
+      : Promise.resolve()
+    this.trackRetirement(bridgeRetirement)
+    // The manager now belongs to the replacement renderer, so unregister is deliberately scoped.
+    this.browserManager.unregisterGuest(
+      replacement.browserPageId,
+      'guest-destroyed',
+      replacement.previousWebContentsId
+    )
+    const replacementRetirement = Promise.all([this.destroyOwner(owner), bridgeRetirement]).then(
+      () => {}
+    )
+    this.pendingCloseByPageId.set(replacement.browserPageId, replacementRetirement)
+    void replacementRetirement.finally(() => {
+      if (this.pendingCloseByPageId.get(replacement.browserPageId) === replacementRetirement) {
+        this.pendingCloseByPageId.delete(replacement.browserPageId)
+      }
+    })
+  }
+
+  private async closeOwner(
+    browserPageId: string,
+    owner: OffscreenPageOwner,
+    reason: 'page-closed' | 'guest-destroyed'
+  ): Promise<void> {
+    if (this.ownersByPageId.get(browserPageId) !== owner) {
+      await this.pendingCloseByPageId.get(browserPageId)
+      return
+    }
+    this.ownersByPageId.delete(browserPageId)
+    const currentWebContentsId = this.browserManager.getGuestWebContentsId(browserPageId)
+    if (currentWebContentsId === owner.webContentsId) {
+      this.browserManager.unregisterGuest(browserPageId, reason, owner.webContentsId)
+    }
+    const retirement = this.retirePageOwner(browserPageId, owner.webContentsId)
+    const closing = Promise.all([retirement, this.destroyOwner(owner)]).then(() => {})
+    this.pendingCloseByPageId.set(browserPageId, closing)
+    try {
+      await closing
+    } finally {
+      if (this.pendingCloseByPageId.get(browserPageId) === closing) {
+        this.pendingCloseByPageId.delete(browserPageId)
+      }
+    }
+  }
+
+  private destroyOwner(owner: OffscreenPageOwner): Promise<void> {
+    const destroy = async (): Promise<void> => {
+      if (owner.window.isDestroyed()) {
+        return
+      }
+      endOffscreenBrowserDebuggerSessions(owner.window)
+      owner.window.destroy()
+    }
+    return destroy()
+  }
+
+  private retirePageOwner(browserPageId: string, webContentsId: number): Promise<void> {
     const bridge = this.options.getAgentBrowserBridge?.()
     if (!bridge) {
       return Promise.resolve()
     }
-    const retirement = bridge.onPageClosed(browserPageId).catch(() => {})
-    this.pendingOwnerRetirements.add(retirement)
-    void retirement.finally(() => this.pendingOwnerRetirements.delete(retirement))
+    const retirement = bridge.onPageClosed(browserPageId, webContentsId).catch(() => {})
+    this.trackRetirement(retirement)
     return retirement
   }
 
-  private async loadUrl(win: BrowserWindow, url: string): Promise<void> {
-    const wc = win.webContents
-    await new Promise<void>((resolve, reject) => {
-      let settled = false
-      const timer = setTimeout(() => {
-        if (settled) {
-          return
-        }
-        settled = true
-        cleanup()
-        // Missing did-finish-load must not make a slow or about:blank tab unusable.
-        resolve()
-      }, LOAD_TIMEOUT_MS)
-
-      const onFinish = (): void => {
-        if (settled) {
-          return
-        }
-        settled = true
-        cleanup()
-        resolve()
-      }
-      const onFail = (
-        _e: unknown,
-        errorCode: number,
-        errorDescription: string,
-        _validatedURL: string,
-        isMainFrame: boolean
-      ): void => {
-        // Subframe load failures do not make the whole page unusable.
-        if (!isMainFrame) {
-          return
-        }
-        if (settled) {
-          return
-        }
-        settled = true
-        cleanup()
-        // Redirects and SPA navigations can abort loads with ERR_ABORTED (-3).
-        if (errorCode === -3) {
-          resolve()
-          return
-        }
-        reject(new Error(`${errorDescription} (${errorCode})`))
-      }
-      const onDestroyed = (): void => {
-        if (settled) {
-          return
-        }
-        settled = true
-        cleanup()
-        resolve()
-      }
-      const cleanup = (): void => {
-        clearTimeout(timer)
-        wc.removeListener('did-finish-load', onFinish)
-        wc.removeListener('did-fail-load', onFail)
-        wc.removeListener('destroyed', onDestroyed)
-      }
-
-      wc.on('did-finish-load', onFinish)
-      wc.on('did-fail-load', onFail)
-      wc.once('destroyed', onDestroyed)
-      void wc.loadURL(url).catch(() => {
-        // loadURL rejects on aborted navigations; did-fail-load handles the rest.
-      })
-    })
-  }
-}
-
-// Detach before destroy: rejected CDP snapshots can call capturePage during teardown and crash Electron 43.7.8.
-function endDebuggerSessions(win: BrowserWindow): void {
-  const dbg = win.webContents.debugger
-  if (!dbg.isAttached()) {
-    return
-  }
-  try {
-    dbg.detach()
-  } catch {
-    // The page is being destroyed either way; a failed detach must not keep it alive.
+  private trackRetirement(retirement: Promise<void>): void {
+    this.pendingOwnerRetirements.add(retirement)
+    void retirement.finally(() => this.pendingOwnerRetirements.delete(retirement))
   }
 }

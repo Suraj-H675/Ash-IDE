@@ -39,6 +39,7 @@ export function createSinglePageBrowserCommandsHost(
     getAgentBrowserBridge: () => bridge,
     getRuntimeBrowserPageRegistry: () => runtimeBrowserPages,
     getAvailableAuthoritativeWindow: vi.fn(() => window),
-    getOffscreenBrowserBackend: vi.fn(() => null)
+    getOffscreenBrowserBackend: vi.fn(() => null),
+    getInstalledOffscreenBrowserBackend: vi.fn(() => null)
   } as unknown as RuntimeBrowserCommandHost
 }

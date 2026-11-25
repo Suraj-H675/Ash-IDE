@@ -1,3 +1,4 @@
+import { activeOffscreenBrowserBackend } from '../../browser/installation/active-offscreen-browser-backend'
 import { OrcaRuntimeWithCloseMobileRowInMainLayout } from './close-mobile-row-in-main-layout'
 import type { RuntimeMobileSessionTerminalTab } from '../../../../shared/runtime-types'
 import {
@@ -276,7 +277,9 @@ export abstract class OrcaRuntimeWithCloseMobileSessionTab extends OrcaRuntimeWi
           page: clientPage.browserPageId
         })
       } else if (this.isOffscreenMobileSessionBrowserTab(snapshot, tab)) {
-        await this.offscreenBrowserBackend!.closeTab(tab.browserPageId!).catch(() => {})
+        await activeOffscreenBrowserBackend(this)!
+          .closeTab(tab.browserPageId!)
+          .catch(() => {})
         this.retireRuntimeOwnedBrowserSessionTab(worktreeId, tab.browserPageId!)
       } else {
         if (!this.notifier?.closeSessionTab) {

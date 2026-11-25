@@ -9,6 +9,7 @@ export async function closeBrowserTabInRenderer(
   worktreeId: string | undefined
 ): Promise<void> {
   const requestId = randomUUID()
+  const sender = win.webContents
   await new Promise<void>((resolve, reject) => {
     const timer = setTimeout(() => {
       ipcMain.removeListener('browser:tabCloseReply', handler)
@@ -16,10 +17,10 @@ export async function closeBrowserTabInRenderer(
     }, 10_000)
 
     const handler = (
-      _event: Electron.IpcMainEvent,
+      event: Electron.IpcMainEvent,
       reply: { requestId: string; error?: string; code?: 'browser_tab_not_found' }
     ): void => {
-      if (reply.requestId !== requestId) {
+      if (event.sender !== sender || reply.requestId !== requestId) {
         return
       }
       clearTimeout(timer)
@@ -36,6 +37,12 @@ export async function closeBrowserTabInRenderer(
     }
     ipcMain.on('browser:tabCloseReply', handler)
     // Why: pass worktreeId so the renderer scopes the close correctly instead of falling back to the globally active tab in the wrong worktree.
-    win.webContents.send('browser:requestTabClose', { requestId, tabId, worktreeId })
+    try {
+      sender.send('browser:requestTabClose', { requestId, tabId, worktreeId })
+    } catch (error) {
+      clearTimeout(timer)
+      ipcMain.removeListener('browser:tabCloseReply', handler)
+      reject(error)
+    }
   })
 }

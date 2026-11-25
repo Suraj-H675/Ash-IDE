@@ -74,6 +74,15 @@ function installRuntimeRpc(runtime: RuntimeService): OrcaRuntimeRpcServer {
   return runtimeRpc
 }
 
+function installOffscreenBrowserBackend(runtime: RuntimeService): void {
+  runtime.setOffscreenBrowserBackend(
+    new OffscreenBrowserBackend(browserManager, {
+      getAgentBrowserBridge: () => state.agentBrowserBridge,
+      onPageNavigated: (page) => runtime.serveBrowserPageNavigated(page)
+    })
+  )
+}
+
 async function launchServeMode(
   runtime: RuntimeService,
   runtimeRpc: OrcaRuntimeRpcServer,
@@ -107,12 +116,7 @@ async function launchServeMode(
   }
   // Headless hosts need display-backed offscreen WebContents; advertise browser capability only when usable.
   if (state.headlessBrowserDisplayAvailable && !e2eHeadlessServeWithoutBrowser()) {
-    runtime.setOffscreenBrowserBackend(
-      new OffscreenBrowserBackend(browserManager, {
-        getAgentBrowserBridge: () => state.agentBrowserBridge,
-        onPageNavigated: (page) => runtime.serveBrowserPageNavigated(page)
-      })
-    )
+    installOffscreenBrowserBackend(runtime)
   }
   publishHeadlessRuntimeGraph(runtime)
   await runtimeRpc.start().catch((error) => {
@@ -130,6 +134,7 @@ async function launchServeMode(
 }
 
 async function launchDesktopMode(
+  runtime: RuntimeService,
   runtimeRpc: OrcaRuntimeRpcServer,
   shellPathReady: Promise<void>,
   desktopWindow: BrowserWindow | null,
@@ -152,6 +157,8 @@ async function launchDesktopMode(
         }
       )
   ])
+  // The successfully opened desktop window proves that this process has a usable display.
+  installOffscreenBrowserBackend(runtime)
   scheduleAgentLaunchRecordWarmup(win)
   if (!runtimeRpcStartResult.ok) {
     // Await i18n only for the failure dialog; parallel launch must not show English fallback to non-English users.
@@ -226,5 +233,11 @@ export async function initializeMainProcessRuntimeLaunch(
     await launchServeMode(runtime, runtimeRpc, serveOptions)
     return
   }
-  await launchDesktopMode(runtimeRpc, shellPathReady, desktopWindow, options.openMainWindow)
+  await launchDesktopMode(
+    runtime,
+    runtimeRpc,
+    shellPathReady,
+    desktopWindow,
+    options.openMainWindow
+  )
 }

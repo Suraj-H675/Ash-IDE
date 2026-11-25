@@ -1,3 +1,4 @@
+import { activeOffscreenBrowserBackend } from '../browser/installation/active-offscreen-browser-backend'
 import {
   normalizeMobileSessionTabSelection,
   restoreLegacyMobileSessionNavigation
@@ -135,7 +136,7 @@ export abstract class OrcaRuntimeWithHydrateHeadlessMobileSessionTabsFromWorkspa
     // Runtime-only hydration without owned terminals/offscreen backend always yields zero rows; skip per-workspace rebuilds on graph sync.
     if (
       options.onlyRuntimeOwnedTerminals === true &&
-      !this.offscreenBrowserBackend &&
+      !activeOffscreenBrowserBackend(this) &&
       getRuntimeBrowserPageRegistry(this).listPages(worktreeId ?? '').length === 0 &&
       options.runtimeOwnedTerminalCandidateKnown !== true &&
       !(worktreeId

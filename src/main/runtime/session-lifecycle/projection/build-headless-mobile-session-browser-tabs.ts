@@ -1,3 +1,4 @@
+import { activeOffscreenBrowserBackend } from '../../browser/installation/active-offscreen-browser-backend'
 import type { OrcaRuntimeWithStoredMobileSnapshotHasStalePreservedTab as BrowserOwnership } from '../../session-tabs/mobile-session-publication-preservation'
 import { OrcaRuntimeWithPersistTerminalSurfaceRetirements } from '../../session-tabs/terminal-surface-retirements'
 import type {
@@ -36,7 +37,7 @@ export abstract class OrcaRuntimeWithBuildHeadlessMobileSessionBrowserTabs exten
   protected buildHeadlessMobileSessionBrowserTabs(
     worktreeId: string
   ): RuntimeMobileSessionBrowserTab[] {
-    const backend = this.offscreenBrowserBackend
+    const backend = activeOffscreenBrowserBackend(this)
     const rendererPageIds = this.getRendererOwnedBrowserPageIds(worktreeId)
     // Saved tabs whose page starts on first use are listed as running ones are.
     const serverTabs =

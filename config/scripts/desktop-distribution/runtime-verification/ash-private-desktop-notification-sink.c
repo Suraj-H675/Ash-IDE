@@ -125,10 +125,9 @@ static void on_lost(GDBusConnection *connection, const gchar *name, gpointer use
 
 int main(int argc, char **argv) {
   // Do not allow a standalone invocation to claim the real user's D-Bus
-  // notification name. dbus-run-session puts this test bus under /tmp/dbus-*;
-  // the user's ordinary desktop bus is under /run/user/<uid>/bus.
+  // notification name; only a test-owned session bus may receive the signal.
   const gchar *bus = g_getenv("DBUS_SESSION_BUS_ADDRESS");
-  if (bus == NULL || !g_str_has_prefix(bus, "unix:path=/tmp/dbus-")) {
+  if (bus == NULL) {
     g_printerr("Refusing to own a notification name on the user's desktop bus\n");
     return 2;
   }
@@ -152,6 +151,17 @@ int main(int argc, char **argv) {
     return 2;
   }
   fixture_root = argv[1];
+  gchar *private_bus = g_strdup_printf(
+      "unix:path=%s/run/dbus-session.sock", fixture_root);
+  const gchar *suffix = g_str_has_prefix(bus, private_bus) ? bus + strlen(private_bus) : NULL;
+  const gboolean test_bus = g_str_has_prefix(bus, "unix:path=/tmp/dbus-") ||
+      (suffix != NULL && (*suffix == '\0' || (g_str_has_prefix(suffix, ",guid=") &&
+       strlen(suffix + 6) == 32 && strspn(suffix + 6, "0123456789abcdefABCDEF") == 32)));
+  g_free(private_bus);
+  if (!test_bus) {
+    g_printerr("Refusing to own a notification name outside the test-owned D-Bus session\n");
+    return 2;
+  }
   expected_title = argv[2];
   expected_body = argv[3];
   loop = g_main_loop_new(NULL, FALSE);

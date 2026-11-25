@@ -12,6 +12,7 @@ const launchHooks = vi.hoisted(() => ({
   duringInstallDirRepair: (): void => {},
   failBeforeWindow: false
 }))
+const installOffscreenBrowserBackend = vi.hoisted(() => vi.fn())
 
 vi.mock('electron', () => ({ app: electronApp, powerMonitor: { on: vi.fn() } }))
 vi.mock('../orca-profiles/profile-cloud-auth-config', () => ({
@@ -184,12 +185,14 @@ describe('desktop startup activation', () => {
     startupSettled.mockClear()
     launchHooks.duringInstallDirRepair = () => {}
     launchHooks.failBeforeWindow = false
+    installOffscreenBrowserBackend.mockReset()
     state.mainWindow = null
     state.isServeMode = false
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the launch only null-checks the runtime and marks its launch-record warm-up, and gives it the sender peer-key reader, before the mocked RPC server takes it.
     state.runtime = {
       noteAgentLaunchStartupSettled: startupSettled,
-      setAgentSenderPeerKey: () => {}
+      setAgentSenderPeerKey: () => {},
+      setOffscreenBrowserBackend: installOffscreenBrowserBackend
     } as unknown as NonNullable<typeof state.runtime>
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the launch only calls whenReady().
     state.windowsShellPathHydration = {
@@ -257,6 +260,16 @@ describe('desktop startup activation', () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+
+  it('installs a windowless browser backend after the desktop window confirms a display', async () => {
+    await initializeMainProcessReady({
+      openMainWindow: () => openMainWindow() as unknown as NonNullable<typeof state.mainWindow>,
+      handleMacAppActivation: vi.fn()
+    })
+
+    expect(state.headlessBrowserDisplayAvailable).toBe(false)
+    expect(installOffscreenBrowserBackend).toHaveBeenCalledTimes(1)
   })
 
   it('does not replay an activation when launch fails before the startup window', async () => {

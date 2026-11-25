@@ -177,13 +177,21 @@ export function registerBrowserHandlers(store: BrowserPasswordsSettingsSource): 
     if (typeof args?.browserPageId !== 'string' || isWorkspaceDocPageId(args.browserPageId)) {
       return false
     }
+    // Only the renderer currently hosting this page can retire it; stale renderers
+    // may finish unmounting after a replacement has registered under the same ID.
+    if (browserManager.getRendererWebContentsIdForTab(args.browserPageId) !== event.sender.id) {
+      return false
+    }
     // Destroy bridge sessions before unregistering clears the guest mapping.
     const wcId = browserManager.getGuestWebContentsId(args.browserPageId)
-    if (wcId !== null && agentBrowserBridgeRef) {
+    if (wcId === null) {
+      return false
+    }
+    if (agentBrowserBridgeRef) {
       agentBrowserBridgeRef.onTabClosed(wcId)
     }
     cancelBrowserWebAuthnAccountRequests(args.browserPageId)
-    browserManager.unregisterGuest(args.browserPageId)
+    browserManager.unregisterGuest(args.browserPageId, 'page-closed', wcId)
     disposeGrabModeStateForPage(args.browserPageId)
     return true
   })

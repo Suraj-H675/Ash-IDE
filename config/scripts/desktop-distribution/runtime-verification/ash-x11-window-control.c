@@ -2,6 +2,8 @@
 // server. An optional test-only Return key confirms the running-PTY dialog.
 // The driver supplies private DISPLAY/XAUTHORITY and the expected Ash PID;
 // the synthetic input path additionally requires the owned fixture profile.
+#define _XOPEN_SOURCE 700
+
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -12,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 typedef struct {
   Display *display;
@@ -20,6 +23,7 @@ typedef struct {
   Window matching_window;
   unsigned int width;
   unsigned int height;
+  int ash_windows;
   int matches;
 } Search;
 
@@ -52,12 +56,14 @@ static void examine(Search *search, Window window, int depth) {
     const int correct_class =
         hint.res_class != NULL && strcmp(hint.res_class, "com.ashide.desktop") == 0;
     const int correct_pid = window_pid(search, window) == search->expected_pid;
-    if (correct_class && correct_pid && attributes.width >= 500 &&
-        attributes.height >= 300) {
-      search->matches++;
-      search->matching_window = window;
-      search->width = (unsigned int)attributes.width;
-      search->height = (unsigned int)attributes.height;
+    if (correct_class && correct_pid) {
+      search->ash_windows++;
+      if (attributes.width >= 500 && attributes.height >= 300) {
+        search->matches++;
+        search->matching_window = window;
+        search->width = (unsigned int)attributes.width;
+        search->height = (unsigned int)attributes.height;
+      }
     }
     if (hint.res_name != NULL) XFree(hint.res_name);
     if (hint.res_class != NULL) XFree(hint.res_class);
@@ -72,11 +78,69 @@ static void examine(Search *search, Window window, int depth) {
   if (children != NULL) XFree(children);
 }
 
+static int private_fixture_paths_match(void) {
+  const char *authority = getenv("XAUTHORITY");
+  const char *profile = getenv("ASH_USER_DATA_PATH");
+  const char *private_root = getenv("ASH_TEST_PRIVATE_ROOT");
+  if (private_root == NULL) private_root = "/var/tmp";
+  char canonical_root[PATH_MAX];
+  char canonical_profile[PATH_MAX];
+  char canonical_authority[PATH_MAX];
+  if (private_root == NULL || authority == NULL || profile == NULL ||
+      realpath(private_root, canonical_root) == NULL ||
+      realpath(profile, canonical_profile) == NULL ||
+      realpath(authority, canonical_authority) == NULL) {
+    return 0;
+  }
+  const size_t root_length = strlen(canonical_root);
+  if (strncmp(canonical_profile, canonical_root, root_length) != 0 ||
+      canonical_profile[root_length] != '/') {
+    return 0;
+  }
+  char fixture[PATH_MAX];
+  if (snprintf(fixture, sizeof(fixture), "%s", canonical_profile) >=
+      (int)sizeof(fixture)) {
+    return 0;
+  }
+  char *profile_suffix = strrchr(fixture, '/');
+  if (profile_suffix == NULL || strcmp(profile_suffix, "/profile") != 0) {
+    return 0;
+  }
+  *profile_suffix = '\0';
+  const char *fixture_name = strrchr(fixture, '/');
+  fixture_name = fixture_name == NULL ? fixture : fixture_name + 1;
+  if (strlen(fixture_name) != 13 || strncmp(fixture_name, "ashx11.", 7) != 0 ||
+      strspn(fixture_name + 7,
+             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") != 6) {
+    return 0;
+  }
+  char expected_fixture[PATH_MAX];
+  if (snprintf(expected_fixture, sizeof(expected_fixture), "%s/%s", canonical_root,
+               fixture_name) >= (int)sizeof(expected_fixture) ||
+      strcmp(fixture, expected_fixture) != 0) {
+    return 0;
+  }
+  char expected_authority[PATH_MAX];
+  if (snprintf(expected_authority, sizeof(expected_authority), "%s/Xauthority", fixture) >=
+          (int)sizeof(expected_authority) ||
+      strcmp(canonical_authority, expected_authority) != 0) {
+    return 0;
+  }
+  char marker[PATH_MAX];
+  if (snprintf(marker, sizeof(marker), "%s/.ash-desktop-lifecycle-fixture", fixture) >=
+          (int)sizeof(marker) ||
+      access(marker, F_OK) != 0) {
+    return 0;
+  }
+  return 1;
+}
+
 int main(int argc, char **argv) {
   if (argc != 3 || (strcmp(argv[1], "probe") != 0 &&
+                    strcmp(argv[1], "probe-closed") != 0 &&
                     strcmp(argv[1], "close") != 0 &&
                     strcmp(argv[1], "send-return") != 0)) {
-    fputs("Usage: ash-x11-window-control probe|close|send-return EXPECTED_ASH_PID\n", stderr);
+    fputs("Usage: ash-x11-window-control probe|probe-closed|close|send-return EXPECTED_ASH_PID\n", stderr);
     return 2;
   }
   char *end = NULL;
@@ -97,28 +161,33 @@ int main(int argc, char **argv) {
       .expected_pid = pid,
   };
   examine(&search, DefaultRootWindow(display), 0);
-  if (search.matches != 1) {
+  if (strcmp(argv[1], "probe-closed") == 0) {
+    if (search.ash_windows != 0) {
+      fprintf(stderr, "Expected no viewable Ash X11 top-levels owned by PID %lu, found %d\n",
+              pid, search.ash_windows);
+      XCloseDisplay(display);
+      return 1;
+    }
+    printf("{\"ok\":true,\"nativeX11\":true,\"nativeAshWindows\":0,\"pid\":%lu}\n", pid);
+    XCloseDisplay(display);
+    return 0;
+  }
+  const int requires_single_window = strcmp(argv[1], "send-return") != 0;
+  if (search.matches != 1 || (requires_single_window && search.ash_windows != 1)) {
     fprintf(stderr, "Expected exactly one viewable Ash X11 top-level owned by "
-                    "PID %lu, found %d\n", pid, search.matches);
+                    "PID %lu and no other Ash windows, found %d Ash windows and %d main windows\n",
+            pid, search.ash_windows, search.matches);
     XCloseDisplay(display);
     return 1;
   }
   if (strcmp(argv[1], "probe") == 0) {
     printf("{\"ok\":true,\"nativeX11\":true,\"class\":\"com.ashide.desktop\","
-           "\"pid\":%lu,\"window\":\"0x%lx\",\"width\":%u,\"height\":%u}\n",
+           "\"nativeAshWindows\":1,\"pid\":%lu,\"window\":\"0x%lx\","
+           "\"width\":%u,\"height\":%u}\n",
            pid, search.matching_window, search.width, search.height);
   } else if (strcmp(argv[1], "send-return") == 0) {
     // Only a private, test-owned native Xvfb server may receive synthetic input.
-    const char *authority = getenv("XAUTHORITY");
-    const char *profile = getenv("ASH_USER_DATA_PATH");
-    const char prefix[] = "/var/tmp/ashx11.";
-    if (authority == NULL || profile == NULL ||
-        strncmp(authority, prefix, sizeof(prefix) - 1) != 0 ||
-        strncmp(profile, prefix, sizeof(prefix) - 1) != 0 ||
-        strlen(profile) < sizeof(prefix) + 6 ||
-        strcmp(profile + strlen(profile) - 8, "/profile") != 0 ||
-        strncmp(authority, profile, strlen(profile) - 8) != 0 ||
-        strcmp(authority + strlen(profile) - 8, "/Xauthority") != 0) {
+    if (!private_fixture_paths_match()) {
       fputs("Synthetic Return requires the private X11 test fixture\n", stderr);
       XCloseDisplay(display);
       return 2;

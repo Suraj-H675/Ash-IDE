@@ -5,6 +5,7 @@ import { browserPopupPageWebContentsId } from '../../../browser/guest-lifecycle/
 import { webContents } from 'electron'
 import {
   waitForTabFirstLoad,
+  waitForNextTabRegistration,
   waitForTabRegistration,
   waitForWorktreeTabRegistration
 } from '../../../ipc/browser/browser-tab-registration-wait'
@@ -26,6 +27,8 @@ export class RuntimeBrowserCommandTargets {
       | 'getAgentBrowserBridge'
       | 'resolveWorkspaceSelector'
       | 'getAuthoritativeWindow'
+      | 'getAvailableAuthoritativeWindow'
+      | 'getInstalledOffscreenBrowserBackend'
       | 'retireRuntimeOwnedBrowserSessionTab'
       | 'serveBrowserTabs'
     >
@@ -50,9 +53,13 @@ export class RuntimeBrowserCommandTargets {
     bridge: AgentBrowserBridge,
     worktreeId: string | undefined
   ): boolean {
-    for (const [, webContentsId] of bridge.getRegisteredTabs(worktreeId)) {
+    for (const [browserPageId, webContentsId] of bridge.getRegisteredTabs(worktreeId)) {
       const guest = webContents.fromId(webContentsId)
-      if (guest && !guest.isDestroyed()) {
+      if (
+        guest &&
+        !guest.isDestroyed() &&
+        !this.isHiddenOffscreenOwner(browserPageId, webContentsId)
+      ) {
         return true
       }
     }
@@ -69,7 +76,17 @@ export class RuntimeBrowserCommandTargets {
       return false
     }
     const guest = webContents.fromId(webContentsId)
-    return Boolean(guest && !guest.isDestroyed())
+    return Boolean(
+      guest && !guest.isDestroyed() && !this.isHiddenOffscreenOwner(browserPageId, webContentsId)
+    )
+  }
+
+  private isHiddenOffscreenOwner(browserPageId: string, webContentsId: number): boolean {
+    return Boolean(
+      this.host.getAvailableAuthoritativeWindow() &&
+      this.host.getInstalledOffscreenBrowserBackend()?.getWebContentsId?.(browserPageId) ===
+        webContentsId
+    )
   }
 
   // Resolve CLI selectors to the repoId::path keys the bridge uses.
@@ -77,12 +94,16 @@ export class RuntimeBrowserCommandTargets {
     if (!selector) {
       // Persisted webviews register only after mounting; wake them before use.
       const bridge = this.host.getAgentBrowserBridge()
-      if (bridge && !this.hasLiveRegisteredBrowserTab(bridge, undefined)) {
-        try {
-          await this.ensureBrowserWorktreeActive(undefined)
-        } catch {
-          // Startup/tests may have no window.
-        }
+      const activePageId = bridge?.getActivePageId(undefined) ?? undefined
+      const activePageIsHidden =
+        activePageId !== undefined &&
+        bridge != null &&
+        this.isHiddenOffscreenOwner(
+          activePageId,
+          bridge.getRegisteredTabs(undefined).get(activePageId) ?? -1
+        )
+      if (bridge && (activePageIsHidden || !this.hasLiveRegisteredBrowserTab(bridge, undefined))) {
+        await this.ensureBrowserWorktreeActive(undefined)
       }
       return undefined
     }
@@ -90,10 +111,16 @@ export class RuntimeBrowserCommandTargets {
     const worktreeId = (await this.host.resolveWorkspaceSelector(selector)).id
     // Explicit selector failures must surface instead of widening scope; activation alone is best-effort.
     const bridge = this.host.getAgentBrowserBridge()
-    if (bridge && !this.hasLiveRegisteredBrowserTab(bridge, worktreeId)) {
-      try {
-        await this.ensureBrowserWorktreeActive(worktreeId)
-      } catch {}
+    const activePageId = bridge?.getActivePageId(worktreeId) ?? undefined
+    const activePageWebContentsId = activePageId
+      ? bridge?.getRegisteredTabs(worktreeId).get(activePageId)
+      : undefined
+    const activePageIsHidden =
+      activePageId !== undefined &&
+      activePageWebContentsId !== undefined &&
+      this.isHiddenOffscreenOwner(activePageId, activePageWebContentsId)
+    if (bridge && (activePageIsHidden || !this.hasLiveRegisteredBrowserTab(bridge, worktreeId))) {
+      await this.ensureBrowserWorktreeActive(worktreeId)
     }
     return worktreeId
   }
@@ -119,9 +146,7 @@ export class RuntimeBrowserCommandTargets {
       browserPopupPageWebContentsId(browserPageId) === null &&
       !this.hasLiveRegisteredBrowserPage(bridge, worktreeId, browserPageId)
     ) {
-      try {
-        await this.ensureBrowserPageActive(worktreeId, browserPageId)
-      } catch {}
+      await this.ensureBrowserPageActive(worktreeId, browserPageId)
     }
     return {
       // Explicit page ids already provide stable scope; do not add cwd-derived worktree scope.
@@ -147,6 +172,12 @@ export class RuntimeBrowserCommandTargets {
         `Browser page ${resolvedPageId} was not found${scope}`
       )
     }
+    if (this.isHiddenOffscreenOwner(resolvedPageId, webContentsId)) {
+      throw new BrowserError(
+        'browser_error',
+        `Browser page ${resolvedPageId} has not transferred to the desktop window yet`
+      )
+    }
     const guest = webContents.fromId(webContentsId)
     if (!guest || guest.isDestroyed()) {
       throw new BrowserError(
@@ -159,12 +190,35 @@ export class RuntimeBrowserCommandTargets {
 
   // Mount under a hidden visibility lease so automation cannot steal the visible pane.
   private async ensureBrowserWorktreeActive(worktreeId: string | undefined): Promise<void> {
+    if (this.host.getAvailableAuthoritativeWindow()) {
+      const bridge = this.host.getAgentBrowserBridge()
+      const backend = this.host.getInstalledOffscreenBrowserBackend()
+      const activePageId = bridge?.getActivePageId(worktreeId) ?? undefined
+      const activePageWebContentsId = activePageId
+        ? bridge?.getRegisteredTabs(worktreeId).get(activePageId)
+        : undefined
+      const pageId =
+        activePageId &&
+        activePageWebContentsId !== undefined &&
+        backend?.getWebContentsId?.(activePageId) === activePageWebContentsId
+          ? activePageId
+          : [...(bridge?.getRegisteredTabs(worktreeId).keys() ?? [])].find((candidate) =>
+              backend?.ownsTab(candidate)
+            )
+      if (pageId) {
+        await this.ensureBrowserPageActive(worktreeId, pageId)
+        return
+      }
+    }
     if (await this.host.serveBrowserTabs?.start(worktreeId, undefined)) {
       return
     }
     // With no saved tab the window mounts nothing, so the wait could only time out (#20434).
-    if (this.host.serveBrowserTabs?.hasStartable(worktreeId) === false) {
+    if (!this.host.serveBrowserTabs?.hasStartable(worktreeId)) {
       return
+    }
+    if (!this.host.getAvailableAuthoritativeWindow()) {
+      throw new BrowserError('browser_error', 'This host does not support browser panes.')
     }
     await this.sendActivateView(worktreeId ? { worktreeId } : {})
     // Await registerGuest rather than guessing a fixed mount delay.
@@ -176,9 +230,33 @@ export class RuntimeBrowserCommandTargets {
     browserPageId: string,
     options: { waitForFirstLoad?: boolean } = {}
   ): Promise<void> {
+    const bridge = this.host.getAgentBrowserBridge()
+    const priorWebContentsId = bridge?.getRegisteredTabs(worktreeId).get(browserPageId)
+    const transfersOffscreenOwner =
+      priorWebContentsId !== undefined &&
+      this.isHiddenOffscreenOwner(browserPageId, priorWebContentsId)
     if (!(await this.host.serveBrowserTabs?.start(worktreeId, browserPageId))) {
+      if (!this.host.getAvailableAuthoritativeWindow()) {
+        if (this.host.serveBrowserTabs?.hasSavedPage(worktreeId, browserPageId)) {
+          throw new BrowserError('browser_error', 'This host does not support browser panes.')
+        }
+        return
+      }
+      const registration = transfersOffscreenOwner
+        ? waitForNextTabRegistration(browserPageId, MAIN_WINDOW_READY_WAIT_MS)
+        : waitForTabRegistration(browserPageId)
       await this.sendActivateView(worktreeId ? { worktreeId, browserPageId } : { browserPageId })
-      await waitForTabRegistration(browserPageId)
+      await registration
+      if (
+        transfersOffscreenOwner &&
+        priorWebContentsId !== undefined &&
+        this.isHiddenOffscreenOwner(browserPageId, priorWebContentsId)
+      ) {
+        throw new BrowserError(
+          'browser_error',
+          `Browser page ${browserPageId} did not transfer to the desktop window`
+        )
+      }
     }
     // Why opt-in: a switched-to tab should read like one open all along, but streaming panes must not wait.
     if (options.waitForFirstLoad) {
@@ -191,7 +269,10 @@ export class RuntimeBrowserCommandTargets {
     worktreeId?: string
     browserPageId?: string
   }): Promise<void> {
-    const win = this.host.getAuthoritativeWindow()
+    const win = this.host.getAvailableAuthoritativeWindow()
+    if (!win) {
+      throw new BrowserError('browser_error', 'No desktop browser window is available.')
+    }
     await whenBrowserMainWindowReady(MAIN_WINDOW_READY_WAIT_MS)
     win.webContents.send('browser:activateView', payload)
   }

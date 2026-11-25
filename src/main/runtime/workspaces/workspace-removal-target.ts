@@ -220,10 +220,8 @@ export abstract class OrcaRuntimeWithResolveWorktreeRemovalTarget extends Runtim
     if (!teardownStops(entryPoint, 'host-browser')) {
       return
     }
-    const backend = this.offscreenBrowserBackend
-    for (const tab of backend ? (this.agentBrowserBridge?.tabList?.(worktreeId).tabs ?? []) : []) {
-      void backend?.closeTab(tab.browserPageId).catch(() => {})
-    }
+    // Installed ownership persists even when a renderer is available or a bridge row disappeared.
+    void this.offscreenBrowserBackend?.closeWorktreeTabs?.(worktreeId).catch(() => {})
     closeClientHostedBrowserPagesForWorktree(this, worktreeId)
     deleteRemovedOwnerBrowserProfile({ kind: 'worktree', id: worktreeId })
   }
