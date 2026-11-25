@@ -36,6 +36,8 @@
     "../src/types/**/*"
   ],
   "exclude": [
+    "../src/main/ipc/profiles/ash-excluded-cloud-org-admin.test.ts",
+    "../src/preload/api/ash-excluded-app-plugin-namespace.test.ts",
     "../src/main/runtime/orchestration/terminal-authority/structured-sessions/structured-chat-coordinator-mail.test.ts"
   ],
   "compilerOptions": {

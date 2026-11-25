@@ -1,6 +1,9 @@
 {
   "extends": "./tsconfig.web.json",
   "include": [
+    "../src/main/ipc/profiles/ash-excluded-cloud-org-admin.test.ts",
+    "../src/preload/api/ash-excluded-app-plugin-namespace.test.ts",
+    "../src/renderer/src/components/native-chat/ash-pi-option-refresh.test.tsx",
     "../src/main/runtime/orchestration/terminal-authority/structured-sessions/structured-chat-coordinator-mail.test.ts",
     "../src/renderer/src/components/terminal-pane/pty-agent-pane-launch.test.ts",
     "../src/renderer/src/components/github-item-dialog/load-item-details/work-item-details-target-contract.test.tsx",

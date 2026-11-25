@@ -4025,6 +4025,31 @@
       "path": "src/main/windows/windows-process-table.ts",
       "sha256": "3f322ec66df54a30ea0e4019385a1f99834630a4d70ec3f6e2c6adf43efebbb4",
       "reason": "Ash RT-15 recovery safety: validate Windows process-table module shapes and preserve command-line readability metadata for conservative profile recovery."
+    },
+    {
+      "path": "config/tsconfig.node.json",
+      "sha256": "4668360c27ddac46d4cd9b0e4ee977d99da6b5343ee9f2aa8a3963c39477319e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/tsconfig.tc.web.json",
+      "sha256": "ac1ecd100bfc87ea17aabe286ecc04f5c6c41937eb090b0881e786d1e1c7a4d3",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/tsconfig.test.pane-launch.json",
+      "sha256": "0f211fcac2b3ba29666db87cfa4c382be73aad9b676ae8a649538e3995599699",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/tsconfig.web.json",
+      "sha256": "9de8402d2e99eaa167d0cbc2aff6343d0a7e3a180ab9c66ca0a4dd1edb4410da",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/components/native-chat/native-chat-tooltip-test-harness.tsx",
+      "sha256": "54fa2be3e685612447ff4572ba2b646a68ccebe76e8bf1d6f8bb8c870df4a284",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     }
   ]
 }
