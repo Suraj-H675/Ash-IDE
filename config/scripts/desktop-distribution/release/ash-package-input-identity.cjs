@@ -4,8 +4,10 @@ const {
   constants,
   fstatSync,
   fsyncSync,
+  lstatSync,
   openSync,
   readSync,
+  realpathSync,
   renameSync
 } = require('node:fs')
 const { lstat, mkdtemp, open, realpath, rm } = require('node:fs/promises')
@@ -20,7 +22,17 @@ const MAX_ASAR_BYTES = 512 * 1024 * 1024
 const MAX_ASAR_HEADER_BYTES = 16 * 1024 * 1024
 const MAX_ASAR_ENTRIES = 100_000
 const MAX_CLI_PACKAGE_BYTES = 128 * 1024
+const MAX_IDENTITY_BYTES = 64 * 1024
 const COPY_CHUNK_BYTES = 1024 * 1024
+
+function isSupportedPackageVersion(version) {
+  return (
+    typeof version === 'string' &&
+    /^(0|[1-9]\d{0,8})\.(0|[1-9]\d{0,8})\.(0|[1-9]\d{0,8})(?:-[0-9A-Za-z.-]{1,64})?(?:\+[0-9A-Za-z.-]{1,64})?$/.test(
+      version
+    )
+  )
+}
 
 function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex')
@@ -134,11 +146,48 @@ function assertPinnedPathUnchanged(path, pinned, label) {
   }
 }
 
+async function hashPinnedFile(path, pinned, label) {
+  const before = await pinned.handle.stat({ bigint: true })
+  if (!before.isFile() || before.nlink !== 1n || !sameSnapshot(pinned.info, before)) {
+    throw new Error(`${label} changed while being inspected`)
+  }
+  const hash = createHash('sha256')
+  const buffer = Buffer.alloc(COPY_CHUNK_BYTES)
+  let offset = 0
+  while (offset < Number(before.size)) {
+    const { bytesRead } = await pinned.handle.read(
+      buffer,
+      0,
+      Math.min(buffer.length, Number(before.size) - offset),
+      offset
+    )
+    if (bytesRead === 0) {
+      throw new Error(`${label} changed while being inspected`)
+    }
+    hash.update(buffer.subarray(0, bytesRead))
+    offset += bytesRead
+  }
+  const after = await pinned.handle.stat({ bigint: true })
+  if (offset !== Number(before.size) || !sameSnapshot(before, after)) {
+    throw new Error(`${label} changed while being inspected`)
+  }
+  assertPinnedPathUnchanged(path, pinned, label)
+  return hash.digest('hex')
+}
+
+async function assertPinnedFileHash(path, pinned, expectedHash, label) {
+  const currentHash = await hashPinnedFile(path, pinned, label)
+  if (currentHash !== expectedHash) {
+    throw new Error(`${label} digest changed while being inspected`)
+  }
+}
+
 async function copyPinnedFileToPrivateTemp(path, label, directory) {
   const { handle, info } = await openPinnedRegularFile(path, label, MAX_ASAR_BYTES)
   const copyPath = join(directory, `package-${randomUUID()}.asar`)
   let destination
-  let retainHandle = false
+  let pinnedCopy
+  let retainHandles = false
   const hash = createHash('sha256')
   let offset = 0
   try {
@@ -166,8 +215,21 @@ async function copyPinnedFileToPrivateTemp(path, label, directory) {
     await destination.sync()
     await destination.close()
     destination = undefined
-    retainHandle = true
-    return { copyPath, sha256: hash.digest('hex'), handle, info }
+    const sourceHash = hash.digest('hex')
+    pinnedCopy = await openPinnedRegularFile(copyPath, `${label} inspection copy`, MAX_ASAR_BYTES)
+    const copyHash = await hashPinnedFile(copyPath, pinnedCopy, `${label} inspection copy`)
+    if (copyHash !== sourceHash) {
+      throw new Error(`${label} inspection copy digest does not match its source`)
+    }
+    retainHandles = true
+    return {
+      copyPath,
+      sha256: sourceHash,
+      handle,
+      info,
+      copyHandle: pinnedCopy.handle,
+      copyInfo: pinnedCopy.info
+    }
   } catch (error) {
     await rm(copyPath, { force: true })
     throw error
@@ -175,8 +237,8 @@ async function copyPinnedFileToPrivateTemp(path, label, directory) {
     try {
       await destination?.close()
     } finally {
-      if (!retainHandle) {
-        await handle.close()
+      if (!retainHandles) {
+        await Promise.allSettled([handle.close(), pinnedCopy?.handle.close()])
       }
     }
   }
@@ -206,6 +268,59 @@ async function readPinnedJson(path, label, maxBytes) {
   }
 }
 
+function readPinnedPackageFile(path, label, maxBytes, expectedSize) {
+  const before = lstatSync(path, { bigint: true })
+  if (
+    !before.isFile() ||
+    before.nlink !== 1n ||
+    before.size > BigInt(maxBytes) ||
+    realpathSync(path) !== resolve(path)
+  ) {
+    throw new Error(`${label} must be a bounded regular single-link file without symlink aliases`)
+  }
+  const descriptor = openSync(
+    path,
+    constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK
+  )
+  try {
+    const opened = fstatSync(descriptor, { bigint: true })
+    if (
+      !opened.isFile() ||
+      opened.nlink !== 1n ||
+      !sameSnapshot(before, opened) ||
+      (expectedSize !== undefined && opened.size !== BigInt(expectedSize))
+    ) {
+      throw new Error(`${label} changed type or size while being inspected`)
+    }
+    const bytes = Buffer.alloc(Number(opened.size))
+    let offset = 0
+    while (offset < bytes.length) {
+      const count = readSync(descriptor, bytes, offset, bytes.length - offset, offset)
+      if (!count) {
+        throw new Error(`${label} changed while being inspected`)
+      }
+      offset += count
+    }
+    if (!sameSnapshot(opened, fstatSync(descriptor, { bigint: true }))) {
+      throw new Error(`${label} changed while being inspected`)
+    }
+    const pathDescriptor = openSync(
+      path,
+      constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK
+    )
+    try {
+      if (!sameSnapshot(opened, fstatSync(pathDescriptor, { bigint: true }))) {
+        throw new Error(`${label} changed while being inspected`)
+      }
+    } finally {
+      closeSync(pathDescriptor)
+    }
+    return bytes
+  } finally {
+    closeSync(descriptor)
+  }
+}
+
 async function assertRealDirectory(path, label) {
   const info = await lstat(path)
   if (!info.isDirectory() || info.isSymbolicLink() || (await realpath(path)) !== resolve(path)) {
@@ -225,7 +340,9 @@ function validatePackageMetadata(value, version, label, expectedName = PACKAGE_N
   }
 }
 
-async function inspectAppAsar(asarPath, expectedVersion, asar) {
+function inspectAppAsar(asarPath, expectedVersion, asar) {
+  let archiveSize
+  let dataOffset
   const descriptor = openSync(
     asarPath,
     constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK
@@ -253,18 +370,24 @@ async function inspectAppAsar(asarPath, expectedVersion, asar) {
     ) {
       throw new Error('Packaged app.asar header is malformed or exceeds its inspection limit')
     }
+    archiveSize = archiveInfo.size
+    dataOffset = headerPickleBytes + prefix.length
   } finally {
     closeSync(descriptor)
   }
-  const entries = asar.listPackage(asarPath)
-  if (!Array.isArray(entries) || entries.length === 0 || entries.length > MAX_ASAR_ENTRIES) {
+  const listedEntries = asar.listPackage(asarPath)
+  if (
+    !Array.isArray(listedEntries) ||
+    listedEntries.length === 0 ||
+    listedEntries.length > MAX_ASAR_ENTRIES
+  ) {
     throw new Error('Packaged app.asar entry count is invalid or exceeds its inspection limit')
   }
-  const normalizedEntries = entries.map((entry) => {
-    if (typeof entry !== 'string') {
+  const normalizedEntries = listedEntries.map((entryPath) => {
+    if (typeof entryPath !== 'string') {
       throw new Error('Packaged app.asar contains an invalid entry name')
     }
-    const normalized = entry.replace(/\\/g, '/')
+    const normalized = entryPath.replace(/\\/g, '/')
     const relative = normalized.startsWith('/') ? normalized.slice(1) : normalized
     if (
       normalized.startsWith('//') ||
@@ -278,34 +401,187 @@ async function inspectAppAsar(asarPath, expectedVersion, asar) {
   if (new Set(normalizedEntries).size !== normalizedEntries.length) {
     throw new Error('Packaged app.asar contains duplicate normalized entry names')
   }
-  const packageEntries = normalizedEntries.filter((entry) => entry === 'package.json')
-  if (packageEntries.length !== 1) {
-    throw new Error('Packaged app.asar must contain exactly one root package.json')
+  const entries = new Map()
+  for (const relative of normalizedEntries) {
+    const metadata = asar.statFile(asarPath, relative, false)
+    if (!metadata || typeof metadata !== 'object') {
+      throw new Error('Packaged app.asar contains a missing entry')
+    }
+    if ('link' in metadata) {
+      throw new Error('Packaged app.asar linked entry is not a regular archive entry')
+    }
+    if (metadata.files !== undefined) {
+      if (
+        typeof metadata.files !== 'object' ||
+        metadata.files === null ||
+        Array.isArray(metadata.files)
+      ) {
+        throw new Error('Packaged app.asar contains an invalid directory entry')
+      }
+      entries.set(relative, { kind: 'directory', metadata })
+      continue
+    }
+    const size = metadata.size
+    if (!Number.isSafeInteger(size) || size < 0 || size > MAX_ASAR_BYTES) {
+      throw new Error('Packaged app.asar contains a file with an invalid or oversized size')
+    }
+    if (metadata.unpacked !== undefined && typeof metadata.unpacked !== 'boolean') {
+      throw new Error('Packaged app.asar contains an invalid unpacked entry flag')
+    }
+    let offset
+    if (metadata.unpacked !== true) {
+      if (typeof metadata.offset !== 'string' || !/^\d+$/.test(metadata.offset)) {
+        throw new Error('Packaged app.asar contains a packed entry with an invalid offset')
+      }
+      offset = Number(metadata.offset)
+      if (!Number.isSafeInteger(offset) || offset < 0 || dataOffset + offset + size > archiveSize) {
+        throw new Error('Packaged app.asar contains an invalid packed entry offset')
+      }
+    }
+    entries.set(relative, { kind: 'file', metadata, size, offset })
   }
-  const entry = asar.statFile(asarPath, 'package.json', false)
+  const packageEntry = entries.get('package.json')
   if (
-    !entry ||
-    'link' in entry ||
-    entry.unpacked === true ||
-    !Number.isSafeInteger(entry.size) ||
-    entry.size <= 0 ||
-    entry.size > MAX_CLI_PACKAGE_BYTES ||
-    typeof entry.offset !== 'string' ||
-    !/^\d+$/.test(entry.offset)
+    !packageEntry ||
+    packageEntry.kind !== 'file' ||
+    packageEntry.metadata.unpacked === true ||
+    packageEntry.size <= 0 ||
+    packageEntry.size > MAX_CLI_PACKAGE_BYTES
   ) {
     throw new Error('Packaged app.asar package.json must be a regular archive entry')
   }
-  const bytes = asar.extractFile(asarPath, 'package.json', false)
-  if (!Buffer.isBuffer(bytes) || bytes.length === 0 || bytes.length > MAX_CLI_PACKAGE_BYTES) {
+  const packageBytes = asar.extractFile(asarPath, 'package.json', false)
+  if (
+    !Buffer.isBuffer(packageBytes) ||
+    packageBytes.length !== packageEntry.size ||
+    packageBytes.length > MAX_CLI_PACKAGE_BYTES
+  ) {
     throw new Error('Packaged app.asar package.json exceeds its size limit')
   }
-  const value = parseUniqueJson(decodeUtf8(bytes))
-  validatePackageMetadata(value, expectedVersion, 'Packaged app.asar')
+  const packageMetadata = parseUniqueJson(decodeUtf8(packageBytes))
+  validatePackageMetadata(packageMetadata, expectedVersion, 'Packaged app.asar')
+  return { entries, packageMetadata }
+}
+
+async function withAshPackageInputSnapshot(
+  resourcesDir,
+  inspect,
+  asar = require('@electron/asar')
+) {
+  await assertRealDirectory(resourcesDir, 'Ash package resources path')
+  const realResources = await realpath(resourcesDir)
+  if (basename(realResources) !== 'resources') {
+    throw new Error('Ash package inspection requires a resources directory')
+  }
+  const archivePath = join(realResources, 'app.asar')
+  const unpackedDir = join(realResources, 'app.asar.unpacked')
+  const compiledOutDir = join(unpackedDir, 'out')
+  const sidecarPath = join(realResources, 'ash-package-input-identity.json')
+  const cliPackagePath = join(compiledOutDir, 'package.json')
+  await assertRealDirectory(unpackedDir, 'Unpacked application directory')
+  await assertRealDirectory(compiledOutDir, 'Compiled CLI directory')
+  const sidecar = await readPinnedJson(
+    sidecarPath,
+    'Ash package identity sidecar',
+    MAX_IDENTITY_BYTES
+  )
+  let cliPackage
+  let archiveCopy
+  let privateDir
+  try {
+    privateDir = await mkdtemp(join(tmpdir(), 'ash-package-inspection-'))
+    cliPackage = await readPinnedJson(
+      cliPackagePath,
+      'Compiled CLI package.json',
+      MAX_CLI_PACKAGE_BYTES
+    )
+    validatePackageMetadata(
+      cliPackage.value,
+      sidecar.value.version,
+      'Compiled CLI package.json',
+      COMPILED_CLI_PACKAGE_NAME
+    )
+    if (cliPackage.value.type !== 'commonjs' || cliPackage.value.private !== true) {
+      throw new Error('Compiled CLI package.json must identify the private CommonJS output')
+    }
+    archiveCopy = await copyPinnedFileToPrivateTemp(archivePath, 'Packaged app.asar', privateDir)
+    assertPinnedPathUnchanged(
+      archiveCopy.copyPath,
+      { handle: archiveCopy.copyHandle, info: archiveCopy.copyInfo },
+      'Packaged app.asar inspection copy'
+    )
+    const archive = inspectAppAsar(archiveCopy.copyPath, sidecar.value.version, asar)
+    const snapshot = {
+      resourcesDir: realResources,
+      identity: sidecar.value,
+      identityBytes: sidecar.bytes,
+      cliPackage: cliPackage.value,
+      cliPackageBytes: cliPackage.bytes,
+      archiveSha256: archiveCopy.sha256,
+      archivePath: archiveCopy.copyPath,
+      archiveEntries: archive.entries,
+      packageMetadata: archive.packageMetadata,
+      unpackedDir,
+      readEntry(relative, maxBytes) {
+        const entry = archive.entries.get(relative)
+        if (!entry || entry.kind !== 'file') {
+          return null
+        }
+        if (entry.size > maxBytes) {
+          return null
+        }
+        if (entry.metadata.unpacked === true) {
+          return readPinnedPackageFile(
+            join(unpackedDir, ...relative.split('/')),
+            `Unpacked ASAR entry ${relative}`,
+            maxBytes,
+            entry.size
+          )
+        }
+        const bytes = asar.extractFile(archiveCopy.copyPath, relative, false)
+        if (!Buffer.isBuffer(bytes) || bytes.length !== entry.size) {
+          throw new Error(`Packed ASAR entry ${relative} has an inconsistent size`)
+        }
+        return bytes
+      },
+      async assertInputsUnchanged() {
+        await assertPinnedFileHash(
+          archiveCopy.copyPath,
+          { handle: archiveCopy.copyHandle, info: archiveCopy.copyInfo },
+          archiveCopy.sha256,
+          'Packaged app.asar inspection copy'
+        )
+        assertPinnedPathUnchanged(archivePath, archiveCopy, 'Packaged app.asar')
+        assertPinnedPathUnchanged(sidecarPath, sidecar, 'Ash package identity sidecar')
+        assertPinnedPathUnchanged(cliPackagePath, cliPackage, 'Compiled CLI package.json')
+      }
+    }
+    const result = await inspect(snapshot)
+    await snapshot.assertInputsUnchanged()
+    return result
+  } finally {
+    await Promise.allSettled([
+      archiveCopy?.handle.close(),
+      archiveCopy?.copyHandle.close(),
+      sidecar.handle.close(),
+      cliPackage?.handle.close()
+    ])
+    if (privateDir) {
+      try {
+        if (archiveCopy) {
+          asar.uncache?.(archiveCopy.copyPath)
+        }
+      } finally {
+        await rm(privateDir, { recursive: true, force: true })
+      }
+    }
+  }
 }
 
 async function writeInputIdentityClaim(
   resourcesDir,
   inputClaim,
+  verifyCopy,
   verifyInputs,
   beforeSidecarPublish
 ) {
@@ -319,7 +595,9 @@ async function writeInputIdentityClaim(
     await handle.close()
   }
   try {
-    beforeSidecarPublish()
+    await beforeSidecarPublish()
+    await verifyCopy()
+    // Do not yield between the final source identity checks and publication.
     verifyInputs()
     renameSync(temporary, output)
     const directory = openSync(resourcesDir, constants.O_RDONLY | constants.O_DIRECTORY)
@@ -347,15 +625,15 @@ async function createAshPackageInputIdentityClaim({
   if (
     appId !== APP_ID ||
     productName !== PRODUCT_NAME ||
-    typeof version !== 'string' ||
-    !/^(0|[1-9]\d{0,8})\.(0|[1-9]\d{0,8})\.(0|[1-9]\d{0,8})(?:-[0-9A-Za-z.-]{1,64})?(?:\+[0-9A-Za-z.-]{1,64})?$/.test(
-      version
-    ) ||
+    !isSupportedPackageVersion(version) ||
     !['x64', 'arm64'].includes(architecture)
   ) {
     throw new Error('Ash package identity inputs do not match the supported release contract')
   }
-  const commit = /^[a-f0-9]{40}$/.test(sourceCommit ?? '') ? sourceCommit : null
+  const commit =
+    /^[a-f0-9]{40}$/.test(sourceCommit ?? '') && sourceCommit !== '0'.repeat(40)
+      ? sourceCommit
+      : null
   const realResources = await realpath(resourcesDir)
   const resourceInfo = await lstat(realResources)
   if (
@@ -377,6 +655,11 @@ async function createAshPackageInputIdentityClaim({
   let cliPackage
   try {
     archiveCopy = await copyPinnedFileToPrivateTemp(archivePath, 'Packaged app.asar', privateDir)
+    assertPinnedPathUnchanged(
+      archiveCopy.copyPath,
+      { handle: archiveCopy.copyHandle, info: archiveCopy.copyInfo },
+      'Packaged app.asar inspection copy'
+    )
     await inspectAppAsar(archiveCopy.copyPath, version, asar)
     cliPackage = await readPinnedJson(
       cliPackagePath,
@@ -391,6 +674,11 @@ async function createAshPackageInputIdentityClaim({
     )
     if (cliPackage.value.type !== 'commonjs' || cliPackage.value.private !== true) {
       throw new Error('Compiled CLI package.json must identify the private CommonJS output')
+    }
+    // An unbound development package remains possible, but a known source
+    // claim cannot contradict the compiled CLI's own build metadata.
+    if (commit !== null && cliPackage.value.commit !== commit) {
+      throw new Error('Compiled CLI commit does not match the package sourceCommit')
     }
     const inputClaim = {
       schema: 1,
@@ -407,6 +695,14 @@ async function createAshPackageInputIdentityClaim({
     await writeInputIdentityClaim(
       realResources,
       inputClaim,
+      async () => {
+        await assertPinnedFileHash(
+          archiveCopy.copyPath,
+          { handle: archiveCopy.copyHandle, info: archiveCopy.copyInfo },
+          archiveCopy.sha256,
+          'Packaged app.asar inspection copy'
+        )
+      },
       () => {
         assertPinnedPathUnchanged(archivePath, archiveCopy, 'Packaged app.asar')
         assertPinnedPathUnchanged(cliPackagePath, cliPackage, 'Compiled CLI package.json')
@@ -415,9 +711,23 @@ async function createAshPackageInputIdentityClaim({
     )
     return inputClaim
   } finally {
-    await Promise.allSettled([archiveCopy?.handle.close(), cliPackage?.handle.close()])
-    await rm(privateDir, { recursive: true, force: true })
+    await Promise.allSettled([
+      archiveCopy?.handle.close(),
+      archiveCopy?.copyHandle.close(),
+      cliPackage?.handle.close()
+    ])
+    try {
+      if (archiveCopy) {
+        asar.uncache?.(archiveCopy.copyPath)
+      }
+    } finally {
+      await rm(privateDir, { recursive: true, force: true })
+    }
   }
 }
 
-module.exports = { createAshPackageInputIdentityClaim }
+module.exports = {
+  createAshPackageInputIdentityClaim,
+  withAshPackageInputSnapshot,
+  isSupportedPackageVersion
+}
