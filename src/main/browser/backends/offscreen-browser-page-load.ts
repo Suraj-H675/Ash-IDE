@@ -73,12 +73,20 @@ export async function loadOffscreenBrowserUrl(win: BrowserWindow, url: string): 
 
 // Detach before destroy: rejected CDP snapshots can call capturePage during teardown and crash Electron 43.7.8.
 export function endOffscreenBrowserDebuggerSessions(win: BrowserWindow): void {
-  const dbg = win.webContents.debugger
-  if (!dbg.isAttached()) {
-    return
-  }
   try {
-    dbg.detach()
+    // WebContents may already be destroyed while its BrowserWindow is still live.
+    // Electron can also reject the debugger accessor during native teardown.
+    if (win.isDestroyed()) {
+      return
+    }
+    const contents = win.webContents
+    if (contents.isDestroyed()) {
+      return
+    }
+    const dbg = contents.debugger
+    if (dbg.isAttached()) {
+      dbg.detach()
+    }
   } catch {
     // The page is being destroyed either way; a failed detach must not keep it alive.
   }

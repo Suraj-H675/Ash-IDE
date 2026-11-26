@@ -292,6 +292,44 @@ describe('OffscreenBrowserBackend', () => {
     expect(mocks.bridge.onPageClosed).toHaveBeenCalledWith('removed-page', removed.webContents.id)
   })
 
+  it('retires an owner when its WebContents has already been destroyed but the window has not', async () => {
+    const backend = new OffscreenBrowserBackend(mocks.manager as never, {
+      getAgentBrowserBridge: () => mocks.bridge as never
+    })
+    const pageId = 'destroyed-contents'
+    await backend.createTab({ browserPageId: pageId, url: 'about:blank' })
+    const win = mocks.FakeBrowserWindow.instances[0]
+    const contentsId = win.webContents.id
+    win.webContents.destroyed = true
+    Object.defineProperty(win.webContents, 'debugger', {
+      get: () => {
+        throw new Error('Object has been destroyed')
+      }
+    })
+    expect(win.isDestroyed()).toBe(false)
+    await expect(backend.closeTab(pageId)).resolves.toBeUndefined()
+    expect(win.isDestroyed()).toBe(true)
+    expect(backend.ownsTab(pageId)).toBe(false)
+    expect(mocks.manager.unregisterGuest).toHaveBeenCalledWith(pageId, 'page-closed', contentsId)
+    expect(mocks.bridge.onPageClosed).toHaveBeenCalledWith(pageId, contentsId)
+    await backend.createTab({ browserPageId: pageId, url: 'about:blank' })
+    expect(backend.ownsTab(pageId)).toBe(true)
+  })
+
+  it('still destroys the exact owner when a debugger accessor fails during retirement', async () => {
+    const backend = new OffscreenBrowserBackend(mocks.manager as never)
+    await backend.createTab({ browserPageId: 'debugger-access-race', url: 'about:blank' })
+    const win = mocks.FakeBrowserWindow.instances[0]
+    Object.defineProperty(win.webContents, 'debugger', {
+      get: () => {
+        throw new Error('Object has been destroyed')
+      }
+    })
+    await expect(backend.closeTab('debugger-access-race')).resolves.toBeUndefined()
+    expect(win.isDestroyed()).toBe(true)
+    expect(backend.ownsTab('debugger-access-race')).toBe(false)
+  })
+
   it('coalesces duplicate closes before allowing the same page id to reopen', async () => {
     let releaseRetirement: (() => void) | undefined
     mocks.bridge.onPageClosed.mockImplementationOnce(

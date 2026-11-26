@@ -214,6 +214,40 @@ if (process.env.ASH_TEST_BROWSER_SMOKE === '1') {
     assert.match(protocol, new RegExp(`-> xdg_toplevel#${toplevel[1]}\\.destroy\\(\\)`))
   }
 }
+if (process.env.ASH_TEST_BROWSER_OWNER_PROBE === '1') {
+  const beforeOwner = read('browser-owner-before')
+  const closedOwner = read('browser-owner-closed')
+  const reopenedOwner = read('browser-owner-after')
+  const namespace = read('browser-owner-netns')
+  assert.equal(namespace.ok, true)
+  assert.equal(namespace.appSharesNamespace, true)
+  assert.equal(beforeOwner.ok, true)
+  assert.equal(beforeOwner.stage, 'before')
+  assert.equal(beforeOwner.rendererAttachedWebview, true)
+  assert.equal(beforeOwner.missingPageControlRejected, true)
+  assert.equal(closedOwner.ok, true)
+  assert.equal(closedOwner.rendererAttachedOwnerCount, 0)
+  assert.equal(closedOwner.hiddenOwnerNotAccepted, true)
+  assert.equal(closedOwner.missingPageControlRejected, true)
+  assert.equal(reopenedOwner.ok, true)
+  assert.equal(reopenedOwner.stage, 'after')
+  assert.equal(reopenedOwner.browserPageId, beforeOwner.browserPageId)
+  assert.equal(reopenedOwner.profileId, beforeOwner.profileId)
+  assert.equal(reopenedOwner.partition, beforeOwner.partition)
+  assert.equal(reopenedOwner.rendererAttachedWebview, true)
+  assert.equal(reopenedOwner.sameLogicalPageAndProfile, true)
+  assert.equal(reopenedOwner.missingPageControlRejected, true)
+  assert.equal(reopenedOwner.previousWebContentsId, beforeOwner.webContentsId)
+  assert.ok(Number.isInteger(beforeOwner.webContentsId) && beforeOwner.webContentsId > 0)
+  assert.ok(Number.isInteger(reopenedOwner.webContentsId) && reopenedOwner.webContentsId > 0)
+  assert.notEqual(reopenedOwner.webContentsId, beforeOwner.webContentsId)
+  for (const owner of [beforeOwner, closedOwner, reopenedOwner]) {
+    assert.ok(Number.isInteger(owner.inspectedPages) && owner.inspectedPages > 0)
+    assert.equal(owner.evaluationFailures, 0, 'renderer target census must be complete')
+    assert.ok(Number.isInteger(owner.missingPageControlInspectedPages) && owner.missingPageControlInspectedPages > 0)
+    assert.equal(owner.missingPageControlEvaluationFailures, 0)
+  }
+}
 const nativeX11 = process.env.ASH_TEST_DISPLAY_SERVER === 'x11'
 if (nativeX11) {
   const window = read('x11-window')
@@ -431,7 +465,27 @@ NODE
         -lX11 -o "$test_root/ash-x11-clipboard-probe"
     fi
   else
-    kwin_wayland --virtual --socket ash-private --no-lockscreen --no-global-shortcuts --no-kactivities >"$test_root/kwin.log" 2>&1 &
+    local kwin_executable=kwin_wayland
+    if [[ "${ASH_TEST_BROWSER_OWNER_PROBE:-}" == '1' ]]; then
+      # Some distributions grant CAP_SYS_NICE to KWin. The virtual compositor
+      # needs no such privilege. Copy the installed bytes without capabilities
+      # into the private fixture; never alter the installed system binary.
+      require_command getcap
+      local installed_kwin
+      installed_kwin="$(realpath -e "$(command -v kwin_wayland)")"
+      [[ "$installed_kwin" == "${ASH_TEST_OWNER_KWIN_PATH:-}" &&
+         "${ASH_TEST_OWNER_KWIN_SHA256:-}" =~ ^[0-9a-f]{64}$ &&
+         "$(sha256sum "$installed_kwin" | cut -d' ' -f1)" == "$ASH_TEST_OWNER_KWIN_SHA256" ]] || {
+        echo 'Private compositor differs from host-verified KWin' >&2
+        return 2
+      }
+      kwin_executable="$test_root/kwin_wayland"
+      install -m 700 "$installed_kwin" "$kwin_executable"
+      cmp "$installed_kwin" "$kwin_executable"
+      [[ "$(sha256sum "$kwin_executable" | cut -d' ' -f1)" == "$ASH_TEST_OWNER_KWIN_SHA256" ]] || return 2
+      [[ -z "$(getcap "$kwin_executable")" ]] || { echo 'Private compositor unexpectedly has file capabilities' >&2; return 2; }
+    fi
+    "$kwin_executable" --virtual --socket ash-private --no-lockscreen --no-global-shortcuts --no-kactivities >"$test_root/kwin.log" 2>&1 &
     kwin_pid=$!
     for ((i=0; i<60; i++)); do
       [[ -S "$XDG_RUNTIME_DIR/ash-private" ]] && break
@@ -454,15 +508,33 @@ NODE
       seed "$test_root" "$test_root/private-settings-defaults.cjs" "$preference" >"$test_root/private-profile-seed.json" 2>"$test_root/private-profile-seed.err"
   fi
   local -a app_args=(--ozone-platform="${ASH_TEST_DISPLAY_SERVER:-wayland}")
+  local browser_fixture="$script_root/config/scripts/desktop-distribution/runtime-verification/ash-packaged-browser-local-smoke.cjs"
+  local browser_owner_probe="$script_root/config/scripts/desktop-distribution/runtime-verification/ash-packaged-browser-owner-attestation.cjs"
+  run_browser_owner_attestation() {
+    local stage="$1" limit_seconds="${2:-35}"
+    timeout --kill-after=5s "${limit_seconds}s" "$packaged_node" "$browser_owner_probe" "$stage" "$test_root" \
+      >"$test_root/browser-owner-$stage.stdout.json" 2>"$test_root/browser-owner-$stage.stderr.log"
+  }
   if [[ "${ASH_TEST_CHROMIUM_NETLOG:-}" == '1' ]]; then
     # Chromium's default net-log mode omits raw cookies and sensitive request headers.
     # Keep the log private in this disposable fixture: URLs may still be sensitive.
     app_args+=("--log-net-log=$test_root/chromium-netlog.json")
   fi
+  if [[ "${ASH_TEST_BROWSER_OWNER_PROBE:-}" == '1' ]]; then
+    # FUSE mount helpers cannot operate inside this unprivileged user namespace.
+    # Use the AppImage runtime's supported extraction mode on the exact artifact.
+    # Keep its extracted payload inside the disposable, disk-backed fixture.
+    app_args+=(--remote-debugging-port=0 --remote-debugging-address=127.0.0.1)
+    # The CLI open path starts another AppImage instance to deliver the native
+    # activation request. Both launches need the same extraction fallback.
+    export APPIMAGE_EXTRACT_AND_RUN=1
+    export TMPDIR="$test_root"
+    export ASH_TEST_APP_LOG_PATH="$test_root/app.log"
+  fi
   if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' ]]; then
-    "$appimage" "${app_args[@]}" >"$test_root/app.log" 2>&1 &
+    9>&- "$appimage" "${app_args[@]}" >"$test_root/app.log" 2>&1 &
   else
-    WAYLAND_DEBUG=client "$appimage" "${app_args[@]}" >"$test_root/app.log" 2>&1 &
+    WAYLAND_DEBUG=client 9>&- "$appimage" "${app_args[@]}" >"$test_root/app.log" 2>&1 &
   fi
   app_pid=$!
   for ((i=0; i<90; i++)); do
@@ -475,6 +547,28 @@ NODE
   if ! assert_cli_state "$test_root/status-before.json" ready available; then
     grep -E 'Failed to start local RPC transport|listen EINVAL|FATAL' "$test_root/app.log" | tail -6 >&2 || true
     return 1
+  fi
+  if [[ "${ASH_TEST_BROWSER_OWNER_PROBE:-}" == '1' ]]; then
+    export ASH_TEST_APP_PID="$($packaged_node - "$test_root/status-before.json" <<'NODE'
+const fs = require('node:fs')
+const status = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'))
+if (!status.ok || !Number.isInteger(status.result?.app?.pid)) process.exit(1)
+console.log(status.result.app.pid)
+NODE
+)"
+    "$packaged_node" - "$test_root/status-before.json" "$ASH_TEST_EXPECTED_NETNS" >"$test_root/browser-owner-netns.json" <<'NODE'
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const status = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'))
+const expected = process.argv[3]
+const current = fs.readlinkSync('/proc/self/ns/net')
+const appPid = status.result.app.pid
+assert.match(expected, /^net:\[[0-9]+\]$/)
+assert.equal(fs.readlinkSync('/proc/self/fd/9'), expected)
+assert.notEqual(current, expected, 'owner probe must be isolated from the caller network namespace')
+assert.equal(fs.readlinkSync(`/proc/${appPid}/ns/net`), current)
+console.log(JSON.stringify({ ok: true, privateNamespace: current, appPid, appSharesNamespace: true }))
+NODE
   fi
   if [[ "${ASH_TEST_NOTIFICATIONS_DISABLED:-}" == '1' || "${ASH_TEST_AGENT_COMPLETION_DISABLED:-}" == '1' ]]; then
     "$packaged_node" "$script_root/config/scripts/desktop-distribution/runtime-verification/ash-private-notification-setting.cjs" \
@@ -526,7 +620,6 @@ NODE
   "$packaged_node" "$test_root/register-folder.cjs" "$(dirname "$packaged_cli")/runtime/client.js" "$test_root/project" >"$test_root/repo-add.json" 2>"$test_root/repo-add.err"
 
   if [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' ]]; then
-    local browser_fixture="$script_root/config/scripts/desktop-distribution/runtime-verification/ash-packaged-browser-local-smoke.cjs"
     "$packaged_node" "$browser_fixture" serve "$test_root" >"$test_root/browser-server.log" 2>"$test_root/browser-server.err" &
     browser_server_pid=$!
     for ((i=0; i<50; i++)); do
@@ -541,32 +634,35 @@ NODE
     timeout --kill-after=5s 65s "$packaged_node" "$browser_fixture" before "$test_root" \
       "$(dirname "$packaged_cli")/runtime/client.js" >"$test_root/local-browser-before.json" 2>"$test_root/local-browser-before.err"
   fi
+  if [[ "${ASH_TEST_BROWSER_OWNER_PROBE:-}" == '1' ]]; then
+    run_browser_owner_attestation before
+  fi
   if [[ "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ]]; then
     # Only the private test-owned PTY emits OSC52. The renderer must parse the
     # real PTY bytes and publish to X11; compare through a second Xlib client.
     local clipboard_value='Ash IDE X11 OSC52 clipboard test' encoded command
     encoded="$(printf '%s' "$clipboard_value" | base64 -w0)"
     command="sleep 4; printf '\\033]52;c;$encoded\\007'; sleep 120"
-    (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command "$command" --focus --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
+    (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --worktree "$test_root/project" --command "$command" --focus --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
   elif [[ "${ASH_TEST_WINDOWLESS_NOTIFICATION:-}" == '1' || "${ASH_TEST_WAYLAND_GUARD_HOLD:-}" == '1' || "${ASH_TEST_BROWSER_SMOKE:-}" == '1' ]]; then
     if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' || "${ASH_TEST_WAYLAND_GUARD_HOLD:-}" == '1' ]]; then
       # XTest can confirm Ash's legitimate running-work dialog in X11.
-      (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --focus --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
+      (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --worktree "$test_root/project" --command 'sleep 120' --focus --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
     elif [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' ]]; then
       # Browser automation mounts the workspace even without requesting focus.
       # Use a live idle shell for this Wayland browser-only journey: a running
       # sleep would correctly prompt for consent. The separate guard-hold case
       # above still verifies that running work prevents unconfirmed closure.
-      (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
+      (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --worktree "$test_root/project" --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
     else
       # Without synthetic Wayland input, keep the PTY alive but leave the
       # workbench on Landing: KWin can deliver a real close without a dialog.
-      (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
+      (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --worktree "$test_root/project" --command 'sleep 120' --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
     fi
   else
-    (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --command 'sleep 120' --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
+    (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal create --worktree "$test_root/project" --command 'sleep 120' --json >"$test_root/terminal-create.json" 2>"$test_root/terminal-create.err")
   fi
-  (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --json >"$test_root/terminal-before.json" 2>"$test_root/terminal-before.err")
+  (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --worktree "$test_root/project" --json >"$test_root/terminal-before.json" 2>"$test_root/terminal-before.err")
   if [[ "${ASH_TEST_WAYLAND_GUARD_HOLD:-}" == '1' ]]; then
     # CLI terminal creation returns before its renderer tab projection is
     # guaranteed to have committed. A close during that gap can be a normal
@@ -703,7 +799,7 @@ NODE
     sleep .3
   done
   assert_cli_state "$test_root/status-closed.json" graph_not_ready openable
-  (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --json >"$test_root/terminal-closed.json" 2>"$test_root/terminal-closed.err")
+  (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --worktree "$test_root/project" --json >"$test_root/terminal-closed.json" 2>"$test_root/terminal-closed.err")
 
   if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' ]]; then
     local closed_window_observed=0
@@ -728,11 +824,14 @@ NODE
       "$(dirname "$packaged_cli")/runtime/client.js" >"$test_root/local-browser-closed.json" 2>"$test_root/local-browser-closed.err"
     "$packaged_node" "$packaged_cli" status --json >"$test_root/status-closed-after-browser.json" 2>"$test_root/status-closed-after-browser.err"
     assert_cli_state "$test_root/status-closed-after-browser.json" graph_not_ready openable
-    (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --json >"$test_root/terminal-closed-after-browser.json" 2>"$test_root/terminal-closed-after-browser.err")
+    (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --worktree "$test_root/project" --json >"$test_root/terminal-closed-after-browser.json" 2>"$test_root/terminal-closed-after-browser.err")
     if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' ]]; then
       "$test_root/ash-x11-window-control" probe-closed "$ash_pid" >"$test_root/x11-closed-window-after-browser.json" 2>"$test_root/x11-closed-window-after-browser.err"
     else
       run_wayland_window_observer closed-after-browser
+    fi
+    if [[ "${ASH_TEST_BROWSER_OWNER_PROBE:-}" == '1' ]]; then
+      run_browser_owner_attestation closed 20
     fi
   fi
 
@@ -822,13 +921,16 @@ NODE
     timeout --kill-after=5s 35s "$packaged_node" "$browser_fixture" after "$test_root" \
       "$(dirname "$packaged_cli")/runtime/client.js" >"$test_root/local-browser-after.json" 2>"$test_root/local-browser-after.err"
   fi
+  if [[ "${ASH_TEST_BROWSER_OWNER_PROBE:-}" == '1' ]]; then
+    run_browser_owner_attestation after
+  fi
   if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' ]]; then
     "$test_root/ash-x11-window-control" probe "$ash_pid" >"$test_root/x11-reopened-window.json" 2>"$test_root/x11-reopened-window.err"
   fi
   if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' && "${ASH_TEST_CAPTURE_X11_SCREENSHOT:-}" == '1' ]]; then
     capture_x11_pixels reopened
   fi
-  (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --json >"$test_root/terminal-reopened.json" 2>"$test_root/terminal-reopened.err")
+  (cd "$test_root/project" && "$packaged_node" "$packaged_cli" terminal list --worktree "$test_root/project" --json >"$test_root/terminal-reopened.json" 2>"$test_root/terminal-reopened.err")
   assert_lifecycle
 }
 
@@ -837,6 +939,20 @@ display_server="${ASH_TEST_DISPLAY_SERVER:-wayland}"
   echo 'ASH_TEST_DISPLAY_SERVER must be wayland or x11' >&2
   exit 2
 }
+if [[ "${ASH_TEST_BROWSER_OWNER_PROBE:-}" == '1' ]]; then
+  [[ "${ASH_TEST_BROWSER_SMOKE:-}" == '1' ]] || {
+    echo 'Browser owner attestation requires the retained browser smoke fixture' >&2
+    exit 2
+  }
+  expected_netns="${ASH_TEST_EXPECTED_NETNS:-}"
+  parent_netns_fd="${ASH_TEST_PARENT_NETNS_FD:-}"
+  current_netns="$(readlink /proc/self/ns/net)"
+  [[ "$parent_netns_fd" == 9 && "$(readlink /proc/self/fd/9 2>/dev/null || true)" == "$expected_netns" &&
+     "$expected_netns" =~ ^net:\[[0-9]+\]$ && "$current_netns" != "$expected_netns" ]] || {
+    echo 'Browser owner attestation requires an isolated private network namespace' >&2
+    exit 2
+  }
+fi
 if [[ "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' && "$display_server" != 'x11' ]]; then
   echo 'The X11 clipboard fixture requires native X11' >&2
   exit 2
@@ -879,8 +995,8 @@ if [[ "${1:-}" == '--inner' ]]; then
         ( -n "${ASH_TEST_PRIVATE_ROOT:-}" && ( ! -L "$1" || "$(readlink "$1")" != "$fixture_target" ) ) ||
         ( -z "${ASH_TEST_PRIVATE_ROOT:-}" && "$fixture_target" != "$1" ) ||
         ! -f "$1/.ash-desktop-lifecycle-fixture" ||
-        "$(stat -c %u "$1" 2>/dev/null)" != "$(id -u)" ||
-        "$(stat -c %a "$1" 2>/dev/null)" != 700 ]]; then
+        "$(stat -c %u "$fixture_target" 2>/dev/null)" != "$(id -u)" ||
+        "$(stat -c %a "$fixture_target" 2>/dev/null)" != 700 ]]; then
     echo 'Refusing --inner: not an owned, private, disposable Ash desktop test fixture' >&2
     exit 2
   fi

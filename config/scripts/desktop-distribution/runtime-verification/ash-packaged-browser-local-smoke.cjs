@@ -115,7 +115,7 @@ async function runJourney() {
       url: `${url}/`,
       worktree: project,
       waitForRegistration: true,
-      activate: false
+      activate: process.env.ASH_TEST_BROWSER_OWNER_PROBE === '1'
     })
     assert.match(created.browserPageId, /^[\w-]{4,}$/)
     fs.writeFileSync(

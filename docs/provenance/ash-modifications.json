@@ -4073,7 +4073,7 @@
     },
     {
       "path": "src/main/browser/backends/offscreen-browser-backend.ts",
-      "sha256": "60793da20ce3accd67b85bcdc90670eb54e899c83602d61584e0d8e12d20809b",
+      "sha256": "b262fb7b32d68298ebeb24154fa6a68272ede7597f70120dd4210aa7106e75c8",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {

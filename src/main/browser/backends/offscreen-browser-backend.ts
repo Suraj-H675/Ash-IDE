@@ -276,7 +276,10 @@ export class OffscreenBrowserBackend implements BrowserBackend {
         return
       }
       endOffscreenBrowserDebuggerSessions(owner.window)
-      owner.window.destroy()
+      // Detaching can synchronously finish a native destruction already in progress.
+      if (!owner.window.isDestroyed()) {
+        owner.window.destroy()
+      }
     }
     return destroy()
   }
