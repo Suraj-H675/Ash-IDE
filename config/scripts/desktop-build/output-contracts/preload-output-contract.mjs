@@ -84,6 +84,25 @@ export async function verifyPreloadSource(source) {
   return { imports }
 }
 
+// Verify the final main-build artifacts, not just the independent bundle before
+// it is emitted. Main-process chunking must never leak into a sandboxed preload.
+export async function verifyMainSandboxPreloadOutputs(root = process.cwd()) {
+  const names = [
+    'browser-extension-preload.js',
+    'browser-guest-preload.js',
+    'doc-preview-link-preload.js'
+  ]
+  for (const name of names) {
+    const source = fs.readFileSync(path.join(root, 'out', 'main', name), 'utf8')
+    try {
+      await verifySandboxPreloadImports(source)
+    } catch (error) {
+      throw new Error(`Invalid sandboxed main preload ${name}: ${error.message}`, { cause: error })
+    }
+  }
+  return names
+}
+
 export async function verifyPreloadOutput(root = process.cwd()) {
   const directory = path.join(root, 'out', 'preload')
   const scripts = fs

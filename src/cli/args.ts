@@ -143,13 +143,17 @@ export function supportsBrowserPageFlag(spec: Pick<CommandSpec, 'browserPageTarg
   return spec.browserPageTarget === true
 }
 
+function globalFlagsForSpec(spec: CommandSpec): readonly string[] {
+  return spec.globalFlagScope === 'local' ? LOCAL_COMMAND_FLAGS : GLOBAL_FLAGS
+}
+
 export function effectiveAllowedFlags(spec: CommandSpec): string[] {
   if (spec.argumentMode === 'passthrough') {
     return []
   }
   return [
     ...new Set([
-      ...GLOBAL_FLAGS,
+      ...globalFlagsForSpec(spec),
       ...spec.allowedFlags,
       ...(supportsBrowserPageFlag(spec) ? ['page'] : [])
     ])
@@ -246,16 +250,16 @@ export function validateCommandAndFlags(specs: CommandSpec[], parsed: ParsedArgs
   const pageAllowed = supportsBrowserPageFlag(spec)
   const repeatable = new Set([...REPEATABLE_STRING_FLAGS, ...(spec.repeatableFlags ?? [])])
   for (const [flag, value] of parsed.flags) {
-    const isGlobalFlag = GLOBAL_FLAGS.includes(flag)
-    if (GLOBAL_VALUE_FLAGS.has(flag) && (typeof value !== 'string' || value.length === 0)) {
-      throw new RuntimeClientError('invalid_argument', `Flag --${flag} requires a value.`)
-    }
+    const isGlobalFlag = globalFlagsForSpec(spec).includes(flag)
     if (!isGlobalFlag && !spec.allowedFlags.includes(flag) && !(flag === 'page' && pageAllowed)) {
       throw new RuntimeClientError(
         'invalid_argument',
         `Unknown flag --${flag} for command: ${spec.path.join(' ')}`,
         unknownFlagData(flag, effectiveAllowedFlags(spec))
       )
+    }
+    if (GLOBAL_VALUE_FLAGS.has(flag) && (typeof value !== 'string' || value.length === 0)) {
+      throw new RuntimeClientError('invalid_argument', `Flag --${flag} requires a value.`)
     }
     if (repeatable.has(flag) && !BOOLEAN_FLAGS.has(flag) && typeof value !== 'string') {
       throw new RuntimeClientError('invalid_argument', `Flag --${flag} requires a value.`)

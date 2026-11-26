@@ -8,7 +8,7 @@
     },
     {
       "path": "src/cli/args.ts",
-      "sha256": "ea4cdbaf03839c2731e7f0d229ab349ddea1cec2b154c02bbf171b400dd88349",
+      "sha256": "cefdb7bfc4212d1a5dc2b4fa5c354ebd5d66f20d778c48d59deb3e18852b7c9f",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -268,7 +268,7 @@
     },
     {
       "path": "src/cli/specs/index.ts",
-      "sha256": "d3af4f948f7fb0ffa9754c76f4104fc907d00e09d40f812b6c60ad808915dc50",
+      "sha256": "832e41d9662ef04d422b64a86c2036f8ef6deb398e37dadbdfa13b13235adc3d",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -3288,7 +3288,7 @@
     },
     {
       "path": "src/cli/index.ts",
-      "sha256": "d9d6433bae1048c16c758bcc7668c753e73a6d5aa7c0a053f98dbebe9dc61a28",
+      "sha256": "5ab04a6e60572424aabe651dcbeeb872c9392321a0cd44b9c5ce95f47d64b10d",
       "reason": "Ash M8: retire the orphan app-plugin CLI authoring and watch tooling, and exclude its bundled guidance while preserving retained provider skills and plugin runtime boundaries."
     },
     {
@@ -3478,7 +3478,7 @@
     },
     {
       "path": "config/build-plugins/main-build-entry-points.ts",
-      "sha256": "efd00cdba44c7bc0f1788783e89dae5f726f958eba6638b3b0ef98c6ad9bf0fd",
+      "sha256": "542d4f12b4ed68ba3a006a85f176f23a0d6fda7f37f8b33fe9a63ef0e3592d79",
       "reason": "Ash M8 EX-03: retire application-plugin guest and build entrypoints while preserving browser, document-preview, native-chat, and daemon boundaries."
     },
     {
@@ -4199,6 +4199,26 @@
     {
       "path": "src/main/runtime/workspaces/workspace-removal-target.ts",
       "sha256": "70143fcc56a3c88ecff3d63d1d0a11488e620ecb3a65281d20383c6455ad5226",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/build-plugins/sandboxed-script-bundles.ts",
+      "sha256": "22ebc497a22662fa60895594c29acdeb2083efeb730e799c69fd29a49ac316d0",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/desktop-build/execution/run-electron-vite-build.mjs",
+      "sha256": "a8cdadda288784734a0090f8accf19f731f1943a7dfe0f9213ccfbd52769e35b",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "config/scripts/desktop-build/output-contracts/preload-output-contract.mjs",
+      "sha256": "f65b9ed5f58588488c71aad6fc47968df97578ff9b1f969c595de4336668a97e",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/cli/command-spec.ts",
+      "sha256": "e963b3180461bcb8fcd7ec4fbe122cde002ffe90f63ec244b87cae4b65c601fb",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     }
   ]

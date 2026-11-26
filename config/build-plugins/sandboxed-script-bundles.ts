@@ -8,7 +8,9 @@ import {
 
 type BundledScript = { code: string; moduleIds: string[] }
 
+// All frame preloads executed in Electron's sandbox must be standalone CJS.
 const GUEST_PRELOADS = [
+  { entry: 'src/preload/browser-extension-preload.ts', fileName: 'browser-extension-preload.js' },
   { entry: 'src/preload/browser-guest.ts', fileName: 'browser-guest-preload.js' },
   { entry: 'src/preload/doc-preview-link.ts', fileName: 'doc-preview-link-preload.js' }
 ]

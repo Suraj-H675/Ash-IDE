@@ -169,10 +169,11 @@ export async function main(
       ...(typeof worktreeSelector === 'string' ? { worktreeSelector } : {}),
       ...(typeof repoSelector === 'string' ? { repoSelector } : {}),
       remoteServerSelected:
-        parsed.flags.has('environment') ||
-        parsed.flags.has('pairing-code') ||
-        (typeof hostFlag === 'string' && hostFlag.startsWith('runtime:')) ||
-        Boolean(process.env.ORCA_ENVIRONMENT?.trim() || process.env.ORCA_PAIRING_CODE?.trim()),
+        !isAshCommandSurface &&
+        (parsed.flags.has('environment') ||
+          parsed.flags.has('pairing-code') ||
+          (typeof hostFlag === 'string' && hostFlag.startsWith('runtime:')) ||
+          Boolean(process.env.ORCA_ENVIRONMENT?.trim() || process.env.ORCA_PAIRING_CODE?.trim())),
       conciseOrchestration: parsed.commandPath[0] === 'orchestration' && !parsed.flags.has('full')
     })
     process.exitCode = cliErrorExitCode()

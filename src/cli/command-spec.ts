@@ -8,6 +8,8 @@ export type CommandSpec = {
   summary: string
   usage: string
   allowedFlags: string[]
+  // Ash's public command surface permits only local global flags (help and JSON).
+  globalFlagScope?: 'local'
   // Flag repeatability varies by command, even for the same flag name.
   repeatableFlags?: string[]
   positionalArgs?: string[]

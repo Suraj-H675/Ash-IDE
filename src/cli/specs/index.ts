@@ -72,6 +72,7 @@ export const ASH_COMMAND_SPECS: CommandSpec[] = COMMAND_SPECS.filter(
 ).map((spec) => {
   const localSpec: CommandSpec = {
     ...spec,
+    globalFlagScope: 'local',
     allowedFlags: spec.allowedFlags.filter((flag) => !ASH_REMOTE_SCOPE_FLAGS.has(flag))
   }
   if (spec.path.join(' ') === 'terminal create') {
