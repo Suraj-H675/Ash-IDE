@@ -6,6 +6,7 @@ import {
   loadBrowserExtensionIntoProfile,
   unloadBrowserExtensionFromProfile
 } from './browser-extension-session-loader'
+import { BrowserExtensionLoadCancelledError } from './browser-extension-profile-loads'
 
 function isEnabledIn(profileId: string, extensionId: string): boolean {
   return browserSessionRegistry.getEnabledExtensionIds(profileId).includes(extensionId)
@@ -38,8 +39,11 @@ export async function reloadBrowserExtensionWhereEnabled(
       continue
     }
     await loadBrowserExtensionIntoProfile(profileId, extension, 'reload').catch((error) => {
-      // A Disable that cancelled this load is not a reload failure; other profiles still reload.
-      if (isEnabledIn(profileId, extension.id)) {
+      // A failed restore also clears enablement, so only an actual Disable may be swallowed.
+      if (
+        !(error instanceof BrowserExtensionLoadCancelledError) ||
+        isEnabledIn(profileId, extension.id)
+      ) {
         throw error
       }
     })

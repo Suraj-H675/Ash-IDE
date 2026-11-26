@@ -8,9 +8,16 @@ export type BrowserExtensionProfileLoad = {
 export const BROWSER_EXTENSION_PROFILE_UNAVAILABLE =
   'Browser profile is not available for extensions'
 
+export class BrowserExtensionLoadCancelledError extends Error {
+  constructor() {
+    super('The extension was turned off before it finished loading')
+    this.name = 'BrowserExtensionLoadCancelledError'
+  }
+}
+
 export function throwIfBrowserExtensionLoadCancelled(load: BrowserExtensionProfileLoad): void {
   if (load.cancelled) {
-    throw new Error('The extension was turned off before it finished loading')
+    throw new BrowserExtensionLoadCancelledError()
   }
 }
 

@@ -23,6 +23,7 @@ import {
 import {
   BROWSER_EXTENSION_PROFILE_UNAVAILABLE,
   BrowserExtensionProfileLoads,
+  type BrowserExtensionProfileLoad,
   throwIfBrowserExtensionLoadCancelled
 } from './browser-extension-profile-loads'
 import { removeBrowserExtensionFromSession } from './browser-extension-worker-registration'
@@ -42,12 +43,14 @@ type ProfileSessionState = {
 /** Per-session services and per-extension restart restore, supplied by browser-extension-startup. */
 export type BrowserExtensionSessionHooks = {
   attached: (sess: Electron.Session, profileId: string, enabledExtensionIds: string[]) => void
-  /** Runs after each startup load; resolves when restored state is back in place. */
+  /** Runs after every successful extension load; resolves when restored state is back in place. */
   loaded: (
     sess: Electron.Session,
     profileId: string,
     extension: Electron.Extension
   ) => Promise<void>
+  /** Removes a failed post-load extension from persisted enablement while its profile is attached. */
+  postLoadFailed: (sess: Electron.Session, profileId: string, extensionId: string) => void
   /** Extensions turned off: undo what `attached` added to the request path. */
   detached: (sess: Electron.Session) => void
   uninstalled: (profileId: string, extensionIds: ReadonlySet<string>) => void
@@ -57,6 +60,41 @@ let sessionHooks: BrowserExtensionSessionHooks | null = null
 
 export function setBrowserExtensionSessionHooks(hooks: BrowserExtensionSessionHooks): void {
   sessionHooks = hooks
+}
+
+async function finishExtensionLoad(
+  sess: Electron.Session,
+  profileId: string,
+  extension: Electron.Extension,
+  load: BrowserExtensionProfileLoad
+): Promise<Electron.Extension> {
+  try {
+    throwIfBrowserExtensionLoadCancelled(load)
+    await sessionHooks?.loaded(sess, profileId, extension)
+    throwIfBrowserExtensionLoadCancelled(load)
+    return extension
+  } catch (error) {
+    const rollbackErrors: unknown[] = []
+    try {
+      if (sess.extensions.getExtension(extension.id)) {
+        removeBrowserExtensionFromSession(sess, extension.id)
+      }
+    } catch (rollbackError) {
+      rollbackErrors.push(rollbackError)
+    }
+    try {
+      sessionHooks?.postLoadFailed(sess, profileId, extension.id)
+    } catch (rollbackError) {
+      rollbackErrors.push(rollbackError)
+    }
+    if (rollbackErrors.length > 0) {
+      throw new AggregateError(
+        [error, ...rollbackErrors],
+        `Could not roll back extension ${extension.id} after restore failure`
+      )
+    }
+    throw error
+  }
 }
 
 const stateByProfileId = new Map<string, ProfileSessionState>()
@@ -127,7 +165,7 @@ export function attachBrowserExtensionsToProfileSession(
           'startup',
           load
         )
-        await sessionHooks?.loaded(sess, profile.id, loaded)
+        await finishExtensionLoad(sess, profile.id, loaded, load)
       })
       .catch((error: unknown) => {
         console.warn(`[browser-extensions] Failed to load ${extensionId}:`, error)
@@ -240,7 +278,14 @@ export async function loadBrowserExtensionIntoProfile(
   }
   return state.loads.track(extension.id, async (load) => {
     await state.loading
-    return loadInstalledBrowserExtensionIntoSession(state.session, profileId, extension, kind, load)
+    const loaded = await loadInstalledBrowserExtensionIntoSession(
+      state.session,
+      profileId,
+      extension,
+      kind,
+      load
+    )
+    return finishExtensionLoad(state.session, profileId, loaded, load)
   })
 }
 
@@ -260,7 +305,7 @@ export async function loadBrowserExtensionFolderIntoProfile(
   }
   return state.loads.track(extensionId, async (load) => {
     await state.loading
-    return loadBrowserExtensionIntoSession(
+    const loaded = await loadBrowserExtensionIntoSession(
       state.session,
       profileId,
       { id: extensionId, source: 'unpacked', path: directory },
@@ -268,6 +313,7 @@ export async function loadBrowserExtensionFolderIntoProfile(
       load,
       options
     )
+    return finishExtensionLoad(state.session, profileId, loaded, load)
   })
 }
 

@@ -11,13 +11,17 @@ import {
   forgetBrowserExtensionContentScriptRestore,
   restoreBrowserExtensionContentScripts
 } from '../api-runtime/browser-extension-content-scripts'
+import { withExtensionEnabled } from './browser-extension-profile-enablement'
 import { setBrowserSessionRequestDecider } from '../../sessions/requests/browser-session-request-decisions'
 import { browserExtensionDnrRequestDecider } from '../declarative-net-request/session/browser-extension-dnr-requests'
 import {
   attachBrowserExtensionDnr,
   whenBrowserExtensionDnrLoaded
 } from '../declarative-net-request/session/browser-extension-dnr-session'
-import { setBrowserExtensionSessionHooks } from './browser-extension-session-loader'
+import {
+  getBrowserExtensionSessionForProfile,
+  setBrowserExtensionSessionHooks
+} from './browser-extension-session-loader'
 import {
   installBrowserExtensionWebRequestForwarding,
   observeBrowserExtensionWebRequests,
@@ -96,6 +100,17 @@ export function installBrowserExtensionSessionServices(): void {
         ),
         whenBrowserExtensionDnrLoaded(sess)
       ])
+    },
+    postLoadFailed: (sess, profileId, extensionId) => {
+      if (getBrowserExtensionSessionForProfile(profileId) !== sess) {
+        return
+      }
+      browserSessionRegistry.updateEnabledExtensionIds((byProfile) => {
+        if (!(byProfile[profileId] ?? []).includes(extensionId)) {
+          return byProfile
+        }
+        return withExtensionEnabled(byProfile, profileId, extensionId, false)
+      })
     }
   })
 }

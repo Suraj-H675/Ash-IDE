@@ -4220,6 +4220,46 @@
       "path": "src/cli/command-spec.ts",
       "sha256": "e963b3180461bcb8fcd7ec4fbe122cde002ffe90f63ec244b87cae4b65c601fb",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/browser/extensions/api-runtime/browser-extension-content-scripts.ts",
+      "sha256": "63fa6e952db8607cf811b7c2922ab9a0406e3e9e050178685ed4221cd73e77d6",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/browser/extensions/profile-sessions/browser-extension-profile-loads.ts",
+      "sha256": "116a5c56120fe344641e6a152836e929d2c084265bb512e76054924a140dcc1f",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/browser/extensions/profile-sessions/browser-extension-profile-reload.test.ts",
+      "sha256": "bad69114c02e63629cef0c35d9d8a1ef6c000af3f405078f6efd16597620e164",
+      "reason": "Ash BR-08 native extension lifecycle regression tests at a previously deferred upstream test path; original pinned source hash retained in the source ledger."
+    },
+    {
+      "path": "src/main/browser/extensions/profile-sessions/browser-extension-profile-reload.ts",
+      "sha256": "14fee1f782280398b36540ccde64cc36afe6b0f80c86ac77085c5359f985190d",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/browser/extensions/profile-sessions/browser-extension-session-loader.test.ts",
+      "sha256": "cf3f64d12407e9943b56ca79db51f31fb4f054bfaca0f0cad57a4b160dadeaa0",
+      "reason": "Ash BR-08 native extension lifecycle regression tests at a previously deferred upstream test path; original pinned source hash retained in the source ledger."
+    },
+    {
+      "path": "src/main/browser/extensions/profile-sessions/browser-extension-session-loader.ts",
+      "sha256": "72f02e9eed5f94b9765370e514eb05f439274877de16fd293f9225a9550e0c14",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/main/browser/extensions/profile-sessions/browser-extension-session-services.test.ts",
+      "sha256": "f7a302e676cf5b4307a2c85a5e666042802fb3c4566cd01a559d1f3a00df2b85",
+      "reason": "Ash BR-08 native extension lifecycle regression tests at a previously deferred upstream test path; original pinned source hash retained in the source ledger."
+    },
+    {
+      "path": "src/main/browser/extensions/profile-sessions/browser-extension-session-services.ts",
+      "sha256": "c3b041daf4e5aa3b51f4a4d7ec6081a675185dd7efdca0a1ccc40ebf7d5c9961",
+      "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     }
   ]
 }
