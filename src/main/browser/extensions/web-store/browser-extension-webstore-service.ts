@@ -13,7 +13,10 @@ import { readBrowserExtensionIconDataUrl } from '../installation/browser-extensi
 import { samePermissionSummary } from '../permissions/browser-extension-permission-summary'
 import type { BrowserExtensionAccessLists as BrowserExtensionPermissionSummary } from '../../../../shared/browser/extensions/browser-extension-permission-warnings'
 import { getBrowserExtensionSessionForProfile } from '../profile-sessions/browser-extension-session-loader'
-import { isBrowserExtensionSupportEnabled } from '../browser-extension-support'
+import {
+  isBrowserExtensionSupportEnabled,
+  withBrowserExtensionMutation
+} from '../browser-extension-support'
 import {
   downloadWebStoreCrx,
   fetchWebStoreIconDataUrl,
@@ -62,8 +65,12 @@ async function installApprovedFromStore(
   extensionId: string,
   approved: BrowserExtensionPermissionSummary
 ): Promise<InstalledBrowserExtension> {
-  return withBrowserExtensionLock(extensionId, async () => {
+  return withBrowserExtensionLock(extensionId, async (signal) => {
     const staged = await stageWebStoreExtension(await downloadWebStoreCrx(extensionId))
+    if (signal.aborted) {
+      await discardStagedWebStoreExtension(staged)
+      throw new Error('Browser extension support is changing')
+    }
     if (!samePermissionSummary(staged.access, approved)) {
       await discardStagedWebStoreExtension(staged)
       throw new Error('The downloaded extension asks for different access than the store listed')
@@ -94,7 +101,13 @@ export const chromeWebStoreInstallFlow = new ChromeWebStoreInstallFlow({
     if (!guest || !context) {
       return false
     }
-    return requestBrowserExtensionInstallPrompt(context.renderer, prompt, guest)
+    try {
+      return await withBrowserExtensionMutation((signal) =>
+        requestBrowserExtensionInstallPrompt(context.renderer, prompt, guest, signal)
+      )
+    } catch {
+      return false
+    }
   },
   install: installApprovedFromStore,
   describeInstalled: async (extensionId) => {
@@ -146,21 +159,29 @@ export async function installBrowserExtensionFromWebStore(
     return { status: 'failed', error: `${existing.name} is already added` }
   }
   try {
-    return await withBrowserExtensionLock(extensionId, async () => {
+    return await withBrowserExtensionLock(extensionId, async (signal) => {
       const staged = await stageWebStoreExtension(await downloadWebStoreCrx(extensionId))
       let accepted = false
       try {
-        accepted = await requestBrowserExtensionInstallPrompt(renderer, {
-          kind: 'install',
-          name: staged.summary.name,
-          iconDataUrl: await readBrowserExtensionIconDataUrl(
-            staged.directory,
-            staged.summary.iconPath
-          ),
-          permissions: staged.access.permissions,
-          hostPermissions: staged.access.hostPermissions,
-          profileLabel: profileLabel(profileId)
-        })
+        accepted = await requestBrowserExtensionInstallPrompt(
+          renderer,
+          {
+            kind: 'install',
+            name: staged.summary.name,
+            iconDataUrl: await readBrowserExtensionIconDataUrl(
+              staged.directory,
+              staged.summary.iconPath
+            ),
+            permissions: staged.access.permissions,
+            hostPermissions: staged.access.hostPermissions,
+            profileLabel: profileLabel(profileId)
+          },
+          undefined,
+          signal
+        )
+        if (signal.aborted) {
+          accepted = false
+        }
       } finally {
         if (!accepted) {
           await discardStagedWebStoreExtension(staged)

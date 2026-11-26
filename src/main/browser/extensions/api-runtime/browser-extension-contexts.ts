@@ -7,6 +7,7 @@ import {
 } from './browser-extension-frame-lifetime'
 import type { BrowserExtensionEventPayload } from '../../../../shared/browser/extensions/browser-extension-channels'
 import { getChromeExtensionOrigin } from '../../../../shared/browser/extensions/browser-extension-url'
+import { getBrowserExtensionRuntimeQuarantine } from './browser-extension-runtime-quarantine'
 import {
   dispatchBrowserExtensionEvent as dispatchEvent,
   eventKey,
@@ -177,7 +178,7 @@ export function dispatchToWorkerWhenListening(
   startWorker: (sess: Electron.Session, context: WorkerContext) => void
 ): void {
   const state = stateBySession.get(sess)
-  if (!state) {
+  if (!state || getBrowserExtensionRuntimeQuarantine(sess, extensionId)) {
     return
   }
   const key = eventKey(namespace, event)
@@ -198,14 +199,23 @@ export function browserExtensionEventHasListener(
   event: string
 ): boolean {
   const state = stateBySession.get(sess)
+  if (!state) {
+    return false
+  }
   const key = eventKey(namespace, event)
-  for (const context of state?.workers.values() ?? []) {
-    if (context.events.has(key)) {
+  for (const context of state.workers.values()) {
+    if (
+      !getBrowserExtensionRuntimeQuarantine(sess, context.extensionId) &&
+      context.events.has(key)
+    ) {
       return true
     }
   }
-  for (const context of state?.frames.values() ?? []) {
-    if (context.events.has(key)) {
+  for (const context of state.frames.values()) {
+    if (
+      !getBrowserExtensionRuntimeQuarantine(sess, context.extensionId) &&
+      context.events.has(key)
+    ) {
       return true
     }
   }

@@ -15,6 +15,7 @@ import {
   type HostSessionState,
   type WorkerContext
 } from './browser-extension-contexts'
+import { getBrowserExtensionRuntimeQuarantine } from './browser-extension-runtime-quarantine'
 
 const invokeRequestSchema = z.discriminatedUnion('type', [
   z.object({
@@ -59,6 +60,10 @@ export async function handleBrowserExtensionApiRequest(
   listenTarget: BrowserExtensionListenTarget
 ): Promise<BrowserExtensionInvokeResult> {
   try {
+    const quarantine = getBrowserExtensionRuntimeQuarantine(caller.session, caller.extension.id)
+    if (quarantine) {
+      throw new BrowserExtensionApiError(quarantine)
+    }
     const parsed = invokeRequestSchema.safeParse(rawRequest)
     if (!parsed.success) {
       throw new BrowserExtensionApiError('Malformed extension API request')
@@ -117,6 +122,12 @@ export async function handleBrowserExtensionApiRequest(
     if (!method) {
       throw new BrowserExtensionApiError(
         `chrome.${request.namespace}.${request.method} is not available`
+      )
+    }
+    if (getBrowserExtensionRuntimeQuarantine(caller.session, caller.extension.id)) {
+      throw new BrowserExtensionApiError(
+        getBrowserExtensionRuntimeQuarantine(caller.session, caller.extension.id) ??
+          'Extension runtime is unavailable'
       )
     }
     return { ok: true, value: await method.invoke(caller, request.args) }

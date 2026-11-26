@@ -44,5 +44,20 @@ export type BrowserExtensionListResult = {
 
 export type BrowserExtensionActionResult = { ok: true } | { ok: false; error: string }
 
+export type BrowserExtensionSupportRuntime =
+  | 'enabled'
+  | 'disabled'
+  | 'enabling'
+  | 'disabling'
+  | 'unload-failed'
+  | 'enable-failed'
+
+/** The saved preference and the process-local runtime can differ while recovery is needed. */
+export type BrowserExtensionSupportStatus = {
+  desiredEnabled: boolean
+  runtime: BrowserExtensionSupportRuntime
+}
+
 /** Main → trusted renderer: the installed list, a load error or a held update changed; Settings refetches. */
 export const BROWSER_EXTENSIONS_CHANGED_CHANNEL = 'browserExtensions:changed'
+export const BROWSER_EXTENSION_SUPPORT_CHANGED_CHANNEL = 'browserExtensions:supportStatusChanged'

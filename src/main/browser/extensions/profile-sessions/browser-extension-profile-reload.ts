@@ -28,7 +28,7 @@ export async function reloadBrowserExtensionWhereEnabled(
         isEnabledIn(profileId, extension.id) && getBrowserExtensionSessionForProfile(profileId)
     )
   for (const profileId of profileIds) {
-    unloadBrowserExtensionFromProfile(profileId, extension.id)
+    await unloadBrowserExtensionFromProfile(profileId, extension.id, 'superseded')
   }
   if (options.refresh) {
     await prepareBrowserExtensionDirectory(extension, { refresh: true })
@@ -39,10 +39,10 @@ export async function reloadBrowserExtensionWhereEnabled(
       continue
     }
     await loadBrowserExtensionIntoProfile(profileId, extension, 'reload').catch((error) => {
-      // A failed restore also clears enablement, so only an actual Disable may be swallowed.
+      // Cancellation is a lifecycle outcome; the cancellation reason decides whether it is expected.
       if (
         !(error instanceof BrowserExtensionLoadCancelledError) ||
-        isEnabledIn(profileId, extension.id)
+        (error.cancelledBy === 'user-disabled' && isEnabledIn(profileId, extension.id))
       ) {
         throw error
       }

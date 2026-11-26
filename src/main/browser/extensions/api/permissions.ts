@@ -26,6 +26,7 @@ import { getHostSessionState } from '../api-runtime/browser-extension-contexts'
 import { getBrowserExtensionContextSignal } from '../api-runtime/browser-extension-context-lifetime'
 import { getDnrSessionRuntime } from '../declarative-net-request/session/browser-extension-dnr-session'
 import { observeBrowserExtensionWebRequests } from '../browser-extension-web-request'
+import { withBrowserExtensionMutation } from '../browser-extension-support'
 
 const USER_GESTURE_WINDOW_MS = 5_000
 const recentGestures = new WeakMap<AbortSignal, number>()
@@ -105,74 +106,79 @@ async function request(
   caller: BrowserExtensionCaller,
   wanted: Partial<BrowserExtensionPermissionSet>
 ): Promise<boolean> {
-  const { extension, browserProfileId } = caller
-  const plan = planBrowserExtensionPermissionRequest(
-    extension.manifest,
-    readGrants(browserProfileId, extension.id),
-    wanted
-  )
-  if (plan.kind === 'invalid') {
-    throw new BrowserExtensionApiError(plan.error)
-  }
-  if (plan.kind === 'already-granted') {
-    return true
-  }
-  if (!hasBrowserExtensionUserGesture(caller)) {
-    throw new BrowserExtensionApiError('This function must be called during a user gesture')
-  }
-  const key = gestureKey(browserProfileId, extension.id)
-  if (pendingRequests.has(key)) {
-    throw new BrowserExtensionApiError('A permissions request is already pending')
-  }
-  const state = getHostSessionState(caller.session)
-  if (!state) {
-    return false
-  }
-  const signal = getBrowserExtensionContextSignal(state, extension.id)
-  pendingRequests.add(key)
-  try {
-    const accepted = await askToGrantBrowserExtensionPermissions(
-      browserProfileId,
-      extension,
-      plan.add,
-      signal
+  return withBrowserExtensionMutation(async (supportSignal) => {
+    const { extension, browserProfileId } = caller
+    const plan = planBrowserExtensionPermissionRequest(
+      extension.manifest,
+      readGrants(browserProfileId, extension.id),
+      wanted
     )
-    if (!accepted || signal.aborted) {
+    if (plan.kind === 'invalid') {
+      throw new BrowserExtensionApiError(plan.error)
+    }
+    if (plan.kind === 'already-granted') {
+      return true
+    }
+    if (!hasBrowserExtensionUserGesture(caller)) {
+      throw new BrowserExtensionApiError('This function must be called during a user gesture')
+    }
+    const key = gestureKey(browserProfileId, extension.id)
+    if (pendingRequests.has(key)) {
+      throw new BrowserExtensionApiError('A permissions request is already pending')
+    }
+    const state = getHostSessionState(caller.session)
+    if (!state) {
       return false
     }
-    getBrowserExtensionProfileStateStore().update(browserProfileId, extension.id, (state) =>
-      withGrantedPermissions(state, plan.add)
-    )
-    if (plan.add.permissions.includes('webRequest')) {
-      observeBrowserExtensionWebRequests(caller.session)
+    const contextSignal = getBrowserExtensionContextSignal(state, extension.id)
+    const signal = AbortSignal.any([contextSignal, supportSignal])
+    pendingRequests.add(key)
+    try {
+      const accepted = await askToGrantBrowserExtensionPermissions(
+        browserProfileId,
+        extension,
+        plan.add,
+        signal
+      )
+      if (!accepted || signal.aborted) {
+        return false
+      }
+      getBrowserExtensionProfileStateStore().update(browserProfileId, extension.id, (state) =>
+        withGrantedPermissions(state, plan.add)
+      )
+      if (plan.add.permissions.includes('webRequest')) {
+        observeBrowserExtensionWebRequests(caller.session)
+      }
+      await getDnrSessionRuntime(caller.session)?.reconcilePermissions(extension)
+      emitChange(caller, 'onAdded', plan.add)
+      return true
+    } finally {
+      pendingRequests.delete(key)
     }
-    await getDnrSessionRuntime(caller.session)?.reconcilePermissions(extension)
-    emitChange(caller, 'onAdded', plan.add)
-    return true
-  } finally {
-    pendingRequests.delete(key)
-  }
+  })
 }
 
 async function remove(
   caller: BrowserExtensionCaller,
   wanted: Partial<BrowserExtensionPermissionSet>
 ): Promise<boolean> {
-  const { extension, browserProfileId } = caller
-  const plan = planBrowserExtensionPermissionRemoval(
-    extension.manifest,
-    readGrants(browserProfileId, extension.id),
-    wanted
-  )
-  if (plan.kind === 'invalid') {
-    throw new BrowserExtensionApiError(plan.error)
-  }
-  getBrowserExtensionProfileStateStore().update(browserProfileId, extension.id, (state) =>
-    withoutGrantedPermissions(state, plan.removed)
-  )
-  await getDnrSessionRuntime(caller.session)?.reconcilePermissions(extension)
-  emitChange(caller, 'onRemoved', plan.removed)
-  return true
+  return withBrowserExtensionMutation(async () => {
+    const { extension, browserProfileId } = caller
+    const plan = planBrowserExtensionPermissionRemoval(
+      extension.manifest,
+      readGrants(browserProfileId, extension.id),
+      wanted
+    )
+    if (plan.kind === 'invalid') {
+      throw new BrowserExtensionApiError(plan.error)
+    }
+    getBrowserExtensionProfileStateStore().update(browserProfileId, extension.id, (state) =>
+      withoutGrantedPermissions(state, plan.removed)
+    )
+    await getDnrSessionRuntime(caller.session)?.reconcilePermissions(extension)
+    emitChange(caller, 'onRemoved', plan.removed)
+    return true
+  })
 }
 
 export function registerPermissionsNamespace(): void {

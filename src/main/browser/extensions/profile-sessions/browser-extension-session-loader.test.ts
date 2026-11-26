@@ -6,9 +6,15 @@ const mocks = vi.hoisted(() => ({
   sessions: new Map<string, object>(),
   extensionsBySession: new Map<object, Map<string, object>>(),
   installs: new Map<string, object>(),
+  mutationPaused: false,
   loadInstalled: vi.fn(),
   loadUnpacked: vi.fn(),
-  removeExtension: vi.fn()
+  removeExtension: vi.fn(),
+  retireProfileStorage: vi.fn(async () => undefined),
+  forgetProfileState: vi.fn(),
+  forgetSyncProfile: vi.fn(),
+  forgetDnrProfile: vi.fn(),
+  recordLoadFailure: vi.fn()
 }))
 
 vi.mock('electron', () => ({
@@ -16,7 +22,11 @@ vi.mock('electron', () => ({
     fromPartition: (partition: string) => mocks.sessions.get(partition)
   }
 }))
-vi.mock('../browser-extension-support', () => ({ isBrowserExtensionSupportEnabled: () => true }))
+vi.mock('../browser-extension-support', () => ({
+  isBrowserExtensionSupportEnabled: () => true,
+  isBrowserExtensionMutationPaused: () => mocks.mutationPaused,
+  pauseBrowserExtensionMutations: async () => () => {}
+}))
 vi.mock('../actions/browser-extension-action-registry', () => ({
   forgetBrowserExtensionActionProfile: vi.fn()
 }))
@@ -27,16 +37,16 @@ vi.mock('../installation/browser-extension-install-store', () => ({
   })
 }))
 vi.mock('../profile-storage/browser-extension-profile-state-store', () => ({
-  getBrowserExtensionProfileStateStore: () => ({ forgetProfile: vi.fn() })
+  getBrowserExtensionProfileStateStore: () => ({ forgetProfile: mocks.forgetProfileState })
 }))
 vi.mock('../profile-storage/browser-extension-sync-storage-store', () => ({
-  getBrowserExtensionSyncStorageStore: () => ({ forgetProfile: vi.fn() })
+  getBrowserExtensionSyncStorageStore: () => ({ forgetProfile: mocks.forgetSyncProfile })
 }))
 vi.mock('../declarative-net-request/session/browser-extension-dnr-store', () => ({
-  getBrowserExtensionDnrStore: () => ({ forgetProfile: vi.fn() })
+  getBrowserExtensionDnrStore: () => ({ forgetProfile: mocks.forgetDnrProfile })
 }))
 vi.mock('../profile-storage/browser-extension-retired-profile-storage', () => ({
-  retireBrowserExtensionProfileStorage: vi.fn(async () => undefined)
+  retireBrowserExtensionProfileStorage: mocks.retireProfileStorage
 }))
 vi.mock('../api-runtime/browser-extension-api-host', () => ({
   attachBrowserExtensionApiHostToSession: vi.fn(),
@@ -47,7 +57,8 @@ vi.mock('../profile-storage/browser-extension-data-removal', () => ({
 }))
 vi.mock('./browser-extension-load-errors', () => ({
   clearBrowserExtensionLoadFailure: vi.fn(),
-  forgetBrowserExtensionLoadFailures: vi.fn()
+  forgetBrowserExtensionLoadFailures: vi.fn(),
+  recordBrowserExtensionLoadFailure: mocks.recordLoadFailure
 }))
 vi.mock('./browser-extension-worker-registration', () => ({
   removeBrowserExtensionFromSession: mocks.removeExtension
@@ -59,6 +70,8 @@ vi.mock('./browser-extension-session-load', () => ({
 
 import {
   attachBrowserExtensionsToProfileSession,
+  detachBrowserExtensionsFromProfileSession,
+  getBrowserExtensionSessionForProfile,
   loadBrowserExtensionIntoProfile,
   setBrowserExtensionSessionHooks,
   unloadBrowserExtensionFromProfile,
@@ -69,6 +82,7 @@ beforeEach(() => {
   mocks.sessions.clear()
   mocks.extensionsBySession.clear()
   mocks.installs.clear()
+  mocks.mutationPaused = false
   vi.clearAllMocks()
   mocks.loadInstalled.mockImplementation(
     async (session: Electron.Session, _profileId: string, installed: InstalledBrowserExtension) => {
@@ -131,6 +145,21 @@ function loadHooks() {
 }
 
 describe('browser extension session load hooks', () => {
+  it('does not attach a profile while profile retirement has paused mutations', async () => {
+    const p = profile('paused-attach-profile')
+    install(p.id, 'paused-attach-extension')
+    const sess = mocks.sessions.get(p.partition) as Electron.Session
+    mocks.mutationPaused = true
+
+    attachBrowserExtensionsToProfileSession(p, [])
+    expect(getBrowserExtensionSessionForProfile(p.id)).toBeNull()
+
+    mocks.mutationPaused = false
+    attachBrowserExtensionsToProfileSession(p, [])
+    expect(getBrowserExtensionSessionForProfile(p.id)).toBe(sess)
+    await detachBrowserExtensionsFromProfileSession(p)
+  })
+
   it('runs the restore hook once for startup and again after manual disable and re-enable', async () => {
     const extensionId = 'extension-startup-restore'
     const startupProfile = profile('startup-restore-profile')
@@ -155,7 +184,7 @@ describe('browser extension session load hooks', () => {
     await loadBrowserExtensionIntoProfile(manualProfile.id, installed)
     expect(manualHooks.loaded).toHaveBeenCalledTimes(1)
 
-    unloadBrowserExtensionFromProfile(manualProfile.id, manualExtensionId)
+    await unloadBrowserExtensionFromProfile(manualProfile.id, manualExtensionId)
     await loadBrowserExtensionIntoProfile(manualProfile.id, installed)
 
     expect(manualHooks.loaded).toHaveBeenCalledTimes(2)
@@ -186,5 +215,33 @@ describe('browser extension session load hooks', () => {
         extensionId
       )
     ).toBeUndefined()
+  })
+
+  it('retains deleted-profile extension data when native unload cannot be confirmed', async () => {
+    const extensionId = 'extension-detach-removal-failure'
+    const deletedProfile = profile('detach-removal-failure-profile')
+    const hooks = loadHooks()
+    install(deletedProfile.id, extensionId)
+    setBrowserExtensionSessionHooks(hooks)
+    attachBrowserExtensionsToProfileSession(deletedProfile, [extensionId])
+    await whenBrowserExtensionProfileLoaded(deletedProfile.id)
+    mocks.removeExtension.mockImplementation(() => {
+      throw new Error('native extension may remain active')
+    })
+
+    await expect(detachBrowserExtensionsFromProfileSession(deletedProfile)).rejects.toThrow(
+      'native extension may remain active'
+    )
+
+    expect(mocks.retireProfileStorage).not.toHaveBeenCalled()
+    expect(mocks.forgetProfileState).not.toHaveBeenCalled()
+    expect(mocks.forgetSyncProfile).not.toHaveBeenCalled()
+    expect(mocks.forgetDnrProfile).not.toHaveBeenCalled()
+    expect(mocks.recordLoadFailure).toHaveBeenCalledWith(
+      deletedProfile.id,
+      extensionId,
+      expect.any(Error)
+    )
+    expect(hooks.detached).toHaveBeenCalledTimes(1)
   })
 })

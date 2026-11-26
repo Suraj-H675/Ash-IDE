@@ -15,6 +15,7 @@ import {
   getBrowserExtensionNamespace
 } from './browser-extension-namespace-registry'
 import { deliverToWorker } from './browser-extension-worker-event-stream'
+import { getBrowserExtensionRuntimeQuarantine } from './browser-extension-runtime-quarantine'
 
 export type BrowserExtensionEventTarget = {
   /** Only extensions loaded in this session; omit to reach every extension session. */
@@ -151,7 +152,10 @@ export function dispatchBrowserExtensionEvent(
       return groups.get(extensionId)
     }
     for (const extensionId of extensionIds) {
-      if (target.extensionId && extensionId !== target.extensionId) {
+      if (
+        (target.extensionId && extensionId !== target.extensionId) ||
+        getBrowserExtensionRuntimeQuarantine(sess, extensionId)
+      ) {
         continue
       }
       const extension = sess.extensions.getExtension(extensionId)

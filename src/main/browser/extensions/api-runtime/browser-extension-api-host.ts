@@ -27,6 +27,10 @@ import type {
 } from './browser-extension-event-dispatch'
 import { handleBrowserExtensionApiRequest } from './browser-extension-api-request'
 import { handleBrowserExtensionWorkerRequest } from './browser-extension-worker-api-host'
+import {
+  clearBrowserExtensionRuntimeQuarantine,
+  getBrowserExtensionRuntimeQuarantine
+} from './browser-extension-runtime-quarantine'
 
 function resolveFrameCaller(event: Electron.IpcMainInvokeEvent): {
   caller: BrowserExtensionCaller
@@ -44,7 +48,10 @@ function resolveFrameCaller(event: Electron.IpcMainInvokeEvent): {
   }
   const sess = event.sender.session
   const state = getHostSessionState(sess)
-  const extension = state ? sess.extensions.getExtension(parsed.extensionId) : null
+  const extension =
+    state && !getBrowserExtensionRuntimeQuarantine(sess, parsed.extensionId)
+      ? sess.extensions.getExtension(parsed.extensionId)
+      : null
   if (!extension || !state) {
     return null
   }
@@ -92,7 +99,11 @@ function attachWorker(
   worker: Electron.ServiceWorkerMain
 ): void {
   const parsed = parseChromeExtensionUrl(worker.scope)
-  if (!parsed || !sess.extensions.getExtension(parsed.extensionId)) {
+  if (
+    !parsed ||
+    getBrowserExtensionRuntimeQuarantine(sess, parsed.extensionId) ||
+    !sess.extensions.getExtension(parsed.extensionId)
+  ) {
     return
   }
   ensureWorkerContext(state, parsed.extensionId, worker.scope).running = worker
@@ -100,13 +111,21 @@ function attachWorker(
 
 function startWorker(sess: Electron.Session, context: WorkerContext): void {
   const state = getHostSessionState(sess)
-  if (!state || context.starting) {
+  if (
+    !state ||
+    context.starting ||
+    getBrowserExtensionRuntimeQuarantine(sess, context.extensionId)
+  ) {
     return
   }
   context.starting = true
   sess.serviceWorkers
     .startWorkerForScope(context.scope)
-    .then((worker) => attachWorker(sess, state, worker))
+    .then((worker) => {
+      if (!getBrowserExtensionRuntimeQuarantine(sess, context.extensionId)) {
+        attachWorker(sess, state, worker)
+      }
+    })
     .catch((error: unknown) => {
       console.warn('[browser-extensions] Could not start extension worker:', error)
     })
@@ -161,9 +180,10 @@ function listenToSession(sess: Electron.Session): void {
       sweepRunningWorkers(sess, state)
     }
   })
-  sess.extensions.on('extension-unloaded', (_event, extension) =>
+  sess.extensions.on('extension-unloaded', (_event, extension) => {
+    clearBrowserExtensionRuntimeQuarantine(sess, extension.id)
     forgetExtensionContexts(sess, extension.id)
-  )
+  })
 }
 
 /** Called by the session loader whenever a local browser-profile session starts running extensions. */
@@ -187,6 +207,14 @@ export function attachBrowserExtensionApiHostToSession(
 export function forgetBrowserExtensionContexts(sess: Electron.Session): void {
   forgetHostSession(sess)
   sess.protocol.unhandle(BROWSER_EXTENSION_API_SCHEME)
+}
+
+/** Revokes one extension's frame and worker contexts after its native unload cannot be confirmed. */
+export function quarantineBrowserExtensionContexts(
+  sess: Electron.Session,
+  extensionId: string
+): void {
+  forgetExtensionContexts(sess, extensionId)
 }
 
 export function getBrowserExtensionProfileIdForSession(sess: Electron.Session): string | null {

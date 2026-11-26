@@ -28,6 +28,7 @@ import {
   loadBrowserExtensionIntoProfile,
   unloadBrowserExtensionEverywhere
 } from '../profile-sessions/browser-extension-session-loader'
+import { withBrowserExtensionMutation } from '../browser-extension-support'
 
 /**
  * The one install path for store extensions: the store page, Settings and updates all stage a
@@ -47,17 +48,19 @@ export class BrowserExtensionBusyError extends Error {
 /** Serializes install, update and uninstall of one extension id. */
 export async function withBrowserExtensionLock<T>(
   extensionId: string,
-  action: () => Promise<T>
+  action: (signal: AbortSignal) => Promise<T>
 ): Promise<T> {
-  if (busyExtensionIds.has(extensionId)) {
-    throw new BrowserExtensionBusyError()
-  }
-  busyExtensionIds.add(extensionId)
-  try {
-    return await action()
-  } finally {
-    busyExtensionIds.delete(extensionId)
-  }
+  return withBrowserExtensionMutation(async (signal) => {
+    if (busyExtensionIds.has(extensionId)) {
+      throw new BrowserExtensionBusyError()
+    }
+    busyExtensionIds.add(extensionId)
+    try {
+      return await action(signal)
+    } finally {
+      busyExtensionIds.delete(extensionId)
+    }
+  })
 }
 
 export function isBrowserExtensionBusy(extensionId: string): boolean {

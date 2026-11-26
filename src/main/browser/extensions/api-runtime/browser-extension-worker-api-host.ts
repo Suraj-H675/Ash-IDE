@@ -23,6 +23,7 @@ import {
 } from './browser-extension-worker-event-stream'
 import { getBrowserExtensionContextSignal } from './browser-extension-context-lifetime'
 import { handleBrowserExtensionApiRequest } from './browser-extension-api-request'
+import { getBrowserExtensionRuntimeQuarantine } from './browser-extension-runtime-quarantine'
 
 /**
  * Serves the worker shim's fetch calls on each extension session's `orca-extension-api:` handler.
@@ -118,7 +119,9 @@ function initiatingExtension(sess: Electron.Session, request: Request): Electron
     'initiatorOrigin' in request && typeof request.initiatorOrigin === 'string'
       ? parseChromeExtensionUrl(`${request.initiatorOrigin}/`)
       : null
-  return origin ? sess.extensions.getExtension(origin.extensionId) : null
+  return origin && !getBrowserExtensionRuntimeQuarantine(sess, origin.extensionId)
+    ? sess.extensions.getExtension(origin.extensionId)
+    : null
 }
 
 export async function handleBrowserExtensionWorkerRequest(
@@ -135,7 +138,11 @@ export async function handleBrowserExtensionWorkerRequest(
   }
   const lifetime = getBrowserExtensionContextSignal(state, extension.id)
   const text = await readBoundedText(request)
-  if (lifetime.aborted || getHostSessionState(sess) !== state) {
+  if (
+    lifetime.aborted ||
+    getHostSessionState(sess) !== state ||
+    getBrowserExtensionRuntimeQuarantine(sess, extension.id)
+  ) {
     return refuse(403)
   }
   if (text === null) {
