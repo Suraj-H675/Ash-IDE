@@ -34,12 +34,23 @@ export async function unloadBrowserExtensionSession(
   forgetBrowserExtensionLoadFailures({ profileId: state.profile.id })
   await Promise.all([state.loading.catch(() => {}), state.loads.close('detached')])
   const unloadErrors: unknown[] = []
-  for (const extension of state.session.extensions.getAllExtensions()) {
+  let extensions: Electron.Extension[] = []
+  try {
+    extensions = state.session.extensions.getAllExtensions()
+  } catch (error) {
+    // Unknown native inventory is not native absence, but cannot skip Ash cleanup.
+    unloadErrors.push(error)
+  }
+  for (const extension of extensions) {
     try {
       removeBrowserExtensionFromSession(state.session, extension.id)
     } catch (error) {
-      recordBrowserExtensionLoadFailure(state.profile.id, extension.id, error)
       unloadErrors.push(error)
+      try {
+        recordBrowserExtensionLoadFailure(state.profile.id, extension.id, error)
+      } catch (reportError) {
+        unloadErrors.push(reportError)
+      }
     }
   }
   for (const finalize of [

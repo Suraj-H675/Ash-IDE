@@ -35,7 +35,7 @@ export function removeBrowserExtensionFromSession(
   }
 
   if (remainsPresent) {
-    const reason = `Could not confirm that extension ${extensionId} was unloaded; it may remain active in Chromium. Close and restart Ash before browsing this profile, then retry disabling it.`
+    const reason = `Could not confirm that extension ${extensionId} was unloaded; it may remain active in Chromium. Avoid browsing this profile and retry disabling it. If recovery fails, explicitly stop the Ash runtime before restarting; closing the window is not sufficient.`
     quarantineBrowserExtensionRuntime(sess, extensionId, reason)
     const cleanupErrors: unknown[] = []
     for (const cleanup of [

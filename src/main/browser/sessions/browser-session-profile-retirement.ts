@@ -1,13 +1,13 @@
 import { session, type Session } from 'electron'
 import type { BrowserSessionProfile } from '../../../shared/browser-workspace-types'
-import { retireProxySessionApplication } from '../../network/proxy-settings'
+import {
+  fenceProxySessionApplication,
+  retireProxySessionApplication
+} from '../../network/proxy-settings'
 import {
   clearBrowserSessionPartitionPolicies,
-  forgetBrowserSessionPartitionConfiguration,
-  retireBrowserSessionUserAgentPolicy
+  retireDeletedBrowserSessionPartitionPolicies
 } from './browser-session-partition-policies'
-import { invalidateBrowserSessionProxyApplication } from './browser-session-proxy'
-import { cancelBrowserWebAuthnAccountRequestsForSession } from '../webauthn/browser-webauthn-account-picker'
 import { detachBrowserExtensionsFromProfileSession } from '../extensions/profile-sessions/browser-extension-session-loader'
 
 export async function retireFailedBrowserSessionProfile(
@@ -32,34 +32,43 @@ export async function retireDeletedBrowserSessionProfile(
   profile: BrowserSessionProfile,
   beforeRetirement?: () => Promise<void> | undefined
 ): Promise<void> {
+  const sess = session.fromPartition(profile.partition)
+  // Fence old permissions before waiting for any asynchronous retirement.
+  const failures: unknown[] = []
+  try {
+    retireDeletedBrowserSessionPartitionPolicies(profile.partition, sess)
+  } catch (error) {
+    failures.push(error)
+  }
+  // Keep the current route pinned until native retirement and all revocations succeed.
+  const fence = fenceProxySessionApplication(sess).catch((error: unknown) => {
+    failures.push(error)
+  })
   try {
     await beforeRetirement?.()
   } catch (error) {
-    // Why: the profile is already deleted and persisted, so route cleanup stays best-effort.
+    // The profile is already deleted and persisted, so route cleanup stays best-effort.
     console.warn('[browser-session] Failed to retire route partitions for deleted profile', error)
   }
-  await clearDeletedBrowserSessionProfile(profile)
-}
-
-async function clearDeletedBrowserSessionProfile(profile: BrowserSessionProfile): Promise<void> {
-  await detachBrowserExtensionsFromProfileSession(profile)
-  // Why: clear the partition's storage so deleting a profile doesn't leave orphaned cookies/cache behind.
   try {
-    const sess = session.fromPartition(profile.partition)
-    forgetBrowserSessionPartitionConfiguration(profile.partition)
-    retireBrowserSessionUserAgentPolicy(sess)
-    invalidateBrowserSessionProxyApplication(sess)
-    const release = retireProxySessionApplication(sess)
-    // Why: persistent partitions can retain service workers after every WebContents dies, so a retired session's deny policies must remain permanent.
-    cancelBrowserWebAuthnAccountRequestsForSession(sess)
-    try {
-      await release
-    } catch {
-      console.warn('[proxy] Failed to release proxy from browser partition', profile.partition)
-    }
+    await detachBrowserExtensionsFromProfileSession(profile)
+  } catch (error) {
+    failures.push(error)
+  } finally {
+    await fence
+  }
+  if (failures.length === 1) {
+    throw failures[0]
+  }
+  if (failures.length > 1) {
+    throw new AggregateError(failures, 'Could not safely retire deleted browser profile')
+  }
+  // Preserve all partition storage if extension retirement could not confirm native absence.
+  await retireProxySessionApplication(sess)
+  try {
     await sess.clearStorageData()
     await sess.clearCache()
   } catch {
-    // Why: cleanup is best-effort — the profile is already out of the registry, so will-attach-webview blocks it regardless.
+    // Cleanup is best-effort; the profile is already out of the registry.
   }
 }

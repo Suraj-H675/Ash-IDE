@@ -4318,7 +4318,7 @@
     },
     {
       "path": "src/main/browser/extensions/profile-sessions/browser-extension-worker-registration.ts",
-      "sha256": "cd495bbeebf2c6910e3241c6a1256d34bfdad7b2dd325c9d4681fbf9b6582f1e",
+      "sha256": "a87e99d7f830f05218264d9ae6fb4b605893ea4bc0189ff7112dd2b348096bfc",
       "reason": "Ash adaptation of pinned upstream source for native extension retirement, retry and support status recovery."
     },
     {
@@ -4355,6 +4355,21 @@
       "path": "src/shared/browser/extensions/browser-extension-types.ts",
       "sha256": "f7a0d5418228bf7318626f5df58038564caa234431865d7b02303cd9c31d4dae",
       "reason": "Ash adaptation of pinned upstream source for native extension retirement, retry and support status recovery."
+    },
+    {
+      "path": "src/main/browser/sessions/browser-session-partition-policies.ts",
+      "sha256": "b23446102b7b6f65d50ce47233463f1280a0f69028d227ee10dbe2994c56b3f0",
+      "reason": "Ash adaptation of the pinned upstream source to fence retired browser profile authority before native cleanup."
+    },
+    {
+      "path": "src/main/browser/sessions/browser-session-profile-retirement.ts",
+      "sha256": "157d7996cffaf2c2d99d53bde5ef8e482767016dd55d21309ff893910c56f4f8",
+      "reason": "Ash adaptation of the pinned upstream source to fence retired browser profile authority before native cleanup."
+    },
+    {
+      "path": "src/main/network/proxy-settings.ts",
+      "sha256": "2861437bdb4d65cc7ec8cc38eee7c6890e7128b0e4fd344a31ea9f7e64c79f68",
+      "reason": "Ash adaptation of the pinned upstream source to fence retired browser profile authority before native cleanup."
     }
   ]
 }

@@ -154,6 +154,35 @@ describe('global browser extension disable recovery', () => {
     expect(sess.extensions.getExtension(id)).toBeUndefined()
   })
 
+  it('revokes Ash session services when native enumeration fails and retains the owner for retry', async () => {
+    const id = 'global-disable-enumeration-extension'
+    const p = profile('global-disable-enumeration-profile')
+    install(p.id, id)
+    const sess = mocks.sessions.get(p.partition) as Electron.Session
+    const detached = vi.fn()
+    setBrowserExtensionSessionHooks({
+      attached: vi.fn(),
+      loaded: vi.fn(async () => undefined),
+      postLoadFailed: vi.fn(),
+      detached,
+      uninstalled: vi.fn()
+    })
+    attachBrowserExtensionsToProfileSession(p, [id])
+    await whenBrowserExtensionProfileLoaded(p.id)
+    vi.spyOn(sess.extensions, 'getAllExtensions').mockImplementationOnce(() => {
+      throw new Error('Native enumeration refused')
+    })
+    await expect(detachBrowserExtensionsFromAllProfileSessions()).rejects.toThrow(
+      'Native enumeration refused'
+    )
+    expect(getBrowserExtensionSessionForProfile(p.id)).toBeNull()
+    expect(detached).toHaveBeenCalledWith(sess)
+    expect(sess.extensions.getExtension(id)).toBeTruthy()
+    await detachBrowserExtensionsFromAllProfileSessions()
+    expect(detached).toHaveBeenCalledOnce()
+    expect(sess.extensions.getExtension(id)).toBeUndefined()
+  })
+
   it('blocks reattachment until failed native removal has been retried', async () => {
     const id = 'global-disable-block-reattach-extension'
     const p = profile('global-disable-block-reattach-profile')
