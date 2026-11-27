@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "BR-08 Required Host Control",
+  "version": "1.0.0",
+  "permissions": ["scripting"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "host_permissions": ["http://127.0.0.1/*"],
+  "optional_host_permissions": ["http://localhost/*"]
+}

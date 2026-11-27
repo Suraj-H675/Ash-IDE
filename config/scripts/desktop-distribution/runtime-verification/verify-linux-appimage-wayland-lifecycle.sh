@@ -248,6 +248,46 @@ if (process.env.ASH_TEST_BROWSER_OWNER_PROBE === '1') {
     assert.equal(owner.missingPageControlEvaluationFailures, 0)
   }
 }
+if (process.env.ASH_TEST_BROWSER_EXTENSION_PROBE === '1') {
+  const beforeExtension = read('browser-extension-before')
+  const afterExtension = read('browser-extension-after')
+  assert.equal(beforeExtension.ok, true)
+  assert.equal(beforeExtension.stage, 'before')
+  assert.equal(beforeExtension.unpackedInstalledThroughTrustedBridge, true)
+  assert.equal(beforeExtension.experimentalSettingOptedInThroughTrustedBridge, true)
+  assert.equal(beforeExtension.requiredLoopbackPermissionPredeclared, true)
+  assert.equal(beforeExtension.initialRuntimeDisabled, true)
+  assert.equal(beforeExtension.seededPendingDeletionRecovered, true)
+  assert.equal(beforeExtension.initialOptInRuntimeEnabled, true)
+  assert.equal(beforeExtension.optionalHostRequestRefused, true)
+  assert.equal(beforeExtension.optionalHostExcludedFromEffectiveAccess, true)
+  assert.equal(beforeExtension.exactLoopbackMarkerOnOriginalPage, true)
+  assert.equal(beforeExtension.wrongHostControlUnmarked, true)
+  assert.equal(beforeExtension.noMarkerBeforeRegistration, true)
+  assert.equal(afterExtension.ok, true)
+  assert.equal(afterExtension.stage, 'after')
+  assert.equal(afterExtension.browserPageId, beforeExtension.browserPageId)
+  assert.equal(afterExtension.profileId, beforeExtension.profileId)
+  assert.equal(afterExtension.partition, beforeExtension.partition)
+  assert.equal(afterExtension.extensionId, beforeExtension.extensionId)
+  assert.equal(afterExtension.sameLogicalPageAndProfile, true)
+  assert.equal(afterExtension.retainedContentScriptMarkerAfterTransfer, true)
+  assert.equal(afterExtension.disabledFreshNavigationUnmarked, true)
+  assert.equal(afterExtension.reenabledFreshNavigationMarked, true)
+  assert.equal(afterExtension.reloadedFreshNavigationMarked, true)
+  assert.equal(afterExtension.reloadedWrongHostUnmarked, true)
+  assert.equal(afterExtension.globalDisableConfirmedAndUnmarked, true)
+  assert.equal(afterExtension.globalReenablePreservedMarker, true)
+  assert.equal(afterExtension.globalReenableWrongHostUnmarked, true)
+  assert.equal(afterExtension.isolatedProfileEnabledAndDeleted, true)
+  assert.equal(afterExtension.deletedProfileMutationRejected, true)
+  assert.equal(afterExtension.defaultMarkerRetainedAfterIsolatedProfileDeletion, true)
+  assert.equal(afterExtension.deletedProfileJournalCleared, true)
+  assert.equal(afterExtension.finalRuntimeDisabled, true)
+  assert.equal(afterExtension.removedFreshNavigationUnmarked, true)
+  assert.equal(afterExtension.extensionRemovedThroughTrustedBridge, true)
+  assert.equal(afterExtension.testOwnedExperimentalSettingRestoredToFalse, true)
+}
 const nativeX11 = process.env.ASH_TEST_DISPLAY_SERVER === 'x11'
 if (nativeX11) {
   const window = read('x11-window')
@@ -501,6 +541,14 @@ NODE
   fi
   export ASH_USER_DATA_PATH="$test_root/profile" ORCA_USER_DATA_PATH="$test_root/profile"
   export ASH_APP_EXECUTABLE="$appimage"
+  if [[ "${ASH_TEST_BROWSER_EXTENSION_PROBE:-}" == '1' ]]; then
+    # Simulate the durable journal left by an interrupted deletion. Never use user data.
+    local metadata="$test_root/profile/profiles/local-default/browser-session-meta.json"
+    mkdir -p "$(dirname "$metadata")"
+    [[ ! -e "$metadata" ]] || return 2
+    printf '%s\n' '{"profiles":[],"pendingProfileDeletions":[{"id":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","partition":"persist:orca-browser-session-dddddddd-dddd-4ddd-8ddd-dddddddddddd","scope":"isolated","label":"Private interrupted deletion fixture","source":null}]}' > "$metadata"
+    cp "$metadata" "$test_root/pending-deletion-seed.json"
+  fi
   if [[ "${ASH_TEST_NOTIFICATIONS_DISABLED:-}" == '1' || "${ASH_TEST_AGENT_COMPLETION_DISABLED:-}" == '1' ]]; then
     local preference='global'
     if [[ "${ASH_TEST_AGENT_COMPLETION_DISABLED:-}" == '1' ]]; then preference='agent-complete'; fi
@@ -514,6 +562,14 @@ NODE
     local stage="$1" limit_seconds="${2:-35}"
     timeout --kill-after=5s "${limit_seconds}s" "$packaged_node" "$browser_owner_probe" "$stage" "$test_root" \
       >"$test_root/browser-owner-$stage.stdout.json" 2>"$test_root/browser-owner-$stage.stderr.log"
+  }
+  local browser_extension_probe="$script_root/config/scripts/desktop-distribution/runtime-verification/ash-packaged-browser-extension-retention-probe.cjs"
+  local browser_extension_fixture="$script_root/config/scripts/desktop-distribution/runtime-verification/fixtures/br08-extension"
+  run_browser_extension_probe() {
+    local stage="$1"
+    timeout --kill-after=5s 80s "$packaged_node" "$browser_extension_probe" "$stage" "$test_root" \
+      "$browser_extension_fixture" \
+      >"$test_root/browser-extension-$stage.stdout.json" 2>"$test_root/browser-extension-$stage.stderr.log"
   }
   if [[ "${ASH_TEST_CHROMIUM_NETLOG:-}" == '1' ]]; then
     # Chromium's default net-log mode omits raw cookies and sensitive request headers.
@@ -636,6 +692,9 @@ NODE
   fi
   if [[ "${ASH_TEST_BROWSER_OWNER_PROBE:-}" == '1' ]]; then
     run_browser_owner_attestation before
+  fi
+  if [[ "${ASH_TEST_BROWSER_EXTENSION_PROBE:-}" == '1' ]]; then
+    run_browser_extension_probe before
   fi
   if [[ "${ASH_TEST_OSC52_CLIPBOARD:-}" == '1' ]]; then
     # Only the private test-owned PTY emits OSC52. The renderer must parse the
@@ -924,6 +983,9 @@ NODE
   if [[ "${ASH_TEST_BROWSER_OWNER_PROBE:-}" == '1' ]]; then
     run_browser_owner_attestation after
   fi
+  if [[ "${ASH_TEST_BROWSER_EXTENSION_PROBE:-}" == '1' ]]; then
+    run_browser_extension_probe after
+  fi
   if [[ "${ASH_TEST_DISPLAY_SERVER:-wayland}" == 'x11' ]]; then
     "$test_root/ash-x11-window-control" probe "$ash_pid" >"$test_root/x11-reopened-window.json" 2>"$test_root/x11-reopened-window.err"
   fi
@@ -950,6 +1012,12 @@ if [[ "${ASH_TEST_BROWSER_OWNER_PROBE:-}" == '1' ]]; then
   [[ "$parent_netns_fd" == 9 && "$(readlink /proc/self/fd/9 2>/dev/null || true)" == "$expected_netns" &&
      "$expected_netns" =~ ^net:\[[0-9]+\]$ && "$current_netns" != "$expected_netns" ]] || {
     echo 'Browser owner attestation requires an isolated private network namespace' >&2
+    exit 2
+  }
+fi
+if [[ "${ASH_TEST_BROWSER_EXTENSION_PROBE:-}" == '1' ]]; then
+  [[ "${ASH_TEST_BROWSER_OWNER_PROBE:-}" == '1' && "${ASH_TEST_BROWSER_SMOKE:-}" == '1' ]] || {
+    echo 'Browser extension retention requires the private owner and loopback browser probes' >&2
     exit 2
   }
 fi

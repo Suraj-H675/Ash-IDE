@@ -7981,7 +7981,8 @@
           "b4c167764d": "Imported {{value0}} cookies from file into {{value1}}.",
           "a3f8c2d1e0b4": "Imported {{value0}} cookies from {{value1}} ({{value2}}) into {{value3}}.",
           "b4e9d3f2a1c5": "Imported {{value0}} cookies from {{value1}} into {{value2}}.",
-          "c5a273a809": "From {{value0}}"
+          "c5a273a809": "From {{value0}}",
+          "deletionIncomplete": "Profile removal did not complete. If the profile is gone, explicitly stop the runtime and restart Ash to retry pending cleanup."
         },
         "BrowserUseComputerUseNotice": {
           "15b5e680ba": "Open Computer Use",
@@ -8240,7 +8241,16 @@
           },
           "browserExtensions": {
             "copy": "Adds Settings › Browser › Extensions for local browser profiles.",
-            "toggleLabel": "Toggle browser extensions"
+            "toggleLabel": "Toggle browser extensions",
+            "enabling": "Enabling browser extensions for open profiles.",
+            "disabling": "Disabling browser extensions. Waiting for active changes and native unload to finish.",
+            "unloadFailed": "Extension cleanup is incomplete. If Chromium has not unloaded an extension, its scripts may still run; Ash cannot stop scripts that Chromium keeps loaded.",
+            "retrying": "Retrying…",
+            "retryEnableAfterCleanup": "Retry cleanup and enable",
+            "retryDisable": "Retry disabling",
+            "enableFailed": "Browser extensions could not be enabled. Retry to recover the runtime.",
+            "retryEnable": "Retry enabling",
+            "optionalHostUnavailable": "Optional website access requested at runtime is not supported yet. Extensions that require it may not work fully."
           }
         },
         "FloatingWorkspacePane": {

@@ -107,7 +107,7 @@ describe('browser extension experimental setting recovery status', () => {
       })
       expect(host.querySelector('[role="switch"]')?.getAttribute('aria-checked')).toBe('false')
       expect(host.querySelector('[role="alert"]')?.textContent).toContain(
-        'Their scripts may still run'
+        'Extension cleanup is incomplete. If Chromium has not unloaded an extension, its scripts may still run'
       )
       const retryButton = [...host.querySelectorAll('button')].find(
         (button) => button.textContent === 'Retry disabling'
@@ -171,7 +171,7 @@ describe('browser extension experimental setting recovery status', () => {
       })
       expect(host.querySelector('[role="switch"]')?.getAttribute('aria-checked')).toBe('true')
       expect(host.querySelector('[role="alert"]')?.textContent).toContain(
-        'Their scripts may still run'
+        'Extension cleanup is incomplete. If Chromium has not unloaded an extension, its scripts may still run'
       )
       expect(host.textContent).toContain('Retry cleanup and enable')
       expect(host.textContent).toContain(

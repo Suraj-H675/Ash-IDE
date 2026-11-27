@@ -79,7 +79,7 @@ export function BrowserExtensionsExperimentalSetting({
             <p>
               {translate(
                 'auto.components.settings.ExperimentalPane.browserExtensions.unloadFailed',
-                'Chromium did not confirm that extensions stopped. Their scripts may still run, and Ash cannot stop scripts that Chromium keeps loaded.'
+                'Extension cleanup is incomplete. If Chromium has not unloaded an extension, its scripts may still run; Ash cannot stop scripts that Chromium keeps loaded.'
               )}
             </p>
             <Button
@@ -94,12 +94,15 @@ export function BrowserExtensionsExperimentalSetting({
                     'auto.components.settings.ExperimentalPane.browserExtensions.retrying',
                     'Retrying…'
                   )
-                : translate(
-                    supportStatus.desiredEnabled
-                      ? 'auto.components.settings.ExperimentalPane.browserExtensions.retryEnableAfterCleanup'
-                      : 'auto.components.settings.ExperimentalPane.browserExtensions.retryDisable',
-                    supportStatus.desiredEnabled ? 'Retry cleanup and enable' : 'Retry disabling'
-                  )}
+                : supportStatus.desiredEnabled
+                  ? translate(
+                      'auto.components.settings.ExperimentalPane.browserExtensions.retryEnableAfterCleanup',
+                      'Retry cleanup and enable'
+                    )
+                  : translate(
+                      'auto.components.settings.ExperimentalPane.browserExtensions.retryDisable',
+                      'Retry disabling'
+                    )}
             </Button>
           </div>
         )

@@ -2633,7 +2633,7 @@
     },
     {
       "path": "src/renderer/src/i18n/locales/en.json",
-      "sha256": "39f7a6272b4ceed9a608603372ef8f2acf05520ac7bb950a10066258263e8987",
+      "sha256": "41ce6b03c33cc64856bdfdf81e89852f545899601b1413617fd4b403e59e9e91",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -4363,7 +4363,7 @@
     },
     {
       "path": "src/renderer/src/components/settings/browser/extensions/BrowserExtensionsExperimentalSetting.tsx",
-      "sha256": "498f904e9d90a54defa17eb6443a6ad8441bf880b4435210090784d0d8700aef",
+      "sha256": "f03bc37a6c25f4ff957e956e4fec3257364d2933e7fb8505255e0e30a4e69984",
       "reason": "Ash adaptation of pinned upstream source for native extension retirement, retry and support status recovery."
     },
     {
