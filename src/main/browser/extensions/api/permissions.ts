@@ -74,7 +74,7 @@ function readGrants(profileId: string, extensionId: string) {
   return getBrowserExtensionProfileStateStore().read(profileId, extensionId)
 }
 
-/** Manifest host patterns plus origins the user granted in this session's profile. */
+/** Manifest host patterns with verified native authority. Historical optional grants are inert. */
 export function browserExtensionHostPatternsInSession(
   extension: Electron.Extension,
   session: Electron.Session

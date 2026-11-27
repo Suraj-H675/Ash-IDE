@@ -2,7 +2,6 @@ import type { DnrHostAccess } from '../declarative-net-request/extension-matcher
 import { browserExtensionActiveTabCovers } from './browser-extension-active-tab'
 import { matchesExtensionMatchPattern } from './browser-extension-match-pattern'
 import { manifestPermissionSets } from './browser-extension-permission-grants'
-import { getBrowserExtensionProfileStateStore } from '../profile-storage/browser-extension-profile-state-store'
 
 /** Host patterns split so the common "every site" grants need no URL parsing per request. */
 type CompiledHostPatterns = { schemes: ReadonlySet<string>; others: readonly string[] }
@@ -72,12 +71,10 @@ export function canExtensionAccessRequest(
 
 /** canExtensionAccessRequest for one extension in one profile, as the DNR engine asks it. */
 export class DnrExtensionHostAccess {
-  private readonly requiredPatterns: string[]
-  private compiled: CompiledHostPatterns | null = null
-  private compiledAtRevision = -1
+  private readonly compiled: CompiledHostPatterns
 
   constructor(
-    private readonly profileId: string,
+    _profileId: string,
     private readonly extensionId: string,
     manifest: unknown
   ) {
@@ -85,22 +82,13 @@ export class DnrExtensionHostAccess {
       manifest !== null && typeof manifest === 'object' && !Array.isArray(manifest)
         ? Object.fromEntries(Object.entries(manifest))
         : undefined
-    this.requiredPatterns = manifestPermissionSets(record).required.origins
-  }
-
-  // Why cached by store revision: the engine asks once per extension for every request.
-  private patternsNow(): CompiledHostPatterns {
-    const store = getBrowserExtensionProfileStateStore()
-    if (!this.compiled || this.compiledAtRevision !== store.revision) {
-      const granted = store.read(this.profileId, this.extensionId).grantedOrigins
-      this.compiled = compile([...this.requiredPatterns, ...granted])
-      this.compiledAtRevision = store.revision
-    }
-    return this.compiled
+    // Persisted optional origins are not native grants. DNR must use the same host
+    // authority as permissions.contains, cookies and webRequest.
+    this.compiled = compile(manifestPermissionSets(record).required.origins)
   }
 
   access(url: string, initiator: string | null, tabId: number, type?: string): DnrHostAccess {
-    const patterns = this.patternsNow()
+    const patterns = this.compiled
     return canExtensionAccessRequest(this.extensionId, { url, initiator, tabId, type }, (target) =>
       allows(patterns, target)
     )

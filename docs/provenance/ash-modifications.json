@@ -4288,7 +4288,7 @@
     },
     {
       "path": "src/main/browser/extensions/api/permissions.ts",
-      "sha256": "5efc1cf6515d94dca27b80dc1e3ee92d556feeeeef2323a2fd7325cba5a3c862",
+      "sha256": "11aef80847c25547c5b520b17e9d6ce10de086876c467c6d134c37bbfcccccc5",
       "reason": "Ash adaptation of pinned upstream source for native extension retirement, retry and support status recovery."
     },
     {
@@ -4348,7 +4348,7 @@
     },
     {
       "path": "src/renderer/src/components/settings/browser/extensions/BrowserExtensionsExperimentalSetting.tsx",
-      "sha256": "db6da6c3233a5db3a4ed9dd0030d85ca6a21fb7c63809e5ad7f3dd8b2726be81",
+      "sha256": "498f904e9d90a54defa17eb6443a6ad8441bf880b4435210090784d0d8700aef",
       "reason": "Ash adaptation of pinned upstream source for native extension retirement, retry and support status recovery."
     },
     {
@@ -4400,6 +4400,16 @@
       "path": "src/renderer/src/components/settings/browser/profiles/BrowserProfileRow.tsx",
       "sha256": "4b33b0fefc0f6ee44048d48d1f0a130b1cd9c52ca4260ac30d07c7cf339528ab",
       "reason": "Ash adaptation of pinned upstream source for durable profile deletion and extension API retirement recovery."
+    },
+    {
+      "path": "src/main/browser/extensions/permissions/browser-extension-permission-grants.ts",
+      "sha256": "c2841b02a11e29cca7c6906ad0d782f450cc27849de7325b3034abb894776254",
+      "reason": "Ash adaptation of pinned upstream source to refuse unconfirmed optional native host authorization and disclose the experimental limitation."
+    },
+    {
+      "path": "src/main/browser/extensions/permissions/browser-extension-request-host-access.ts",
+      "sha256": "d364a4ff7981dbf8d4329cb0620f176e940a728c97873910b740265f3e77dc53",
+      "reason": "Ash adaptation of pinned upstream source to refuse unconfirmed optional native host authorization and disclose the experimental limitation."
     }
   ]
 }

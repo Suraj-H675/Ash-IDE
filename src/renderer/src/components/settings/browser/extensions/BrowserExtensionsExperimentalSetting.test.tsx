@@ -174,6 +174,9 @@ describe('browser extension experimental setting recovery status', () => {
         'Their scripts may still run'
       )
       expect(host.textContent).toContain('Retry cleanup and enable')
+      expect(host.textContent).toContain(
+        'Optional website access requested at runtime is not supported yet'
+      )
     } finally {
       act(() => root.unmount())
       host.remove()

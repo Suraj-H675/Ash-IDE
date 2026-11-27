@@ -163,6 +163,14 @@ export function BrowserExtensionsExperimentalSetting({
           onChange={() => updateSettings({ experimentalBrowserExtensions: !enabled })}
         />
       </div>
+      {enabled && (
+        <p className="text-xs text-muted-foreground">
+          {translate(
+            'auto.components.settings.ExperimentalPane.browserExtensions.optionalHostUnavailable',
+            'Optional website access requested at runtime is not supported yet. Extensions that require it may not work fully.'
+          )}
+        </p>
+      )}
       {recoveryNotice}
     </SearchableSetting>
   )
