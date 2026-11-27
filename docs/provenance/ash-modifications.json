@@ -4220,6 +4220,21 @@
       "path": "src/cli/command-spec.ts",
       "sha256": "e963b3180461bcb8fcd7ec4fbe122cde002ffe90f63ec244b87cae4b65c601fb",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
+    },
+    {
+      "path": "src/renderer/src/hooks/ipc-events/browser-request-ipc-bridge.ts",
+      "sha256": "3542cd0f0f761585e322f32f7e05fef42e04fff7f9d1ef99c37b9322466b3578",
+      "reason": "Ash adaptation of the pinned upstream source; wait for confirmed browser close graph publication before returning success."
+    },
+    {
+      "path": "src/renderer/src/runtime/sync-runtime-graph.ts",
+      "sha256": "307a2c69b5a327a78f47b0f4762f121e08e656a4227b39dc82a9f9c64c3f0955",
+      "reason": "Ash adaptation of the pinned upstream source; wait for confirmed browser close graph publication before returning success."
+    },
+    {
+      "path": "src/renderer/src/runtime/sync-runtime-graph/graph-publication.ts",
+      "sha256": "75c2f69e6cb90663bb08dc2a4376154b30c371c017cbc1dc5367f776096bc333",
+      "reason": "Ash adaptation of the pinned upstream source; wait for confirmed browser close graph publication before returning success."
     }
   ]
 }

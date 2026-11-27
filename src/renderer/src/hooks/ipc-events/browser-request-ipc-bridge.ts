@@ -1,9 +1,4 @@
 import { destroyPersistentWebview } from '@/components/browser-pane/host-guest/webview-registry'
-import {
-  guardPinnedTabClose,
-  isUnifiedTabPinned,
-  resolvePinnedTabLabel
-} from '../../store/pinned-tab-close-guard'
 import { translate } from '@/i18n/i18n'
 import { useAppStore } from '../../store'
 import { acquireBrowserAutomationBootstrapLease } from './browser-automation-bootstrap-lease'
@@ -15,9 +10,9 @@ import {
 import {
   findBrowserTabWorktreeId,
   isBrowserWorkspaceOwnedByPairedServer,
-  isDesktopRenderedBrowserTab,
   resolveRemoteCliBrowserWorkspace
 } from './browser-request-workspace-owner'
+import { registerBrowserRequestTabClose } from './browser-request-tab-close'
 
 function pairedServerWorkspaceError(): string {
   return translate(
@@ -192,124 +187,5 @@ export function registerBrowserRequestIpcBridge(unsubs: (() => void)[]): void {
       }
     })
   )
-
-  unsubs.push(
-    window.api.ui.onRequestTabClose((data) => {
-      try {
-        const store = useAppStore.getState()
-        const explicitTargetId = data.tabId ?? null
-        const replyBrowserTabNotFound = (tabId: string): void => {
-          window.api.ui.replyTabClose({
-            requestId: data.requestId,
-            code: 'browser_tab_not_found',
-            error: translate(
-              'auto.hooks.useIpcEvents.0e3cf53060',
-              'Browser tab {{value0}} not found',
-              { value0: tabId }
-            )
-          })
-        }
-        const replyPinnedBrowserCloseCanceled = (tabId: string): void => {
-          window.api.ui.replyTabClose({
-            requestId: data.requestId,
-            error: translate(
-              'auto.hooks.useIpcEvents.2f6637fe6c',
-              'Browser tab {{value0}} is pinned',
-              { value0: tabId }
-            )
-          })
-        }
-        const closeBrowserWorkspaceWithReply = (worktreeId: string, workspaceId: string): void => {
-          const currentStore = useAppStore.getState()
-          guardPinnedTabClose({
-            isPinned: isUnifiedTabPinned(currentStore, worktreeId, workspaceId),
-            tabLabel: resolvePinnedTabLabel(currentStore, worktreeId, workspaceId),
-            onClose: () => {
-              useAppStore.getState().closeBrowserTab(workspaceId)
-              window.api.ui.replyTabClose({ requestId: data.requestId })
-            },
-            onCancel: () => replyPinnedBrowserCloseCanceled(workspaceId)
-          })
-        }
-        const tabToClose =
-          explicitTargetId ??
-          (data.worktreeId
-            ? (store.activeBrowserTabIdByWorktree?.[data.worktreeId] ?? null)
-            : store.activeBrowserTabId)
-        if (!tabToClose) {
-          window.api.ui.replyTabClose({
-            requestId: data.requestId,
-            error: translate('auto.hooks.useIpcEvents.a8d2bf8e9e', 'No active browser tab to close')
-          })
-          return
-        }
-        const closeWorktreeId = findBrowserTabWorktreeId(store, tabToClose)
-        if (
-          closeWorktreeId &&
-          isBrowserWorkspaceOwnedByPairedServer(store, closeWorktreeId) &&
-          !isDesktopRenderedBrowserTab(store, tabToClose)
-        ) {
-          window.api.ui.replyTabClose({
-            requestId: data.requestId,
-            error: pairedServerWorkspaceError()
-          })
-          return
-        }
-        // Resolve page IDs to workspace IDs for closeBrowserTab; page-close closes the workspace only for its last page.
-        const isWorkspaceId = Object.values(store.browserTabsByWorktree)
-          .flat()
-          .some((ws) => ws.id === tabToClose)
-        if (!isWorkspaceId) {
-          const owningWorkspace = Object.entries(store.browserPagesByWorkspace).find(([, pages]) =>
-            pages.some((p) => p.id === tabToClose)
-          )
-          if (owningWorkspace) {
-            const [workspaceId, pages] = owningWorkspace
-            const owningWorktreeId =
-              Object.entries(store.browserTabsByWorktree).find(([, tabs]) =>
-                tabs.some((tab) => tab.id === workspaceId)
-              )?.[0] ?? null
-            if (data.worktreeId && owningWorktreeId !== data.worktreeId) {
-              replyBrowserTabNotFound(tabToClose)
-              return
-            }
-            if (pages.length <= 1) {
-              if (owningWorktreeId) {
-                closeBrowserWorkspaceWithReply(owningWorktreeId, workspaceId)
-                return
-              }
-              store.closeBrowserTab(workspaceId)
-            } else {
-              store.closeBrowserPage(tabToClose)
-            }
-            window.api.ui.replyTabClose({ requestId: data.requestId })
-            return
-          }
-        }
-        const owningWorktreeId =
-          Object.entries(store.browserTabsByWorktree).find(([, tabs]) =>
-            tabs.some((tab) => tab.id === tabToClose)
-          )?.[0] ?? null
-        if (owningWorktreeId) {
-          if (data.worktreeId && owningWorktreeId !== data.worktreeId) {
-            replyBrowserTabNotFound(tabToClose)
-            return
-          }
-          closeBrowserWorkspaceWithReply(owningWorktreeId, tabToClose)
-          return
-        }
-        if (explicitTargetId) {
-          replyBrowserTabNotFound(explicitTargetId)
-          return
-        }
-        store.closeBrowserTab(tabToClose)
-        window.api.ui.replyTabClose({ requestId: data.requestId })
-      } catch (err) {
-        window.api.ui.replyTabClose({
-          requestId: data.requestId,
-          error: err instanceof Error ? err.message : 'Tab close failed'
-        })
-      }
-    })
-  )
+  registerBrowserRequestTabClose(unsubs, pairedServerWorkspaceError)
 }

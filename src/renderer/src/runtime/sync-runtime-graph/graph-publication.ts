@@ -39,9 +39,9 @@ import { ORCA_SIDEBAR_INPUTS_IS_MAIN } from '../../../../shared/sidebar-inputs-s
 import { ORCA_LAYOUT_OWNER_IS_MAIN } from '../../../../shared/layout-owner-switch'
 import { changedActiveGroups } from './active-group-publication'
 
-export async function syncRuntimeGraph(): Promise<void> {
+export async function syncRuntimeGraph(): Promise<boolean> {
   if (!graphState.syncEnabled || !graphState.getStoreState) {
-    return
+    return false
   }
   // The store getter is injected to break the terminal-slice construction cycle.
   const state = graphState.getStoreState()
@@ -251,9 +251,13 @@ export async function syncRuntimeGraph(): Promise<void> {
     }
     if (result?.mobileSessionResyncWorktrees?.length) {
       scheduleTrailingGraphSync()
+      // IPC completion alone does not prove main accepted the tab inventory.
+      return false
     }
+    return true
   } catch (error) {
     console.error('[runtime] Failed to sync renderer graph:', error)
+    return false
   }
 }
 
