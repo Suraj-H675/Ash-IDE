@@ -4370,6 +4370,11 @@
       "path": "src/main/network/proxy-settings.ts",
       "sha256": "2861437bdb4d65cc7ec8cc38eee7c6890e7128b0e4fd344a31ea9f7e64c79f68",
       "reason": "Ash adaptation of the pinned upstream source to fence retired browser profile authority before native cleanup."
+    },
+    {
+      "path": "src/main/ipc/browser/browser-session-profile-ipc.ts",
+      "sha256": "b6a68c704c9aaf4f9d57d32fb1d9c972acdb8fee89bbb084e13018f1557f8d99",
+      "reason": "Ash adaptation of pinned upstream source to reject missing explicit profile selections instead of inheriting the default partition."
     }
   ]
 }

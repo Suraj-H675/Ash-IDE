@@ -137,7 +137,12 @@ export function registerBrowserSessionProfileHandlers(): void {
       if (!isTrustedBrowserRenderer(event.sender)) {
         return null
       }
-      return browserSessionRegistry.resolvePartition(args.profileId)
+      const profileId = args?.profileId
+      // A stale or malformed explicit selection must not inherit the default profile's cookies.
+      if (profileId !== null && (typeof profileId !== 'string' || profileId.length === 0)) {
+        return null
+      }
+      return browserSessionRegistry.resolveKnownPartition(profileId)
     }
   )
 
