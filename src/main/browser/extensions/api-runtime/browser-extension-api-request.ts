@@ -1,3 +1,5 @@
+import { beginBrowserExtensionApiCall } from './browser-extension-api-admission'
+import { isBrowserExtensionSupportEnabled } from '../browser-extension-support'
 import { z } from 'zod'
 import type { BrowserExtensionInvokeResult } from '../../../../shared/browser/extensions/browser-extension-channels'
 import {
@@ -15,6 +17,7 @@ import {
   type HostSessionState,
   type WorkerContext
 } from './browser-extension-contexts'
+import { getBrowserExtensionRuntimeQuarantine } from './browser-extension-runtime-quarantine'
 
 const invokeRequestSchema = z.discriminatedUnion('type', [
   z.object({
@@ -58,7 +61,16 @@ export async function handleBrowserExtensionApiRequest(
   rawRequest: unknown,
   listenTarget: BrowserExtensionListenTarget
 ): Promise<BrowserExtensionInvokeResult> {
+  let finish: (() => void) | undefined
   try {
+    if (!isBrowserExtensionSupportEnabled()) {
+      throw new BrowserExtensionApiError('Browser extension support is unavailable')
+    }
+    finish = beginBrowserExtensionApiCall(caller.session, state)
+    const quarantine = getBrowserExtensionRuntimeQuarantine(caller.session, caller.extension.id)
+    if (quarantine) {
+      throw new BrowserExtensionApiError(quarantine)
+    }
     const parsed = invokeRequestSchema.safeParse(rawRequest)
     if (!parsed.success) {
       throw new BrowserExtensionApiError('Malformed extension API request')
@@ -119,11 +131,19 @@ export async function handleBrowserExtensionApiRequest(
         `chrome.${request.namespace}.${request.method} is not available`
       )
     }
+    if (getBrowserExtensionRuntimeQuarantine(caller.session, caller.extension.id)) {
+      throw new BrowserExtensionApiError(
+        getBrowserExtensionRuntimeQuarantine(caller.session, caller.extension.id) ??
+          'Extension runtime is unavailable'
+      )
+    }
     return { ok: true, value: await method.invoke(caller, request.args) }
   } catch (error) {
     if (!(error instanceof BrowserExtensionApiError)) {
       console.warn('[browser-extensions] API call failed:', error)
     }
     return { ok: false, error: errorMessage(error) }
+  } finally {
+    finish?.()
   }
 }

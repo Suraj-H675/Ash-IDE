@@ -78,7 +78,9 @@ export function effectiveBrowserExtensionPermissions(
   const { required } = manifestPermissionSets(manifest)
   return {
     permissions: [...new Set([...required.permissions, ...state.grantedPermissions])],
-    origins: [...new Set([...required.origins, ...state.grantedOrigins])]
+    // Electron cannot currently apply optional host grants to native Chromium authority.
+    // Keep historical consent records, but never use them as effective access.
+    origins: [...new Set(required.origins)]
   }
 }
 
@@ -94,7 +96,7 @@ export function containsBrowserExtensionPermissions(
   )
 }
 
-/** Host patterns an extension may use in Orca-owned checks: the manifest's plus granted ones. */
+/** Host patterns Ash may authorize consistently with native Chromium. */
 export function browserExtensionHostPatterns(
   manifest: ManifestLike,
   state: Pick<BrowserExtensionProfileState, 'grantedPermissions' | 'grantedOrigins'>
@@ -137,9 +139,13 @@ export function planBrowserExtensionPermissionRequest(
     permissions: permissions.filter((permission) => !effective.permissions.includes(permission)),
     origins: origins.filter((origin) => !covered(origin, effective.origins))
   }
-  return add.permissions.length === 0 && add.origins.length === 0
-    ? { kind: 'already-granted' }
-    : { kind: 'prompt', add }
+  if (add.origins.length > 0) {
+    return {
+      kind: 'invalid',
+      error: 'Optional host permissions are not supported by the current Chromium runtime.'
+    }
+  }
+  return add.permissions.length === 0 ? { kind: 'already-granted' } : { kind: 'prompt', add }
 }
 
 export type BrowserExtensionPermissionRemovalPlan =

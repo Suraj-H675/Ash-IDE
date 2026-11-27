@@ -1,4 +1,13 @@
 import { getChromeExtensionOrigin } from '../../../../shared/browser/extensions/browser-extension-url'
+import { quarantineBrowserExtensionContexts } from '../api-runtime/browser-extension-api-host'
+import { forgetBrowserExtensionContentScriptRestore } from '../api-runtime/browser-extension-content-scripts'
+import {
+  quarantineBrowserExtensionRuntime,
+  clearBrowserExtensionRuntimeQuarantine
+} from '../api-runtime/browser-extension-runtime-quarantine'
+import { revokeBrowserExtensionActiveTabInSession } from '../permissions/browser-extension-active-tab'
+import { closeNativePortsWhere } from '../native-messaging/browser-extension-native-ports'
+import { getDnrSessionRuntime } from '../declarative-net-request/session/browser-extension-dnr-session'
 import { getBrowserExtensionProfileStateStore } from '../profile-storage/browser-extension-profile-state-store'
 import type { PreparedBrowserExtensionDirectory } from '../installation/browser-extension-load-directory'
 
@@ -9,7 +18,55 @@ export function removeBrowserExtensionFromSession(
   sess: Electron.Session,
   extensionId: string
 ): void {
-  sess.extensions.removeExtension(extensionId)
+  let removalError: unknown = null
+  try {
+    sess.extensions.removeExtension(extensionId)
+  } catch (error) {
+    removalError = error
+  }
+
+  let remainsPresent: boolean
+  let verificationError: unknown = null
+  try {
+    remainsPresent = Boolean(sess.extensions.getExtension(extensionId))
+  } catch (error) {
+    remainsPresent = true
+    verificationError = error
+  }
+
+  if (remainsPresent) {
+    const reason = `Could not confirm that extension ${extensionId} was unloaded; it may remain active in Chromium. Avoid browsing this profile and retry disabling it. If recovery fails, explicitly stop the Ash runtime before restarting; closing the window is not sufficient.`
+    quarantineBrowserExtensionRuntime(sess, extensionId, reason)
+    const cleanupErrors: unknown[] = []
+    for (const cleanup of [
+      () => quarantineBrowserExtensionContexts(sess, extensionId),
+      () => forgetBrowserExtensionContentScriptRestore(sess, extensionId),
+      () => revokeBrowserExtensionActiveTabInSession(sess, extensionId),
+      () =>
+        closeNativePortsWhere((port) => port.session === sess && port.extensionId === extensionId),
+      () => getDnrSessionRuntime(sess)?.removeExtension(extensionId)
+    ]) {
+      try {
+        cleanup()
+      } catch (error) {
+        cleanupErrors.push(error)
+      }
+    }
+    const cause = verificationError ?? removalError
+    const failures = [cause, ...cleanupErrors].filter((error) => error !== null)
+    const message =
+      cleanupErrors.length > 0
+        ? `${reason} Ash runtime cleanup was incomplete: ${cleanupErrors.map((error) => (error instanceof Error ? error.message : String(error))).join('; ')}`
+        : reason
+    throw new Error(message, {
+      cause:
+        failures.length === 1
+          ? failures[0]
+          : new AggregateError(failures, 'Extension unload cleanup did not complete')
+    })
+  }
+
+  clearBrowserExtensionRuntimeQuarantine(sess, extensionId)
   const ids = unregisteredWorkersBySession.get(sess) ?? new Set<string>()
   ids.add(extensionId)
   unregisteredWorkersBySession.set(sess, ids)

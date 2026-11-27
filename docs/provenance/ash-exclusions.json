@@ -4886,21 +4886,6 @@
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
     },
     {
-      "path": "src/main/browser/extensions/profile-sessions/browser-extension-profile-reload.test.ts",
-      "sourceSha256": "4e33b642a98b935c867714754ee9b68a2e1b75b5a27a81b3008e4a6af18b9f9d",
-      "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
-    },
-    {
-      "path": "src/main/browser/extensions/profile-sessions/browser-extension-session-loader.test.ts",
-      "sourceSha256": "806efb0482a58d7921e8243a6dcc27c12baad73ef4a39057bc8d9810dced357e",
-      "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
-    },
-    {
-      "path": "src/main/browser/extensions/profile-sessions/browser-extension-session-services.test.ts",
-      "sourceSha256": "38fa4f7b89e5f7c684e6b3d43297a034f757612ae4aaab0e9d2cba56f2e3c14d",
-      "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."
-    },
-    {
       "path": "src/main/browser/extensions/profile-storage/browser-extension-data-removal.test.ts",
       "sourceSha256": "68b4b0ec802c749bc17c5682d4b37420cce26aa4c4ff292f5cfd6bc7071c7707",
       "reason": "Unmodified pinned Orca test for a later Ash milestone; excluded from the verified M0/M1 import, recoverable from pinned Orca reference."

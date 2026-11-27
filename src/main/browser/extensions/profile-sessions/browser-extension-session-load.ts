@@ -22,6 +22,7 @@ import {
   throwIfBrowserExtensionLoadCancelled,
   type BrowserExtensionProfileLoad
 } from './browser-extension-profile-loads'
+import { throwIfBrowserExtensionRuntimeQuarantined } from '../api-runtime/browser-extension-runtime-quarantine'
 import {
   refreshWorkerRegistration,
   removeBrowserExtensionFromSession,
@@ -37,6 +38,7 @@ export async function loadBrowserExtensionIntoSession(
   options: { refresh?: boolean } = {}
 ): Promise<Electron.Extension> {
   throwIfBrowserExtensionLoadCancelled(load)
+  throwIfBrowserExtensionRuntimeQuarantined(sess, extension.id)
   const known = sess.extensions.getExtension(extension.id)
   if (known) {
     return known
@@ -50,8 +52,10 @@ export async function loadBrowserExtensionIntoSession(
     await removeReinstalledBrowserExtensionData(sess, profileId, extension.id)
   }
   throwIfBrowserExtensionLoadCancelled(load)
+  throwIfBrowserExtensionRuntimeQuarantined(sess, extension.id)
   const prepared = await prepareBrowserExtensionDirectory(extension, options)
   throwIfBrowserExtensionLoadCancelled(load)
+  throwIfBrowserExtensionRuntimeQuarantined(sess, extension.id)
   if (prepared.extensionId !== extension.id) {
     // Why: an unpacked folder whose id changed (e.g. a new manifest key) is a different extension.
     throw new Error('Extension id changed since it was added; remove it and add it again')
@@ -59,6 +63,7 @@ export async function loadBrowserExtensionIntoSession(
   throwIfBrowserExtensionStorageAwaitingRestart(sess, prepared.extensionId)
   const reregisters = await refreshWorkerRegistration(sess, profileId, prepared)
   throwIfBrowserExtensionLoadCancelled(load)
+  throwIfBrowserExtensionRuntimeQuarantined(sess, extension.id)
   const registered =
     reregisters && prepared.hasWorker ? whenWorkerRegistered(sess, prepared.extensionId) : null
   const result = await sess.extensions.loadExtension(prepared.directory, {
@@ -70,7 +75,7 @@ export async function loadBrowserExtensionIntoSession(
     throw new Error('Extension id changed since it was added; remove it and add it again')
   }
   await registered
-  if (load.cancelled && sess.extensions.getExtension(result.id)) {
+  if (load.cancelledBy && sess.extensions.getExtension(result.id)) {
     removeBrowserExtensionFromSession(sess, result.id)
   }
   throwIfBrowserExtensionLoadCancelled(load)

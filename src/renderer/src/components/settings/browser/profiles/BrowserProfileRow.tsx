@@ -250,6 +250,13 @@ export function BrowserProfileRow({
                     { value0: profile.label }
                   )
                 )
+              } else {
+                toast.error(
+                  translate(
+                    'auto.components.settings.BrowserProfileRow.deletionIncomplete',
+                    'Profile removal did not complete. If the profile is gone, explicitly stop the runtime and restart Ash to retry pending cleanup.'
+                  )
+                )
               }
             }}
           >

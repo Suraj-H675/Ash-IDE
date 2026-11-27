@@ -62,10 +62,75 @@ async function runNativeScripts(
         }
       })
     })
-  // A failed restore retires this owner; partially restored registrations are never called ready.
-  for (const script of restore) {
-    await call('registerContentScripts', [[script]])
+
+  const readRegistered = async (): Promise<Record<string, unknown>[]> => {
+    const value = await call('getRegisteredContentScripts', [])
+    if (!Array.isArray(value)) {
+      throw new Error('Native content script registry is invalid')
+    }
+    return value.map((entry: unknown) => {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+        throw new Error('Native content script registry is invalid')
+      }
+      const script = entry as Record<string, unknown>
+      if (typeof script.id !== 'string') {
+        throw new Error('Native content script registry is invalid')
+      }
+      return script
+    })
   }
+  const serialize = (value: unknown): string => {
+    if (Array.isArray(value)) {
+      return `[${value.map(serialize).join(',')}]`
+    }
+    if (value && typeof value === 'object') {
+      const record = value as Record<string, unknown>
+      return `{${Object.keys(record)
+        .sort()
+        .map((key) => `${JSON.stringify(key)}:${serialize(record[key])}`)
+        .join(',')}}`
+    }
+    return JSON.stringify(value) ?? String(value)
+  }
+  const registeredById = (scripts: Record<string, unknown>[]) => {
+    const byId = new Map<string, Record<string, unknown>>()
+    for (const script of scripts) {
+      if (typeof script.id !== 'string') {
+        throw new Error('Saved content script has no valid ID')
+      }
+      const id = script.id
+      if (byId.has(id)) {
+        throw new Error(`Duplicate native content script ID: ${id}`)
+      }
+      byId.set(id, script)
+    }
+    return byId
+  }
+
+  // Only saved IDs are owned by this restore; unrelated native registrations stay untouched.
+  if (restore.length > 0) {
+    const savedById = registeredById(restore)
+    const existing = registeredById(await readRegistered())
+    for (const [id, script] of savedById) {
+      const current = existing.get(id)
+      if (current && serialize(current) === serialize(script)) {
+        continue
+      }
+      if (current) {
+        await call('unregisterContentScripts', [{ ids: [id] }])
+      }
+      await call('registerContentScripts', [[script]])
+    }
+
+    const restored = registeredById(await readRegistered())
+    for (const [id, script] of savedById) {
+      const actual = restored.get(id)
+      if (!actual || serialize(actual) !== serialize(script)) {
+        throw new Error(`Native content script restore verification failed for ${id}`)
+      }
+    }
+  }
+
   let value: unknown
   try {
     value = method ? await call(method, args) : undefined

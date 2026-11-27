@@ -7,29 +7,16 @@ import {
   applyProxyToBrowserSession,
   invalidateBrowserSessionProxyApplication
 } from './browser-session-proxy'
-import {
-  hasSystemMediaAccess,
-  requestSystemMediaAccess
-} from '../site-settings/browser-media-access'
-import { isAutoGrantedBrowserSessionPermission } from '../site-settings/browser-session-permission-policy'
-import {
-  answerBrowserLocalNetworkCheck,
-  browserSitePermissionRequestingOrigin,
-  browserSitePermissionsFor,
-  decideBrowserSitePermissions,
-  isBrowserSitePermissionAllowed,
-  savedBrowserSitePermissions,
-  sessionBrowserSitePermissions
-} from '../site-settings/browser-site-permission-prompt'
 import { installBrowserSessionUserAgentPolicy } from '../identity/browser-session-ua'
 import { getBrowserProcessUserAgentIdentity } from '../identity/browser-process-user-agent'
-import {
-  allowsBrowserWebAuthnPermission,
-  clearBrowserWebAuthnAccessHandlers,
-  installBrowserWebAuthnAccessHandlers
-} from '../webauthn/browser-webauthn-access'
 import { noticeDocPreviewDownloadBlocked } from '../document-preview/doc-preview-download-block-notice'
 import { isRemoteCliDrivenGuest } from '../desktop-browser-bridge/remote-cli-driven-workspaces'
+import { clearBrowserWebAuthnAccessHandlers } from '../webauthn/browser-webauthn-access'
+import {
+  installBrowserSessionPermissions,
+  isBrowserSessionRetired,
+  retireBrowserSessionPermissions
+} from './browser-session-permissions'
 
 const configuredPartitions = new Set<string>()
 const userAgentPolicyDisposerBySession = new WeakMap<Session, () => void>()
@@ -60,11 +47,6 @@ function configureBrowserSessionUserAgentPolicy(sess: Session, installExceptions
   )
 }
 
-// SSH-driven pages must not read the desktop clipboard.
-function deniesRemoteCliDrivenClipboardRead(permission: string, webContentsId?: number): boolean {
-  return permission === 'clipboard-read' && isRemoteCliDrivenGuest(webContentsId)
-}
-
 /** Drop only the installer memo; retired-session guards remain fail-closed. */
 export function forgetBrowserSessionPartitionConfiguration(partition: string): void {
   configuredPartitions.delete(partition)
@@ -92,6 +74,8 @@ const handleDeniedWillDownload = (
   event.preventDefault()
   noticeDocPreviewDownloadBlocked(webContents)
 }
+
+const denyRetiredDownload = (event: Electron.Event): void => event.preventDefault()
 
 type RestrictedFileSystemAccessListener = (
   event: Electron.Event,
@@ -121,21 +105,6 @@ const handleRestrictedFileSystemAccess: RestrictedFileSystemAccessListener = (
   }
 }
 
-function resolvePermissionNoticeUrl(
-  webContents: Electron.WebContents,
-  details: Electron.PermissionRequest | undefined
-): string {
-  const requestingUrl = details?.requestingUrl
-  if (!requestingUrl) {
-    return webContents.getURL()
-  }
-  try {
-    return new URL(requestingUrl).origin === 'null' ? '' : requestingUrl
-  } catch {
-    return ''
-  }
-}
-
 export type BrowserPartitionDownloadPolicy = 'route' | 'deny'
 export type BrowserPartitionPermissionPolicy = 'browser' | 'deny'
 
@@ -155,6 +124,9 @@ export async function installBrowserSessionPartitionPolicies(
 ): Promise<void> {
   const { partition } = profile
   const sess = session.fromPartition(partition)
+  if (isBrowserSessionRetired(sess)) {
+    throw new Error('Browser session has been retired')
+  }
   configureBrowserSessionUserAgentPolicy(sess, options.userAgentExceptions !== false)
   // Route partitions own a SOCKS policy that the app proxy must not overwrite.
   const proxyReady = (
@@ -168,122 +140,7 @@ export async function installBrowserSessionPartitionPolicies(
   }
 
   browserManager.installCertificateRequestGuard(sess)
-  if (options?.permissions === 'deny') {
-    sess.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false))
-    sess.setPermissionCheckHandler(() => false)
-    clearBrowserWebAuthnAccessHandlers(sess)
-  } else {
-    // Electron answers every File System Access grant here, overriding Chromium's own;
-    // the user's pick or drop is the consent, and handles a site stores keep their access.
-    const grantsFileSystem = options.fileSystemAccess !== false
-    const isAutoGranted = (permission: string): boolean =>
-      isAutoGrantedBrowserSessionPermission(permission) ||
-      (grantsFileSystem && permission === 'fileSystem')
-    const siteMemory =
-      options.sitePermissions === 'session'
-        ? sessionBrowserSitePermissions(partition)
-        : savedBrowserSitePermissions(profile.id)
-    sess.setPermissionRequestHandler((webContents, permission, callback, details) => {
-      if (
-        permission === 'openExternal' &&
-        browserManager.requestExternalAppLaunch(
-          webContents,
-          'externalURL' in details ? details.externalURL : undefined,
-          () => resolvePermissionNoticeUrl(webContents, details) || null
-        )
-      ) {
-        // Orca launches approved apps itself; deny Chromium's duplicate launch.
-        callback(false)
-        return
-      }
-      // Capture the requesting URL before async handling; opaque frames have no named site.
-      const rawUrl = resolvePermissionNoticeUrl(webContents, details)
-      const notifyDenied = (): void =>
-        browserManager.notifyPermissionDenied({
-          guestWebContentsId: webContents.id,
-          permission,
-          rawUrl
-        })
-      if (deniesRemoteCliDrivenClipboardRead(permission, webContents.id)) {
-        notifyDenied()
-        callback(false)
-        return
-      }
-      const mediaRequest = 'mediaTypes' in details ? details : undefined
-      const sitePermissions = browserSitePermissionsFor(permission, mediaRequest?.mediaTypes)
-      if (!sitePermissions) {
-        const allowed = isAutoGranted(permission)
-        if (!allowed) {
-          notifyDenied()
-        }
-        callback(allowed)
-        return
-      }
-      const decide = async (): Promise<boolean> => {
-        const allowed = await decideBrowserSitePermissions({
-          requester: webContents,
-          frameOrigin: sitePermissions.includes('notifications')
-            ? browserSitePermissionRequestingOrigin(webContents, details)
-            : null,
-          memory: siteMemory,
-          permissions: sitePermissions
-        })
-        if (!allowed || permission !== 'media') {
-          return allowed
-        }
-        // macOS also gates camera and mic per app; distinguish OS refusal from a site decision.
-        const granted = await requestSystemMediaAccess(mediaRequest)
-        if (!granted) {
-          notifyDenied()
-        }
-        return granted
-      }
-      void decide().then(callback, (error: unknown) => {
-        console.error('[permissions] Browser site permission failed:', error)
-        callback(false)
-      })
-    })
-    sess.setPermissionCheckHandler((webContents, permission, requestingOrigin, details) => {
-      if (deniesRemoteCliDrivenClipboardRead(permission, webContents?.id)) {
-        return false
-      }
-      if (allowsBrowserWebAuthnPermission(permission, details)) {
-        return true
-      }
-      const sitePermissions = browserSitePermissionsFor(
-        permission,
-        details?.mediaType ? [details.mediaType] : undefined
-      )
-      if (sitePermissions) {
-        const source = {
-          // Service-worker checks have no WebContents; use their requesting origin.
-          pageUrl: webContents?.getURL() ?? requestingOrigin,
-          // Checks supply the frame's inherited origin.
-          frameOrigin: requestingOrigin
-        }
-        if (sitePermissions.includes('local-network')) {
-          return answerBrowserLocalNetworkCheck({
-            requester: webContents,
-            source,
-            memory: siteMemory
-          })
-        }
-        return (
-          isBrowserSitePermissionAllowed({
-            source,
-            memory: siteMemory,
-            permissions: sitePermissions
-          }) &&
-          (permission !== 'media' || hasSystemMediaAccess(details?.mediaType))
-        )
-      }
-      return isAutoGranted(permission)
-    })
-    installBrowserWebAuthnAccessHandlers(sess)
-  }
-  sess.setDisplayMediaRequestHandler((_request, callback) => {
-    callback({ video: undefined, audio: undefined })
-  })
+  installBrowserSessionPermissions(sess, profile, options)
   sess.removeListener('will-download', handleWillDownload)
   sess.removeListener('will-download', handleDeniedWillDownload)
   sess.on(
@@ -302,7 +159,40 @@ export async function installBrowserSessionPartitionPolicies(
   return proxyReady
 }
 
+/** A deleted profile's Electron Session may outlive its registry entry. Never reconfigure it. */
+export function retireDeletedBrowserSessionPartitionPolicies(
+  partition: string,
+  sess: Session
+): void {
+  const failures: unknown[] = []
+  for (const revoke of [
+    () => retireBrowserSessionPermissions(sess),
+    () => forgetBrowserSessionPartitionConfiguration(partition),
+    () => sess.removeListener('will-download', handleWillDownload),
+    () => sess.removeListener('will-download', handleDeniedWillDownload),
+    () => sess.removeListener('will-download', denyRetiredDownload),
+    () => sess.on('will-download', denyRetiredDownload),
+    () => sess.removeListener('file-system-access-restricted', handleRestrictedFileSystemAccess),
+    () => sess.removeListener('file-system-access-restricted', denyRestrictedFileSystemAccess),
+    () => sess.on('file-system-access-restricted', denyRestrictedFileSystemAccess),
+    () => retireBrowserSessionUserAgentPolicy(sess),
+    () => invalidateBrowserSessionProxyApplication(sess)
+  ]) {
+    try {
+      revoke()
+    } catch (error) {
+      failures.push(error)
+    }
+  }
+  if (failures.length) {
+    throw new AggregateError(failures, 'Could not fully revoke deleted browser session policies')
+  }
+}
+
 export function clearBrowserSessionPartitionPolicies(partition: string, sess: Session): void {
+  if (isBrowserSessionRetired(sess)) {
+    return
+  }
   // Electron Sessions outlive removed partitions; release their callbacks and listeners.
   invalidateBrowserSessionProxyApplication(sess)
   retireBrowserSessionUserAgentPolicy(sess)

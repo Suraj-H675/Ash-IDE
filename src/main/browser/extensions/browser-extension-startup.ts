@@ -7,13 +7,17 @@ import {
   getBrowserExtensionProfileIdForSession
 } from './api-runtime/browser-extension-api-host'
 import {
-  isBrowserExtensionSupportEnabled,
-  setBrowserExtensionSupportEnabled
+  drainBrowserExtensionMutations,
+  getBrowserExtensionSupportStatus,
+  setBrowserExtensionSupportDesired,
+  setBrowserExtensionSupportEnabled,
+  setBrowserExtensionSupportRuntime
 } from './browser-extension-support'
 import { browserSessionRegistry } from '../sessions/browser-session-registry'
 import {
   attachBrowserExtensionsToProfileSession,
-  detachBrowserExtensionsFromAllProfileSessions
+  detachBrowserExtensionsFromAllProfileSessions,
+  whenBrowserExtensionProfileRestored
 } from './profile-sessions/browser-extension-session-loader'
 import { notifyBrowserExtensionActionsChanged } from './actions/browser-extension-action-registry'
 import { registerBrowserExtensionNamespaces } from './register-browser-extension-namespaces'
@@ -37,6 +41,7 @@ import {
 
 let initialized = false
 let switching = Promise.resolve()
+let enablingAbortController: AbortController | null = null
 let savedBrowserTabs: SavedBrowserTabsSource | null = null
 
 /** Runs before browser sessions are set up; with the setting off nothing is registered or loaded. */
@@ -60,35 +65,186 @@ export function initializeBrowserExtensionSupport(options: {
  * keeps their data; on loads them into every open profile, as a launch would.
  */
 export function switchBrowserExtensionSupport(enabled: boolean): Promise<void> {
-  // Why chained: an unload still in flight must finish before a load reuses the same sessions.
-  switching = switching
-    .then(async () => {
-      if (enabled === isBrowserExtensionSupportEnabled()) {
-        return
-      }
-      setBrowserExtensionSupportEnabled(enabled)
-      if (enabled) {
-        installBrowserExtensionSupport()
-        for (const profile of browserSessionRegistry.listProfiles()) {
+  const current = getBrowserExtensionSupportStatus()
+  if (
+    enabled === current.desiredEnabled &&
+    ((enabled && current.runtime === 'enabled') || (!enabled && current.runtime === 'disabled'))
+  ) {
+    return switching
+  }
+
+  if (!enabled) {
+    enablingAbortController?.abort()
+  }
+  setBrowserExtensionSupportDesired(enabled)
+  if (!enabled) {
+    setBrowserExtensionSupportRuntime('disabling')
+  } else if (
+    current.runtime === 'disabling' ||
+    current.runtime === 'unload-failed' ||
+    current.runtime === 'enable-failed'
+  ) {
+    setBrowserExtensionSupportRuntime('disabling')
+  } else if (current.runtime === 'disabled') {
+    setBrowserExtensionSupportRuntime('enabling')
+  }
+
+  const transition = switching.then(reconcileBrowserExtensionSupport)
+  switching = transition.catch(() => {
+    const runtime = getBrowserExtensionSupportStatus().runtime
+    setBrowserExtensionSupportRuntime(
+      runtime === 'disabling' || runtime === 'unload-failed' ? 'unload-failed' : 'enable-failed'
+    )
+    console.warn('[browser-extensions] Support transition failed; recovery is required')
+    notifyBrowserExtensionSupportViews()
+  })
+  return switching
+}
+
+/** Retries the current desired state, including a disable that already failed once. */
+export function retryBrowserExtensionSupportTransition(): Promise<void> {
+  const current = getBrowserExtensionSupportStatus()
+  if (current.runtime !== 'unload-failed' && current.runtime !== 'enable-failed') {
+    return switching
+  }
+  return switchBrowserExtensionSupport(current.desiredEnabled)
+}
+
+async function reconcileBrowserExtensionSupport(): Promise<void> {
+  let current = getBrowserExtensionSupportStatus()
+  if (
+    (current.runtime === 'enabled' && current.desiredEnabled) ||
+    (current.runtime === 'disabled' && !current.desiredEnabled)
+  ) {
+    return
+  }
+
+  if (
+    current.runtime === 'disabling' ||
+    current.runtime === 'unload-failed' ||
+    current.runtime === 'enable-failed'
+  ) {
+    setBrowserExtensionSupportRuntime('disabling')
+    await drainBrowserExtensionMutations()
+    try {
+      await detachBrowserExtensionsFromAllProfileSessions()
+    } catch {
+      setBrowserExtensionSupportRuntime('unload-failed')
+      notifyBrowserExtensionSupportViews()
+      return
+    }
+  }
+
+  current = getBrowserExtensionSupportStatus()
+  if (current.desiredEnabled) {
+    setBrowserExtensionSupportRuntime('enabling')
+    const abortController = new AbortController()
+    enablingAbortController = abortController
+    try {
+      installBrowserExtensionSupport()
+      while (!abortController.signal.aborted) {
+        const profiles = browserSessionRegistry.listProfiles()
+        for (const profile of profiles) {
           attachBrowserExtensionsToProfileSession(
             profile,
             browserSessionRegistry.getEnabledExtensionIds(profile.id)
           )
         }
-        // Why: tabs already open were created before their session ran extensions.
         webContents.getAllWebContents().forEach(observeExtensionContents)
-      } else {
+
+        let cancelReadiness!: () => void
+        const cancelled = new Promise<null>((resolve) => {
+          cancelReadiness = () => resolve(null)
+          abortController.signal.addEventListener('abort', cancelReadiness, { once: true })
+        })
+        let results: PromiseSettledResult<void>[] | null
+        try {
+          results = await Promise.race([
+            Promise.allSettled(
+              profiles.map((profile) => whenBrowserExtensionProfileRestored(profile))
+            ),
+            cancelled
+          ])
+        } finally {
+          abortController.signal.removeEventListener('abort', cancelReadiness)
+        }
+        if (results === null || abortController.signal.aborted) {
+          return
+        }
+
+        const failures = [
+          ...new Set(
+            results.flatMap((result) => (result.status === 'rejected' ? [result.reason] : []))
+          )
+        ]
+        if (failures.length === 1) {
+          throw failures[0]
+        }
+        if (failures.length > 1) {
+          throw new AggregateError(failures, 'Could not restore extensions for every profile')
+        }
+
+        const currentProfiles = browserSessionRegistry.listProfiles()
+        if (
+          profiles.some(
+            (profile) =>
+              !currentProfiles.some(
+                (currentProfile) =>
+                  currentProfile.id === profile.id && currentProfile.partition === profile.partition
+              )
+          )
+        ) {
+          throw new Error('A browser profile changed while extension support was enabling')
+        }
+        if (
+          currentProfiles.some(
+            (currentProfile) =>
+              !profiles.some(
+                (profile) =>
+                  profile.id === currentProfile.id && profile.partition === currentProfile.partition
+              )
+          )
+        ) {
+          continue
+        }
+
+        const latest = getBrowserExtensionSupportStatus()
+        if (latest.runtime === 'enabling' && latest.desiredEnabled) {
+          setBrowserExtensionSupportRuntime('enabled')
+        }
+        break
+      }
+    } catch {
+      if (getBrowserExtensionSupportStatus().runtime !== 'enabling') {
+        return
+      }
+      setBrowserExtensionSupportRuntime('disabling')
+      await drainBrowserExtensionMutations()
+      try {
         await detachBrowserExtensionsFromAllProfileSessions()
+        setBrowserExtensionSupportRuntime(
+          getBrowserExtensionSupportStatus().desiredEnabled ? 'enable-failed' : 'disabled'
+        )
+      } catch {
+        setBrowserExtensionSupportRuntime('unload-failed')
       }
-      notifyBrowserExtensionListChanged()
-      for (const profile of browserSessionRegistry.listProfiles()) {
-        notifyBrowserExtensionActionsChanged(profile.id)
+    } finally {
+      if (enablingAbortController === abortController) {
+        enablingAbortController = null
       }
-    })
-    .catch((error: unknown) => {
-      console.warn('[browser-extensions] Could not switch extension support:', error)
-    })
-  return switching
+    }
+  } else if (getBrowserExtensionSupportStatus().runtime === 'disabling') {
+    setBrowserExtensionSupportRuntime('disabled')
+  }
+
+  notifyBrowserExtensionSupportViews()
+}
+
+function notifyBrowserExtensionSupportViews(): void {
+  notifyBrowserExtensionListChanged()
+  for (const profile of browserSessionRegistry.listProfiles()) {
+    notifyBrowserExtensionActionsChanged(profile.id)
+  }
 }
 
 /** Process-wide hosts and listeners; each one checks per session, so they stay once installed. */

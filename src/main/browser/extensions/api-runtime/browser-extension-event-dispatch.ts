@@ -1,3 +1,4 @@
+import { isBrowserExtensionApiStateRetired } from './browser-extension-api-admission'
 import { webFrameMain } from 'electron'
 import {
   BROWSER_EXTENSION_EVENT_CHANNEL,
@@ -15,6 +16,7 @@ import {
   getBrowserExtensionNamespace
 } from './browser-extension-namespace-registry'
 import { deliverToWorker } from './browser-extension-worker-event-stream'
+import { getBrowserExtensionRuntimeQuarantine } from './browser-extension-runtime-quarantine'
 
 export type BrowserExtensionEventTarget = {
   /** Only extensions loaded in this session; omit to reach every extension session. */
@@ -127,7 +129,7 @@ export function dispatchBrowserExtensionEvent(
   const permission = getBrowserExtensionNamespace(namespace)?.permission
   const key = eventKey(namespace, event)
   for (const [sess, state] of sessions) {
-    if (target.session && target.session !== sess) {
+    if (isBrowserExtensionApiStateRetired(state) || (target.session && target.session !== sess)) {
       continue
     }
     const extensionIds = new Set<string>()
@@ -151,7 +153,10 @@ export function dispatchBrowserExtensionEvent(
       return groups.get(extensionId)
     }
     for (const extensionId of extensionIds) {
-      if (target.extensionId && extensionId !== target.extensionId) {
+      if (
+        (target.extensionId && extensionId !== target.extensionId) ||
+        getBrowserExtensionRuntimeQuarantine(sess, extensionId)
+      ) {
         continue
       }
       const extension = sess.extensions.getExtension(extensionId)

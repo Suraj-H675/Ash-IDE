@@ -17,6 +17,7 @@ import {
 import { isTrustedBrowserRenderer } from './browser-renderer-trust'
 import { registerBrowserExtensionToolbarHandlers } from './browser-extension-toolbar'
 import { registerBrowserExtensionWebStoreHandlers } from './browser-extension-webstore'
+import { registerBrowserExtensionSupportHandlers } from './browser-extension-support'
 
 const profileArgs = z.object({ profileId: z.string().min(1) })
 const extensionArgs = profileArgs.extend({ extensionId: z.string().refine(isChromeExtensionId) })
@@ -39,6 +40,7 @@ export function registerBrowserExtensionHandlers(): void {
   }
   registerBrowserExtensionToolbarHandlers()
   registerBrowserExtensionWebStoreHandlers()
+  registerBrowserExtensionSupportHandlers()
   ipcMain.handle(
     'browserExtensions:list',
     (event, args: unknown): Promise<BrowserExtensionListResult> => {

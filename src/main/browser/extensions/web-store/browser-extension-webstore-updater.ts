@@ -14,7 +14,7 @@ import {
 } from './browser-extension-held-updates'
 import { requestBrowserExtensionInstallPrompt } from '../permissions/browser-extension-install-prompt'
 import { getBrowserExtensionInstallStore } from '../installation/browser-extension-install-store'
-import { isBrowserExtensionSupportEnabled } from '../browser-extension-support'
+import { getBrowserExtensionSupportStatus } from '../browser-extension-support'
 import { readBrowserExtensionIconDataUrl } from '../installation/browser-extension-manifest'
 import {
   samePermissionSummary,
@@ -197,7 +197,7 @@ async function applyUpdate(
   extension: InstalledBrowserExtension,
   update: BrowserExtensionUpdate
 ): Promise<void> {
-  await withBrowserExtensionLock(extension.id, async () => {
+  await withBrowserExtensionLock(extension.id, async (signal) => {
     if (!isStillInstalled(extension)) {
       return
     }
@@ -206,18 +206,19 @@ async function applyUpdate(
     if (!staged) {
       return
     }
-    // Why hold: like Chrome, an update whose warnings grow waits for the user (Settings › Review access).
     const newWarnings = newBrowserExtensionWarnings(staged.access, granted)
-    if (hasBrowserExtensionWarnings(newWarnings)) {
+    if (signal.aborted || hasBrowserExtensionWarnings(newWarnings)) {
       await discardStagedWebStoreExtension(staged)
-      holdBrowserExtensionUpdate(extension.id, {
-        version: staged.version,
-        url: update.url,
-        sha256: update.sha256,
-        size: update.size,
-        access: staged.access,
-        newWarnings
-      })
+      if (!signal.aborted) {
+        holdBrowserExtensionUpdate(extension.id, {
+          version: staged.version,
+          url: update.url,
+          sha256: update.sha256,
+          size: update.size,
+          access: staged.access,
+          newWarnings
+        })
+      }
       return
     }
     await commitStagedWebStoreExtension(staged, null)
@@ -228,7 +229,8 @@ async function applyUpdate(
 /** Settings › Review access: asks about the new warnings only, then installs exactly that package. */
 export async function reviewHeldBrowserExtensionUpdate(
   extensionId: string,
-  renderer: Electron.WebContents
+  renderer: Electron.WebContents,
+  signal?: AbortSignal
 ): Promise<void> {
   const held = getHeldBrowserExtensionUpdate(extensionId)
   const extension = getBrowserExtensionInstallStore().get(extensionId)
@@ -236,15 +238,20 @@ export async function reviewHeldBrowserExtensionUpdate(
     forgetHeldBrowserExtensionUpdate(extensionId)
     throw new Error('No update is waiting for this extension')
   }
-  const accepted = await requestBrowserExtensionInstallPrompt(renderer, {
-    kind: 'permissions',
-    name: extension.name,
-    iconDataUrl: await readBrowserExtensionIconDataUrl(extension.path, extension.iconPath),
-    permissions: held.newWarnings.permissions,
-    hostPermissions: held.newWarnings.hostPermissions,
-    profileLabel: null
-  })
-  if (!accepted) {
+  const accepted = await requestBrowserExtensionInstallPrompt(
+    renderer,
+    {
+      kind: 'permissions',
+      name: extension.name,
+      iconDataUrl: await readBrowserExtensionIconDataUrl(extension.path, extension.iconPath),
+      permissions: held.newWarnings.permissions,
+      hostPermissions: held.newWarnings.hostPermissions,
+      profileLabel: null
+    },
+    undefined,
+    signal
+  )
+  if (!accepted || signal?.aborted) {
     return
   }
   await withBrowserExtensionLock(extensionId, async () => {
@@ -267,7 +274,7 @@ export async function reviewHeldBrowserExtensionUpdate(
 let checking = false
 
 export async function checkForBrowserExtensionUpdates(): Promise<void> {
-  if (checking || !isBrowserExtensionSupportEnabled()) {
+  if (checking || getBrowserExtensionSupportStatus().runtime !== 'enabled') {
     return
   }
   checking = true

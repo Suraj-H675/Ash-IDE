@@ -17,7 +17,6 @@ import {
 } from '../cookies/staging/browser-session-cookie-staging'
 import {
   BROWSER_SESSION_META_FILE_NAME,
-  forgetBrowserSessionProfileMeta,
   loadBrowserSessionMeta,
   persistBrowserSessionMeta
 } from './browser-session-meta-store'
@@ -38,6 +37,7 @@ import {
 import { getCanonicalUserDataPath } from '../../persistence/loading-store/user-data-path'
 import { markBrowserIdentityMigrationNoticePending } from '../identity/browser-identity-mode-store'
 import { forgetBrowserProfileOwnedStores } from './browser-profile-owned-stores'
+import { BrowserProfileDeletionCoordinator } from './browser-session-deletion-journal'
 import { attachBrowserExtensionsToProfileSession } from '../extensions/profile-sessions/browser-extension-session-loader'
 
 type ExtensionIdListKey = 'enabledExtensionIdsByProfileId' | 'pinnedExtensionIdsByProfileId'
@@ -58,6 +58,21 @@ class BrowserSessionRegistry {
   // Why: profiles change from IPC, the CLI and managed-profile owners; open windows and paired clients only learn of it here.
   onProfilesChanged: (() => void) | null = null
   onProfileDeleted: ((profileId: string) => Promise<void>) | null = null
+  private readonly deletion = new BrowserProfileDeletionCoordinator(
+    () => ({
+      metadataPath: this.metadataPath,
+      defaultPartition: this.defaultPartition,
+      activeProfileId: this.activeOrcaProfileId
+    }),
+    this.profiles,
+    () => this.onProfilesChanged?.(),
+    async (profile) => {
+      await retireDeletedBrowserSessionProfile(profile, () => this.onProfileDeleted?.(profile.id))
+      if (!forgetBrowserProfileOwnedStores(profile.id)) {
+        throw new Error('Could not clear deleted browser profile saved logins')
+      }
+    }
+  )
 
   constructor() {
     this.resetDefaultProfile()
@@ -139,6 +154,9 @@ class BrowserSessionRegistry {
       console.warn('[proxy] Failed to apply proxy to browser partition', defaultProfile.partition)
     })
     this.attachExtensions(defaultProfile, meta.enabledExtensionIdsByProfileId.default ?? [])
+    void this.deletion.resume().catch((error: unknown) => {
+      console.warn('[browser-session] Pending profile cleanup requires recovery:', error)
+    })
   }
 
   // Why here and not in the partition installer: that installer also serves route, SSH and
@@ -167,7 +185,8 @@ class BrowserSessionRegistry {
   }
 
   private updateExtensionIdList(key: ExtensionIdListKey, update: ExtensionIdListUpdate): void {
-    this.persistMeta({ [key]: update(this.loadPersistedMeta()[key]) })
+    const ids = Object.entries(update(this.loadPersistedMeta()[key]))
+    this.persistMeta({ [key]: Object.fromEntries(ids.filter(([id]) => this.profiles.has(id))) })
   }
 
   applyPendingCookieImport(): void {
@@ -207,13 +226,6 @@ class BrowserSessionRegistry {
 
   isAllowedPartition(partition: string): boolean {
     return this.listProfiles().some((p) => p.partition === partition)
-  }
-
-  resolvePartition(profileId: string | null | undefined): string {
-    if (!profileId) {
-      return this.defaultPartition
-    }
-    return this.profiles.get(profileId)?.partition ?? this.defaultPartition
   }
 
   resolveKnownPartition(profileId: string | null | undefined): string | null {
@@ -285,19 +297,8 @@ class BrowserSessionRegistry {
     return updated
   }
 
-  async deleteProfile(profileId: string): Promise<boolean> {
-    const profile = this.profiles.get(profileId)
-    if (!profile || profile.scope === 'default' || !forgetBrowserProfileOwnedStores(profileId)) {
-      return false
-    }
-    this.profiles.delete(profileId)
-    this.persistProfiles()
-    this.onProfilesChanged?.()
-    this.persistMeta(
-      forgetBrowserSessionProfileMeta(this.loadPersistedMeta(), profile, this.defaultPartition)
-    )
-    await retireDeletedBrowserSessionProfile(profile, () => this.onProfileDeleted?.(profileId))
-    return true
+  deleteProfile(profileId: string): Promise<boolean> {
+    return this.deletion.delete(profileId)
   }
 
   async clearDefaultSessionCookies(): Promise<boolean> {

@@ -4,6 +4,7 @@ import type { BrowserSetAnnotationViewportBridgeArgs } from '../../../shared/bro
 import type { BrowserAgentPresenceApi } from './browser-agent-presence-api'
 import type { ManagedBrowserProfileOwner } from '../../../shared/browser-profile-scope'
 import type { BrowserExtensionToolbarApi } from './browser-extension-toolbar-api'
+import type { BrowserExtensionSupportApi } from './browser-extension-support-api'
 import type { BrowserExtensionContextMenuApi } from './browser-extension-context-menu-api'
 import type { BrowserExtensionWebStoreApi } from './browser-extension-webstore-api'
 import type {
@@ -293,6 +294,7 @@ export type BrowserApi = {
   /** Installs, updates, removals, load errors or held updates changed; refetch the list. */
   onExtensionsChanged: (callback: () => void) => () => void
 } & BrowserExtensionToolbarApi &
+  BrowserExtensionSupportApi &
   BrowserExtensionWebStoreApi &
   BrowserExtensionContextMenuApi &
   BrowserSessionCookieApi &
