@@ -48,7 +48,8 @@ export class BrowserExtensionBusyError extends Error {
 /** Serializes install, update and uninstall of one extension id. */
 export async function withBrowserExtensionLock<T>(
   extensionId: string,
-  action: (signal: AbortSignal) => Promise<T>
+  action: (signal: AbortSignal) => Promise<T>,
+  profileId?: string
 ): Promise<T> {
   return withBrowserExtensionMutation(async (signal) => {
     if (busyExtensionIds.has(extensionId)) {
@@ -60,7 +61,7 @@ export async function withBrowserExtensionLock<T>(
     } finally {
       busyExtensionIds.delete(extensionId)
     }
-  })
+  }, profileId)
 }
 
 export function isBrowserExtensionBusy(extensionId: string): boolean {

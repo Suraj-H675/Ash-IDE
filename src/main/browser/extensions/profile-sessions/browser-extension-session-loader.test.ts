@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   sessions: new Map<string, object>(),
   extensionsBySession: new Map<object, Map<string, object>>(),
   installs: new Map<string, object>(),
-  mutationPaused: false,
+  pausedProfile: null as string | null,
   loadInstalled: vi.fn(),
   loadUnpacked: vi.fn(),
   removeExtension: vi.fn(),
@@ -24,7 +24,7 @@ vi.mock('electron', () => ({
 }))
 vi.mock('../browser-extension-support', () => ({
   isBrowserExtensionSupportEnabled: () => true,
-  isBrowserExtensionMutationPaused: () => mocks.mutationPaused,
+  isBrowserExtensionMutationPaused: (profileId: string) => mocks.pausedProfile === profileId,
   pauseBrowserExtensionMutations: async () => () => {}
 }))
 vi.mock('../actions/browser-extension-action-registry', () => ({
@@ -83,7 +83,7 @@ beforeEach(() => {
   mocks.sessions.clear()
   mocks.extensionsBySession.clear()
   mocks.installs.clear()
-  mocks.mutationPaused = false
+  mocks.pausedProfile = null
   vi.clearAllMocks()
   mocks.loadInstalled.mockImplementation(
     async (session: Electron.Session, _profileId: string, installed: InstalledBrowserExtension) => {
@@ -146,19 +146,27 @@ function loadHooks() {
 }
 
 describe('browser extension session load hooks', () => {
-  it('does not attach a profile while profile retirement has paused mutations', async () => {
+  it('blocks the retiring profile attachment but permits another profile to attach', async () => {
     const p = profile('paused-attach-profile')
     install(p.id, 'paused-attach-extension')
     const sess = mocks.sessions.get(p.partition) as Electron.Session
-    mocks.mutationPaused = true
+    mocks.pausedProfile = p.id
 
     attachBrowserExtensionsToProfileSession(p, [])
     expect(getBrowserExtensionSessionForProfile(p.id)).toBeNull()
 
-    mocks.mutationPaused = false
+    const peer = profile('unrelated-attach-profile')
+    install(peer.id, 'unrelated-attach-extension')
+    attachBrowserExtensionsToProfileSession(peer, ['unrelated-attach-extension'])
+    await whenBrowserExtensionProfileRestored(peer)
+    expect(getBrowserExtensionSessionForProfile(peer.id)).toBe(mocks.sessions.get(peer.partition))
+
+    mocks.pausedProfile = null
     attachBrowserExtensionsToProfileSession(p, [])
     expect(getBrowserExtensionSessionForProfile(p.id)).toBe(sess)
     await detachBrowserExtensionsFromProfileSession(p)
+    expect(getBrowserExtensionSessionForProfile(peer.id)).toBe(mocks.sessions.get(peer.partition))
+    await detachBrowserExtensionsFromProfileSession(peer)
   })
 
   it('runs the restore hook once for startup and again after manual disable and re-enable', async () => {

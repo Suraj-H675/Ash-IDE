@@ -51,13 +51,14 @@ import { getBrowserExtensionRuntimeQuarantine } from './api-runtime/browser-exte
 /** Settings actions. Each returns a result instead of throwing so the renderer can show the reason. */
 
 async function settle(
-  action: (signal: AbortSignal) => Promise<void>
+  action: (signal: AbortSignal) => Promise<void>,
+  profileId?: string
 ): Promise<BrowserExtensionActionResult> {
   if (!isBrowserExtensionSupportEnabled()) {
     return { ok: false, error: 'Turn on browser extensions in Settings › Experimental' }
   }
   try {
-    await withBrowserExtensionMutation(action)
+    await withBrowserExtensionMutation(action, profileId)
     return { ok: true }
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) }
@@ -113,34 +114,38 @@ export function setBrowserExtensionEnabled(
     if (!browserSessionRegistry.getProfile(browserProfileId)) {
       throw new Error('Browser profile not found')
     }
-    await withBrowserExtensionLock(extensionId, async () => {
-      if (!enabled) {
+    await withBrowserExtensionLock(
+      extensionId,
+      async () => {
+        if (!enabled) {
+          try {
+            await unloadBrowserExtensionFromProfile(browserProfileId, extensionId, 'user-disabled')
+          } catch (error) {
+            preserveQuarantinedEnablement(browserProfileId, extensionId)
+            throw error
+          }
+          browserSessionRegistry.updateEnabledExtensionIds((byProfile) =>
+            withExtensionEnabled(byProfile, browserProfileId, extensionId, false)
+          )
+          return
+        }
+        const installed = getBrowserExtensionInstallStore().get(extensionId)
+        if (!installed) {
+          throw new Error('Extension is not installed')
+        }
         try {
-          await unloadBrowserExtensionFromProfile(browserProfileId, extensionId, 'user-disabled')
+          await loadBrowserExtensionIntoProfile(browserProfileId, installed)
         } catch (error) {
           preserveQuarantinedEnablement(browserProfileId, extensionId)
           throw error
         }
         browserSessionRegistry.updateEnabledExtensionIds((byProfile) =>
-          withExtensionEnabled(byProfile, browserProfileId, extensionId, false)
+          withExtensionEnabled(byProfile, browserProfileId, extensionId, true)
         )
-        return
-      }
-      const installed = getBrowserExtensionInstallStore().get(extensionId)
-      if (!installed) {
-        throw new Error('Extension is not installed')
-      }
-      try {
-        await loadBrowserExtensionIntoProfile(browserProfileId, installed)
-      } catch (error) {
-        preserveQuarantinedEnablement(browserProfileId, extensionId)
-        throw error
-      }
-      browserSessionRegistry.updateEnabledExtensionIds((byProfile) =>
-        withExtensionEnabled(byProfile, browserProfileId, extensionId, true)
-      )
-    })
-  })
+      },
+      browserProfileId
+    )
+  }, browserProfileId)
 }
 
 /** Best effort per profile: leftover data must not keep the extension installed. */
@@ -231,58 +236,66 @@ export function addUnpackedBrowserExtension(
     const summary = await readBrowserExtensionManifest(directory)
     const extensionId = await browserExtensionIdForUnpackedFolder(directory)
     // Why the lock: a removal finishing mid-load would be undone by the save below.
-    await withBrowserExtensionLock(extensionId, async () => {
-      const store = getBrowserExtensionInstallStore()
-      // Why before loading: a refused folder must leave no loaded copy and no rewritten profile records.
-      const existing = store.get(extensionId)
-      if (existing?.source === 'webstore') {
-        throw new Error(`${existing.name} is already installed from the Chrome Web Store`)
-      }
-      const record: InstalledBrowserExtension = {
-        id: extensionId,
-        name: summary.name,
-        version: summary.version,
-        path: directory,
-        source: 'unpacked',
-        iconPath: summary.iconPath,
-        permissions: summary.permissions,
-        hostPermissions: summary.hostPermissions,
-        optionsPage: summary.optionsPage
-      }
-      // Native load emits extension-loaded; precedence must already be durable then.
-      if (!existing) {
-        store.save(record)
-      }
-      let loaded: Electron.Extension
-      try {
-        loaded = await loadBrowserExtensionFolderIntoProfile(
-          browserProfileId,
-          extensionId,
-          directory,
-          { refresh: existing === null }
-        )
-      } catch (error) {
-        if (!existing) {
-          try {
-            await unloadBrowserExtensionFromProfile(browserProfileId, extensionId, 'user-disabled')
-            await store.remove(extensionId)
-          } catch (rollbackError) {
-            preserveQuarantinedEnablement(browserProfileId, extensionId)
-            throw new AggregateError(
-              [error, rollbackError],
-              `Could not clean up ${summary.name} after loading failed: ${errorMessage(error)}; ${errorMessage(rollbackError)}`
-            )
-          }
+    await withBrowserExtensionLock(
+      extensionId,
+      async () => {
+        const store = getBrowserExtensionInstallStore()
+        // Why before loading: a refused folder must leave no loaded copy and no rewritten profile records.
+        const existing = store.get(extensionId)
+        if (existing?.source === 'webstore') {
+          throw new Error(`${existing.name} is already installed from the Chrome Web Store`)
         }
-        throw error
-      }
-      store.save({ ...record, version: loaded.version })
-      browserSessionRegistry.updateEnabledExtensionIds((byProfile) =>
-        withExtensionEnabled(byProfile, browserProfileId, loaded.id, true)
-      )
-    })
+        const record: InstalledBrowserExtension = {
+          id: extensionId,
+          name: summary.name,
+          version: summary.version,
+          path: directory,
+          source: 'unpacked',
+          iconPath: summary.iconPath,
+          permissions: summary.permissions,
+          hostPermissions: summary.hostPermissions,
+          optionsPage: summary.optionsPage
+        }
+        // Native load emits extension-loaded; precedence must already be durable then.
+        if (!existing) {
+          store.save(record)
+        }
+        let loaded: Electron.Extension
+        try {
+          loaded = await loadBrowserExtensionFolderIntoProfile(
+            browserProfileId,
+            extensionId,
+            directory,
+            { refresh: existing === null }
+          )
+        } catch (error) {
+          if (!existing) {
+            try {
+              await unloadBrowserExtensionFromProfile(
+                browserProfileId,
+                extensionId,
+                'user-disabled'
+              )
+              await store.remove(extensionId)
+            } catch (rollbackError) {
+              preserveQuarantinedEnablement(browserProfileId, extensionId)
+              throw new AggregateError(
+                [error, rollbackError],
+                `Could not clean up ${summary.name} after loading failed: ${errorMessage(error)}; ${errorMessage(rollbackError)}`
+              )
+            }
+          }
+          throw error
+        }
+        store.save({ ...record, version: loaded.version })
+        browserSessionRegistry.updateEnabledExtensionIds((byProfile) =>
+          withExtensionEnabled(byProfile, browserProfileId, loaded.id, true)
+        )
+      },
+      browserProfileId
+    )
     notifyBrowserExtensionListChanged()
-  })
+  }, browserProfileId)
 }
 
 export function openBrowserExtensionOptions(

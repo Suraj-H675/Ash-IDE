@@ -4243,12 +4243,12 @@
     },
     {
       "path": "src/main/browser/extensions/profile-sessions/browser-extension-session-loader.test.ts",
-      "sha256": "79380906ce4c1a5d72c45ba5a2bea67638a558bbd6a9e34a1614b6fc60dbf969",
+      "sha256": "fa7cfe63a257f3206a5045ab5e823a4fa98af143b4188e2e14d17bc44f9e222b",
       "reason": "Ash BR-08 native extension lifecycle regression tests at a previously deferred upstream test path; original pinned source hash retained in the source ledger."
     },
     {
       "path": "src/main/browser/extensions/profile-sessions/browser-extension-session-loader.ts",
-      "sha256": "a0c8c64dbec83a64d8bceb9493d22f57379bc2916362d79a44118494ec50c139",
+      "sha256": "64436513faf0881c6787adfe9f43700be966023c8f07df2a61ed84b4abbd2ce4",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -4288,12 +4288,12 @@
     },
     {
       "path": "src/main/browser/extensions/api/permissions.ts",
-      "sha256": "8ba28a435268e81fe060d8dd8fff3c9d57f183851101df4fa6e2f47d57a9d06a",
+      "sha256": "5efc1cf6515d94dca27b80dc1e3ee92d556feeeeef2323a2fd7325cba5a3c862",
       "reason": "Ash adaptation of pinned upstream source for native extension retirement, retry and support status recovery."
     },
     {
       "path": "src/main/browser/extensions/browser-extension-management.ts",
-      "sha256": "005988511b8a186195a2b2f614d84f40025660f3a0312b66f0d963ec24b2f13f",
+      "sha256": "49d69a7e9d3c920f3aaeba3c669971833f82ba513c65460df79c59ff8b2e5096",
       "reason": "Ash adaptation of pinned upstream source for native extension retirement, retry and support status recovery."
     },
     {
@@ -4303,12 +4303,12 @@
     },
     {
       "path": "src/main/browser/extensions/browser-extension-support.ts",
-      "sha256": "ea8ee8d090df4e6c4d34b52ab5c26d44c2163889b340f8823a6596bf8e911980",
+      "sha256": "1d25b6c22abea276a155ccd30118da006eea65138d2d61856789af9c49bb43c4",
       "reason": "Ash adaptation of pinned upstream source for native extension retirement, retry and support status recovery."
     },
     {
       "path": "src/main/browser/extensions/installation/browser-extension-webstore-install.ts",
-      "sha256": "46ba7c4aff403852daa33fb0a9848d9e05c79df76439e6827a8b2f657e37b213",
+      "sha256": "bd2eabf3a2430e818dd65d2bb367a3551accaca9723ecaa2a0009944683f6f2c",
       "reason": "Ash adaptation of pinned upstream source for native extension retirement, retry and support status recovery."
     },
     {
@@ -4323,7 +4323,7 @@
     },
     {
       "path": "src/main/browser/extensions/web-store/browser-extension-webstore-service.ts",
-      "sha256": "2b47166721b1706bb9de17da37c221b0a094574e1d1036869fc4dd9df8898276",
+      "sha256": "21d353c1402c5aeabf1ae5a31942885807600b399f60220cd72b4fb017adaa60",
       "reason": "Ash adaptation of pinned upstream source for native extension retirement, retry and support status recovery."
     },
     {
@@ -4393,7 +4393,7 @@
     },
     {
       "path": "src/main/browser/sessions/browser-session-registry.ts",
-      "sha256": "6e9120cf6755d11f38898c353d06f1d480f8f61a8823df3e8e36b95c21a0eb76",
+      "sha256": "dc18fa9ba0614a4901415849f3015be7a33cc8959d115e9113b523be74acf280",
       "reason": "Ash adaptation of pinned upstream source for durable profile deletion and extension API retirement recovery."
     },
     {

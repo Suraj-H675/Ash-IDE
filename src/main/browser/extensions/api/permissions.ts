@@ -155,7 +155,7 @@ async function request(
     } finally {
       pendingRequests.delete(key)
     }
-  })
+  }, caller.browserProfileId)
 }
 
 async function remove(
@@ -178,7 +178,7 @@ async function remove(
     await getDnrSessionRuntime(caller.session)?.reconcilePermissions(extension)
     emitChange(caller, 'onRemoved', plan.removed)
     return true
-  })
+  }, caller.browserProfileId)
 }
 
 export function registerPermissionsNamespace(): void {

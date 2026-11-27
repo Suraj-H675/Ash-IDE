@@ -185,7 +185,8 @@ class BrowserSessionRegistry {
   }
 
   private updateExtensionIdList(key: ExtensionIdListKey, update: ExtensionIdListUpdate): void {
-    this.persistMeta({ [key]: update(this.loadPersistedMeta()[key]) })
+    const ids = Object.entries(update(this.loadPersistedMeta()[key]))
+    this.persistMeta({ [key]: Object.fromEntries(ids.filter(([id]) => this.profiles.has(id))) })
   }
 
   applyPendingCookieImport(): void {

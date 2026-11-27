@@ -4,11 +4,11 @@ import type {
 } from '../../../shared/browser/extensions/browser-extension-types'
 
 const listeners = new Set<(status: BrowserExtensionSupportStatus) => void>()
-const activeMutations = new Map<AbortController, Promise<void>>()
+const activeMutations = new Map<AbortController, { profileId?: string; settled: Promise<void> }>()
+const pausedProfiles = new Map<string, number>()
 
 let status: BrowserExtensionSupportStatus = { desiredEnabled: false, runtime: 'disabled' }
 let mutationAdmissionOpen = false
-let mutationPauses = 0
 
 function publish(): void {
   const snapshot = getBrowserExtensionSupportStatus()
@@ -28,7 +28,7 @@ function abortActiveMutations(): void {
 }
 
 function refreshMutationAdmission(): void {
-  mutationAdmissionOpen = status.runtime === 'enabled' && mutationPauses === 0
+  mutationAdmissionOpen = status.runtime === 'enabled'
 }
 
 export function getBrowserExtensionSupportStatus(): BrowserExtensionSupportStatus {
@@ -77,14 +77,16 @@ export function isBrowserExtensionSupportEnabled(): boolean {
   return status.runtime === 'enabled' || status.runtime === 'enabling'
 }
 
-export function isBrowserExtensionMutationPaused(): boolean {
-  return mutationPauses > 0
+export function isBrowserExtensionMutationPaused(profileId?: string): boolean {
+  // Unscoped changes affect shared installation state and may touch every profile.
+  return profileId === undefined ? pausedProfiles.size > 0 : pausedProfiles.has(profileId)
 }
 
 export function withBrowserExtensionMutation<T>(
-  operation: (signal: AbortSignal) => Promise<T>
+  operation: (signal: AbortSignal) => Promise<T>,
+  profileId?: string
 ): Promise<T> {
-  if (!mutationAdmissionOpen) {
+  if (!mutationAdmissionOpen || isBrowserExtensionMutationPaused(profileId)) {
     return Promise.reject(new Error('Browser extension support is changing or unavailable'))
   }
 
@@ -93,7 +95,7 @@ export function withBrowserExtensionMutation<T>(
   const settled = new Promise<void>((resolve) => {
     finish = resolve
   })
-  activeMutations.set(controller, settled)
+  activeMutations.set(controller, { profileId, settled })
   return Promise.resolve()
     .then(() => operation(controller.signal))
     .finally(() => {
@@ -104,22 +106,31 @@ export function withBrowserExtensionMutation<T>(
 
 /** Closes new mutation admission before waiting for already admitted work to finish. */
 export async function drainBrowserExtensionMutations(): Promise<void> {
-  await Promise.all(activeMutations.values())
+  await Promise.all([...activeMutations.values()].map((mutation) => mutation.settled))
 }
 
-/** Profile retirement pauses extension mutations without changing the global support status. */
-export async function pauseBrowserExtensionMutations(): Promise<() => void> {
-  mutationPauses += 1
-  refreshMutationAdmission()
-  abortActiveMutations()
-  await drainBrowserExtensionMutations()
+/** Fence the retiring profile and shared operations, not unrelated profile lifetimes. */
+export async function pauseBrowserExtensionMutations(profileId: string): Promise<() => void> {
+  pausedProfiles.set(profileId, (pausedProfiles.get(profileId) ?? 0) + 1)
+  const draining: Promise<void>[] = []
+  for (const [controller, mutation] of activeMutations) {
+    if (mutation.profileId === undefined || mutation.profileId === profileId) {
+      controller.abort()
+      draining.push(mutation.settled)
+    }
+  }
+  await Promise.all(draining)
   let resumed = false
   return () => {
     if (resumed) {
       return
     }
     resumed = true
-    mutationPauses = Math.max(0, mutationPauses - 1)
-    refreshMutationAdmission()
+    const count = pausedProfiles.get(profileId) ?? 0
+    if (count <= 1) {
+      pausedProfiles.delete(profileId)
+    } else {
+      pausedProfiles.set(profileId, count - 1)
+    }
   }
 }

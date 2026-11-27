@@ -96,7 +96,7 @@ export function attachBrowserExtensionsToProfileSession(
 ): void {
   if (
     !isBrowserExtensionSupportEnabled() ||
-    isBrowserExtensionMutationPaused() ||
+    isBrowserExtensionMutationPaused(profile.id) ||
     stateByProfileId.has(profile.id) ||
     retirement.blocksAttachment(profile)
   ) {
@@ -156,7 +156,7 @@ export function attachBrowserExtensionsToProfileSession(
 export async function detachBrowserExtensionsFromProfileSession(
   profile: BrowserSessionProfile
 ): Promise<void> {
-  const resumeMutations = await pauseBrowserExtensionMutations()
+  const resumeMutations = await pauseBrowserExtensionMutations(profile.id)
   try {
     await detachAndClearBrowserExtensionProfileSession(profile)
   } finally {
