@@ -1,3 +1,4 @@
+import { BROWSER_EXTENSION_PROFILE_UNAVAILABLE } from './browser-extension-profile-loads'
 import type { BrowserSessionProfile } from '../../../../shared/browser-workspace-types'
 import {
   unloadBrowserExtensionSession,
@@ -6,6 +7,36 @@ import {
 
 export type ProfileSessionState = BrowserExtensionProfileUnloadState & {
   profile: BrowserSessionProfile
+  startupReadiness: Promise<void>
+  retirement: AbortController
+}
+
+/** Retain strict readiness separately from the best-effort launch barrier. */
+export function trackBrowserExtensionStartupReadiness(
+  profileId: string,
+  swept: Promise<unknown>,
+  startupLoads: Promise<unknown>[]
+): Pick<ProfileSessionState, 'loading' | 'startupReadiness'> {
+  const startupReadiness = Promise.allSettled([swept, ...startupLoads]).then((results) => {
+    const failures = [
+      ...new Set(results.flatMap((result) => (result.status === 'rejected' ? [result.reason] : [])))
+    ]
+    if (failures.length === 1) {
+      throw failures[0]
+    }
+    if (failures.length > 1) {
+      throw new AggregateError(failures, `Could not restore extensions for profile ${profileId}`)
+    }
+  })
+  void startupReadiness.catch(() => {})
+  const loading = Promise.all([swept, ...startupLoads.map((load) => load.catch(() => {}))])
+    .then(() => undefined)
+    .catch((error: unknown) => {
+      console.warn('[browser-extensions] Could not initialize extension storage:', error)
+      throw error
+    })
+  void loading.catch(() => {})
+  return { loading, startupReadiness }
 }
 
 type Cleanup = Parameters<typeof unloadBrowserExtensionSession>[1]
@@ -25,6 +56,54 @@ export class BrowserExtensionSessionRetirement {
 
   get(profileId: string): ProfileSessionState | undefined {
     return this.retiring.get(profileId)
+  }
+
+  /** Wait only for the exact active profile incarnation. */
+  whenRestored(profile: BrowserSessionProfile): Promise<void> {
+    const profileId = profile.id
+    const state = this.active.get(profileId)
+    if (
+      !state ||
+      this.retiring.get(profileId) === state ||
+      state.profile.partition !== profile.partition
+    ) {
+      return Promise.reject(new Error(BROWSER_EXTENSION_PROFILE_UNAVAILABLE))
+    }
+    return new Promise<void>((resolve, reject) => {
+      const signal = state.retirement.signal
+      let settled = false
+      const fail = (error: unknown): void => {
+        if (settled) {
+          return
+        }
+        settled = true
+        signal.removeEventListener('abort', onRetiring)
+        reject(error)
+      }
+      const finish = (): void => {
+        if (settled) {
+          return
+        }
+        if (
+          this.active.get(profileId) !== state ||
+          this.retiring.get(profileId) === state ||
+          state.profile.partition !== profile.partition
+        ) {
+          fail(new Error(BROWSER_EXTENSION_PROFILE_UNAVAILABLE))
+          return
+        }
+        settled = true
+        signal.removeEventListener('abort', onRetiring)
+        resolve()
+      }
+      const onRetiring = (): void => fail(new Error(BROWSER_EXTENSION_PROFILE_UNAVAILABLE))
+      signal.addEventListener('abort', onRetiring, { once: true })
+      if (signal.aborted) {
+        onRetiring()
+      } else {
+        state.startupReadiness.then(finish, fail)
+      }
+    })
   }
 
   states(): ProfileSessionState[] {
@@ -76,6 +155,7 @@ export class BrowserExtensionSessionRetirement {
     if (this.active.get(profileId) === state) {
       this.active.delete(profileId)
     }
+    state.retirement.abort()
     const existing = this.inFlight.get(state)
     if (existing) {
       return existing

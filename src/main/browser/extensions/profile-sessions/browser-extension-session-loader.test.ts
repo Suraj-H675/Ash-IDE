@@ -75,7 +75,8 @@ import {
   loadBrowserExtensionIntoProfile,
   setBrowserExtensionSessionHooks,
   unloadBrowserExtensionFromProfile,
-  whenBrowserExtensionProfileLoaded
+  whenBrowserExtensionProfileLoaded,
+  whenBrowserExtensionProfileRestored
 } from './browser-extension-session-loader'
 
 beforeEach(() => {
@@ -189,6 +190,71 @@ describe('browser extension session load hooks', () => {
 
     expect(manualHooks.loaded).toHaveBeenCalledTimes(2)
   })
+
+  it('requires the attached profile restoration to succeed before reporting it loaded', async () => {
+    const extensionId = 'extension-startup-restore-failure'
+    const failedProfile = profile('startup-restore-failure-profile')
+    const failure = new Error('native restore failed')
+    const hooks = loadHooks()
+    hooks.loaded.mockRejectedValue(failure)
+    install(failedProfile.id, extensionId)
+    setBrowserExtensionSessionHooks(hooks)
+
+    attachBrowserExtensionsToProfileSession(failedProfile, [extensionId])
+
+    await expect(whenBrowserExtensionProfileRestored(failedProfile)).rejects.toBe(failure)
+    expect(mocks.removeExtension).toHaveBeenCalledWith(
+      mocks.sessions.get(failedProfile.partition),
+      extensionId
+    )
+  })
+
+  it('rejects missing and replaced profile owners instead of treating them as restored', async () => {
+    const attachedProfile = profile('profile-owner-identity')
+    install(attachedProfile.id, 'owner-identity-extension')
+    attachBrowserExtensionsToProfileSession(attachedProfile, [])
+
+    await expect(
+      whenBrowserExtensionProfileRestored(profile('missing-profile-owner'))
+    ).rejects.toThrow('not available')
+    await expect(
+      whenBrowserExtensionProfileRestored({ ...attachedProfile, partition: 'persist:replacement' })
+    ).rejects.toThrow('not available')
+    await whenBrowserExtensionProfileRestored(attachedProfile)
+  })
+
+  it('stops treating a profile as restored as soon as retirement begins', async () => {
+    const retiringProfile = profile('retiring-profile-owner')
+    const extensionId = 'retiring-owner-extension'
+    install(retiringProfile.id, extensionId)
+    let finishNativeLoad!: () => void
+    const nativeLoad = new Promise<void>((resolve) => {
+      finishNativeLoad = resolve
+    })
+    mocks.loadInstalled.mockImplementationOnce(async (sess, _profileId, installed) => {
+      await nativeLoad
+      const loaded = { id: installed.id, version: '1.0.0' } as Electron.Extension
+      mocks.extensionsBySession.get(sess)?.set(installed.id, loaded)
+      return loaded
+    })
+    attachBrowserExtensionsToProfileSession(retiringProfile, [extensionId])
+    const initialReadiness = whenBrowserExtensionProfileRestored(retiringProfile).then(
+      () => null,
+      (error: unknown) => error
+    )
+    const retirement = detachBrowserExtensionsFromProfileSession(retiringProfile)
+    await new Promise<void>((resolve) => setImmediate(resolve))
+
+    await expect(whenBrowserExtensionProfileRestored(retiringProfile)).rejects.toThrow(
+      'not available'
+    )
+    expect(await initialReadiness).toMatchObject({
+      message: 'Browser profile is not available for extensions'
+    })
+
+    finishNativeLoad()
+    await retirement
+  }, 1000)
 
   it('unloads a newly loaded extension when post-load restoration fails', async () => {
     const extensionId = 'extension-restore-failure'

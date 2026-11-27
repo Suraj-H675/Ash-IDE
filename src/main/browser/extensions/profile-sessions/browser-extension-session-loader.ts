@@ -30,6 +30,7 @@ import {
 import { throwIfBrowserExtensionRuntimeQuarantined } from '../api-runtime/browser-extension-runtime-quarantine'
 import {
   BrowserExtensionSessionRetirement,
+  trackBrowserExtensionStartupReadiness,
   type ProfileSessionState
 } from './browser-extension-session-retirement'
 import { finishBrowserExtensionLoad } from './browser-extension-session-completion'
@@ -133,16 +134,22 @@ export function attachBrowserExtensionsToProfileSession(
       })
       .catch((error: unknown) => {
         console.warn(`[browser-extensions] Failed to load ${extensionId}:`, error)
+        throw error
       })
   )
-  const loading = Promise.all([swept, ...startupLoads])
-    .then(() => undefined)
-    .catch((error: unknown) => {
-      console.warn('[browser-extensions] Could not initialize extension storage:', error)
-      throw error
-    })
-  void loading.catch(() => {})
-  stateByProfileId.set(profile.id, { profile, session: sess, loading, loads })
+  const { loading, startupReadiness } = trackBrowserExtensionStartupReadiness(
+    profile.id,
+    swept,
+    startupLoads
+  )
+  stateByProfileId.set(profile.id, {
+    profile,
+    session: sess,
+    loading,
+    startupReadiness,
+    retirement: new AbortController(),
+    loads
+  })
 }
 
 /** Profile delete retires saved extension data only after native extensions are confirmed absent. */
@@ -171,6 +178,8 @@ async function detachAndClearBrowserExtensionProfileSession(
         profile,
         session: sess,
         loading: Promise.resolve(),
+        startupReadiness: Promise.resolve(),
+        retirement: new AbortController(),
         loads: new BrowserExtensionProfileLoads()
       }
     )
@@ -190,9 +199,14 @@ export function detachBrowserExtensionsFromAllProfileSessions(): Promise<void> {
   return retirement.retireAll()
 }
 
-/** One profile session's startup loads, restore hooks included. */
+/** Startup callers can continue after a profile load failure or retirement. */
 export function whenBrowserExtensionProfileLoaded(profileId: string): Promise<void> {
   return stateByProfileId.get(profileId)?.loading.catch(() => {}) ?? Promise.resolve()
+}
+
+/** One exact attached profile's startup loads and restore hooks, including their failures. */
+export function whenBrowserExtensionProfileRestored(profile: BrowserSessionProfile): Promise<void> {
+  return retirement.whenRestored(profile)
 }
 
 /** Startup waits briefly so restored tabs get content scripts; a slow load never blocks launch. */

@@ -4243,12 +4243,12 @@
     },
     {
       "path": "src/main/browser/extensions/profile-sessions/browser-extension-session-loader.test.ts",
-      "sha256": "01b9c974e0b4558d5766c9ccf9a6b6ab2893d36f9805d86963f212a76dcf8840",
+      "sha256": "79380906ce4c1a5d72c45ba5a2bea67638a558bbd6a9e34a1614b6fc60dbf969",
       "reason": "Ash BR-08 native extension lifecycle regression tests at a previously deferred upstream test path; original pinned source hash retained in the source ledger."
     },
     {
       "path": "src/main/browser/extensions/profile-sessions/browser-extension-session-loader.ts",
-      "sha256": "87562d5adef8f9ed57d14498dd0197c5b341a7c273c395634fb082b215bd2755",
+      "sha256": "3bbf288219529dd90b750a850307f4f98844237ee02a2a9ba0a9b29b018b4a32",
       "reason": "Ash adaptation of the pinned upstream source; the original file hash remains in the source ledger."
     },
     {
@@ -4298,7 +4298,7 @@
     },
     {
       "path": "src/main/browser/extensions/browser-extension-startup.ts",
-      "sha256": "4924a8263fd425f50fe5492c80b0b2962fb53d0250b29ead76ea07e7c92fab37",
+      "sha256": "394a02d4024ea4a4ce0e79838054648c3c271e7e13878fb03fcd9a6454ee59c8",
       "reason": "Ash adaptation of pinned upstream source for native extension retirement, retry and support status recovery."
     },
     {

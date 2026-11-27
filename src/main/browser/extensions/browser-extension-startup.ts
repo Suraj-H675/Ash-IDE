@@ -16,7 +16,8 @@ import {
 import { browserSessionRegistry } from '../sessions/browser-session-registry'
 import {
   attachBrowserExtensionsToProfileSession,
-  detachBrowserExtensionsFromAllProfileSessions
+  detachBrowserExtensionsFromAllProfileSessions,
+  whenBrowserExtensionProfileRestored
 } from './profile-sessions/browser-extension-session-loader'
 import { notifyBrowserExtensionActionsChanged } from './actions/browser-extension-action-registry'
 import { registerBrowserExtensionNamespaces } from './register-browser-extension-namespaces'
@@ -40,6 +41,7 @@ import {
 
 let initialized = false
 let switching = Promise.resolve()
+let enablingAbortController: AbortController | null = null
 let savedBrowserTabs: SavedBrowserTabsSource | null = null
 
 /** Runs before browser sessions are set up; with the setting off nothing is registered or loaded. */
@@ -71,6 +73,9 @@ export function switchBrowserExtensionSupport(enabled: boolean): Promise<void> {
     return switching
   }
 
+  if (!enabled) {
+    enablingAbortController?.abort()
+  }
   setBrowserExtensionSupportDesired(enabled)
   if (!enabled) {
     setBrowserExtensionSupportRuntime('disabling')
@@ -133,20 +138,81 @@ async function reconcileBrowserExtensionSupport(): Promise<void> {
   current = getBrowserExtensionSupportStatus()
   if (current.desiredEnabled) {
     setBrowserExtensionSupportRuntime('enabling')
+    const abortController = new AbortController()
+    enablingAbortController = abortController
     try {
       installBrowserExtensionSupport()
-      for (const profile of browserSessionRegistry.listProfiles()) {
-        attachBrowserExtensionsToProfileSession(
-          profile,
-          browserSessionRegistry.getEnabledExtensionIds(profile.id)
-        )
-      }
-      webContents.getAllWebContents().forEach(observeExtensionContents)
-      if (
-        getBrowserExtensionSupportStatus().runtime === 'enabling' &&
-        getBrowserExtensionSupportStatus().desiredEnabled
-      ) {
-        setBrowserExtensionSupportRuntime('enabled')
+      while (!abortController.signal.aborted) {
+        const profiles = browserSessionRegistry.listProfiles()
+        for (const profile of profiles) {
+          attachBrowserExtensionsToProfileSession(
+            profile,
+            browserSessionRegistry.getEnabledExtensionIds(profile.id)
+          )
+        }
+        webContents.getAllWebContents().forEach(observeExtensionContents)
+
+        let cancelReadiness!: () => void
+        const cancelled = new Promise<null>((resolve) => {
+          cancelReadiness = () => resolve(null)
+          abortController.signal.addEventListener('abort', cancelReadiness, { once: true })
+        })
+        let results: PromiseSettledResult<void>[] | null
+        try {
+          results = await Promise.race([
+            Promise.allSettled(
+              profiles.map((profile) => whenBrowserExtensionProfileRestored(profile))
+            ),
+            cancelled
+          ])
+        } finally {
+          abortController.signal.removeEventListener('abort', cancelReadiness)
+        }
+        if (results === null || abortController.signal.aborted) {
+          return
+        }
+
+        const failures = [
+          ...new Set(
+            results.flatMap((result) => (result.status === 'rejected' ? [result.reason] : []))
+          )
+        ]
+        if (failures.length === 1) {
+          throw failures[0]
+        }
+        if (failures.length > 1) {
+          throw new AggregateError(failures, 'Could not restore extensions for every profile')
+        }
+
+        const currentProfiles = browserSessionRegistry.listProfiles()
+        if (
+          profiles.some(
+            (profile) =>
+              !currentProfiles.some(
+                (currentProfile) =>
+                  currentProfile.id === profile.id && currentProfile.partition === profile.partition
+              )
+          )
+        ) {
+          throw new Error('A browser profile changed while extension support was enabling')
+        }
+        if (
+          currentProfiles.some(
+            (currentProfile) =>
+              !profiles.some(
+                (profile) =>
+                  profile.id === currentProfile.id && profile.partition === currentProfile.partition
+              )
+          )
+        ) {
+          continue
+        }
+
+        const latest = getBrowserExtensionSupportStatus()
+        if (latest.runtime === 'enabling' && latest.desiredEnabled) {
+          setBrowserExtensionSupportRuntime('enabled')
+        }
+        break
       }
     } catch {
       if (getBrowserExtensionSupportStatus().runtime !== 'enabling') {
@@ -156,9 +222,15 @@ async function reconcileBrowserExtensionSupport(): Promise<void> {
       await drainBrowserExtensionMutations()
       try {
         await detachBrowserExtensionsFromAllProfileSessions()
-        setBrowserExtensionSupportRuntime('enable-failed')
+        setBrowserExtensionSupportRuntime(
+          getBrowserExtensionSupportStatus().desiredEnabled ? 'enable-failed' : 'disabled'
+        )
       } catch {
         setBrowserExtensionSupportRuntime('unload-failed')
+      }
+    } finally {
+      if (enablingAbortController === abortController) {
+        enablingAbortController = null
       }
     }
   } else if (getBrowserExtensionSupportStatus().runtime === 'disabling') {

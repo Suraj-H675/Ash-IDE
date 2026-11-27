@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { EventEmitter } from 'node:events'
+import type { BrowserSessionProfile } from '../../../shared/browser-workspace-types'
 
 const mocks = vi.hoisted(() => ({
   detach: vi.fn<() => Promise<void>>(),
   attach: vi.fn(),
+  whenProfileRestored: vi.fn<(_profile: BrowserSessionProfile) => Promise<void>>(),
   changed: vi.fn(),
   profiles: [{ id: 'local-fixture-profile', partition: 'persist:local-fixture-profile' }]
 }))
@@ -22,10 +24,14 @@ vi.mock('./api-runtime/browser-extension-api-host', () => ({
   getBrowserExtensionProfileIdForSession: vi.fn()
 }))
 vi.mock('../sessions/browser-session-registry', () => ({
-  browserSessionRegistry: { listProfiles: () => mocks.profiles, getEnabledExtensionIds: () => [] }
+  browserSessionRegistry: {
+    listProfiles: () => [...mocks.profiles],
+    getEnabledExtensionIds: () => []
+  }
 }))
 vi.mock('./profile-sessions/browser-extension-session-loader', () => ({
   attachBrowserExtensionsToProfileSession: mocks.attach,
+  whenBrowserExtensionProfileRestored: mocks.whenProfileRestored,
   detachBrowserExtensionsFromAllProfileSessions: mocks.detach
 }))
 vi.mock('./actions/browser-extension-action-registry', () => ({
@@ -77,8 +83,10 @@ import {
 
 beforeEach(() => {
   vi.resetAllMocks()
+  mocks.profiles = [{ id: 'local-fixture-profile', partition: 'persist:local-fixture-profile' }]
   setBrowserExtensionSupportEnabled(true)
   mocks.detach.mockResolvedValue(undefined)
+  mocks.whenProfileRestored.mockResolvedValue(undefined)
 })
 
 describe('global browser extension support transition', () => {
@@ -131,6 +139,135 @@ describe('global browser extension support transition', () => {
       desiredEnabled: true,
       runtime: 'enabled'
     })
+  })
+
+  it('keeps runtime enabling until the attached profile restoration has settled', async () => {
+    setBrowserExtensionSupportEnabled(false)
+    let release!: () => void
+    const pending = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    mocks.whenProfileRestored.mockReturnValueOnce(pending)
+    const enabling = switchBrowserExtensionSupport(true)
+    await new Promise<void>((resolve) => setImmediate(resolve))
+    const runtimeBeforeRestoration = getBrowserExtensionSupportStatus().runtime
+    const attachCalled = mocks.attach.mock.calls.length
+    let mutationRan = false
+    const attemptedMutation = withBrowserExtensionMutation(async () => {
+      mutationRan = true
+    }).catch(() => {})
+    await attemptedMutation
+    release()
+    await enabling
+    expect(attachCalled).toBe(1)
+    expect(runtimeBeforeRestoration).toBe('enabling')
+    expect(mutationRan).toBe(false)
+    expect(getBrowserExtensionSupportStatus().runtime).toBe('enabled')
+  })
+
+  it('keeps extension authority closed and recovers after a profile restore failure', async () => {
+    setBrowserExtensionSupportEnabled(false)
+    mocks.whenProfileRestored.mockRejectedValueOnce(new Error('native restore failed'))
+
+    await switchBrowserExtensionSupport(true)
+
+    expect(getBrowserExtensionSupportStatus().runtime).toBe('enable-failed')
+    await expect(
+      withBrowserExtensionMutation(async () => {
+        throw new Error('failed enable admitted a mutation')
+      })
+    ).rejects.toThrow('unavailable')
+
+    await retryBrowserExtensionSupportTransition()
+
+    expect(mocks.detach).toHaveBeenCalledTimes(2)
+    expect(getBrowserExtensionSupportStatus().runtime).toBe('enabled')
+  })
+
+  it('lets a disable supersede a profile restore that has not settled', async () => {
+    setBrowserExtensionSupportEnabled(false)
+    let finishRestore!: () => void
+    const pendingRestore = new Promise<void>((resolve) => {
+      finishRestore = resolve
+    })
+    let detached!: () => void
+    const didDetach = new Promise<void>((resolve) => {
+      detached = resolve
+    })
+    mocks.whenProfileRestored.mockReturnValueOnce(pendingRestore)
+    mocks.detach.mockImplementationOnce(async () => detached())
+
+    const enabling = switchBrowserExtensionSupport(true)
+    await new Promise<void>((resolve) => setImmediate(resolve))
+    const disabling = switchBrowserExtensionSupport(false)
+    await didDetach
+    await Promise.all([enabling, disabling])
+
+    expect(getBrowserExtensionSupportStatus().runtime).toBe('disabled')
+    expect(mocks.attach).toHaveBeenCalledOnce()
+    finishRestore()
+  }, 1000)
+
+  it('waits for profiles added while global enable is restoring the current set', async () => {
+    setBrowserExtensionSupportEnabled(false)
+    const addedProfile = {
+      id: 'profile-added-during-enable',
+      partition: 'persist:profile-added-during-enable'
+    }
+    let finishFirst!: () => void
+    let finishAdded!: () => void
+    let firstStarted!: () => void
+    let addedStarted!: () => void
+    const firstPending = new Promise<void>((resolve) => {
+      finishFirst = resolve
+    })
+    const addedPending = new Promise<void>((resolve) => {
+      finishAdded = resolve
+    })
+    const firstLoadStarted = new Promise<void>((resolve) => {
+      firstStarted = resolve
+    })
+    const addedLoadStarted = new Promise<void>((resolve) => {
+      addedStarted = resolve
+    })
+    mocks.whenProfileRestored.mockImplementation((profile) => {
+      if (profile.id === 'local-fixture-profile') {
+        firstStarted()
+        return firstPending
+      }
+      if (profile.id === addedProfile.id) {
+        addedStarted()
+        return addedPending
+      }
+      return Promise.resolve()
+    })
+
+    const enabling = switchBrowserExtensionSupport(true)
+    await firstLoadStarted
+    mocks.profiles.push(addedProfile)
+    finishFirst()
+    await addedLoadStarted
+
+    expect(getBrowserExtensionSupportStatus().runtime).toBe('enabling')
+    expect(mocks.attach).toHaveBeenCalledWith(addedProfile, [])
+
+    finishAdded()
+    await enabling
+
+    expect(getBrowserExtensionSupportStatus().runtime).toBe('enabled')
+  })
+
+  it('does not enable against a profile removed during the readiness barrier', async () => {
+    setBrowserExtensionSupportEnabled(false)
+    mocks.whenProfileRestored.mockImplementationOnce(async () => {
+      mocks.profiles = []
+    })
+
+    await switchBrowserExtensionSupport(true)
+
+    expect(mocks.attach).toHaveBeenCalledOnce()
+    expect(mocks.detach).toHaveBeenCalledOnce()
+    expect(getBrowserExtensionSupportStatus().runtime).toBe('enable-failed')
   })
 
   it('aborts and drains admitted mutations before native retirement starts', async () => {
