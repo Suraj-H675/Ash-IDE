@@ -1,4 +1,5 @@
 import type { HostSessionState } from './browser-extension-contexts'
+import { isBrowserExtensionApiStateRetired } from './browser-extension-api-admission'
 
 const lifetimesByState = new WeakMap<HostSessionState, Map<string, AbortController>>()
 
@@ -6,6 +7,9 @@ export function getBrowserExtensionContextSignal(
   state: HostSessionState,
   extensionId: string
 ): AbortSignal {
+  if (isBrowserExtensionApiStateRetired(state)) {
+    return AbortSignal.abort()
+  }
   let lifetimes = lifetimesByState.get(state)
   if (!lifetimes) {
     lifetimes = new Map()

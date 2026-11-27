@@ -1,3 +1,7 @@
+import {
+  isBrowserExtensionApiStateRetired,
+  retireBrowserExtensionApiState
+} from './browser-extension-api-admission'
 import { forgetBrowserExtensionContextLifetime } from './browser-extension-context-lifetime'
 import {
   createBrowserExtensionFrameContext,
@@ -48,7 +52,8 @@ export type HostSessionState = {
 const stateBySession = new Map<Electron.Session, HostSessionState>()
 
 export function getHostSessionState(sess: Electron.Session): HostSessionState | null {
-  return stateBySession.get(sess) ?? null
+  const state = stateBySession.get(sess)
+  return state && !isBrowserExtensionApiStateRetired(state) ? state : null
 }
 
 export function ensureHostSessionState(
@@ -63,9 +68,18 @@ export function ensureHostSessionState(
   return state
 }
 
+/** Revoke API admission and abort prompts before asynchronous profile cleanup. */
+export function fenceBrowserExtensionHostSession(sess: Electron.Session): void {
+  const state = stateBySession.get(sess)
+  if (state) {
+    retireBrowserExtensionApiState(state)
+    forgetBrowserExtensionContextLifetime(state)
+  }
+}
+
 export function forgetHostSession(sess: Electron.Session): void {
   const state = stateBySession.get(sess)
-  forgetBrowserExtensionContextLifetime(state)
+  fenceBrowserExtensionHostSession(sess)
   if (state) {
     for (const [key, context] of state.frames) {
       forgetBrowserExtensionFrame(state.frames, key, context)
@@ -177,7 +191,7 @@ export function dispatchToWorkerWhenListening(
   args: unknown[],
   startWorker: (sess: Electron.Session, context: WorkerContext) => void
 ): void {
-  const state = stateBySession.get(sess)
+  const state = getHostSessionState(sess)
   if (!state || getBrowserExtensionRuntimeQuarantine(sess, extensionId)) {
     return
   }
@@ -198,7 +212,7 @@ export function browserExtensionEventHasListener(
   namespace: string,
   event: string
 ): boolean {
-  const state = stateBySession.get(sess)
+  const state = getHostSessionState(sess)
   if (!state) {
     return false
   }

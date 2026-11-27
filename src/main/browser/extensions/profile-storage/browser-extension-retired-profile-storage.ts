@@ -48,6 +48,8 @@ export async function retireBrowserExtensionProfileStorage(
   sess: Electron.Session,
   partition: string
 ): Promise<void> {
+  // A restart sweep may already own this partition; do not race its storage cleanup.
+  await cleanup?.catch(() => {})
   try {
     const pending = readRetiredProfiles()
     pending.add(partition)

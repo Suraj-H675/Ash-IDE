@@ -4,6 +4,7 @@ import type { BrowserSessionProfile } from '../../../shared/browser-workspace-ty
 
 const mocks = vi.hoisted(() => ({
   fromPartition: vi.fn(),
+  fenceExtensionHost: vi.fn(),
   detach: vi.fn(async () => {}),
   fenceProxy: vi.fn(async () => {}),
   retireProxy: vi.fn(async () => {}),
@@ -17,6 +18,9 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('electron', () => ({ session: { fromPartition: mocks.fromPartition } }))
+vi.mock('../extensions/api-runtime/browser-extension-contexts', () => ({
+  fenceBrowserExtensionHostSession: mocks.fenceExtensionHost
+}))
 vi.mock('../../network/proxy-settings', () => ({
   fenceProxySessionApplication: mocks.fenceProxy,
   retireProxySessionApplication: mocks.retireProxy,
@@ -147,6 +151,30 @@ describe('deleted browser profile retirement', () => {
     expect(mocks.detach).toHaveBeenCalledWith(profile)
     expect(sess.clearStorageData).not.toHaveBeenCalled()
     expect(sess.clearCache).not.toHaveBeenCalled()
+  })
+
+  it('starts extension retirement before awaiting asynchronous route cleanup', async () => {
+    const { profile } = fixture('route-cleanup')
+    let finish!: () => void
+    const routeCleanup = new Promise<void>((resolve) => {
+      finish = resolve
+    })
+    const retiring = retireDeletedBrowserSessionProfile(profile, () => routeCleanup)
+    const startedBeforeRouteCleanup = mocks.detach.mock.calls.length
+    const fencedBeforeRouteCleanup = mocks.fenceExtensionHost.mock.calls.length
+    finish()
+    await retiring
+    expect(startedBeforeRouteCleanup).toBe(1)
+    expect(fencedBeforeRouteCleanup).toBe(1)
+  })
+
+  it('reports partition storage and cache failures instead of acknowledging deletion', async () => {
+    const { profile, sess } = fixture('failed-storage')
+    sess.clearStorageData.mockRejectedValueOnce(new Error('partition storage refused'))
+    await expect(retireDeletedBrowserSessionProfile(profile)).rejects.toThrow(
+      'partition storage refused'
+    )
+    expect(sess.clearCache).toHaveBeenCalledOnce()
   })
 
   it('does not grant a site permission from a prompt that was pending when deletion began', async () => {

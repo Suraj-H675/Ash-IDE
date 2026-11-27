@@ -1,3 +1,4 @@
+import { drainBrowserExtensionApiCalls } from '../api-runtime/browser-extension-api-admission'
 import {
   clearBrowserExtensionLoadFailure,
   forgetBrowserExtensionLoadFailures,
@@ -63,6 +64,11 @@ export async function unloadBrowserExtensionSession(
     } catch (error) {
       unloadErrors.push(error)
     }
+  }
+  try {
+    await drainBrowserExtensionApiCalls(state.session)
+  } catch (error) {
+    unloadErrors.push(error)
   }
   if (unloadErrors.length === 1) {
     throw unloadErrors[0]

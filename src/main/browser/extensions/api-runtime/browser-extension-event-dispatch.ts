@@ -1,3 +1,4 @@
+import { isBrowserExtensionApiStateRetired } from './browser-extension-api-admission'
 import { webFrameMain } from 'electron'
 import {
   BROWSER_EXTENSION_EVENT_CHANNEL,
@@ -128,7 +129,7 @@ export function dispatchBrowserExtensionEvent(
   const permission = getBrowserExtensionNamespace(namespace)?.permission
   const key = eventKey(namespace, event)
   for (const [sess, state] of sessions) {
-    if (target.session && target.session !== sess) {
+    if (isBrowserExtensionApiStateRetired(state) || (target.session && target.session !== sess)) {
       continue
     }
     const extensionIds = new Set<string>()

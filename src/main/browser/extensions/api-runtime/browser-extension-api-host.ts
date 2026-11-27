@@ -186,6 +186,8 @@ function listenToSession(sess: Electron.Session): void {
   })
 }
 
+const protocolOwners = new WeakSet<Electron.Session>()
+
 /** Called by the session loader whenever a local browser-profile session starts running extensions. */
 export function attachBrowserExtensionApiHostToSession(
   sess: Electron.Session,
@@ -194,6 +196,9 @@ export function attachBrowserExtensionApiHostToSession(
   if (getHostSessionState(sess)) {
     return
   }
+  if (protocolOwners.has(sess)) {
+    throw new Error('Previous extension API protocol is still retiring')
+  }
   const state = ensureHostSessionState(sess, browserProfileId)
   listenToSession(sess)
   sess.protocol.handle(BROWSER_EXTENSION_API_SCHEME, (request) =>
@@ -201,12 +206,17 @@ export function attachBrowserExtensionApiHostToSession(
       ? handleBrowserExtensionWorkerRequest(sess, state, request)
       : Promise.resolve(new Response(null, { status: 403 }))
   )
+  protocolOwners.add(sess)
   sweepRunningWorkers(sess, state)
 }
 
 export function forgetBrowserExtensionContexts(sess: Electron.Session): void {
   forgetHostSession(sess)
-  sess.protocol.unhandle(BROWSER_EXTENSION_API_SCHEME)
+  // Deleted-profile restart recovery may never have registered this handler.
+  if (protocolOwners.has(sess)) {
+    sess.protocol.unhandle(BROWSER_EXTENSION_API_SCHEME)
+    protocolOwners.delete(sess)
+  }
 }
 
 /** Revokes one extension's frame and worker contexts after its native unload cannot be confirmed. */

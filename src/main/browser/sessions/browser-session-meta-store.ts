@@ -1,4 +1,5 @@
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync } from 'node:fs'
+import { durableWriteTempPath, writeFileDurableSync } from '../../filesystem/durable-file-write'
 import { dirname } from 'node:path'
 import type { BrowserSessionProfile } from '../../../shared/browser-workspace-types'
 
@@ -16,6 +17,7 @@ export type BrowserSessionMeta = {
   pendingCookieDbPath: string | null
   pendingCookieImports: Record<string, PendingBrowserCookieImport>
   profiles: BrowserSessionProfile[]
+  pendingProfileDeletions: BrowserSessionProfile[]
   /** Browser-profile id ('default' included) → enabled extension ids. Kept off the profile wire shape. */
   enabledExtensionIdsByProfileId: Record<string, string[]>
   /** Browser-profile id → extension ids pinned to the browser toolbar, in pin order. */
@@ -40,11 +42,20 @@ function parseEnabledExtensionIds(value: unknown): Record<string, string[]> {
 // Resolve the path inside the load error boundary.
 export function loadBrowserSessionMeta(
   resolveMetadataPath: () => string,
-  defaultPartition: string
+  defaultPartition: string,
+  strict = false
 ): BrowserSessionMeta {
   try {
     const raw = readFileSync(resolveMetadataPath(), 'utf-8')
     const data = JSON.parse(raw)
+    if (
+      !data ||
+      typeof data !== 'object' ||
+      Array.isArray(data) ||
+      (data.pendingProfileDeletions !== undefined && !Array.isArray(data.pendingProfileDeletions))
+    ) {
+      throw new Error('Invalid browser session metadata')
+    }
     const legacyPendingCookieDbPath =
       typeof data?.pendingCookieDbPath === 'string' ? data.pendingCookieDbPath : null
     const pendingCookieImports: Record<string, PendingBrowserCookieImport> = {}
@@ -69,36 +80,50 @@ export function loadBrowserSessionMeta(
       pendingCookieDbPath: legacyPendingCookieDbPath,
       pendingCookieImports,
       profiles: Array.isArray(data?.profiles) ? data.profiles : [],
+      pendingProfileDeletions: data.pendingProfileDeletions ?? [],
       enabledExtensionIdsByProfileId: parseEnabledExtensionIds(
         data?.enabledExtensionIdsByProfileId
       ),
       pinnedExtensionIdsByProfileId: parseEnabledExtensionIds(data?.pinnedExtensionIdsByProfileId)
     }
-  } catch {
+  } catch (error) {
+    if (strict && !(error instanceof Error && 'code' in error && error.code === 'ENOENT')) {
+      throw error
+    }
     return {
       defaultSource: null,
       pendingCookieDbPath: null,
       pendingCookieImports: {},
       profiles: [],
+      pendingProfileDeletions: [],
       enabledExtensionIdsByProfileId: {},
       pinnedExtensionIdsByProfileId: {}
     }
   }
 }
 
-// Write to a temporary file so an interrupted write leaves the existing metadata intact.
+/** Preserve pending cleanup records across all metadata updates; never overwrite unreadable state. */
 export function persistBrowserSessionMeta(
   resolveMetadataPath: () => string,
   defaultPartition: string,
-  updates: Partial<BrowserSessionMeta>
+  updates: Partial<BrowserSessionMeta>,
+  strict = false
 ): void {
   try {
-    const existing = loadBrowserSessionMeta(resolveMetadataPath, defaultPartition)
-    const tmpPath = `${resolveMetadataPath()}.tmp`
-    mkdirSync(dirname(resolveMetadataPath()), { recursive: true })
-    writeFileSync(tmpPath, JSON.stringify({ ...existing, ...updates }))
-    renameSync(tmpPath, resolveMetadataPath())
-  } catch {}
+    const existing = loadBrowserSessionMeta(resolveMetadataPath, defaultPartition, true)
+    const target = resolveMetadataPath()
+    mkdirSync(dirname(target), { recursive: true })
+    writeFileDurableSync(
+      durableWriteTempPath(target),
+      target,
+      JSON.stringify({ ...existing, ...updates }),
+      0o600
+    )
+  } catch (error) {
+    if (strict) {
+      throw error
+    }
+  }
 }
 
 /** Meta updates that forget a deleted profile: its staged cookie import and its enabled extensions. */

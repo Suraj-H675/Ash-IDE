@@ -186,9 +186,7 @@ async function detachAndClearBrowserExtensionProfileSession(
   } finally {
     forgetBrowserExtensionActionProfile(profile.id)
   }
-  await retireBrowserExtensionProfileStorage(sess, profile.partition).catch((error: unknown) => {
-    console.warn('[browser-extensions] Could not clear deleted profile storage:', error)
-  })
+  await retireBrowserExtensionProfileStorage(sess, profile.partition)
   getBrowserExtensionProfileStateStore().forgetProfile(profile.id)
   getBrowserExtensionSyncStorageStore().forgetProfile(profile.id)
   getBrowserExtensionDnrStore().forgetProfile(profile.id)

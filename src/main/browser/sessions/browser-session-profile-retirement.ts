@@ -1,3 +1,4 @@
+import { fenceBrowserExtensionHostSession } from '../extensions/api-runtime/browser-extension-contexts'
 import { session, type Session } from 'electron'
 import type { BrowserSessionProfile } from '../../../shared/browser-workspace-types'
 import {
@@ -35,6 +36,7 @@ export async function retireDeletedBrowserSessionProfile(
   const sess = session.fromPartition(profile.partition)
   // Fence old permissions before waiting for any asynchronous retirement.
   const failures: unknown[] = []
+  fenceBrowserExtensionHostSession(sess)
   try {
     retireDeletedBrowserSessionPartitionPolicies(profile.partition, sess)
   } catch (error) {
@@ -44,19 +46,16 @@ export async function retireDeletedBrowserSessionProfile(
   const fence = fenceProxySessionApplication(sess).catch((error: unknown) => {
     failures.push(error)
   })
+  // Start admission revocation before the asynchronous route hook can yield.
+  const detach = detachBrowserExtensionsFromProfileSession(profile).catch((error: unknown) => {
+    failures.push(error)
+  })
   try {
     await beforeRetirement?.()
   } catch (error) {
-    // The profile is already deleted and persisted, so route cleanup stays best-effort.
-    console.warn('[browser-session] Failed to retire route partitions for deleted profile', error)
-  }
-  try {
-    await detachBrowserExtensionsFromProfileSession(profile)
-  } catch (error) {
     failures.push(error)
-  } finally {
-    await fence
   }
+  await Promise.all([detach, fence])
   if (failures.length === 1) {
     throw failures[0]
   }
@@ -65,10 +64,12 @@ export async function retireDeletedBrowserSessionProfile(
   }
   // Preserve all partition storage if extension retirement could not confirm native absence.
   await retireProxySessionApplication(sess)
-  try {
-    await sess.clearStorageData()
-    await sess.clearCache()
-  } catch {
-    // Cleanup is best-effort; the profile is already out of the registry.
+  const cleanup = await Promise.allSettled([sess.clearStorageData(), sess.clearCache()])
+  const errors = cleanup.flatMap((result) => (result.status === 'rejected' ? [result.reason] : []))
+  if (errors.length === 1) {
+    throw errors[0]
+  }
+  if (errors.length > 1) {
+    throw new AggregateError(errors, 'Could not clear deleted browser partition')
   }
 }

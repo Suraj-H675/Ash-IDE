@@ -1,3 +1,5 @@
+import { beginBrowserExtensionApiCall } from './browser-extension-api-admission'
+import { isBrowserExtensionSupportEnabled } from '../browser-extension-support'
 import { z } from 'zod'
 import type { BrowserExtensionInvokeResult } from '../../../../shared/browser/extensions/browser-extension-channels'
 import {
@@ -59,7 +61,12 @@ export async function handleBrowserExtensionApiRequest(
   rawRequest: unknown,
   listenTarget: BrowserExtensionListenTarget
 ): Promise<BrowserExtensionInvokeResult> {
+  let finish: (() => void) | undefined
   try {
+    if (!isBrowserExtensionSupportEnabled()) {
+      throw new BrowserExtensionApiError('Browser extension support is unavailable')
+    }
+    finish = beginBrowserExtensionApiCall(caller.session, state)
     const quarantine = getBrowserExtensionRuntimeQuarantine(caller.session, caller.extension.id)
     if (quarantine) {
       throw new BrowserExtensionApiError(quarantine)
@@ -136,5 +143,7 @@ export async function handleBrowserExtensionApiRequest(
       console.warn('[browser-extensions] API call failed:', error)
     }
     return { ok: false, error: errorMessage(error) }
+  } finally {
+    finish?.()
   }
 }
